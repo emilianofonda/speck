@@ -6,7 +6,7 @@ import scipy
 dn=os.getenv("SPECK")+os.sep+"modules"
 sys.path.append(dn)
 subdn=os.listdir(dn)
-print subdn
+#print subdn
 for i in subdn: sys.path.append(dn+os.sep+i)
 
 #Import generic speck modules
