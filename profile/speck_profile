@@ -1,12 +1,16 @@
 #!/usr/bin/ipython
 import os,string
 dn=os.getenv("SPECK")
-startup=string.replace("/profile/profile_speck_profile/startup","/",os.sep)
+startup=string.replace("/profile/profile_speck/startup","/",os.sep)
 print startup
 ll=os.listdir(dn+startup)
 ddn=dn+startup
 ll.sort()
 print "Starting up environment: (this an old ipython version, please upgrade)."
 for i in ll:
-	if i.rfind(".py"): execfile(ddn+os.sep+i)
+	if i.rfind(".py")>0: 
+		print "#################################"
+		print "Loading --> %s"%i
+		execfile(ddn+os.sep+i)
+		print "#################################"
 print "Environment startup completed"

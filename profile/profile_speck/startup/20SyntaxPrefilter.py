@@ -11,7 +11,7 @@ import os
 from time import asctime,time
 
 #Get version as put by speck into environment
-ver=os.getenv("VERSION")
+ver=float(os.getenv("VERSION"))
 
 if ver>0.10:
 	#The following is a workaround method that should work with ipython>0.10
