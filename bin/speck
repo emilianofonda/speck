@@ -31,7 +31,7 @@ print "Python version is %s"%Version
 print ""
 print ">Starting speck environment"
 print ""
-if float(Version)<0.13:
+if float(Version)<0.11:
 	#Compatibility with older versions (namely beamline old ipython)
 	os.system("EDITOR=gedit VERSION=%s /usr/bin/ipython -i --pylab  --profile=speck_profile --autocall 2 --colors LightBG --gui=gtk --ipython-dir %s/profile"\
 	%(Version,dn+os.sep+"speck_profile"+os.sep+"starter")\
