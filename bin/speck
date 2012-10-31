@@ -29,10 +29,13 @@ print "IPython version is %s"%Version
 print ""
 print ">Starting speck environment"
 print ""
-Version=Version[:Version.find(".")+2]
-os.putenv("VERSION",Version)
-if float(Version)<0.11:
-	#Compatibility with older versions (namely beamline old ipython)
+if Version.count(".")>1:
+	Version=float(Version.split(".")[0:1].join("."))
+else:
+	Version=float(Version)
+os.putenv("VERSION","%3.2f"%Version)
+if Version<0.11:
+	print "Fallback mode (namely beamline old ipython)"
 	os.system("EDITOR=gedit VERSION=%s ipython -i --pylab  --profile=speck --autocall 2 --colors LightBG -ipythondir %s"\
 	%(Version,dn+os.sep+"oldstyle_profile")\
 	+string.join(args))
