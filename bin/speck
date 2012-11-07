@@ -30,7 +30,8 @@ print ""
 print ">Starting speck environment"
 print ""
 if Version.count(".")>1:
-	Version=float(Version.split(".")[0:1].join("."))
+	V=Version.split(".")
+	Version=float(V[0]+"."+V[1])
 else:
 	Version=float(Version)
 os.putenv("VERSION","%3.2f"%Version)
