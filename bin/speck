@@ -1,5 +1,12 @@
 #!/usr/bin/python
-import os,sys,string,subprocess,commands
+import os,sys,string
+
+for i in ["subprocess", "commands"]:
+    try:
+        exec("import "+i)
+    except:
+        raise Exception("speck: cannot import module %s\n" % (i))
+
 if len(sys.argv)>1:
 	args=sys.argv[1:]
 else:
