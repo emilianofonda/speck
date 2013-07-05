@@ -14,6 +14,7 @@ else:
 dn = os.path.dirname(os.path.realpath(__file__))
 dn=dn[:dn.rfind(os.sep)]
 os.putenv("SPECK",dn)
+os.system("export SPECK=%s"%dn)
 print "+++++++++++++++++++++++++++++++++++++++++"
 print "SPECK says: 'dans le cochon tout est bon'" 
 print "+++++++++++++++++++++++++++++++++++++++++"
