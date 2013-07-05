@@ -2,12 +2,12 @@
 import exceptions
 import os
 import grace_np
-from numpy import mod,arange
+from numpy import mod, arange
 
 def xplot(x,y=None,curve=-1,graph=0,color=-1):
 	"""If a grace object exists plots on it"""
 	if y==None:
-		x,y=arange(len(x)),x
+		x, y = arange(len(x)), x
 	if not("GracePlotter_x" in globals()):
 		try:
 			__IP.user_ns["GracePlotter_x"]=GracePlotter()

@@ -32,19 +32,6 @@ __pySamba_scans=__pySamba_root+"/modules/scans/"
 #except:
 #    print "Cannot log commands!"
 
-
-#An example from the net on how change prompt for ipython<0.11 (V. Kuznetsov)
-#Modified to fit spooky
-#
-#import IPython
-#IP = IPython.ipapi.get()
-#def set_spooky_prompt(instrument_name):
-#    """Define spooky prompt when changing instrument"""
-#    ip = IP.user_ns['__IP']
-#    prompt = getattr(ip.outputcache, 'prompt1')
-#    prompt.p_template = 'Spooky\C_LightBlue[\C_LightRed%s\C_LightBlue]\#> ' % instrument_name
-#    prompt.set_p_str() 
-
     
 imp_mdls = ["galil_multiaxis", "xbpm_class", "PSS"]
 
@@ -245,13 +232,6 @@ def GetPressures():
     return 
 
 
-###########################################################################################
-#                                   include the spec-like commands   !                       #
-###########################################################################################
-#exec_files(__pySamba_root+"/modules/graphics/GracePlotter.py")
-#execfile(__pySamba_root+"/modules/base/spec_syntax.py")
-
-#execfile(__pySamba_root+"/modules/scans/ascan.py")
 
 #Start user defined environment:
 
