@@ -1,0 +1,55 @@
+#EF 10/2007
+#The following functions have been derived from the calibration made on 11-13 september 2007.
+#If something change, just modify the following equations. Theta is the pitch of the first mirror.
+
+#Mirror1
+def __m1Z(theta):
+	return 0.3
+def __m1bender(theta):
+	return 44583.+48617.*theta+3844.7*theta*theta
+def __m1Roll(theta):
+	return 0.
+#Mirror2
+def __m2theta(theta):
+	return -4.4263e-1+1.2002*theta-3.3557e-2*theta*theta+1.8019e-3*theta*theta*theta
+def __m2bender(theta):
+	return -21283.+108540.*theta-2412.9*theta*theta
+def __m2Z(theta):
+	base=24.6
+	Max=24.9
+	rate=-78.759
+	xhalf=2.
+	return base+(Max-base)*(theta**rate/(theta**rate+xhalf**rate))
+def __m2Roll(theta):
+	return -5.
+#Girder
+def __girder(theta):
+	return -0.16033+2.0212*theta
+#Tables
+def __exafsZ(theta):
+	return 22.298+11.463*theta
+def __obxgZ(theta):
+	return __girder(theta)*5.6+dcm.H
+#Do the full job:
+def SetAngle(theta):
+	"""Close the vertical primary slits, align everything, open the primary slits back to the previous value.
+	If the previous gap value in mm exceeds the mir1.pitch() (mrad) the mir1.pitch() (mrad) is taken as slit gap in mm."""
+	tmp=slit1_v.gap()
+	slit1_v.gap(-2)
+	mir1_c.go(__m1bender(theta))
+	mir2_c.go(__m2bender(theta))
+	mir1.pitch(theta)
+	mir2.pitch(__m2theta(theta))
+	mir1.roll(__m1Roll(theta))
+	mir2.roll(__m2Roll(theta))
+	mir1.zC(__m1Z(theta))
+	mir2.zC(__m2Z(theta))
+	po1.go(__girder(theta))
+	po2.go(__obxgZ(theta))
+	po3.go(__exafsZ(theta))
+	wait_motor([po1,po2,po3,mir1_c,mir2_c,mir1,mir2])
+	if(tmp>theta): tmp=theta	
+	slit1_v.gap(tmp)
+	return mir1.pitch()
+
+
