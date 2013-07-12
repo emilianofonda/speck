@@ -1,14 +1,14 @@
 
-export TANGO_HOST=`echo $TANGO_HOST |awk -F\, '{print $1}'`
+#export TANGO_HOST=`echo $TANGO_HOST |awk -F\, '{print $1}'`
 
 # 
 # 	Set up paths to use PyTango binding
 #
-export PATH=$PYTANGO_ROOT/bin/:$PATH
+#export PATH=$PYTANGO_ROOT/bin/:$PATH
 
-export LD_LIBRARY_PATH=/usr/Local/gcc/current/lib:
-export LD_LIBRARY_PATH=$PYTANGO_ROOT/lib/:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=$PYTANGO_ROOT/PyTangoLibs:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=/usr/Local/gcc/current/lib:
+#export LD_LIBRARY_PATH=$PYTANGO_ROOT/lib/:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=$PYTANGO_ROOT/PyTangoLibs:$LD_LIBRARY_PATH
 
-export PYTHONPATH=$PYTANGO_ROOT/lib/python2.7/:$PYTANGO_ROOT/lib/python2.7/site-packages/
+#export PYTHONPATH=$PYTANGO_ROOT/lib/python2.7/:$PYTANGO_ROOT/lib/python2.7/site-packages/
 

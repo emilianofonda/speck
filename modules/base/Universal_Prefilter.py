@@ -141,49 +141,59 @@ def mylineparser(line):
 #       3) spaces and semi-columns in strings as "abacus;" and "charlie bis" must be avoided since there is no check for being or not into a string!!!
 #  These limitations must be pointed out and explained to users of the interactive shell.
 
-__Universal_Syntax_Keywords={"mv":[[2,1]],"mvr":[[1]],"tw":[1],"wa":[],"wm":[1],"ct":[],\
-"count":[],"ascan":[],"a2scan":[1,4],"dscan":[1],"scan":[1],"xascan":[1],"escan":[1,2],\
-"xdscan":[1],"set_mon":[1],"where_mon":[1],"BL_Close":[],"BL_Open":[],"pos":[1],\
-"lm":[1],"set_lm":[1],"domacro":[1],"editmacro":[1],"timescan":[]}
+#__Universal_Syntax_Keywords={"mv":[[2,1]],"mvr":[[1]],"tw":[1],"wa":[],"wm":[1],"ct":[],\
+#"count":[],"ascan":[],"a2scan":[1,4],"dscan":[1],"scan":[1],"xascan":[1],"escan":[1,2],\
+#"xdscan":[1],"set_mon":[1],"where_mon":[1],"BL_Close":[],"BL_Open":[],"pos":[1],\
+#"lm":[1],"set_lm":[1],"domacro":[1],"editmacro":[1],"timescan":[]}
+
+__Universal_Syntax_Keywords={"mv":[],"mvr":[],"tw":[],"wa":[],"wm":[],"ct":[],\
+"count":[],"ascan":[],"a2scan":[],"dscan":[],"scan":[],"xascan":[],"escan":[1,2],\
+"xdscan":[],"set_mon":[],"where_mon":[],"BL_Close":[],"BL_Open":[],"pos":[],\
+"lm":[],"set_lm":[],"domacro":[1],"editmacro":[1],"timescan":[]}
 
 def universal_lineparser(line):
-    #__Universal_Syntax_Keywords...
-    #Cut with semicolons and clean each part of unnecessary spaces
-    lines = line.split(";")
-    output_line=""
-    for thisline in lines:
-        #save front spaces to use special syntax in indented code!
-        frontspaces = thisline[:thisline.find(thisline.lstrip())]
-        ls_thisline = thisline.lstrip()
-        parts = ls_thisline.split()
-        if parts[0] in __Universal_Syntax_Keywords.keys():
-            if len(__Universal_Syntax_Keywords[parts[0]]) > 0 and type(__Universal_Syntax_Keywords[parts[0]][0]) == list:
-                unit_length = __Universal_Syntax_Keywords[parts[0]][0][0] 
-                units = len(parts[1:]) / unit_length
-                #If the number of arguments does not correspond what should we do ? force it ? raise exception ? print error on screen?
-                need_guimet_extended = []
-                for i in range(units):
-                    need_guimet_extended += map(lambda x: x + i * unit_length, __Universal_Syntax_Keywords[parts[0]][0][1:])
-                for need_guimet in need_guimet_extended :
-                    if not(parts[need_guimet].startswith("\"") or parts[need_guimet].startswith("\'")):
-                        parts[need_guimet] = "\"" + parts[need_guimet] + "\""
-                #If you do not put the righ number of parameters... expect strange behavious!!!!
-            elif len(__Universal_Syntax_Keywords[parts[0]]) > 0:
-                for need_guimet in __Universal_Syntax_Keywords[parts[0]]:
-                    if not(parts[need_guimet].startswith("\"") or parts[need_guimet].startswith("\'")):
-                        parts[need_guimet] = "\"" + parts[need_guimet] + "\""
-            if len(parts) == 1:
-                output_line += frontspaces + parts[0] +"()"
+    try:
+        #__Universal_Syntax_Keywords...
+        #Cut with semicolons and clean each part of unnecessary spaces
+        lines = line.split(";")
+        output_line=""
+        for thisline in lines:
+            #save front spaces to use special syntax in indented code!
+            frontspaces = thisline[:thisline.find(thisline.lstrip())]
+            ls_thisline = thisline.lstrip()
+            parts = ls_thisline.split()
+            if len(parts) > 0 and parts[0] in __Universal_Syntax_Keywords.keys():
+                if len(__Universal_Syntax_Keywords[parts[0]]) > 0 and type(__Universal_Syntax_Keywords[parts[0]][0]) == list:
+                    unit_length = __Universal_Syntax_Keywords[parts[0]][0][0] 
+                    units = len(parts[1:]) / unit_length
+                    #If the number of arguments does not correspond what should we do ? force it ? raise exception ? print error on screen?
+                    need_guimet_extended = []
+                    for i in range(units):
+                        need_guimet_extended += map(lambda x: x + i * unit_length, __Universal_Syntax_Keywords[parts[0]][0][1:])
+                    for need_guimet in need_guimet_extended :
+                        if not(parts[need_guimet].startswith("\"") or parts[need_guimet].startswith("\'")):
+                            parts[need_guimet] = "\"" + parts[need_guimet] + "\""
+                    #If you do not put the righ number of parameters... expect strange behavious!!!!
+                elif len(__Universal_Syntax_Keywords[parts[0]]) > 0:
+                    for need_guimet in __Universal_Syntax_Keywords[parts[0]]:
+                        if not(parts[need_guimet].startswith("\"") or parts[need_guimet].startswith("\'")):
+                            parts[need_guimet] = "\"" + parts[need_guimet] + "\""
+                if len(parts) == 1:
+                    output_line += frontspaces + parts[0] +"()"
+                else:
+                    fmt = "%s," * len(parts[1:])
+                    fmt = "(" + fmt[:-1] + ")"
+                    output_line += frontspaces + parts[0] + fmt % tuple(parts[1:])
             else:
-                fmt = "%s," * len(parts[1:])
-                fmt = "(" + fmt[:-1] + ")"
-                output_line += frontspaces + parts[0] + fmt % tuple(parts[1:])
-        else:
-            output_line += thisline
-        if thisline <> lines[-1]:
-            output_line += ";"
-    print output_line
-    return output_line
+                output_line += thisline
+            if thisline <> lines[-1]:
+                output_line += ";"
+        print output_line
+        return output_line
+    except Exception, tmp:
+        print tmp
+        print "universal_lineparser error"
+        return line
 ###Universal Ends
 
 
@@ -201,7 +211,8 @@ def fileparser(filename_in,filename_out):
     for lin in linesin:
         lin=lin.rstrip('\n')
 #       print lin
-        lout=mylineparser(lin)
+#       lout=mylineparser(lin)
+        lout=universal_lineparser(lin)
 #       print lout
         fout.write(lout+"\n")
     fout.close()

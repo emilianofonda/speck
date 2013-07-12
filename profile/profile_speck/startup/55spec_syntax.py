@@ -10,7 +10,7 @@
 #import exceptions
 #from time import time
 #import os
-# depends on many modules but especially from SyntaxPrefilter
+import Universal_Prefilter
 
 #Speclike functions
 
@@ -20,12 +20,13 @@ from mycurses import *
 def wm(x):
     return x.pos()
 
-def whois(x, glob = globals()):
-    """This function may return wrong results if the object supplied has a non unique value
-    For example it will not work on a simple variable, but use it on object instances,
-    they have unique addresses."""
+#def whois(x, glob=globals()):
+def whois(x):
+    """This function may return wrong results if the object supplied 
+    has a non unique value. For example it will not work on a simple
+    variable, but use it on object instances, they have unique addresses."""
     names = []
-    g = glob
+    g = globals()
     for i in g:
         j=eval(i,g)
         try:
@@ -42,11 +43,13 @@ def whois(x, glob = globals()):
         return names[0]
 
 
-def wa(g = globals(),returns = False, verbose = True):
+#def wa(g = globals(),returns = False, verbose = True):
+def wa(returns = False, verbose = True):
     """Tells the correspondence between tango and python motor names and their positions. 
     Should be rewritten to point to a dictionary of classes defined in the main initialisation.
     The list of classes is presently hard coded."""
     lm=[]
+    g=globals()
     for i in g:
         if not(i.startswith("_")):
             j=eval(i,g)
@@ -74,8 +77,11 @@ def wa(g = globals(),returns = False, verbose = True):
     else:
         return
 
-def whereall(g=globals()):
-    return wa(g)
+#def whereall(g=globals()):
+#    return wa(g)
+
+def whereall():
+    return wa()
 
 #move, mover,whereall, tweak must be removed in the long form
 #mv and mvr should be able to move several motors toghether and maybe take advantage of galilmultiaxis.
@@ -193,7 +199,8 @@ def domacro(macrofilename):
     if not(macrofilename in os.listdir(".")):
         if macrofilename in os.listdir(__pySamba_root+"/scripts"):
             macrofilename=__pySamba_root+"/scripts/"+macrofilename
-    return SyntaxPrefilter.process_macro_file(macrofilename,__IP.user_ns)
+    return Universal_Prefilter.process_macro_file(macrofilename,__IP.user_ns)
+#    return SyntaxPrefilter.process_macro_file(macrofilename,__IP.user_ns)
 
 class pseudo_counter:
     def __init__(self,masters=[],slaves=[],slaves2arm=[],slaves2arm2stop=[],deadtime=0.,timeout=1):

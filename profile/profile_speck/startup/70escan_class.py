@@ -352,8 +352,7 @@ def ReadScanForm(filename):
 
 class escan_class:
 	def __init__(self,scan_form="",\
-		dcm=dcm,cpt=ct,xbpm=xbpm,\
-		Ts2_Moves=False,amplis=None,dark=USER_DARK_VALUES):
+		dcm=dcm,cpt=ct,	Ts2_Moves=False,amplis=None,dark=USER_DARK_VALUES):
 		if(scan_form==""):
 			raise exceptions.Exception("Missing scan file! Please provide one.")
 		
@@ -589,7 +588,6 @@ class escan_class:
 		self.tuning_points=[[0.,]*(self.tuningdegree+1),[0.,]*(self.tuningdegree+1)]
 		#self.TUNING_OK=False
 		self.Ts2_Moves=Ts2_Moves
-		self.xbpm=xbpm
 		if self.detectionMode=="sexafs":
 			try:
 				self.temperature_DP=DeviceProxy("d09-1-cx2/ex/tc.1")
@@ -1319,13 +1317,13 @@ class escan_class:
 			#\tSEXI0\tSEXI\tSEXBPM1\tSEXBPM2\tEmpty4\tEmpty5\tEmpty6\tEmpty7\
 			#\tSEXFluo1\tSEXFluo2\tSEXFluo3\tSEXFluo4\tSEXFluo5\tSEXFluo6\tSEXFluo7\tTimeMeasure(s)\
 			#\tPIEZO_write(V)\tPIEZO_read(V)\tBender1\tBender2\tBender_AI1\tBender_AI2\
-			#\txbpm\tTime(count)\tTime(move)\tTemperature(C)\tRontec_DT_factor\
+			#\tTime(count)\tTime(move)\tTemperature(C)\tRontec_DT_factor\
 			#\tRs2\tTz2\n"
 			#The card HEADER is set on a separate line before the header line
 			thisline="#HEADER\n#Energy\tAngle\tmu\tmus\t"+\
 		        self.cpt_header\
 			+"\tPIEZO_write(V)\tPIEZO_read(V)\tBender1\tBender2\tBender_AI1\tBender_AI2\
-			\txbpm\tTime(count)\tTime(move)\tTemperature(C)\tRontec_DT_factor\
+			\tTime(count)\tTime(move)\tTemperature(C)\tRontec_DT_factor\
 			\tRs2\tTz2"
 
 			#Add attributes labels
@@ -1542,7 +1540,7 @@ class escan_class:
 					% (p, self.dcm.m_rx2fine.pos(),\
 					bp1, bp2,\
 					an1, an2,\
-					xbpm.read(), tmeasure, tmove, temperature, dt_correction,\
+					tmeasure, tmove, temperature, dt_correction,\
 					self.dcm.m_rs2.pos(), self.dcm.m_tz2.pos()\
 					))
 					#Append additional attributes

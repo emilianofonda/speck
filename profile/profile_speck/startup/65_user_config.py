@@ -7,7 +7,7 @@ print "################################################################"
 #To mantain syntax compatibility with this old file:
 
 __IP=get_ipython()
-
+	
 ##
 ## Data folders
 ##
@@ -56,7 +56,7 @@ try:
     cpt0=counter("d09-1-c00/ca/cpt.1",user_readconfig=user_readconfig)
 except Exception, tmp:
     print "I cannot define counter master."
-    print tmp
+    #print tmp
 
 #dxmap
 try:
@@ -239,7 +239,7 @@ try:
 except Exception, tmp:
     print "Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.1"
     print "Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.2"
-    print tmp
+    #print tmp
 
 #ct
 try:
@@ -250,7 +250,7 @@ except Exception, tmp:
     print "Failure defining ct speclike_syntax command"
     print "Defaulting to cpt... ct=cpt... pysamba survival kit... is XIA dead?"
     ct=cpt
-    print tmp
+    #print tmp
 
 #Beam diagnostics: xbpm...
 #try: 
@@ -276,12 +276,14 @@ except Exception, tmp:
 try:
     HV_I0    =NHQ_HVsupply("d09-1-cx1/ex/mi_cio-hvps.1","A")
     HV_I1    =NHQ_HVsupply("d09-1-cx1/ex/mi_cio-hvps.1","B")
-except:
+except Exception, tmp:
+    #print tmp
     print "Error on defining NHQ module 1 SHV of chambers I0 and I1"
 try:
     HV_I2    =NHQ_HVsupply("d09-1-cx1/ex/mi_cio-hvps.2","B")
     HV_xbpm    =NHQ_HVsupply("d09-1-cx1/ex/mi_cio-hvps.2","A")
-except:
+except Exception, tmp:
+    #print tmp
     print "Error on defining NHQ module 2 SHV of chambers I2 and xbpm"
 
 
@@ -303,7 +305,8 @@ try:
     print i200.currents()
     print i200.status()
 except Exception, tmp:
-    print tmp
+    print "Error initializing I200."
+    #print tmp
     
 #ACE Avalanche Photodiode Controller (home made python controller)
 try:
@@ -322,7 +325,8 @@ try:
     __m="rx2fine"
     rx2fine=piezo("d09-1-c03/op/mono1-mt_rx_fine.2")
     __allpiezos+=[rx2fine]
-except:
+except Exception, tmp:
+    #print tmp
     print "I could not define ",__m ,"of the monochromator!"
 
 __tmp={
@@ -336,10 +340,14 @@ __tmp={
 for i in __tmp:
     try:
         __IP.user_ns[i]=motor(__tmp[i])
-        __allmotors+=[__IP.user_ns[i],]
-    except:
+    	__allmotors+=[__IP.user_ns[i],]
+    	#print "%s = motor(%s)"%(i,__tmp[i])
+    	#exec("%s = motor(\"%s\")"%(i,__tmp[i]))
+    except Exception, tmp:
+    	#print tmp
         print "Cannot define %s =motor(%s)"%(i,__tmp[i])
 
+#raise Exception("STOOOOP!")
 #Monochromator2
 __tmp={
 "q2_tz":"d09-1-c04/op/mono2-mt_tz.1",
@@ -351,7 +359,8 @@ for i in __tmp:
     try:
         __IP.user_ns[i]=motor(__tmp[i])
         __allmotors+=[__IP.user_ns[i],]
-    except:
+    except Exception, tmp:
+    	#print tmp
         print "Cannot define %s =motor(%s)"%(i,__tmp[i])
         
 #Monochromator3
@@ -365,7 +374,8 @@ for i in __tmp:
     try:
         __IP.user_ns[i]=motor(__tmp[i])
         __allmotors+=[__IP.user_ns[i],]
-    except:
+    except Exception, tmp:
+        print tmp
         print "Cannot define %s =motor(%s)"%(i,__tmp[i])
 
 try:
@@ -374,14 +384,16 @@ try:
             return self.backward(wait=False)
     q2_delta=motor_custom("d09-1-c04/op/mono2-mt_rx.1")
     q3_delta=motor_custom("d09-1-c04/op/mono3-mt_rx.1")
-except:
+except Exception, tmp:
+    print tmp
     print "Error extending class for quick delta motors"
 
 try:
     from motor_double_encoded import motor_double_encoded,motor_separate_encoder
     q2_theta=motor_double_encoded("d09-1-c04/op/mono2-mt_rx.2","d09-1-c04/op/mono2-cd_rx.1")
     q3_theta=motor_separate_encoder("d09-1-c04/op/mono3-mt_rx.2","d09-1-c04/op/mono3-cd_rx.1")
-except:
+except Exception, tmp:
+    print tmp
     print "Error extending class for quick theta motor"
 
 ################################################
@@ -585,10 +597,11 @@ __tmp={
 "hin5"  :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","in"],
 "hout5" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","out"]}
 for i in __tmp:
-       try:
-            __IP.user_ns[i]=motor_slit(__tmp[i][0],__tmp[i][1],__tmp[i][2],__tmp[i][3])
-            __allmotors+=[__IP.user_ns[i],]
-       except:
+    try:
+        __IP.user_ns[i]=motor_slit(__tmp[i][0],__tmp[i][1],__tmp[i][2],__tmp[i][3])
+        __allmotors+=[__IP.user_ns[i],]
+    except Exception, tmp:
+        print tmp
         print RED+"Cannot define"+RESET+" %s =motor(%s)"%(i,__tmp[i])
 
 
@@ -608,7 +621,8 @@ for i in aliases:
     if i in __IP.user_ns:
         try:
             __IP.user_ns[aliases[i]]=__IP.user_ns[i]
-        except:
+        except Exception, tmp:
+            print tmp
             print "Error defining ",aliases[i]," as alias for ",i
 
 
@@ -691,8 +705,8 @@ try:
     tune=dcm.tune
     print "OK!"
 except Exception, tmp: 
-    print "Cannot define dcm (monochromator not set)."
     print tmp
+    print "Cannot define dcm (monochromator not set)."
 
 
 # Channel cut Si311 q3
@@ -700,7 +714,8 @@ except Exception, tmp:
 try:
     q2_energy=channel_cut(d=__d111,theta=q2_theta,tz=q2_tz)
     q3_energy=channel_cut(d=__d311,theta=q3_theta,tz=q3_tz)
-except:
+except Exception, tmp: 
+    print tmp
     print "cannot initialize q2_energy or q3_energy"
 #
 
@@ -742,14 +757,16 @@ for i in __tmp:
             __IP.user_ns[i]=valve(__tmp[i])
         __valves+=[__IP.user_ns[i],]
         __vacuum+=[i,]
-    except:
+    except Exception, tmp:
+        print tmp
         print "Cannot define %s =valve(%s)"%(i,__tmp[i])
 del __tmp
 
 #attenuateur 
 try:
     att=absorbing_system("d09-1-c01/ex/att.1")
-except:
+except Exception, tmp:
+    print tmp
     print "Cannot configure d09-1-c01/ex/att.1"
 
 #Fast shutter
@@ -757,7 +774,8 @@ try:
     from pseudo_valve import pseudo_valve
     #print "Fast shutter is sh_fast"
     sh_fast=pseudo_valve(label="d09-1-c00/ca/dio_0.1",channel="G",delay=0.1,deadtime=0.,timeout=0,reverse=True)
-except:
+except Exception, tmp:
+    print tmp
     print "No fast shutter defined!"
 
 
@@ -830,7 +848,8 @@ try:
     FEopen=FE.open
     shclose=obxg.close
     sexclose=obx.close
-except:
+except Exception, tmp:
+    print tmp
     print "Check state of shutters... something wrong in script..."
 #sexopen=obx.open
 #shopen=obxg.open
@@ -853,7 +872,8 @@ def sexopen():
 try:
     vg_x=sensor("d09-1-cx1/dt/vg2-basler-analyzer","ChamberXProjFitCenter")
     vg_y=sensor("d09-1-cx1/dt/vg2-basler-analyzer","ChamberYProjFitCenter")
-except:
+except Exception, tmp:
+    print tmp
     print "videograbber d09-1-cx1/dt/vg2-basler-analyzer error!"
 
 

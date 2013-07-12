@@ -8,8 +8,9 @@ try:
     qm2=DeviceProxy("tmp/qexafs-v1/qexafs_manager_mono2")
     qm3=DeviceProxy("tmp/qexafs-v1/qexafs_manager_mono3")
     #qm=DeviceProxy("d09-1-cx1/dt/qexafs_manager")
-    from quickplot_v2 import *
-except:
+    #from quickplot_v2 import *
+except Exception, tmp:
+    print tmp
     print "No quickexafs manager"
 
 def quickplot2():

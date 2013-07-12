@@ -153,11 +153,11 @@ __samplePos=13.95
 ##  Functions to wait for a certain time, date, for the beam to come back...
 ##
 
-try:
-    from wait_functions import wait_until
-except Exception, tmp:
-    print "wait_functions.py module in error"
-    print tmp
+#try:
+#    from wait_functions import wait_until
+#except Exception, tmp:
+#    print "wait_functions.py module in error"
+#    print tmp
 
     
 

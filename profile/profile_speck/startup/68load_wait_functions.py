@@ -3,6 +3,7 @@
 ##  This module has been changed by the user so it is in the user_config.py.
 ##
 try:
+    from wait_functions import wait_until
     import wait_functions
     def wait_injection(TDL=FE,ol=[obxg,],vs=[vs1,vs2,vs3,vs4,vs5],pi=[pi1_1,pi1_2,pi2_1,pi2_2,pi3_1,pi4_1,pi5_1,pi6_1,pi6_2],maxpressure=1e-5,deadtime=1):
         return wait_functions.wait_injection(TDL,ol,vs,pi,maxpressure,deadtime)
