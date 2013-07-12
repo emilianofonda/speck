@@ -106,7 +106,10 @@ def SetAngleSEXAFS(theta=None,hgap=25.,SEXAFS=True):
 #Nouvelle procedure ... rustine!
 def SetAngle(theta=None,hgap=25.,SEXAFS=True):
 	"""Close the vertical primary slits, align everything, open the primary slits back to the previous value.
-	If the previous gap value in mm exceeds the mir1_pitch (mrad) the mir1_pitch (mrad) is taken as slit gap in mm."""
+	If the previous gap value in mm exceeds the mir1_pitch (mrad) the mir1_pitch (mrad) is taken as slit gap in mm.
+    WARNING: uses global variables of the shell as the following:
+    mir1_pitch, po1, po2...
+    """
 	theta2=mir1_pitch.pos()
 	if theta==None:
 		return mir1_pitch.pos()

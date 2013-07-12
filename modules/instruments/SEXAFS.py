@@ -1,5 +1,5 @@
 #Macro to define the SEXAFS instrument:
-
+__IP = get_ipython()
 ####### REMOVE OBJECTS FROM EXAFS SETUP #############
 #This part should be replaced by an automatic method
 #associated to the instrument
@@ -166,24 +166,6 @@ sh_fast=None
 ##########################################################################
 # finally include the escan class to perform energy scans   !            #
 ##########################################################################
-try:
-	#execfile(__pySamba_scans+"/escan_class.py")
-	#execfile(__pySamba_scans+"/escan_class_b.py")
-	execfile(__pySamba_scans+"/escan_class.py")
-except Exception, tmp:
-	print "The escan class is in error or missing!"
-	print tmp
-
-##########################################################################
-# include the rocca class to perform rocking curve scans   !             #
-##########################################################################
-#This is the old rocca scan class: to be updated
-try:
-	execfile(__pySamba_scans+"/rocca_scan_class.py")
-except Exception, tmp:
-	print "Error in rocca_scan_class.py"
-	print tmp
-
 
 ##########################################################################
 #Include non permanent function declarations or actions here below       #
@@ -213,6 +195,7 @@ hslit=hgap5
 #    Changing the prompt     #
 ##############################
 try:
-	set_spooky_prompt("SEXAFS")
+	get_ipython().magic('config PromptManager.in_template=u\'\\w\\nSpeck: SEXAFS #\\#>\'')
+    #set_spooky_prompt("SEXAFS")
 except:
 	pass

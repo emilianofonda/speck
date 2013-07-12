@@ -8,15 +8,6 @@ print "################################################################"
 
 __IP=get_ipython()
 	
-##
-## Data folders
-##
-import os
-__Default_Data_Folder=os.getenv("SPECK_DATA_FOLDER")
-#"/home/experiences/samba/com-samba/ExperimentalData/"
-__Default_Backup_Folder=os.getenv("SPECK_BACKUP_FOLDER")
-#"/nfs/ruche-samba/samba-soleil/com-samba/"
-
 ##Usefull constants
 #Values of d below are used everywhere... hopefully.
 __d220=1.92015585
@@ -235,7 +226,7 @@ try:
     #mca=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig0)
     mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig1)
     mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",user_readconfig=user_readconfig2)
-    print "mca1,mca2 --> DxMap cards"
+    #print "mca1,mca2 --> DxMap cards"
 except Exception, tmp:
     print "Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.1"
     print "Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.2"
@@ -299,14 +290,14 @@ except Exception, tmp:
 # I200 (home made python controller)
 try:
     from I200 import I200_tango as I200
-    print "I200 unit is :",
+    print "I200 unit :",
     i200=I200("d09-1-cx1/ca/mca_rontec_rs232_8.5")
     itune=i200.tune
-    print i200.currents()
-    print i200.status()
+    #print i200.currents()
+    #print i200.status()
 except Exception, tmp:
     print "Error initializing I200."
-    #print tmp
+    print tmp
     
 #ACE Avalanche Photodiode Controller (home made python controller)
 try:
@@ -399,17 +390,6 @@ except Exception, tmp:
 ################################################
 #             Moveables
 ################################################
-#Hexapode is a special case defined apart.
-#try:
-#    hx=moveable("d09-1-cx1/ex/hexa.1","x")
-#    hy=moveable("d09-1-cx1/ex/hexa.1","y")
-#    hz=moveable("d09-1-cx1/ex/hexa.1","z")
-#    hu=moveable("d09-1-cx1/ex/hexa.1","u")
-#    hv=moveable("d09-1-cx1/ex/hexa.1","v")
-#    hw=moveable("d09-1-cx1/ex/hexa.1","w")
-#except:
-#    print RED+"Hexapode"+RESET+"not responding or error initializing moveable classes"
-#    pass
 
 #Normal moveables (missing special options)
 __tmp={
@@ -491,8 +471,6 @@ for i in __tmp:
 #Vacuum
 __vacuum=[]
 __tmp={
-"I0_buffer"    :["d09-1-c00/ca/sai.1","channel0"],
-"I0_average"    :["d09-1-c00/ca/sai.1","averagechannel0"],
 "jpen1_2"    :["d09-1-c01/vi/jpen.2","pressure"],
 "jpen2_1"    :["d09-1-c02/vi/jpen.1","pressure"],
 "jpen3_1"    :["d09-1-c03/vi/jpen.1","pressure"],
@@ -673,7 +651,7 @@ try:
     #bender=None
     
     #__allmotors+=[bender.c1,bender.c2]
-    print "OK!"
+    #print "OK!"
 except Exception, tmp:
     print "Cannot define bender of mono1"
     bender=None
@@ -818,31 +796,10 @@ except Exception, tmp:
     print tmp
 
 
+
 #########################################
-#        Test                           #
+#        Shutters and waitings          #
 #########################################
-
-
-#
-#try:
-#    __cryostat__=DeviceProxy("d09-1-cx1/ex/cryo4.1-ctrl")
-#    def set_temp(t=None):
-#        __c=__cryostat__
-#        if t==None:
-#            print "Temperature is :",__c.temperature
-#            print "Set Point is :",__c.temperatureSetPoint
-#            return
-#        __c.temperatureSetPoint=t
-#        sleep(3)
-#        return __c.temperatureSetPoint
-#
-#except:
-#    print "Error defining set_temp"
-
-#
-#Local defs
-#
-
 
 try:
     FEopen=FE.open
@@ -851,8 +808,6 @@ try:
 except Exception, tmp:
     print tmp
     print "Check state of shutters... something wrong in script..."
-#sexopen=obx.open
-#shopen=obxg.open
 
 def FEclose():
     FE.close()
@@ -868,6 +823,37 @@ def sexopen():
     FEopen()
     shopen()
     return obx.open()
+
+
+##
+##  Functions to wait for a certain time, date, for the beam to come back...
+##  This module has been changed by the user so it is in the user_config.py.
+##
+try:
+    from wait_functions import wait_until
+    import wait_functions
+    def wait_injection(TDL=FE,ol=[obxg,],vs=[vs1,vs2,vs3,vs4,vs5],pi=[pi1_1,pi1_2,pi2_1,pi2_2,pi3_1,pi4_1,pi5_1,pi6_1,pi6_2],maxpressure=1e-5,deadtime=1):
+        return wait_functions.wait_injection(TDL,ol,vs,pi,maxpressure,deadtime)
+    def wait_until(dts,deadtime=1.):
+        return wait_functions.wait_until(dts,deadtime)
+    def checkTDL(TDL=FE):
+        return wait_functions.checkTDL(TDL)
+    def interlockTDL(TDL=FE):
+        return wait_functions.interlockTDL(FE)
+except Exception, tmp:
+    print "wait_functions.py module is in error."
+    print tmp
+    print "Ignoring..."
+
+
+##############################
+#user configs
+##############################
+
+#
+#    SOME temporary defs
+#
+
 
 try:
     vg_x=sensor("d09-1-cx1/dt/vg2-basler-analyzer","ChamberXProjFitCenter")
@@ -894,10 +880,6 @@ except Exception, tmp:
 #    print "Error loading diffscan"
 #    print tmp
 
-##############################
-#user configs
-##############################
-
 try:
     vslit=vgap3
     hslit=hgap3
@@ -908,6 +890,22 @@ print "Instruments: default is"+RED+" EXAFS"+RESET+". Type "+RED+"SEXAFS"+RESET+
 
 def SEXAFS():
     return instrument("SEXAFS")
+
+##
+#try:
+#    __cryostat__=DeviceProxy("d09-1-cx1/ex/cryo4.1-ctrl")
+#    def set_temp(t=None):
+#        __c=__cryostat__
+#        if t==None:
+#            print "Temperature is :",__c.temperature
+#            print "Set Point is :",__c.temperatureSetPoint
+#            return
+#        __c.temperatureSetPoint=t
+#        sleep(3)
+#        return __c.temperatureSetPoint
+#
+#except:
+#    print "Error defining set_temp"
 
 #Load marccd 
 #instrument("MARCCD")

@@ -149,7 +149,7 @@ def mylineparser(line):
 __Universal_Syntax_Keywords={"mv":[],"mvr":[],"tw":[],"wa":[],"wm":[],"ct":[],\
 "count":[],"ascan":[],"a2scan":[],"dscan":[],"scan":[],"xascan":[],"escan":[1,2],\
 "xdscan":[],"set_mon":[],"where_mon":[],"BL_Close":[],"BL_Open":[],"pos":[],\
-"lm":[],"set_lm":[],"domacro":[1],"editmacro":[1],"timescan":[]}
+"lm":[],"set_lm":[],"domacro":[1],"editmacro":[1],"tscan":[],"timescan":[]}
 
 def universal_lineparser(line):
     try:
@@ -188,7 +188,7 @@ def universal_lineparser(line):
                 output_line += thisline
             if thisline <> lines[-1]:
                 output_line += ";"
-        print output_line
+        #print output_line
         return output_line
     except Exception, tmp:
         print tmp
@@ -221,11 +221,11 @@ def fileparser(filename_in,filename_out):
 def process_macro_file(filename,uns):
     """This command open your macro convert it to standard language in macro.tmp file and the execute it"""
     macro_tmp_file="macro_%07.4f.tmp" %time()
-    print "Parsing macro ",filename," into temporary file ",macro_tmp_file
+    #print "Parsing macro ",filename," into temporary file ",macro_tmp_file
     fileparser(filename,macro_tmp_file)
-    print "Executing file ",macro_tmp_file
+    #print "Executing file ",macro_tmp_file
     execfile(macro_tmp_file,uns)
-    print "Removing temporary file ",macro_tmp_file
+    #print "Removing temporary file ",macro_tmp_file
     os.remove(macro_tmp_file)
     return
 
