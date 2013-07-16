@@ -2,12 +2,15 @@ from time import strftime,gmtime,sleep,localtime,asctime
 from time import time as cputime
 from numpy import round, array, sum, mean
 import os
+from GetPositions import GetPositions
 from GracePlotter import *
 try:
     import Gnuplot
 except Exception, tmp:
     print "Cannot import Gnuplot"
 from mycurses import *
+
+from spec_syntax import mv, wa, whois
 
 #The following line is commented out
 #from spec_syntax import whois
@@ -157,8 +160,8 @@ def __backup_data():
 #def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,name=None,delay=0.,glob=globals(),scaler="ct",comment="",fullmca=False,graph=0, n = 1):
 def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,name=None,delay=0.,scaler="ct",comment="",fullmca=False,graph=0, n = 1):
     """Scan mot from p1 to p2 with step dp, reads ct for dt seconds. The default timebase is named ct."""
-    glob=globals()
-    glob=get_ipython().user_ns
+    #glob=globals()
+    glob  = get_ipython().user_ns
     if p1 < p2:
         dp = abs(dp)
     else:
@@ -168,7 +171,7 @@ def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,n
     __no_scans = n
     time_scan = False
     if scaler in glob:
-        cpt = eval(scaler,glob)
+        cpt = glob[scaler]
     else:
         raise Exception("Timebase not defined or wrong timebase name.")
     if name == None:
@@ -205,8 +208,8 @@ def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,n
         except:
             pass
         try:
-            if mot<>cputime:
-                motname = whois(mot, glob)
+            if mot <> cputime:
+                motname = whois(mot)
                 print "motor name is : ", motname
                 f.write("#mot=%s p1=%g p2=%g dp=%g dt=%g\n"%(motname, p1, p2, dp, dt))
                 w("set xlabel '" + motname + "'")
@@ -333,7 +336,7 @@ def dscan(mot,p1,p2,dp=0.1,dt=0.1,channel=1,returndata=False,fulldata=False,name
     results=ascan(mot,abs_p1,abs_p2,dp,dt,channel,returndata,fulldata,name,delay=delay,scaler=scaler,fullmca=fullmca,\
     graph=graph)
     mot.pos(previous_pos)
-    if results<>None:
+    if results <> None:
         return results
     else:
         return
@@ -358,7 +361,7 @@ def mapscan(mot1,p11,p12,dp1,mot2,p21,p22,dp2,dt=0.1,channel=1,returndata=False,
     Dname=findNextFileName(name,ext,file_index=1)
     os.mkdir(Dname)
     print "Saving in folder: ",name
-    motname1=whois(mot1,glob)
+    motname1=whois(mot1)
     try:
         for i in arange(p11,p12+dp1,dp1):
             mot1.pos(i)
@@ -393,8 +396,9 @@ def pre_scan(handler=None):
         GetPositions(verbose=0)
         for i in wa(verbose=False,returns=True):
             buffer.append("#"+i+"\n")
-    except:
-        print "Error when getting motors positions!"
+    except Exception, tmp:
+        print tmp
+        print "ascan: pre_scan: Error when getting motors positions!"
         pass
     try:
         buffer.append("#Machine Current = %g\n"%(self.ms.read_attribute("current").value))

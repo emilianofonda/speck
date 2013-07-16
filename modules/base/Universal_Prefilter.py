@@ -25,67 +25,67 @@ ipy_zeroten = StrictVersion('0.10')
 
 #The following is a workaround method that should work with ipython>0.10
 
-if ipy_version > ipy_zeroten:
-    shell = get_ipython()
-    old_run_cell = shell.run_cell
+#if ipy_version > ipy_zeroten:
+shell = get_ipython()
+old_run_cell = shell.run_cell
 
-    def myparser(cell):
-        #return mylineparser(cell)
-        return universal_lineparser(cell)
+def myparser(cell):
+    #return mylineparser(cell)
+    return universal_lineparser(cell)
 
-    def new_run_cell(cell, *args, **kwargs):
-        #new_cell = mylineparser(cell)
-        new_cell = universal_lineparser(cell)
-        return old_run_cell(new_cell, *args, **kwargs)
+def new_run_cell(cell, *args, **kwargs):
+    #new_cell = mylineparser(cell)
+    new_cell = universal_lineparser(cell)
+    return old_run_cell(new_cell, *args, **kwargs)
 
-    shell.run_cell = new_run_cell
-else:
-    ####
-    #### Import the function/modules as specified in hooks.py by Fernando Perez
-    ####
-    try: 
-        import IPython.ipapi
-    except:
-        import IPython.core.ipapi
-
-    try:
-        ip=IPython.ipapi.get()
-        __NewVersion=True
-    except:
-        print "...old ipython mode...",
-        __NewVersion=False
-    ####
-
-    def myparser(self, line,continuation=""):
-        if __NewVersion:
-            #return mylineparser(line)
-            return universal_lineparser(line)
-        else:
-            #return self._prefilter(mylineparser(line),continuation)
-            return self._prefilter(universal_lineparser(line),continuation)
-        
-
-    ####
-    #### Finally replace the input_prefilter with my custom function myparser
-    ####
-
-    if __NewVersion:
-        ip.set_hook("input_prefilter",myparser)
-        #Cleanup namespace
-        del ip
-    else:
-        try:
-            from IPython.core import interactiveshell as InteractiveShell
-        except:
-            from IPython.iplib import InteractiveShell
-        InteractiveShell.prefilter=myparser
-        #Clean up namespace
-        del InteractiveShell
-
-
-
-
-################################################################
+shell.run_cell = new_run_cell
+#else:
+#    ####
+#    #### Import the function/modules as specified in hooks.py by Fernando Perez
+#    ####
+#    try: 
+#        import IPython.ipapi
+#    except:
+#        import IPython.core.ipapi
+#
+#    try:
+#        ip=IPython.ipapi.get()
+#        __NewVersion=True
+#    except:
+#        print "...old ipython mode...",
+#        __NewVersion=False
+#    ####
+#
+#    def myparser(self, line,continuation=""):
+#        if __NewVersion:
+#            #return mylineparser(line)
+#            return universal_lineparser(line)
+#        else:
+#            #return self._prefilter(mylineparser(line),continuation)
+#            return self._prefilter(universal_lineparser(line),continuation)
+#        
+#
+#    ####
+#    #### Finally replace the input_prefilter with my custom function myparser
+#    ####
+#
+#    if __NewVersion:
+#        ip.set_hook("input_prefilter",myparser)
+#        #Cleanup namespace
+#        del ip
+#    else:
+#        try:
+#            from IPython.core import interactiveshell as InteractiveShell
+#        except:
+#            from IPython.iplib import InteractiveShell
+#        InteractiveShell.prefilter=myparser
+#        #Clean up namespace
+#        del InteractiveShell
+#
+#
+#
+#
+#################################################################
 #The real transform is here below and it is named mylineparser
 ################################################################
 

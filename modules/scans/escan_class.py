@@ -368,7 +368,10 @@ class escan_class:
         cpt = shell.user_ns["ct"]
         obx = shell.user_ns["obx"]
         obxg = shell.user_ns["obxg"]
-        sh_fast = shell.user_ns["sh_fast"]
+        try:
+            sh_fast = shell.user_ns["sh_fast"]
+        except:
+            sh_fast = None
         #List here defined x stoppers 
         exafsStoppers=[obxg,]
         sexafsStoppers=[obxg,obx]

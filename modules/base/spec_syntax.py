@@ -5,11 +5,19 @@
 #       during the startup procedure as for the ct from a pseudo_counter
 
 #Imports section
-#from motor_class import motor,piezo,motor_slit,move_motor
-#from PyTango import DevState
-#import exceptions
-#from time import time
-#import os
+from IPython.core.ipapi import get as get_ipython
+
+import exceptions
+from time import time
+import os
+import thread
+
+from motor_class import motor,piezo,motor_slit,move_motor
+from moveable import moveable
+from mm4005 import mm4005_motor
+from mono1b import mono1
+
+from PyTango import DevState
 import Universal_Prefilter
 
 #Speclike functions
@@ -26,18 +34,26 @@ def whois(x):
     has a non unique value. For example it will not work on a simple
     variable, but use it on object instances, they have unique addresses."""
     names = []
-    g = globals()
+    g = get_ipython().user_ns
+    #g = globals()
     for i in g:
-        j=eval(i,g)
+        try:
+            j = eval(i, g)
+        except:
+            j = g[0]
         try:
             Congruente = (len(j) == 1)
             j = j[0]
         except:
-            Congruente=True
+            Congruente = True
         if Congruente:
-            if x==eval(i,g) and not(i.startswith("_")):
-                names.append(i)
-    if len(names)==0:
+            try:
+                if x == eval(i, g) and not(i.startswith("_")):
+                    names.append(i)
+            except:
+                #print i
+                pass
+    if len(names) == 0:
         return None
     else:
         return names[0]
@@ -49,7 +65,8 @@ def wa(returns = False, verbose = True):
     Should be rewritten to point to a dictionary of classes defined in the main initialisation.
     The list of classes is presently hard coded."""
     lm=[]
-    g=globals()
+    g = get_ipython().user_ns
+    #g=globals()
     for i in g:
         if not(i.startswith("_")):
             j=eval(i,g)
@@ -100,6 +117,20 @@ def mv(*args):
     else:
         raise Exception("origin: mv","Error: Odd number of parameters!")
 
+def lm(x):
+    try:
+        return x.lm()
+    except Exception, tmp:
+        print tmp
+        return None
+
+def set_lm(x,min_pos,max_pos):
+    try:
+        x.set_lm(min_pos, max_pos)
+        return x.lm()
+    except Exception, tmp:
+        print tmp
+        return None
 
 def move(x,p=None):
     "Spec like absolute move"
@@ -196,10 +227,11 @@ def Close(*x):
 def domacro(macrofilename):
     """macro file is a python code in the current folder or
     in the scripts folder in the __pysamba_root folder"""
+    shell = get_ipython()
     if not(macrofilename in os.listdir(".")):
-        if macrofilename in os.listdir(__pySamba_root+"/scripts"):
-            macrofilename=__pySamba_root+"/scripts/"+macrofilename
-    return Universal_Prefilter.process_macro_file(macrofilename,__IP.user_ns)
+        if macrofilename in os.listdir(shell.user_ns["__pySamba_root"] + "/scripts"):
+            macrofilename = shell.user_ns["__pySamba_root"] + "/scripts/" + macrofilename
+    return shell.user_ns["Universal_Prefilter"].process_macro_file(macrofilename,shell.user_ns)
 #    return SyntaxPrefilter.process_macro_file(macrofilename,__IP.user_ns)
 
 class pseudo_counter:
