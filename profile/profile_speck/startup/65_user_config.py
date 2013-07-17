@@ -335,10 +335,12 @@ __tmp={
 "ts2":"d09-1-c03/op/mono1-mt_ts.2"}
 for i in __tmp:
     try:
+        print i
         __IP.user_ns[i]=motor(__tmp[i])
         __allmotors+=[__IP.user_ns[i],]
-    except:
+    except Exception, tmp:
         print "Cannot define %s =motor(%s)"%(i,__tmp[i])
+        raise tmp
 
 #Monochromator2
 __tmp={
@@ -351,8 +353,9 @@ for i in __tmp:
     try:
         __IP.user_ns[i]=motor(__tmp[i])
         __allmotors+=[__IP.user_ns[i],]
-    except:
+    except Exception, tmp:
         print "Cannot define %s =motor(%s)"%(i,__tmp[i])
+        raise tmp
         
 #Monochromator3
 __tmp={

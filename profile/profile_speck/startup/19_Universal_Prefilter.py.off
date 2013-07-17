@@ -156,7 +156,7 @@ def universal_lineparser(line):
         frontspaces = thisline[:thisline.find(thisline.lstrip())]
         ls_thisline = thisline.lstrip()
         parts = ls_thisline.split()
-        if parts[0] in __Universal_Syntax_Keywords.keys():
+        if len(parts) > 0 and parts[0] in __Universal_Syntax_Keywords.keys():
             if len(__Universal_Syntax_Keywords[parts[0]]) > 0 and type(__Universal_Syntax_Keywords[parts[0]][0]) == list:
                 unit_length = __Universal_Syntax_Keywords[parts[0]][0][0] 
                 units = len(parts[1:]) / unit_length
