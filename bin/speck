@@ -1,7 +1,8 @@
 #!/usr/bin/python
 import os,sys,string
 
-for i in ["subprocess", "commands"]:
+#for i in ["subprocess", "commands"]:
+for i in ["commands",]:
     try:
         exec("import "+i)
     except:
@@ -18,15 +19,17 @@ os.putenv("SPECK",dn)
 os.system("export SPECK=%s"%dn)
 execfile(dn + "/config/speck_folders.py")
 
-print "+++++++++++++++++++++++++++++++++++++++++"
-print "SPECK says: 'dans le cochon tout est bon'" 
-print "+++++++++++++++++++++++++++++++++++++++++"
+#print "+++++++++++++++++++++++++++++++++++++++++"
+#print '\x1b[31;01m',
+#print "SPECK says: 'dans le cochon tout est bon'",
+#print '\x1b[0m'
+#print "+++++++++++++++++++++++++++++++++++++++++"
 print "This speck folder is : %s"%dn
 
-print ">Setting TANGO environment variables"
+#print ">Setting TANGO environment variables"
 os.system("%s/bin/tango_config"%(dn))
 
-print ">Checking ipython version"
+#print ">Checking ipython version"
 status, out = commands.getstatusoutput("ipython -Version")
 if not(status):
 	Version=out
@@ -52,6 +55,6 @@ if Version<0.11:
 	%(Version,dn+os.sep+"oldstyle_profile")\
 	+string.join(args))
 else:
-	os.system("EDITOR=gedit VERSION=%s ipython -i --pylab  --profile=speck --autocall 2 --colors LightBG --gui=gtk --ipython-dir %s/profile"%(Version,dn)\
+	os.system("EDITOR=gedit VERSION=%s ipython -i --no-banner --pylab  --profile=speck --autocall 2 --colors LightBG --gui=gtk --ipython-dir %s/profile"%(Version,dn)\
 +string.join(args))
 

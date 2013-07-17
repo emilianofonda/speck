@@ -1,7 +1,17 @@
-from time import strftime,gmtime,sleep,localtime
+from time import strftime,gmtime,sleep,localtime,asctime
 from time import time as cputime
-from numpy import round
+from numpy import round, array, sum, mean
 import os
+from GetPositions import GetPositions
+from GracePlotter import *
+try:
+    import Gnuplot
+except Exception, tmp:
+    print "Cannot import Gnuplot"
+from mycurses import *
+
+from spec_syntax import mv, wa, whois
+
 #The following line is commented out
 #from spec_syntax import whois
 #The right way to import whois is to define it globally by executing the spec_syntax file
@@ -81,7 +91,7 @@ def ascan_statistics(x,y,glob):
         stats=eval("ScanStats",glob)
     except:
         return -1
-        x,y=array(x),array(y)
+    x,y=array(x),array(y)
     #Calculate baricenter
     sumay=sum(abs(y))
     if sumay<>0:
@@ -94,7 +104,7 @@ def ascan_statistics(x,y,glob):
     if sumay<>0:
         stats.baricenter_scaled=sum(x*abs(y-miny))/sumay
     else:
-        stats.baricenteri_scaled=0.5*(min(x)+max(x))
+        stats.baricenter_scaled=0.5*(min(x)+max(x))
     #Calculate max and max pos
         stats.max=max(y);stats.max_pos=x[y.argmax()]
     #Calculate min and min pos
@@ -147,18 +157,21 @@ def __backup_data():
         print "Experimental feature error: Cannot make backup to ruche... do it manually!"
     return
 
-def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,name=None,delay=0.,glob=globals(),scaler="ct",comment="",fullmca=False,graph=0, n = 1):
+#def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,name=None,delay=0.,glob=globals(),scaler="ct",comment="",fullmca=False,graph=0, n = 1):
+def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,name=None,delay=0.,scaler="ct",comment="",fullmca=False,graph=0, n = 1):
     """Scan mot from p1 to p2 with step dp, reads ct for dt seconds. The default timebase is named ct."""
+    #glob=globals()
+    glob  = get_ipython().user_ns
     if p1 < p2:
         dp = abs(dp)
     else:
         dp = -abs(dp)
-    __time_at_start = time()
+    __time_at_start = cputime()
     if channel == None: channel = 1
     __no_scans = n
     time_scan = False
     if scaler in glob:
-        cpt = eval(scaler,glob)
+        cpt = glob[scaler]
     else:
         raise Exception("Timebase not defined or wrong timebase name.")
     if name == None:
@@ -195,8 +208,8 @@ def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,n
         except:
             pass
         try:
-            if mot<>cputime:
-                motname = whois(mot, glob)
+            if mot <> cputime:
+                motname = whois(mot)
                 print "motor name is : ", motname
                 f.write("#mot=%s p1=%g p2=%g dp=%g dt=%g\n"%(motname, p1, p2, dp, dt))
                 w("set xlabel '" + motname + "'")
@@ -297,12 +310,12 @@ def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,n
             print "xplot error!"
             print tmp
             pass
-        print "Elapsed Time: %8.6fs" % (time() - __time_at_start)
+        print "Elapsed Time: %8.6fs" % (cputime() - __time_at_start)
     #
     #Call statistisc calculation
     if "ScanStats" in glob: ascan_statistics(x[:ml],y[:ml],glob)
     #
-    print "Total Elapsed Time: %8.6fs" % (time() - __time_at_start)
+    print "Total Elapsed Time: %8.6fs" % (cputime() - __time_at_start)
     #
     if returndata==True:
         if fulldata:
@@ -313,26 +326,31 @@ def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,n
     else:
         return
 
-def dscan(mot,p1,p2,dp=0.1,dt=0.1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,glob=globals(),scaler="ct",fullmca=False,graph=0):
+#def dscan(mot,p1,p2,dp=0.1,dt=0.1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,glob=globals(),scaler="ct",fullmca=False,graph=0):
+def dscan(mot,p1,p2,dp=0.1,dt=0.1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,scaler="ct",fullmca=False,graph=0):
     """Performs a relaive scan calling ascan and then set the motor back to previous position."""
     previous_pos=mot.pos()
     abs_p1=previous_pos+p1
     abs_p2=previous_pos+p2
-    results=ascan(mot,abs_p1,abs_p2,dp,dt,channel,returndata,fulldata,name,delay=delay,glob=glob,scaler=scaler,fullmca=fullmca,\
+    #results=ascan(mot,abs_p1,abs_p2,dp,dt,channel,returndata,fulldata,name,delay=delay,glob=glob,scaler=scaler,fullmca=fullmca,\
+    results=ascan(mot,abs_p1,abs_p2,dp,dt,channel,returndata,fulldata,name,delay=delay,scaler=scaler,fullmca=fullmca,\
     graph=graph)
     mot.pos(previous_pos)
-    if results<>None:
+    if results <> None:
         return results
     else:
         return
 
-def tscan(n,t=1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,glob=globals(),scaler="ct",comment="",fullmca=False,graph=0):
+#def tscan(n,t=1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,glob=globals(),scaler="ct",comment="",fullmca=False,graph=0):
+def tscan(n,t=1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,scaler="ct",comment="",fullmca=False,graph=0):
     """Perform a time scan by using ascan capabilities. The integration time t and number of points n must be provided. 
     You may use the delay to set a deadtime between steps... if you want... The time scale is referred to actual time."""
     return ascan(cputime, p1=0, p2=n * t, dp = t,dt = t,channel=channel,returndata=returndata,fulldata=fulldata,name=name,delay=delay,\
-    glob=glob,scaler=scaler,comment=comment,fullmca=fullmca,graph=graph)
+    scaler=scaler,comment=comment,fullmca=fullmca,graph=graph)
+    #glob=glob,scaler=scaler,comment=comment,fullmca=fullmca,graph=graph)
 
-def mapscan(mot1,p11,p12,dp1,mot2,p21,p22,dp2,dt=0.1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,glob=globals(),scaler="ct"):
+#def mapscan(mot1,p11,p12,dp1,mot2,p21,p22,dp2,dt=0.1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,glob=globals(),scaler="ct"):
+def mapscan(mot1,p11,p12,dp1,mot2,p21,p22,dp2,dt=0.1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,scaler="ct"):
     """Scan mot1 from p11 to p12 with step dp1;mot2 from p21 to p22 with step dp2; reads scaler for dt seconds. The default scaler is named ct."""
     x=[]
     y,y0=[],[]
@@ -343,14 +361,15 @@ def mapscan(mot1,p11,p12,dp1,mot2,p21,p22,dp2,dt=0.1,channel=1,returndata=False,
     Dname=findNextFileName(name,ext,file_index=1)
     os.mkdir(Dname)
     print "Saving in folder: ",name
-    motname1=whois(mot1,glob)
+    motname1=whois(mot1)
     try:
         for i in arange(p11,p12+dp1,dp1):
             mot1.pos(i)
             sleep(delay)
             #x.append(mot1.pos())
             print Dname+"/"+name
-            y0,z0=ascan(mot2,p21,p22,dp2,dt,channel,True,False,Dname+"/"+name,delay,glob,scaler,comment=motname1+"=%9.6f"%(mot1.pos()))
+            #y0,z0=ascan(mot2,p21,p22,dp2,dt,channel,True,False,Dname+"/"+name,delay,glob,scaler,comment=motname1+"=%9.6f"%(mot1.pos()))
+            y0,z0=ascan(mot2,p21,p22,dp2,dt,channel,True,False,Dname+"/"+name,delay,scaler,comment=motname1+"=%9.6f"%(mot1.pos()))
             #y.append(y0)
             z.append(z0)
     except (KeyboardInterrupt,SystemExit), tmp:
@@ -377,8 +396,9 @@ def pre_scan(handler=None):
         GetPositions(verbose=0)
         for i in wa(verbose=False,returns=True):
             buffer.append("#"+i+"\n")
-    except:
-        print "Error when getting motors positions!"
+    except Exception, tmp:
+        print tmp
+        print "ascan: pre_scan: Error when getting motors positions!"
         pass
     try:
         buffer.append("#Machine Current = %g\n"%(self.ms.read_attribute("current").value))
@@ -417,7 +437,8 @@ class __StepScan:
 #Initialize  instance
 __stepscan=__StepScan()
 
-def stepscan_open(name=None,dt=1,glob=globals(),scaler="ct",comment="",fullmca=True):
+#def stepscan_open(name=None,dt=1,glob=globals(),scaler="ct",comment="",fullmca=True):
+def stepscan_open(name=None,dt=1,scaler="ct",comment="",fullmca=True):
     """Open output files and wait for stepscan_step command to save data, reads ct for dt seconds. The default timebase is named ct. fullmca is active by default."""
     __stepscan=eval("__stepscan",glob)
     __stepscan.dt=dt
@@ -465,7 +486,8 @@ def stepscan_open(name=None,dt=1,glob=globals(),scaler="ct",comment="",fullmca=T
     return
 
     
-def stepscan_step(glob=globals()):
+#def stepscan_step(glob=globals()):
+def stepscan_step():
     __stepscan=eval("__stepscan",glob)
     __cts=__stepscan.cpt.count(__stepscan.dt)
     for j in __cts:
@@ -485,7 +507,8 @@ def stepscan_step(glob=globals()):
     ######################################################################################
     return
     
-def stepscan_close(glob=globals()):
+#def stepscan_close(glob=globals()):
+def stepscan_close():
     __stepscan=eval("__stepscan",glob)
     __stepscan.datafile.close()
     ##################### CLOSE MCA FILES ##################

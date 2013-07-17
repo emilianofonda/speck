@@ -1,41 +1,75 @@
-#
-#General configuration parameters
-#
-
-import os,sys
+#Import Python modules
+import sys,os
+import scipy
+import exceptions
 from time import asctime,time,sleep,clock
-import PyTango
-from PyTango import DeviceProxy,DevState
-import thread
-import exceptions, traceback
 import numpy
 from numpy import *
 
-try:
-    import grace_np
-except:
-    print "grace_np module not found! No plotting in xmgrace available."
-    __GRACE_FAULTY=True
+#Define environment
+dn=os.getenv("SPECK")+os.sep+"modules"
+sys.path.append(dn)
+subdn=os.listdir(dn)
+#print subdn
+for i in subdn: sys.path.append(dn+os.sep+i)
+
+
+##
+## Data folders
+##
+import os
+__Default_Data_Folder=os.getenv("SPECK_DATA_FOLDER")
+#"/home/experiences/samba/com-samba/ExperimentalData/"
+__Default_Backup_Folder=os.getenv("SPECK_BACKUP_FOLDER")
+#"/nfs/ruche-samba/samba-soleil/com-samba/"
+
+
+
+
+#Import generic speck modules
+from Universal_Prefilter import *
+import pymucal
+from GracePlotter import *
 try:
     import Gnuplot
 except Exception, tmp:
     print "Cannot import Gnuplot"
-    #raise tmp
-
 from mycurses import *
+
+#Import Periodic Table
+print '\x1b[01;06m'
+print "Loading Periodic Table: usage type Fe or other chemical symbol for information"
+print '\x1b[32;01m',
+print "help(pymucal) or help(atomic_data) for more details"
+print '\x1b[0m'
+for i in pymucal.atomic_data.atoms.keys():
+        exec("%s=pymucal.atomic_data(i)"%(i))
+
+#Import Control Related (PyTango related) modules
+import PyTango
+from PyTango import DeviceProxy, DevState
+
+
+#
+#General configuration parameters
+#
 
 __pySamba_root=os.getenv("SPECK")
 __pySamba_scans=__pySamba_root+"/modules/scans/"
 
-#try:
-#    _ip.magic("logstart -ot "+__pySamba_root+"/files/log/log.txt rotate")
-#except:
-#    print "Cannot log commands!"
+
+try:
+    get_ipython().magic("logstart -ot "+__pySamba_root+"/files/log/log.txt rotate")
+except Exception, tmp:
+    print tmp
+    print "Cannot log commands!"
 
     
+#Import more specific speck modules
+
 imp_mdls = ["galil_multiaxis", "xbpm_class", "PSS"]
 
-from_mdls = {"e2theta":"*", "motor_class":"*", "mono1b":"*", "counter_class":"*", "valve_class":"valve", "pressure_gauge_class":"pressure_gauge", "thermocouple_class":"temperature_gauge", "mirror_class":"mirror", "absorbing_system_class":"*", "FrontEnd_class":"FrontEnd", "ic_gas":"xbpm_abs,  ic_abs", "NHQ_HVsupply_class":"NHQ_HVsupply", "rontec_MCA":"rontec_MCA", "mm4005":"mm4005_motor", "channel_cut":"channel_cut", "simple_DxMAP":"dxmap", "moveable":"moveable, sensor"}
+from_mdls = {"quickexafs_helpers":"*","ascan":"*","GetPositions":"*","e2theta":"*", "motor_class":"*", "mono1b":"*", "counter_class":"*", "valve_class":"valve", "pressure_gauge_class":"pressure_gauge", "thermocouple_class":"temperature_gauge", "mirror_class":"mirror", "absorbing_system_class":"*", "FrontEnd_class":"FrontEnd", "ic_gas":"xbpm_abs,  ic_abs", "NHQ_HVsupply_class":"NHQ_HVsupply", "rontec_MCA":"rontec_MCA", "mm4005":"mm4005_motor", "channel_cut":"channel_cut", "simple_DxMAP":"dxmap", "moveable":"moveable, sensor","beamline_alignement":"*","escan_class":"escan, escan_class", "spec_syntax":"*"}
 
 __exec_files = []
 
@@ -91,21 +125,6 @@ def atkpanel(object):
 def atk(object):
     return atkpanel(object)
 
-def _print_file(filename):
-    """Send a file to the predefined unix printer: required by GetPositions """
-    try:
-        print "Sending file to printer... "
-        #os.spawnvp(os.P_NOWAIT,"/usr/bin/lpr",[" ",filename])
-        os.system("/usr/bin/lpr "+filename+" &")
-        return
-    except os.EX_OSERR,tmp:
-        print tmp
-        return 
-    except Exception, tmp: 
-        print "Printing Error! Ignoring..."
-        print tmp
-        return
-
 def Beep(n,t):
     for i in range(n):
         os.system('echo -ne "\a"')
@@ -149,17 +168,6 @@ __samplePos=13.95
 
 
 
-##
-##  Functions to wait for a certain time, date, for the beam to come back...
-##
-
-try:
-    from wait_functions import wait_until
-except Exception, tmp:
-    print "wait_functions.py module in error"
-    print tmp
-
-    
 
 ##--------------------------------------------------------------------------------------
 ##MOTORS
@@ -205,35 +213,4 @@ def InitMotors():
             print "Error on motor: "+mot.label+"\n"
     return
 
-##--------------------------------------------------------------------------------------
-##Include the definition of the GetPositions and SetPositions Commands.
-##--------------------------------------------------------------------------------------
-
-##GetPositions require the _print_file function to be defined
-#try:
-#    execfile(__pySamba_root+"/modules/base/"+"GetPositions.py")
-#except:
-#    print "Error executing GetPositions.py  !!!!!!!"
-#    def GetPositions():
-#        return
-#    def PrintPositions():
-#        return
-
-
-def GetPressures():
-    __pressures=[__pennings,range(len(__pennings))]
-    for i in range(len(__pressures[0])):
-        if(__pressures[0][i].state()==DevState.OFF):
-            __pressures[1][i]=nan
-        else:
-            __pressures[1][i]=__pressures[0][i].pressure()
-    for i in range(len(__pressures[0])):
-        print __pennings[i].label+"= %4.2e"%(__pressures[1][i])
-    return 
-
-
-
-#Start user defined environment:
-
-#execfile(__pySamba_root+"/modules/user_config.py")
 

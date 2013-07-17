@@ -7,16 +7,7 @@ print "################################################################"
 #To mantain syntax compatibility with this old file:
 
 __IP=get_ipython()
-
-##
-## Data folders
-##
-import os
-__Default_Data_Folder=os.getenv("SPECK_DATA_FOLDER")
-#"/home/experiences/samba/com-samba/ExperimentalData/"
-__Default_Backup_Folder=os.getenv("SPECK_BACKUP_FOLDER")
-#"/nfs/ruche-samba/samba-soleil/com-samba/"
-
+	
 ##Usefull constants
 #Values of d below are used everywhere... hopefully.
 __d220=1.92015585
@@ -56,7 +47,7 @@ try:
     cpt0=counter("d09-1-c00/ca/cpt.1",user_readconfig=user_readconfig)
 except Exception, tmp:
     print "I cannot define counter master."
-    print tmp
+    #print tmp
 
 #dxmap
 try:
@@ -235,11 +226,11 @@ try:
     #mca=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig0)
     mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig1)
     mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",user_readconfig=user_readconfig2)
-    print "mca1,mca2 --> DxMap cards"
+    #print "mca1,mca2 --> DxMap cards"
 except Exception, tmp:
     print "Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.1"
     print "Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.2"
-    print tmp
+    #print tmp
 
 #ct
 try:
@@ -250,7 +241,7 @@ except Exception, tmp:
     print "Failure defining ct speclike_syntax command"
     print "Defaulting to cpt... ct=cpt... pysamba survival kit... is XIA dead?"
     ct=cpt
-    print tmp
+    #print tmp
 
 #Beam diagnostics: xbpm...
 #try: 
@@ -276,12 +267,14 @@ except Exception, tmp:
 try:
     HV_I0    =NHQ_HVsupply("d09-1-cx1/ex/mi_cio-hvps.1","A")
     HV_I1    =NHQ_HVsupply("d09-1-cx1/ex/mi_cio-hvps.1","B")
-except:
+except Exception, tmp:
+    #print tmp
     print "Error on defining NHQ module 1 SHV of chambers I0 and I1"
 try:
     HV_I2    =NHQ_HVsupply("d09-1-cx1/ex/mi_cio-hvps.2","B")
     HV_xbpm    =NHQ_HVsupply("d09-1-cx1/ex/mi_cio-hvps.2","A")
-except:
+except Exception, tmp:
+    #print tmp
     print "Error on defining NHQ module 2 SHV of chambers I2 and xbpm"
 
 
@@ -297,12 +290,13 @@ except:
 # I200 (home made python controller)
 try:
     from I200 import I200_tango as I200
-    print "I200 unit is :",
+    print "I200 unit :",
     i200=I200("d09-1-cx1/ca/mca_rontec_rs232_8.5")
     itune=i200.tune
-    print i200.currents()
-    print i200.status()
+    #print i200.currents()
+    #print i200.status()
 except Exception, tmp:
+    print "Error initializing I200."
     print tmp
     
 #ACE Avalanche Photodiode Controller (home made python controller)
@@ -322,7 +316,8 @@ try:
     __m="rx2fine"
     rx2fine=piezo("d09-1-c03/op/mono1-mt_rx_fine.2")
     __allpiezos+=[rx2fine]
-except:
+except Exception, tmp:
+    #print tmp
     print "I could not define ",__m ,"of the monochromator!"
 
 __tmp={
@@ -335,10 +330,12 @@ __tmp={
 "ts2":"d09-1-c03/op/mono1-mt_ts.2"}
 for i in __tmp:
     try:
-        print i
         __IP.user_ns[i]=motor(__tmp[i])
-        __allmotors+=[__IP.user_ns[i],]
+    	__allmotors+=[__IP.user_ns[i],]
+    	#print "%s = motor(%s)"%(i,__tmp[i])
+    	#exec("%s = motor(\"%s\")"%(i,__tmp[i]))
     except Exception, tmp:
+    	#print tmp
         print "Cannot define %s =motor(%s)"%(i,__tmp[i])
         raise tmp
 
@@ -354,6 +351,7 @@ for i in __tmp:
         __IP.user_ns[i]=motor(__tmp[i])
         __allmotors+=[__IP.user_ns[i],]
     except Exception, tmp:
+    	#print tmp
         print "Cannot define %s =motor(%s)"%(i,__tmp[i])
         raise tmp
         
@@ -368,7 +366,8 @@ for i in __tmp:
     try:
         __IP.user_ns[i]=motor(__tmp[i])
         __allmotors+=[__IP.user_ns[i],]
-    except:
+    except Exception, tmp:
+        print tmp
         print "Cannot define %s =motor(%s)"%(i,__tmp[i])
 
 try:
@@ -377,33 +376,60 @@ try:
             return self.backward(wait=False)
     q2_delta=motor_custom("d09-1-c04/op/mono2-mt_rx.1")
     q3_delta=motor_custom("d09-1-c04/op/mono3-mt_rx.1")
-except:
+except Exception, tmp:
+    print tmp
     print "Error extending class for quick delta motors"
 
 try:
     from motor_double_encoded import motor_double_encoded,motor_separate_encoder
     q2_theta=motor_double_encoded("d09-1-c04/op/mono2-mt_rx.2","d09-1-c04/op/mono2-cd_rx.1")
     q3_theta=motor_separate_encoder("d09-1-c04/op/mono3-mt_rx.2","d09-1-c04/op/mono3-cd_rx.1")
-except:
+except Exception, tmp:
+    print tmp
     print "Error extending class for quick theta motor"
 
 ################################################
 #             Moveables
 ################################################
-#Hexapode is a special case defined apart.
-#try:
-#    hx=moveable("d09-1-cx1/ex/hexa.1","x")
-#    hy=moveable("d09-1-cx1/ex/hexa.1","y")
-#    hz=moveable("d09-1-cx1/ex/hexa.1","z")
-#    hu=moveable("d09-1-cx1/ex/hexa.1","u")
-#    hv=moveable("d09-1-cx1/ex/hexa.1","v")
-#    hw=moveable("d09-1-cx1/ex/hexa.1","w")
-#except:
-#    print RED+"Hexapode"+RESET+"not responding or error initializing moveable classes"
-#    pass
 
 #Normal moveables (missing special options)
 __tmp={
+"vup1"  :["d09-1-c01/ex/fent_v.1","InsideUpPosition"],
+"vdown1":["d09-1-c01/ex/fent_v.1","OutsideDownPosition"],
+"vpos1" :["d09-1-c01/ex/fent_v.1","Position"],
+"vgap1" :["d09-1-c01/ex/fent_v.1","gap"],
+"hpos1" :["d09-1-c01/ex/fent_h.1","Position"],
+"hgap1" :["d09-1-c01/ex/fent_h.1","gap"],
+"hout1" :["d09-1-c01/ex/fent_h.1","OutsideDownPosition"],
+"hin1"  :["d09-1-c01/ex/fent_h.1","InsideUpPosition"],
+"vpos2" :["d09-1-c04/ex/fent_v.1","Position"],
+"vgap2" :["d09-1-c04/ex/fent_v.1","gap"],
+"vup2"  :["d09-1-c04/ex/fent_v.1","InsideUpPosition"],
+"vdown2":["d09-1-c04/ex/fent_v.1","OutsideDownPosition"],
+"vpos3" :["d09-1-c06/ex/fent_v.1","Position"],
+"vgap3" :["d09-1-c06/ex/fent_v.1","gap"],
+"hin3"  :["d09-1-c06/ex/fent_h.1","InsideUpPosition"],
+"hout3" :["d09-1-c06/ex/fent_h.1","OutsideDownPosition"],
+"vup3"  :["d09-1-c06/ex/fent_v.1","InsideUpPosition"],
+"vdown3":["d09-1-c06/ex/fent_v.1","OutsideDownPosition"],
+"hpos3" :["d09-1-c06/ex/fent_h.1","Position"],
+"hgap3" :["d09-1-c06/ex/fent_h.1","gap"],
+"vpos4" :["d09-1-cx1/ex/fent_v.1","Position"],
+"vgap4" :["d09-1-cx1/ex/fent_v.1","gap"],
+"hin4"  :["d09-1-cx1/ex/fent_h.1","InsideUpPosition"],
+"hout4" :["d09-1-cx1/ex/fent_h.1","OutsideDownPosition"],
+"vup4"  :["d09-1-cx1/ex/fent_v.1","InsideUpPosition"],
+"vdown4":["d09-1-cx1/ex/fent_v.1","OutsideDownPosition"],
+"hpos4" :["d09-1-cx1/ex/fent_h.1","Position"],
+"hgap4" :["d09-1-cx1/ex/fent_h.1","gap"],
+"vpos5" :["d09-1-cx2/ex/fent_v.1","Position"],
+"vgap5" :["d09-1-cx2/ex/fent_v.1","gap"],
+"hpos5" :["d09-1-cx2/ex/fent_h.1","Position"],
+"hgap5" :["d09-1-cx2/ex/fent_h.1","gap"],
+"vup5"  :["d09-1-cx2/ex/fent_v.1","InsideUpPosition"],
+"vdown5":["d09-1-cx2/ex/fent_v.1","OutsideDownPosition"],
+"hin5"  :["d09-1-cx2/ex/fent_h.1","InsideUpPosition"],
+"hout5" :["d09-1-cx2/ex/fent_h.1","OutsideDownPosition"],
 "po1"        :["d09-1-c02/ex/po.1-mt.1","position","delay=1.","timeout=3."],
 "po2"        :["d09-1-c06/ex/po.1-mt_tz.1","position","delay=1.","timeout=3."],
 "po3"        :["d09-1-cx1/ex/po.1-mt_tz.1","position","delay=1.","timeout=3."],
@@ -482,8 +508,6 @@ for i in __tmp:
 #Vacuum
 __vacuum=[]
 __tmp={
-"I0_buffer"    :["d09-1-c00/ca/sai.1","channel0"],
-"I0_average"    :["d09-1-c00/ca/sai.1","averagechannel0"],
 "jpen1_2"    :["d09-1-c01/vi/jpen.2","pressure"],
 "jpen2_1"    :["d09-1-c02/vi/jpen.1","pressure"],
 "jpen3_1"    :["d09-1-c03/vi/jpen.1","pressure"],
@@ -550,50 +574,51 @@ del __tmp,__ll
 #Slits 
 
 
-__tmp={
-"vup1"  :["d09-1-c01/ex/fent_v.1","d09-1-c01/ex/fent_v.1-mt_u","d09-1-c01/ex/fent_v.1-mt_d","up"],
-"vdown1":["d09-1-c01/ex/fent_v.1","d09-1-c01/ex/fent_v.1-mt_u","d09-1-c01/ex/fent_v.1-mt_d","down"],
-"vpos1" :["d09-1-c01/ex/fent_v.1","d09-1-c01/ex/fent_v.1-mt_u","d09-1-c01/ex/fent_v.1-mt_d","pos"],
-"vgap1" :["d09-1-c01/ex/fent_v.1","d09-1-c01/ex/fent_v.1-mt_u","d09-1-c01/ex/fent_v.1-mt_d","gap"],
-"hpos1" :["d09-1-c01/ex/fent_h.1","d09-1-c01/ex/fent_h.1-mt_i","d09-1-c01/ex/fent_h.1-mt_o","pos"],
-"hgap1" :["d09-1-c01/ex/fent_h.1","d09-1-c01/ex/fent_h.1-mt_i","d09-1-c01/ex/fent_h.1-mt_o","gap"],
-"hout1" :["d09-1-c01/ex/fent_h.1","d09-1-c01/ex/fent_h.1-mt_i","d09-1-c01/ex/fent_h.1-mt_o","out"],
-"hin1"  :["d09-1-c01/ex/fent_h.1","d09-1-c01/ex/fent_h.1-mt_i","d09-1-c01/ex/fent_h.1-mt_o","in"],
-"vpos2" :["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","pos"],
-"vgap2" :["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","gap"],
-"vup2"  :["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","up"],
-"vdown2":["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","down"],
-"vpos3" :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","pos"],
-"vgap3" :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","gap"],
-"hin3"  :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","in"],
-"hout3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","out"],
-"vup3"  :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","up"],
-"vdown3":["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","down"],
-"hpos3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","pos"],
-"hgap3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","gap"],
-"vpos4" :["d09-1-cx1/ex/fent_v.1","d09-1-cx1/ex/fent_v.1-mt_u","d09-1-cx1/ex/fent_v.1-mt_d","pos"],
-"vgap4" :["d09-1-cx1/ex/fent_v.1","d09-1-cx1/ex/fent_v.1-mt_u","d09-1-cx1/ex/fent_v.1-mt_d","gap"],
-"hin4"  :["d09-1-cx1/ex/fent_h.1","d09-1-cx1/ex/fent_h.1-mt_i","d09-1-cx1/ex/fent_h.1-mt_o","in"],
-"hout4" :["d09-1-cx1/ex/fent_h.1","d09-1-cx1/ex/fent_h.1-mt_i","d09-1-cx1/ex/fent_h.1-mt_o","out"],
-"vup4"  :["d09-1-cx1/ex/fent_v.1","d09-1-cx1/ex/fent_v.1-mt_u","d09-1-cx1/ex/fent_v.1-mt_d","up"],
-"vdown4":["d09-1-cx1/ex/fent_v.1","d09-1-cx1/ex/fent_v.1-mt_u","d09-1-cx1/ex/fent_v.1-mt_d","down"],
-"hpos4" :["d09-1-cx1/ex/fent_h.1","d09-1-cx1/ex/fent_h.1-mt_i","d09-1-cx1/ex/fent_h.1-mt_o","pos"],
-"hgap4" :["d09-1-cx1/ex/fent_h.1","d09-1-cx1/ex/fent_h.1-mt_i","d09-1-cx1/ex/fent_h.1-mt_o","gap"],
-"vpos5" :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","pos"],
-"vgap5" :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","gap"],
-"hpos5" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","pos"],
-"hgap5" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","gap"],
-"vup5"  :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","up"],
-"vdown5":["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","down"],
-"hin5"  :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","in"],
-"hout5" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","out"]}
-for i in __tmp:
-       try:
-            __IP.user_ns[i]=motor_slit(__tmp[i][0],__tmp[i][1],__tmp[i][2],__tmp[i][3])
-            __allmotors+=[__IP.user_ns[i],]
-       except:
-        print RED+"Cannot define"+RESET+" %s =motor(%s)"%(i,__tmp[i])
-
+#__tmp={
+#"vup1"  :["d09-1-c01/ex/fent_v.1","d09-1-c01/ex/fent_v.1-mt_u","d09-1-c01/ex/fent_v.1-mt_d","up"],
+#"vdown1":["d09-1-c01/ex/fent_v.1","d09-1-c01/ex/fent_v.1-mt_u","d09-1-c01/ex/fent_v.1-mt_d","down"],
+#"vpos1" :["d09-1-c01/ex/fent_v.1","d09-1-c01/ex/fent_v.1-mt_u","d09-1-c01/ex/fent_v.1-mt_d","pos"],
+#"vgap1" :["d09-1-c01/ex/fent_v.1","d09-1-c01/ex/fent_v.1-mt_u","d09-1-c01/ex/fent_v.1-mt_d","gap"],
+#"hpos1" :["d09-1-c01/ex/fent_h.1","d09-1-c01/ex/fent_h.1-mt_i","d09-1-c01/ex/fent_h.1-mt_o","pos"],
+#"hgap1" :["d09-1-c01/ex/fent_h.1","d09-1-c01/ex/fent_h.1-mt_i","d09-1-c01/ex/fent_h.1-mt_o","gap"],
+#"hout1" :["d09-1-c01/ex/fent_h.1","d09-1-c01/ex/fent_h.1-mt_i","d09-1-c01/ex/fent_h.1-mt_o","out"],
+#"hin1"  :["d09-1-c01/ex/fent_h.1","d09-1-c01/ex/fent_h.1-mt_i","d09-1-c01/ex/fent_h.1-mt_o","in"],
+#"vpos2" :["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","pos"],
+#"vgap2" :["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","gap"],
+#"vup2"  :["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","up"],
+#"vdown2":["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","down"],
+#"vpos3" :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","pos"],
+#"vgap3" :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","gap"],
+#"hin3"  :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","in"],
+#"hout3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","out"],
+#"vup3"  :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","up"],
+#"vdown3":["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","down"],
+#"hpos3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","pos"],
+#"hgap3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","gap"],
+#"vpos4" :["d09-1-cx1/ex/fent_v.1","d09-1-cx1/ex/fent_v.1-mt_u","d09-1-cx1/ex/fent_v.1-mt_d","pos"],
+#"vgap4" :["d09-1-cx1/ex/fent_v.1","d09-1-cx1/ex/fent_v.1-mt_u","d09-1-cx1/ex/fent_v.1-mt_d","gap"],
+#"hin4"  :["d09-1-cx1/ex/fent_h.1","d09-1-cx1/ex/fent_h.1-mt_i","d09-1-cx1/ex/fent_h.1-mt_o","in"],
+#"hout4" :["d09-1-cx1/ex/fent_h.1","d09-1-cx1/ex/fent_h.1-mt_i","d09-1-cx1/ex/fent_h.1-mt_o","out"],
+#"vup4"  :["d09-1-cx1/ex/fent_v.1","d09-1-cx1/ex/fent_v.1-mt_u","d09-1-cx1/ex/fent_v.1-mt_d","up"],
+#"vdown4":["d09-1-cx1/ex/fent_v.1","d09-1-cx1/ex/fent_v.1-mt_u","d09-1-cx1/ex/fent_v.1-mt_d","down"],
+#"hpos4" :["d09-1-cx1/ex/fent_h.1","d09-1-cx1/ex/fent_h.1-mt_i","d09-1-cx1/ex/fent_h.1-mt_o","pos"],
+#"hgap4" :["d09-1-cx1/ex/fent_h.1","d09-1-cx1/ex/fent_h.1-mt_i","d09-1-cx1/ex/fent_h.1-mt_o","gap"],
+#"vpos5" :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","pos"],
+#"vgap5" :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","gap"],
+#"hpos5" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","pos"],
+#"hgap5" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","gap"],
+#"vup5"  :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","up"],
+#"vdown5":["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","down"],
+#"hin5"  :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","in"],
+#"hout5" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","out"]}
+#for i in __tmp:
+#    try:
+#        __IP.user_ns[i]=motor_slit(__tmp[i][0],__tmp[i][1],__tmp[i][2],__tmp[i][3])
+#        __allmotors+=[__IP.user_ns[i],]
+#    except Exception, tmp:
+#        print tmp
+#        print RED+"Cannot define"+RESET+" %s =motor(%s)"%(i,__tmp[i])
+#
 
 ###
 ### Define aliases below
@@ -611,7 +636,8 @@ for i in aliases:
     if i in __IP.user_ns:
         try:
             __IP.user_ns[aliases[i]]=__IP.user_ns[i]
-        except:
+        except Exception, tmp:
+            print tmp
             print "Error defining ",aliases[i]," as alias for ",i
 
 
@@ -662,7 +688,7 @@ try:
     #bender=None
     
     #__allmotors+=[bender.c1,bender.c2]
-    print "OK!"
+    #print "OK!"
 except Exception, tmp:
     print "Cannot define bender of mono1"
     bender=None
@@ -694,8 +720,8 @@ try:
     tune=dcm.tune
     print "OK!"
 except Exception, tmp: 
-    print "Cannot define dcm (monochromator not set)."
     print tmp
+    print "Cannot define dcm (monochromator not set)."
 
 
 # Channel cut Si311 q3
@@ -703,7 +729,8 @@ except Exception, tmp:
 try:
     q2_energy=channel_cut(d=__d111,theta=q2_theta,tz=q2_tz)
     q3_energy=channel_cut(d=__d311,theta=q3_theta,tz=q3_tz)
-except:
+except Exception, tmp: 
+    print tmp
     print "cannot initialize q2_energy or q3_energy"
 #
 
@@ -745,14 +772,16 @@ for i in __tmp:
             __IP.user_ns[i]=valve(__tmp[i])
         __valves+=[__IP.user_ns[i],]
         __vacuum+=[i,]
-    except:
+    except Exception, tmp:
+        print tmp
         print "Cannot define %s =valve(%s)"%(i,__tmp[i])
 del __tmp
 
 #attenuateur 
 try:
     att=absorbing_system("d09-1-c01/ex/att.1")
-except:
+except Exception, tmp:
+    print tmp
     print "Cannot configure d09-1-c01/ex/att.1"
 
 #Fast shutter
@@ -760,7 +789,8 @@ try:
     from pseudo_valve import pseudo_valve
     #print "Fast shutter is sh_fast"
     sh_fast=pseudo_valve(label="d09-1-c00/ca/dio_0.1",channel="G",delay=0.1,deadtime=0.,timeout=0,reverse=True)
-except:
+except Exception, tmp:
+    print tmp
     print "No fast shutter defined!"
 
 
@@ -803,40 +833,18 @@ except Exception, tmp:
     print tmp
 
 
+
 #########################################
-#        Test                           #
+#        Shutters and waitings          #
 #########################################
-
-
-#
-#try:
-#    __cryostat__=DeviceProxy("d09-1-cx1/ex/cryo4.1-ctrl")
-#    def set_temp(t=None):
-#        __c=__cryostat__
-#        if t==None:
-#            print "Temperature is :",__c.temperature
-#            print "Set Point is :",__c.temperatureSetPoint
-#            return
-#        __c.temperatureSetPoint=t
-#        sleep(3)
-#        return __c.temperatureSetPoint
-#
-#except:
-#    print "Error defining set_temp"
-
-#
-#Local defs
-#
-
 
 try:
     FEopen=FE.open
     shclose=obxg.close
     sexclose=obx.close
-except:
+except Exception, tmp:
+    print tmp
     print "Check state of shutters... something wrong in script..."
-#sexopen=obx.open
-#shopen=obxg.open
 
 def FEclose():
     FE.close()
@@ -853,10 +861,42 @@ def sexopen():
     shopen()
     return obx.open()
 
+
+##
+##  Functions to wait for a certain time, date, for the beam to come back...
+##  This module has been changed by the user so it is in the user_config.py.
+##
+try:
+    from wait_functions import wait_until
+    import wait_functions
+    def wait_injection(TDL=FE,ol=[obxg,],vs=[vs1,vs2,vs3,vs4,vs5],pi=[pi1_1,pi1_2,pi2_1,pi2_2,pi3_1,pi4_1,pi5_1,pi6_1,pi6_2],maxpressure=1e-5,deadtime=1):
+        return wait_functions.wait_injection(TDL,ol,vs,pi,maxpressure,deadtime)
+    def wait_until(dts,deadtime=1.):
+        return wait_functions.wait_until(dts,deadtime)
+    def checkTDL(TDL=FE):
+        return wait_functions.checkTDL(TDL)
+    def interlockTDL(TDL=FE):
+        return wait_functions.interlockTDL(FE)
+except Exception, tmp:
+    print "wait_functions.py module is in error."
+    print tmp
+    print "Ignoring..."
+
+
+##############################
+#user configs
+##############################
+
+#
+#    SOME temporary defs
+#
+
+
 try:
     vg_x=sensor("d09-1-cx1/dt/vg2-basler-analyzer","ChamberXProjFitCenter")
     vg_y=sensor("d09-1-cx1/dt/vg2-basler-analyzer","ChamberYProjFitCenter")
-except:
+except Exception, tmp:
+    print tmp
     print "videograbber d09-1-cx1/dt/vg2-basler-analyzer error!"
 
 
@@ -877,10 +917,6 @@ except Exception, tmp:
 #    print "Error loading diffscan"
 #    print tmp
 
-##############################
-#user configs
-##############################
-
 try:
     vslit=vgap3
     hslit=hgap3
@@ -891,6 +927,22 @@ print "Instruments: default is"+RED+" EXAFS"+RESET+". Type "+RED+"SEXAFS"+RESET+
 
 def SEXAFS():
     return instrument("SEXAFS")
+
+##
+#try:
+#    __cryostat__=DeviceProxy("d09-1-cx1/ex/cryo4.1-ctrl")
+#    def set_temp(t=None):
+#        __c=__cryostat__
+#        if t==None:
+#            print "Temperature is :",__c.temperature
+#            print "Set Point is :",__c.temperatureSetPoint
+#            return
+#        __c.temperatureSetPoint=t
+#        sleep(3)
+#        return __c.temperatureSetPoint
+#
+#except:
+#    print "Error defining set_temp"
 
 #Load marccd 
 #instrument("MARCCD")
