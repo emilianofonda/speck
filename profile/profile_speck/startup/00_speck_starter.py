@@ -99,7 +99,14 @@ print "OK"
 
 #A simple way to load Instrumental setups:
 
-def instrument(name):
+def instrument(name=None):
+    if name == None:
+        tmp = os.listdir(__pySamba_root+"/modules/instruments/")
+        instrs=[]
+        for i in tmp:
+            if i.endswith(".py"):
+                instrs.append(i[:i.rfind(".")])
+        return instrs
     instrument_file=__pySamba_root+"/modules/instruments/"+name+".py"
     print "Loading instrument macro from "+instrument_file
     return domacro(instrument_file)

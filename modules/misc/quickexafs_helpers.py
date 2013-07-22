@@ -1,3 +1,5 @@
+import numpy
+from GracePlotter import xplot
 try:
     from quickstart import *
 except Exception, tmp:
