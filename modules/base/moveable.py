@@ -101,30 +101,37 @@ class moveable:
         try:
             min_value = float(att_cfg.min_value)
         except:
-            min_value = nan
+            min_value = None
         try:
             max_value = float(att_cfg.max_value)
         except:
-            max_value = nan
+            max_value = None
         return min_value, max_value
 
-    def set_lm(self, min_value, max_value):
-        """It sets and then returns the soft limits on the moveable attribute"""
-        # the expressioin x <> x checks for x being nan ! :-)
-        if min_value <> min_value:
-            print "lower limit unset"
-            min_value = "Not Specified"
+    def set_lm(self, min_value = "Undef" , max_value = "Undef"):
+        """It sets and then returns the soft limits on the moveable attribute.
+        If no value is supplied it returns actual limits.
+        If None is supplied to one limit, limit is suppressed."""
+        if max_value == "Undef":
+            return self.lm()
+        else:
+            print "Old_limits: ", self.lm()
+        if min_value == None:
+            #print "lower limit unset"
+            min_value = "Not specified"
         else:
             min_value = "%g" % min_value
-        if max_value <> max_value:
-            print "higher limit unset"
-            max_value = "Not Specified"
+        if max_value == None:
+            #print "higher limit unset"
+            max_value = "Not specified"
         else:
             max_value = "%g" % max_value
         att_cfg = self.DP.get_attribute_config(self.att_name)
         att_cfg.min_value, att_cfg.max_value = min_value, max_value 
         self.DP.set_attribute_config(att_cfg)
-        return self.lm()
+        new_limits = self.lm()
+        print "New limits: ", new_limits 
+        return new_limits
 
     def go(self,x=None,wait=False):
         return self.pos(x,wait)
@@ -144,7 +151,7 @@ class moveable:
         if self.powerdown_command<>"": 
             self.DP.command_inout(self.powerdown_command)
         else:
-            print "off is "+RED+"not"+RESET+" a supported command on %s"%(self.label)
+            print "off is " + RED + "not" + RESET + " a supported command on %s" % (self.label)
         return self.state()
 
     def __getattr__(self,att):

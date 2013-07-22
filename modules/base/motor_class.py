@@ -5,7 +5,7 @@ from PyTango import DeviceProxy, DevState
 from time import sleep,time
 import exceptions
 from exceptions import KeyboardInterrupt,SystemExit,SyntaxError, NotImplementedError, Exception
-from numpy import mean,std,mod
+from numpy import mean,std,mod, nan
 import thread
 
 def move_motor(*motor):
@@ -143,7 +143,7 @@ class motor:
         self.timeout = timeout
         self.label = motorname
         self.att_pos = "position"
-        self.att_nale= self.att_pos
+        self.att_name= self.att_pos
         self.att_speed = "velocity"
         self.att_accel = "acceleration"
         self.att_decel = "deceleration"
@@ -487,23 +487,28 @@ class motor:
             max_value = nan
         return min_value, max_value
 
-    def set_lm(self, min_value, max_value):
+    def set_lm(self, min_value = "Undef" , max_value = "Undef"):
         """It sets and then returns the soft limits on the moveable attribute"""
-        # the expressioin x <> x checks for x being nan ! :-)
-        if min_value <> min_value:
-            print "lower limit unset"
-            min_value = "Not Specified"
+        if max_value == "Undef":
+            return self.lm()
+        else:
+            print "Old limits: ", self.lm()
+        if min_value == None:
+            #print "lower limit unset"
+            min_value = "Not specified" 
         else:
             min_value = "%g" % min_value
-        if max_value <> max_value:
-            print "higher limit unset"
-            max_value = "Not Specified"
+        if max_value == None:
+            #print "higher limit unset"
+            max_value = "Not specified"
         else:
             max_value = "%g" % max_value
         att_cfg = self.DP.get_attribute_config(self.att_name)
         att_cfg.min_value, att_cfg.max_value = min_value, max_value
         self.DP.set_attribute_config(att_cfg)
-        return self.lm()
+        new_limits = self.lm()
+        print "New limits: ", new_limits
+        return new_limits
 
 
 class piezo:

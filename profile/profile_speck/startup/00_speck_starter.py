@@ -49,6 +49,11 @@ for i in pymucal.atomic_data.atoms.keys():
 import PyTango
 from PyTango import DeviceProxy, DevState
 
+########
+#MAGICS#
+########
+
+#Not yet!
 
 #
 #General configuration parameters

@@ -124,10 +124,16 @@ def lm(x):
         print tmp
         return None
 
-def set_lm(x,min_pos,max_pos):
+def unset_lm(x):
     try:
-        x.set_lm(min_pos, max_pos)
-        return x.lm()
+        return x.set_lm(None, None)
+    except Exception, tmp:
+        print tmp
+        return None
+
+def set_lm(x,min_pos = "Undef", max_pos = "Undef"):
+    try:
+        return x.set_lm(min_pos, max_pos)
     except Exception, tmp:
         print tmp
         return None
@@ -223,6 +229,16 @@ def Close(*x):
 #        print "Cannot work in pulse mode! Refer to hardware driver configuration."
 #        return 
 #    return cpt.count(x)
+
+def editmacro(macrofilename):
+    try:
+        filepath = os.getcwd()
+        if not macrofilename[-3:] in [".py","txt"]:
+            macrofilename += ".py"
+        os.system("gedit " + macrofilename)
+    except Exception, tmp:
+        print tmp
+    return filepath + os.sep + macrofilename
 
 def domacro(macrofilename):
     """macro file is a python code in the current folder or
