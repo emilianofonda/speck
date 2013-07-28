@@ -1,3 +1,4 @@
+import IPython
 import numpy
 from GracePlotter import xplot
 try:
@@ -7,8 +8,8 @@ except Exception, tmp:
 
 #Quick and dirty plot of quickexafs
 try:
-    qm2=DeviceProxy("tmp/qexafs-v1/qexafs_manager_mono2")
-    qm3=DeviceProxy("tmp/qexafs-v1/qexafs_manager_mono3")
+    qm2 = DeviceProxy("tmp/qexafs-v1/qexafs_manager_mono2")
+    qm3 = DeviceProxy("tmp/qexafs-v1/qexafs_manager_mono3")
     #qm=DeviceProxy("d09-1-cx1/dt/qexafs_manager")
     #from quickplot_v2 import *
 except Exception, tmp:
@@ -26,16 +27,23 @@ def quickplot3():
 
 try:
     def quickstart2(prefix="",folder="",save=True,wait=True,timeout=6.):
-#        return quickstart(prefix,folder,"d09-1-cx1/dt/qexafs_manager_mono2","storage/recorder/datarecorder.1",q2_cam,q2_delta,save,wait,timeout)
+        shell = IPython.core.ipapi.get()
+        q2_cam = shell.user_ns["q2_cam"]
+        q2_delta = shell.user_ns["q2_delta"]
         return quickstart(prefix,folder,"tmp/qexafs-v1/QEXAFS_MANAGER_MONO2","storage/recorder/datarecorder.1",q2_cam,q2_delta,save,wait,timeout)
+#        return quickstart(prefix,folder,"d09-1-cx1/dt/qexafs_manager_mono2","storage/recorder/datarecorder.1",q2_cam,q2_delta,save,wait,timeout)
         
     def quickstart3(prefix="",folder="",save=True,wait=True,timeout=6.):
-#        return quickstart(prefix,folder,"d09-1-cx1/dt/qexafs_manager_mono3","storage/recorder/datarecorder.1",q3_cam,q3_delta,save,wait,timeout)
+        shell = IPython.core.ipapi.get()
+        q3_cam = shell.user_ns["q3_cam"]
+        q3_delta = shell.user_ns["q3_delta"]
         return quickstart(prefix,folder,"tmp/qexafs-v1/QEXAFS_MANAGER_MONO3","storage/recorder/datarecorder.1",q3_cam,q3_delta,save,wait,timeout)
+#        return quickstart(prefix,folder,"d09-1-cx1/dt/qexafs_manager_mono3","storage/recorder/datarecorder.1",q3_cam,q3_delta,save,wait,timeout)
     
     def quickstop2(wait=True,timeout=6):
 #        return quickstop("d09-1-cx1/dt/qexafs_manager_mono2",wait,timeout)
         return quickstop("tmp/qexafs-v1/QEXAFS_MANAGER_MONO2",wait,timeout)
+
     def quickstop3(wait=True,timeout=6):
 #        return quickstop("d09-1-cx1/dt/qexafs_manager_mono3",wait,timeout)
         return quickstop("tmp/qexafs-v1/QEXAFS_MANAGER_MONO3",wait,timeout)

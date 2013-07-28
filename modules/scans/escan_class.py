@@ -1,6 +1,6 @@
 import os,sys
 from time import clock,sleep,asctime,time
-from numpy import cos, sin, pi, log, mod, array, zeros, mean, float32,float64, float16, sqrt
+from numpy import cos, sin, pi, log, mod, array, zeros, mean, float32,float64, float16, sqrt, average
 import PyTango
 from PyTango import DeviceProxy, DevState
 import exceptions
@@ -11,6 +11,8 @@ import Gnuplot
 from mycurses import *
 from wait_functions import checkTDL, wait_injection
 from motor_class import wait_motor
+from GetPositions import GetPositions
+from spec_syntax import wa
 
 try:
     import Tkinter
@@ -1479,10 +1481,10 @@ class escan_class:
                             #for SAMBA...
                             try:
                                 fluopoint[0] = average(fluopoint[2:]) / i0
-                            except:
+                            except Exception, tmp:
                                 fluopoint[0] = 0.
-                                #print "Error calculating fluopoint[0]"
-                                pass
+                                print "Error calculating fluopoint[0]"
+                                print tmp
                         else:
                             fluopoint[0] = 0.
                     elif self.detectionMode == "sexafs":
@@ -1674,6 +1676,7 @@ class escan_class:
                     #END OF A SCAN CYCLE
                     #
                 except (KeyboardInterrupt,SystemExit), tmp:
+                    self.cpt.stop()
                     if tmp.__class__==KeyboardInterrupt:
                         print "Welcome on the Samba answering machine:"
                         print "---------------------------------------"
@@ -1929,9 +1932,9 @@ class escan_class:
             GetPositions(verbose=0)
             for i in wa(verbose=False,returns=True):
                 buffer.append("#"+i+"\n")
-        except:
+        except Exception, tmp:
             print "Error when getting motors positions!"
-            pass
+            print tmp
         buffer.append("#dcm is focusing at %6.3f m\n"%(self.dcm.sample_at()))
         buffer.append("#dcm  2d spacing is %8.6f m\n"%(self.dcm.d*2.))
         buffer.append("#2d spacing for common crystals [A]: 2d[Si(111)]=6.2712 2d[Si(220)]=3.8403 2d[Si(311)]=3.2749")

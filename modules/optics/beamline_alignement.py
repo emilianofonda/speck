@@ -6,6 +6,7 @@ from PyTango import DevState, DeviceProxy
 from time import sleep
 from spec_syntax import mv
 import os
+import numpy
 
 def tpp_aknowledge(x=None):
     securityTPP=DeviceProxy("d09-1-c00/ca/mir-secutpp")
@@ -18,7 +19,7 @@ def tpp_aknowledge(x=None):
 
 def __Parabola(Points):
     x1,y1,x2,y2,x3,y3=\
-    array([Points[0][0],Points[0][1],Points[1][0],Points[1][1],Points[2][0],Points[2][1]],'f')
+    numpy.array([Points[0][0],Points[0][1],Points[1][0],Points[1][1],Points[2][0],Points[2][1]],'f')
     
     b=(y3-y1+(y1-y2)/(x1**2-x2**2)*(x1**2-x3**2))/\
     (x3-x1-(x2-x1)/(x1**2-x2**2)*(x1**2-x3**2))
@@ -98,8 +99,15 @@ def __girder(theta):
 #Tables
 def __exafsZ(theta):
     #return 22.298+11.463*theta
+    shell=get_ipython()
+    dcm = shell.user_ns["dcm"]
+    del shell
     return __girder(theta)*5.6+dcm.H
+    
 def __obxgZ(theta):
+    shell=get_ipython()
+    dcm = shell.user_ns["dcm"]
+    del shell
     return __girder(theta)*5.6+dcm.H
 
 #Alias for SEXAFS users
@@ -117,20 +125,21 @@ def SetAngle(theta=None,hgap=25.,SEXAFS=True):
     """
     shell=get_ipython()
     mir1_pitch = shell.user_ns["mir1_pitch"]
-    mir2_pitch = shell.user_ns["mir1_pitch"]
+    mir2_pitch = shell.user_ns["mir2_pitch"]
     mir1_roll = shell.user_ns["mir1_roll"]
-    mir2_roll = shell.user_ns["mir1_roll"]
+    mir2_roll = shell.user_ns["mir2_roll"]
     mir1_z = shell.user_ns["mir1_z"]
-    mir2_z = shell.user_ns["mir1_z"]
-    mir1_c = shell.user_ns["mir1_z"]
-    mir2_c = shell.user_ns["mir1_z"]
+    mir2_z = shell.user_ns["mir2_z"]
+    mir1_c = shell.user_ns["mir1_c"]
+    mir2_c = shell.user_ns["mir2_c"]
     vgap1 = shell.user_ns["vgap1"] 
     po1 = shell.user_ns["po1"]
-    po2 = shell.user_ns["po1"]
-    po3 = shell.user_ns["po1"]
-    po4 = shell.user_ns["po1"]
-    po5 = shell.user_ns["po1"]
+    po2 = shell.user_ns["po2"]
+    po3 = shell.user_ns["po3"]
+    po4 = shell.user_ns["po4"]
+    po5 = shell.user_ns["po5"]
     FE = shell.user_ns["FE"]
+    del shell
 
     theta2=mir1_pitch.pos()
     if theta==None:
