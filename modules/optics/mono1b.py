@@ -654,7 +654,7 @@ class mono1:
             print tmp
         if not(nested):
             dp=0.75
-            optimum=self.tune(max(optimum-dp,0.1),min(optimum+dp,9.9),np=np,tolerance=tolerance,countingtime=countingtime,nested=True)
+            optimum=self.old_tune(max(optimum-dp,0.1),min(optimum+dp,9.9),np=np,tolerance=tolerance,countingtime=countingtime,nested=True)
             self.m_rx2fine.pos(optimum)
             print "Tuning this point took: %5.2f seconds"%(time()-t)
         return optimum
