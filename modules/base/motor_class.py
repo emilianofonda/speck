@@ -637,7 +637,6 @@ class piezo:
 
 class motor_slit:
     """Alternative to the slit class: define one of the four pseudo-motors per each slit: pos,gap,Up/In,Down/Out. Each has standard motor attributes and special behaviour with regard to speed and acceleration and so on. You must provide the device address of the slits, of the two motors and the keyword corresponding to the attribute you want to control: pos, gap, up (or) in,down (or) out. To be decommissione in favor of moveables."""
-
     def __init__(self,slitname,insideUp_name,outsideDown_name,argument="pos",deadtime=.01,timeout=.1,delay=0.1):
         self.DP_slit=DeviceProxy(slitname)
         self.DP_IU=DeviceProxy(insideUp_name);self.mt_IU=motor(insideUp_name)
@@ -743,21 +742,21 @@ class motor_slit:
                 else:    
                     self.DP_slit.write_attribute(self.att_pos,dest)
                 
-            if self.argument=="gap":
-                if(dest==None):
-                    return self.DP_slit.read_attribute(self.att_pos).value
-                else:
-                    if (self.slit_state()==DevState.MOVING):
-                        raise Exception("Slits are already moving.")
-                    if (self.mt_IU.backwardLimitSwitch() or self.mt_OD.backwardLimitSwitch()\
-                    or self.mt_IU.forwardLimitSwitch() or self.mt_OD.forwardLimitSwitch()):
-                        self.setIndependantMode()
-                        sleep(0.1)
-                        self.mt_IU.go(self.mt_IU.pos()+(dest-self.pos())*0.5)
-                        self.mt_OD.go(self.mt_OD.pos()+(dest-self.pos())*0.5)
-                        sleep(0.1)
-                    else:    
-                        self.DP_slit.write_attribute(self.att_pos,dest)
+        if self.argument=="gap":
+            if(dest==None):
+                return self.DP_slit.read_attribute(self.att_pos).value
+            else:
+                if (self.slit_state()==DevState.MOVING):
+                    raise Exception("Slits are already moving.")
+                if (self.mt_IU.backwardLimitSwitch() or self.mt_OD.backwardLimitSwitch()\
+                or self.mt_IU.forwardLimitSwitch() or self.mt_OD.forwardLimitSwitch()):
+                    self.setIndependantMode()
+                    sleep(0.1)
+                    self.mt_IU.go(self.mt_IU.pos()+(dest-self.pos())*0.5)
+                    self.mt_OD.go(self.mt_OD.pos()+(dest-self.pos())*0.5)
+                    sleep(0.1)
+                else:    
+                    self.DP_slit.write_attribute(self.att_pos,dest)
         if self.argument == "insideUpPosition":
             if(dest==None):
                 return self.mt_IU.pos()
@@ -786,7 +785,7 @@ class motor_slit:
                     print "%10.8f\r"%(self.pos()),
                     sleep(self.deadtime)
                 sleep(self.delay)
-                if self.argument in ["gap","position"]:
+                if self.argument in ["gap", "position"]:
                     if (self.mt_IU.backwardLimitSwitch() or self.mt_OD.backwardLimitSwitch()):
                         print "Backward limit switch attained!"
                     if (self.mt_IU.forwardLimitSwitch() or self.mt_OD.forwardLimitSwitch()):

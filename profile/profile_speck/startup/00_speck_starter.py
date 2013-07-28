@@ -50,6 +50,30 @@ import PyTango
 from PyTango import DeviceProxy, DevState
 
 ########
+# BEEP #
+########
+try:
+    import Tkinter
+    def wakemeup():
+        """Uses Tkinter to alert user that the run is finished... just in case he was sleeping..."""
+        try:
+            a=Tkinter.Tk()
+            for j in range(5):
+                for i in range(3):
+                    a.bell()
+                    sleep(0.025)
+                sleep(0.35)
+            a.destroy()
+        except:
+            print "WARNING: Error alerting for end of scan... no Tkinter?\n"
+            print "BUT: Ignore this message if escan is working well,\n just report this to your local contact\n"
+        return
+except Exception, tmp:
+    print "Cannot initialize wakemeup function, reason follows:"
+    print tmp
+
+
+########
 #MAGICS#
 ########
 
