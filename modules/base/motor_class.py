@@ -730,7 +730,7 @@ class motor_slit:
             if(dest==None):
                 return self.DP_slit.read_attribute(self.att_pos).value
             else:
-                if (self.slit_state()==DevState.MOVING):
+                if (self.slit_state() == DevState.MOVING):
                     raise Exception("Slits are already moving.")
                 if (self.mt_IU.backwardLimitSwitch() or self.mt_OD.backwardLimitSwitch()\
                 or self.mt_IU.forwardLimitSwitch() or self.mt_OD.forwardLimitSwitch()):
@@ -741,7 +741,6 @@ class motor_slit:
                     sleep(0.1)
                 else:    
                     self.DP_slit.write_attribute(self.att_pos,dest)
-                
         if self.argument=="gap":
             if(dest==None):
                 return self.DP_slit.read_attribute(self.att_pos).value
@@ -765,7 +764,6 @@ class motor_slit:
                 if self.state()==DevState.DISABLE:
                     self.setIndependantMode()
                 return self.mt_IU.pos(dest,wait)        
-                
         if self.argument=="outsideDownPosition":
             if(dest==None):
                 return self.mt_OD.pos()
@@ -774,35 +772,35 @@ class motor_slit:
                 if self.state()==DevState.DISABLE:
                     self.setIndependantMode()
                 return self.mt_OD.pos(dest,wait)        
-            try:
-                if(not(wait)):
-                    return self.pos()
-                t=time()
+        try:
+            if(not(wait)):
+                return self.pos()
+            t=time()
+            sleep(self.deadtime)
+            while((self.slit_state()<>DevState.MOVING) and (time()-t<self.timeout)):
                 sleep(self.deadtime)
-                while((self.slit_state()<>DevState.MOVING) and (time()-t<self.timeout)):
-                    sleep(self.deadtime)
-                while(self.slit_state()==DevState.MOVING):
-                    print "%10.8f\r"%(self.pos()),
-                    sleep(self.deadtime)
-                sleep(self.delay)
-                if self.argument in ["gap", "position"]:
-                    if (self.mt_IU.backwardLimitSwitch() or self.mt_OD.backwardLimitSwitch()):
-                        print "Backward limit switch attained!"
-                    if (self.mt_IU.forwardLimitSwitch() or self.mt_OD.forwardLimitSwitch()):
-                        print "Forward  limit switch attained!"
-                        return self.pos()
-            except (KeyboardInterrupt,SystemExit), tmp:
-                self.stop()
-                raise tmp
-            except PyTango.DevFailed, tmp:
-                self.stop()
-                raise tmp
-            except PyTango.DevError, tmp:
-                self.stop()
-                raise tmp
-            #except :
-            #       print "Unknown Error"
-            #       return self.pos()
+            while(self.slit_state()==DevState.MOVING):
+                print "%10.8f\r"%(self.pos()),
+                sleep(self.deadtime)
+            sleep(self.delay)
+            if self.argument in ["gap", "position"]:
+                if (self.mt_IU.backwardLimitSwitch() or self.mt_OD.backwardLimitSwitch()):
+                    print "Backward limit switch attained!"
+                if (self.mt_IU.forwardLimitSwitch() or self.mt_OD.forwardLimitSwitch()):
+                    print "Forward  limit switch attained!"
+                    return self.pos()
+        except (KeyboardInterrupt,SystemExit), tmp:
+            self.stop()
+            raise tmp
+        except PyTango.DevFailed, tmp:
+            self.stop()
+            raise tmp
+        except PyTango.DevError, tmp:
+            self.stop()
+            raise tmp
+        #except :
+        #       print "Unknown Error"
+        #       return self.pos()
     
     def move(self,des=None,wait=True):
         "Synonim of pos"
