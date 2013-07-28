@@ -602,8 +602,8 @@ class mono1:
         #try:
         #    return self.m_rx2fine.tune(p1=piezomin, p2= piezomax, np = 100, draw = False, offset = 0.)
         #except:
-        #    return old_tune(self,piezomin=1.,piezomax=9.,np=20,tolerance=0.005,countingtime=0.2,nested=False)
-        return old_tune(self,piezomin=1.,piezomax=9.,np=20,tolerance=0.005,countingtime=0.2,nested=False)
+        #    return self.old_tune(self,piezomin=1.,piezomax=9.,np=20,tolerance=0.005,countingtime=0.2,nested=False)
+        return self.old_tune(piezomin=1.,piezomax=9.,np=20,tolerance=0.005,countingtime=0.2,nested=False)
 
     def old_tune(self,piezomin=1.,piezomax=9.,np=20,tolerance=0.005,countingtime=0.2,nested=False):
         """Scan the mono.m_rx2fine motor to achieve maximum intensity in the desired counter/channel.
