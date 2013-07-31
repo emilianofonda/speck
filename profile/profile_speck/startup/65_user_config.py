@@ -338,55 +338,57 @@ for i in __tmp:
     	#print tmp
         print "Cannot define %s =motor(%s)"%(i,__tmp[i])
 
-#Monochromator2
-__tmp={
-"q2_tz":"d09-1-c04/op/mono2-mt_tz.1",
-"q2_cam":"d09-1-c04/op/mono2-mt_tx.1",
-"q2_encoder":"d09-1-c04/op/mono2-cd_rx.1",
-"q2_theta_alone":"d09-1-c04/op/mono2-mt_rx.2"
-}
-for i in __tmp:
-    try:
-        __IP.user_ns[i]=motor(__tmp[i])
-        __allmotors+=[__IP.user_ns[i],]
-    except Exception, tmp:
-    	#print tmp
-        print "Cannot define %s =motor(%s)"%(i,__tmp[i])
-        
-#Monochromator3
-__tmp={
-"q3_tz":"d09-1-c04/op/mono3-mt_tz.1",
-"q3_cam":"d09-1-c04/op/mono3-mt_tx.1",
-"q3_encoder":"d09-1-c04/op/mono3-cd_rx.1",
-"q3_theta_alone":"d09-1-c04/op/mono3-mt_rx.2"
-}
-for i in __tmp:
-    try:
-        __IP.user_ns[i]=motor(__tmp[i])
-        __allmotors+=[__IP.user_ns[i],]
-    except Exception, tmp:
-        print tmp
-        print "Cannot define %s =motor(%s)"%(i,__tmp[i])
+#QEXAFS to be removed
 
-try:
-    class motor_custom(motor):
-        def start(self):
-            return self.backward(wait=False)
-    q2_delta=motor_custom("d09-1-c04/op/mono2-mt_rx.1")
-    q3_delta=motor_custom("d09-1-c04/op/mono3-mt_rx.1")
-except Exception, tmp:
-    print tmp
-    print "Error extending class for quick delta motors"
+##Monochromator2
+#__tmp={
+#"q2_tz":"d09-1-c04/op/mono2-mt_tz.1",
+#"q2_cam":"d09-1-c04/op/mono2-mt_tx.1",
+#"q2_encoder":"d09-1-c04/op/mono2-cd_rx.1",
+#"q2_theta_alone":"d09-1-c04/op/mono2-mt_rx.2"
+#}
+#for i in __tmp:
+#    try:
+#        __IP.user_ns[i]=motor(__tmp[i])
+#        __allmotors+=[__IP.user_ns[i],]
+#    except Exception, tmp:
+#    	#print tmp
+#        print "Cannot define %s =motor(%s)"%(i,__tmp[i])
+#        
+##Monochromator3
+#__tmp={
+#"q3_tz":"d09-1-c04/op/mono3-mt_tz.1",
+#"q3_cam":"d09-1-c04/op/mono3-mt_tx.1",
+#"q3_encoder":"d09-1-c04/op/mono3-cd_rx.1",
+#"q3_theta_alone":"d09-1-c04/op/mono3-mt_rx.2"
+#}
+#for i in __tmp:
+#    try:
+#        __IP.user_ns[i]=motor(__tmp[i])
+#        __allmotors+=[__IP.user_ns[i],]
+#    except Exception, tmp:
+#        print tmp
+#        print "Cannot define %s =motor(%s)"%(i,__tmp[i])
+#
+#try:
+#    class motor_custom(motor):
+#        def start(self):
+#            return self.backward(wait=False)
+#    q2_delta=motor_custom("d09-1-c04/op/mono2-mt_rx.1")
+#    q3_delta=motor_custom("d09-1-c04/op/mono3-mt_rx.1")
+#except Exception, tmp:
+#    print tmp
+#    print "Error extending class for quick delta motors"
+#
+#try:
+#    from motor_double_encoded import motor_double_encoded,motor_separate_encoder
+#    q2_theta=motor_double_encoded("d09-1-c04/op/mono2-mt_rx.2","d09-1-c04/op/mono2-cd_rx.1")
+#    q3_theta=motor_separate_encoder("d09-1-c04/op/mono3-mt_rx.2","d09-1-c04/op/mono3-cd_rx.1")
+#except Exception, tmp:
+#    print tmp
+#    print "Error extending class for quick theta motor"
 
-try:
-    from motor_double_encoded import motor_double_encoded,motor_separate_encoder
-    q2_theta=motor_double_encoded("d09-1-c04/op/mono2-mt_rx.2","d09-1-c04/op/mono2-cd_rx.1")
-    q3_theta=motor_separate_encoder("d09-1-c04/op/mono3-mt_rx.2","d09-1-c04/op/mono3-cd_rx.1")
-except Exception, tmp:
-    print tmp
-    print "Error extending class for quick theta motor"
-
-################################################
+#################################################
 #             Moveables
 ################################################
 
@@ -725,15 +727,13 @@ except Exception, tmp:
     print tmp
     print "Cannot define dcm (monochromator not set)."
 
-
-# Channel cut Si311 q3
-
-try:
-    q2_energy=channel_cut(d=__d111,theta=q2_theta,tz=q2_tz)
-    q3_energy=channel_cut(d=__d311,theta=q3_theta,tz=q3_tz)
-except Exception, tmp: 
-    print tmp
-    print "cannot initialize q2_energy or q3_energy"
+#QEXAFS to be removed
+#try:
+#    q2_energy=channel_cut(d=__d111,theta=q2_theta,tz=q2_tz)
+#    q3_energy=channel_cut(d=__d311,theta=q3_theta,tz=q3_tz)
+#except Exception, tmp: 
+#    print tmp
+#    print "cannot initialize q2_energy or q3_energy"
 #
 
 

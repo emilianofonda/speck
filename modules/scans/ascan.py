@@ -106,9 +106,9 @@ def ascan_statistics(x,y,glob):
     else:
         stats.baricenter_scaled=0.5*(min(x)+max(x))
     #Calculate max and max pos
-        stats.max=max(y);stats.max_pos=x[y.argmax()]
+    stats.max=max(y);stats.max_pos=x[y.argmax()]
     #Calculate min and min pos
-        stats.min=min(y);stats.min_pos=x[y.argmin()]
+    stats.min=min(y);stats.min_pos=x[y.argmin()]
     #Calculate pos of maximum derivative (+,-)
     return 0
 
