@@ -235,7 +235,7 @@ def editmacro(macrofilename):
         filepath = os.getcwd()
         if not macrofilename[-3:] in [".py","txt"]:
             macrofilename += ".py"
-        os.system("gedit " + macrofilename)
+        os.system("nedit " + macrofilename)
     except Exception, tmp:
         print tmp
     return filepath + os.sep + macrofilename

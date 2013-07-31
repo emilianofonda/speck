@@ -98,7 +98,9 @@ except Exception, tmp:
 
 imp_mdls = ["galil_multiaxis", "xbpm_class", "PSS"]
 
-from_mdls = {"quickexafs_helpers":"*","ascan":"*","GetPositions":"*","e2theta":"*", "motor_class":"*", "mono1b":"*", "counter_class":"*", "valve_class":"valve", "pressure_gauge_class":"pressure_gauge", "thermocouple_class":"temperature_gauge", "mirror_class":"mirror", "absorbing_system_class":"*", "FrontEnd_class":"FrontEnd", "ic_gas":"xbpm_abs,  ic_abs", "NHQ_HVsupply_class":"NHQ_HVsupply", "rontec_MCA":"rontec_MCA", "mm4005":"mm4005_motor", "channel_cut":"channel_cut", "simple_DxMAP":"dxmap", "moveable":"moveable, sensor","beamline_alignement":"*","escan_class":"escan, escan_class", "spec_syntax":"*"}
+#Removed:
+#"quickexafs_helpers":"*",
+from_mdls = {"ascan":"*","GetPositions":"*","e2theta":"*", "motor_class":"*", "mono1b":"*", "counter_class":"*", "valve_class":"valve", "pressure_gauge_class":"pressure_gauge", "thermocouple_class":"temperature_gauge", "mirror_class":"mirror", "absorbing_system_class":"*", "FrontEnd_class":"FrontEnd", "ic_gas":"xbpm_abs,  ic_abs", "NHQ_HVsupply_class":"NHQ_HVsupply", "rontec_MCA":"rontec_MCA", "mm4005":"mm4005_motor", "channel_cut":"channel_cut", "simple_DxMAP":"dxmap", "moveable":"moveable, sensor","beamline_alignement":"*","escan_class":"escan, escan_class", "spec_syntax":"*"}
 
 __exec_files = []
 
