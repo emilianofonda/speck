@@ -124,10 +124,16 @@ def lm(x):
         print tmp
         return None
 
-def set_lm(x,min_pos,max_pos):
+def unset_lm(x):
     try:
-        x.set_lm(min_pos, max_pos)
-        return x.lm()
+        return x.set_lm(None, None)
+    except Exception, tmp:
+        print tmp
+        return None
+
+def set_lm(x,min_pos = "Undef", max_pos = "Undef"):
+    try:
+        return x.set_lm(min_pos, max_pos)
     except Exception, tmp:
         print tmp
         return None
@@ -223,6 +229,16 @@ def Close(*x):
 #        print "Cannot work in pulse mode! Refer to hardware driver configuration."
 #        return 
 #    return cpt.count(x)
+
+def editmacro(macrofilename):
+    try:
+        filepath = os.getcwd()
+        if not macrofilename[-3:] in [".py","txt"]:
+            macrofilename += ".py"
+        os.system("nedit " + macrofilename)
+    except Exception, tmp:
+        print tmp
+    return filepath + os.sep + macrofilename
 
 def domacro(macrofilename):
     """macro file is a python code in the current folder or
@@ -329,16 +345,24 @@ class pseudo_counter:
 
     def wait_armed(self):
         t0 = time()
-        s = DevState.STANDBY
-        while(s <> DevState.RUNNING):
-            if time() - t0 > self.timeout:
-                raise Exception("pseudo_counter: timeout in self.wait_armed. timeout is %f"%self.timeout)
-            s = DevState.RUNNING
-            for i in self.slaves2arm + self.slaves2arm2stop:
-                i_s = i.state()
-                if i_s <> DevState.RUNNING:
-                    s = i_s
-                    break
+        try:
+            s = DevState.STANDBY
+            while(s <> DevState.RUNNING):
+                if time() - t0 > self.timeout:
+                    raise Exception("pseudo_counter: timeout in self.wait_armed. timeout is %f"%self.timeout)
+                s = DevState.RUNNING
+                for i in self.slaves2arm + self.slaves2arm2stop:
+                    i_s = i.state()
+                    if i_s <> DevState.RUNNING:
+                        s = i_s
+                        break
+        except KeyboardInterrupt, tmp:
+            print "ct: Halt on user request"
+            self.stop()
+            raise tmp
+        except Exception, tmp:
+            self.stop()
+            raise tmp
         return
         
     def status(self):
@@ -364,13 +388,19 @@ class pseudo_counter:
         return
 
     def stop(self):
-        for i in self.masters:
-            i.stop()
-        while(self.masters_state() == DevState.RUNNING): pass
-        for i in self.slaves2arm2stop:
-            __tmp=thread.start_new_thread(i.stop,())
-        while(self.state() == DevState.RUNNING): pass
-        return
+        try:
+            for i in self.masters:
+                i.stop()
+            while(self.masters_state() == DevState.RUNNING): pass
+            for i in self.slaves2arm2stop:
+                __tmp=thread.start_new_thread(i.stop,())
+            while(self.state() == DevState.RUNNING): pass
+            return
+        except Exception, tmp:
+            for i in self.all:
+                i.stop()
+                #Stop anyway!
+            raise tmp
 
     def read(self):
         "All timebases must provide a read command, this command will supply a list of values"

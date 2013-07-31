@@ -1,12 +1,19 @@
+import os,sys
 from time import clock,sleep,asctime,time
-from numpy import cos, sin, pi, log, mod, array, zeros, mean, float32,float64, float16
+from numpy import cos, sin, pi, log, mod, array, zeros, mean, float32,float64, float16, sqrt, average
 import PyTango
 from PyTango import DeviceProxy, DevState
 import exceptions
+#import thread
+
 import Gnuplot
-import os,sys
+
 from mycurses import *
-import os
+from wait_functions import checkTDL, wait_injection
+from motor_class import wait_motor
+from GetPositions import GetPositions
+from spec_syntax import wa
+
 try:
     import Tkinter
     NoTk=False
@@ -364,10 +371,11 @@ class escan_class:
             raise exceptions.Exception("Missing scan file! Please provide one.")
         shell = get_ipython()
         dark = shell.user_ns["USER_DARK_VALUES"]
-        dcm = shell.user_ns["energy"]
+        self.dcm = shell.user_ns["energy"]
         cpt = shell.user_ns["ct"]
         obx = shell.user_ns["obx"]
         obxg = shell.user_ns["obxg"]
+        self.FE = shell.user_ns["FE"]
         try:
             sh_fast = shell.user_ns["sh_fast"]
         except:
@@ -569,9 +577,8 @@ class escan_class:
         print "Tuning could take 2 minutes if enabled"
         print "---------------------------------------------"
         ##############################################################
-        self.dcm=dcm
         #Calculate if TZ2 should move or not: TZ2 is calculated in mm
-        if abs(dcm.tz2(dcm.e2theta(self.e1))-dcm.tz2(dcm.e2theta(self.e2)))<self.notz2_auto_limit:
+        if abs(self.dcm.tz2(self.dcm.e2theta(self.e1))-self.dcm.tz2(self.dcm.e2theta(self.e2)))<self.notz2_auto_limit:
             self.notz2=True
             print GREEN,
             print "############################ NEW FEATURE #################################################"
@@ -1404,7 +1411,7 @@ class escan_class:
                     #if self.notz2:
                     #    self.dcm.disable_tz2()
                     actual = self.dcm.go(en, Ts2_Moves = self.Ts2_Moves)
-                    wait_motor([dcm,] + motors_to_wait, verbose=False)  #[self.dcm, self.dcm.m_rs2, self.dcm.m_rx2fine])
+                    wait_motor([self.dcm,] + motors_to_wait, verbose=False)  #[self.dcm, self.dcm.m_rs2, self.dcm.m_rx2fine])
                     actual = self.dcm.pos()
                     sleep(self.SettlingTime)
                     tmove = time() - t0
@@ -1474,9 +1481,10 @@ class escan_class:
                             #for SAMBA...
                             try:
                                 fluopoint[0] = average(fluopoint[2:]) / i0
-                            except:
+                            except Exception, tmp:
+                                fluopoint[0] = 0.
                                 print "Error calculating fluopoint[0]"
-                                pass
+                                print tmp
                         else:
                             fluopoint[0] = 0.
                     elif self.detectionMode == "sexafs":
@@ -1552,7 +1560,8 @@ class escan_class:
                         an1, an2 = self.dcm.bender.analog1(), self.dcm.bender.analog2()
                     except:
                         an1, an2 = 0., 0.
-                    line_buffer+=("%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g"\
+                    #line_buffer+=("%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g"\
+                    line_buffer+=("%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g"\
                     % (p, self.dcm.m_rx2fine.pos(),\
                     bp1, bp2,\
                     an1, an2,\
@@ -1657,8 +1666,8 @@ class escan_class:
                         if self.GRAPHICS_RESTART_NEEDED == False:
                             if mod(waitplot,_UPDATE_GRAPHICS_EVERY) == 0:
                                 waitplot = 0
-                                #self.update_grace_windows(iscan)
-                                thread.start_new_thread(self.update_grace_windows, (iscan,))
+                                self.update_grace_windows(iscan)
+                                #thread.start_new_thread(self.update_grace_windows, (iscan,))
                             else:
                                 waitplot += 1
                         else:
@@ -1667,6 +1676,7 @@ class escan_class:
                     #END OF A SCAN CYCLE
                     #
                 except (KeyboardInterrupt,SystemExit), tmp:
+                    self.cpt.stop()
                     if tmp.__class__==KeyboardInterrupt:
                         print "Welcome on the Samba answering machine:"
                         print "---------------------------------------"
@@ -1859,8 +1869,8 @@ class escan_class:
         # Wait for beam if necessary
         #
         #print "Checking for beam..."
-        if(not(checkTDL(FE)) and not(nowait)):
-            wait_injection(FE,self.stoppersList)
+        if(not(checkTDL(self.FE)) and not(nowait)):
+            wait_injection(self.FE,self.stoppersList)
             sleep(10.)
         #
         #Execute total tuning just once for this run
@@ -1882,8 +1892,8 @@ class escan_class:
                 print "pre_scan: Error while moving dcm.m_rs2 to first point"
         #Wait for injection if necessary
         if(not(nowait)):
-            if(not(checkTDL(FE))):
-                wait_injection(FE,self.stoppersList)
+            if(not(checkTDL(self.FE))):
+                wait_injection(self.FE,self.stoppersList)
                 self.AFTER_INJECTION=True
                 sleep(10.)
         if self.AFTER_INJECTION: 
@@ -1922,9 +1932,9 @@ class escan_class:
             GetPositions(verbose=0)
             for i in wa(verbose=False,returns=True):
                 buffer.append("#"+i+"\n")
-        except:
+        except Exception, tmp:
             print "Error when getting motors positions!"
-            pass
+            print tmp
         buffer.append("#dcm is focusing at %6.3f m\n"%(self.dcm.sample_at()))
         buffer.append("#dcm  2d spacing is %8.6f m\n"%(self.dcm.d*2.))
         buffer.append("#2d spacing for common crystals [A]: 2d[Si(111)]=6.2712 2d[Si(220)]=3.8403 2d[Si(311)]=3.2749")
@@ -1951,14 +1961,14 @@ class escan_class:
                 currentTooLow = False
                 pass
             if currentTooLow:
-                FE.close()
+                self.FE.close()
                 print RED + BOLD + "Beam Loss: current is below 8mA !" + RESET
                 print "Waiting two minutes before checking Front End state: ",
                 sys.stdout.flush()
                 sleep(2*60.)
                 print "done."
-            if(not(checkTDL(FE)) or currentTooLow):
-                wait_injection(FE,self.stoppersList)
+            if(not(checkTDL(self.FE)) or currentTooLow):
+                wait_injection(self.FE,self.stoppersList)
                 self.AFTER_INJECTION=True
                 sleep(10.)
         return
@@ -1976,8 +1986,8 @@ class escan_class:
         handler.writelines(ll)
         if iscan<nscans-1:
             if(not(nowait)):
-                if(not(checkTDL(FE))):
-                    wait_injection(FE,self.stoppersList)
+                if(not(checkTDL(self.FE))):
+                    wait_injection(self.FE,self.stoppersList)
                     self.AFTER_INJECTION=True
             #if self.TUNING:
             #    self.scan_tuning(self.tuningdegree)

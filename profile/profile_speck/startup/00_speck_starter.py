@@ -49,6 +49,35 @@ for i in pymucal.atomic_data.atoms.keys():
 import PyTango
 from PyTango import DeviceProxy, DevState
 
+########
+# BEEP #
+########
+try:
+    import Tkinter
+    def wakemeup():
+        """Uses Tkinter to alert user that the run is finished... just in case he was sleeping..."""
+        try:
+            a=Tkinter.Tk()
+            for j in range(5):
+                for i in range(3):
+                    a.bell()
+                    sleep(0.025)
+                sleep(0.35)
+            a.destroy()
+        except:
+            print "WARNING: Error alerting for end of scan... no Tkinter?\n"
+            print "BUT: Ignore this message if escan is working well,\n just report this to your local contact\n"
+        return
+except Exception, tmp:
+    print "Cannot initialize wakemeup function, reason follows:"
+    print tmp
+
+
+########
+#MAGICS#
+########
+
+#Not yet!
 
 #
 #General configuration parameters
@@ -69,7 +98,9 @@ except Exception, tmp:
 
 imp_mdls = ["galil_multiaxis", "xbpm_class", "PSS"]
 
-from_mdls = {"quickexafs_helpers":"*","ascan":"*","GetPositions":"*","e2theta":"*", "motor_class":"*", "mono1b":"*", "counter_class":"*", "valve_class":"valve", "pressure_gauge_class":"pressure_gauge", "thermocouple_class":"temperature_gauge", "mirror_class":"mirror", "absorbing_system_class":"*", "FrontEnd_class":"FrontEnd", "ic_gas":"xbpm_abs,  ic_abs", "NHQ_HVsupply_class":"NHQ_HVsupply", "rontec_MCA":"rontec_MCA", "mm4005":"mm4005_motor", "channel_cut":"channel_cut", "simple_DxMAP":"dxmap", "moveable":"moveable, sensor","beamline_alignement":"*","escan_class":"escan, escan_class", "spec_syntax":"*"}
+#Removed:
+#"quickexafs_helpers":"*",
+from_mdls = {"ascan":"*","GetPositions":"*","e2theta":"*", "motor_class":"*", "mono1b":"*", "counter_class":"*", "valve_class":"valve", "pressure_gauge_class":"pressure_gauge", "thermocouple_class":"temperature_gauge", "mirror_class":"mirror", "absorbing_system_class":"*", "FrontEnd_class":"FrontEnd", "ic_gas":"xbpm_abs,  ic_abs", "NHQ_HVsupply_class":"NHQ_HVsupply", "rontec_MCA":"rontec_MCA", "mm4005":"mm4005_motor", "channel_cut":"channel_cut", "simple_DxMAP":"dxmap", "moveable":"moveable, sensor","beamline_alignement":"*","escan_class":"escan, escan_class", "spec_syntax":"*"}
 
 __exec_files = []
 
@@ -99,7 +130,14 @@ print "OK"
 
 #A simple way to load Instrumental setups:
 
-def instrument(name):
+def instrument(name=None):
+    if name == None:
+        tmp = os.listdir(__pySamba_root+"/modules/instruments/")
+        instrs=[]
+        for i in tmp:
+            if i.endswith(".py"):
+                instrs.append(i[:i.rfind(".")])
+        return instrs
     instrument_file=__pySamba_root+"/modules/instruments/"+name+".py"
     print "Loading instrument macro from "+instrument_file
     return domacro(instrument_file)

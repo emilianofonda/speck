@@ -339,97 +339,98 @@ for i in __tmp:
         print "Cannot define %s =motor(%s)"%(i,__tmp[i])
         raise tmp
 
-#Monochromator2
-__tmp={
-"q2_tz":"d09-1-c04/op/mono2-mt_tz.1",
-"q2_cam":"d09-1-c04/op/mono2-mt_tx.1",
-"q2_encoder":"d09-1-c04/op/mono2-cd_rx.1",
-"q2_theta_alone":"d09-1-c04/op/mono2-mt_rx.2"
-}
-for i in __tmp:
-    try:
-        __IP.user_ns[i]=motor(__tmp[i])
-        __allmotors+=[__IP.user_ns[i],]
-    except Exception, tmp:
-    	#print tmp
-        print "Cannot define %s =motor(%s)"%(i,__tmp[i])
-        raise tmp
-        
-#Monochromator3
-__tmp={
-"q3_tz":"d09-1-c04/op/mono3-mt_tz.1",
-"q3_cam":"d09-1-c04/op/mono3-mt_tx.1",
-"q3_encoder":"d09-1-c04/op/mono3-cd_rx.1",
-"q3_theta_alone":"d09-1-c04/op/mono3-mt_rx.2"
-}
-for i in __tmp:
-    try:
-        __IP.user_ns[i]=motor(__tmp[i])
-        __allmotors+=[__IP.user_ns[i],]
-    except Exception, tmp:
-        print tmp
-        print "Cannot define %s =motor(%s)"%(i,__tmp[i])
+#QEXAFS to be removed
 
-try:
-    class motor_custom(motor):
-        def start(self):
-            return self.backward(wait=False)
-    q2_delta=motor_custom("d09-1-c04/op/mono2-mt_rx.1")
-    q3_delta=motor_custom("d09-1-c04/op/mono3-mt_rx.1")
-except Exception, tmp:
-    print tmp
-    print "Error extending class for quick delta motors"
+##Monochromator2
+#__tmp={
+#"q2_tz":"d09-1-c04/op/mono2-mt_tz.1",
+#"q2_cam":"d09-1-c04/op/mono2-mt_tx.1",
+#"q2_encoder":"d09-1-c04/op/mono2-cd_rx.1",
+#"q2_theta_alone":"d09-1-c04/op/mono2-mt_rx.2"
+#}
+#for i in __tmp:
+#    try:
+#        __IP.user_ns[i]=motor(__tmp[i])
+#        __allmotors+=[__IP.user_ns[i],]
+#    except Exception, tmp:
+#    	#print tmp
+#        print "Cannot define %s =motor(%s)"%(i,__tmp[i])
+#        
+##Monochromator3
+#__tmp={
+#"q3_tz":"d09-1-c04/op/mono3-mt_tz.1",
+#"q3_cam":"d09-1-c04/op/mono3-mt_tx.1",
+#"q3_encoder":"d09-1-c04/op/mono3-cd_rx.1",
+#"q3_theta_alone":"d09-1-c04/op/mono3-mt_rx.2"
+#}
+#for i in __tmp:
+#    try:
+#        __IP.user_ns[i]=motor(__tmp[i])
+#        __allmotors+=[__IP.user_ns[i],]
+#    except Exception, tmp:
+#        print tmp
+#        print "Cannot define %s =motor(%s)"%(i,__tmp[i])
+#
+#try:
+#    class motor_custom(motor):
+#        def start(self):
+#            return self.backward(wait=False)
+#    q2_delta=motor_custom("d09-1-c04/op/mono2-mt_rx.1")
+#    q3_delta=motor_custom("d09-1-c04/op/mono3-mt_rx.1")
+#except Exception, tmp:
+#    print tmp
+#    print "Error extending class for quick delta motors"
+#
+#try:
+#    from motor_double_encoded import motor_double_encoded,motor_separate_encoder
+#    q2_theta=motor_double_encoded("d09-1-c04/op/mono2-mt_rx.2","d09-1-c04/op/mono2-cd_rx.1")
+#    q3_theta=motor_separate_encoder("d09-1-c04/op/mono3-mt_rx.2","d09-1-c04/op/mono3-cd_rx.1")
+#except Exception, tmp:
+#    print tmp
+#    print "Error extending class for quick theta motor"
 
-try:
-    from motor_double_encoded import motor_double_encoded,motor_separate_encoder
-    q2_theta=motor_double_encoded("d09-1-c04/op/mono2-mt_rx.2","d09-1-c04/op/mono2-cd_rx.1")
-    q3_theta=motor_separate_encoder("d09-1-c04/op/mono3-mt_rx.2","d09-1-c04/op/mono3-cd_rx.1")
-except Exception, tmp:
-    print tmp
-    print "Error extending class for quick theta motor"
-
-################################################
+#################################################
 #             Moveables
 ################################################
 
 #Normal moveables (missing special options)
 __tmp={
-"vup1"  :["d09-1-c01/ex/fent_v.1","InsideUpPosition"],
-"vdown1":["d09-1-c01/ex/fent_v.1","OutsideDownPosition"],
-"vpos1" :["d09-1-c01/ex/fent_v.1","Position"],
-"vgap1" :["d09-1-c01/ex/fent_v.1","gap"],
-"hpos1" :["d09-1-c01/ex/fent_h.1","Position"],
-"hgap1" :["d09-1-c01/ex/fent_h.1","gap"],
-"hout1" :["d09-1-c01/ex/fent_h.1","OutsideDownPosition"],
-"hin1"  :["d09-1-c01/ex/fent_h.1","InsideUpPosition"],
-"vpos2" :["d09-1-c04/ex/fent_v.1","Position"],
-"vgap2" :["d09-1-c04/ex/fent_v.1","gap"],
-"vup2"  :["d09-1-c04/ex/fent_v.1","InsideUpPosition"],
-"vdown2":["d09-1-c04/ex/fent_v.1","OutsideDownPosition"],
-"vpos3" :["d09-1-c06/ex/fent_v.1","Position"],
-"vgap3" :["d09-1-c06/ex/fent_v.1","gap"],
-"hin3"  :["d09-1-c06/ex/fent_h.1","InsideUpPosition"],
-"hout3" :["d09-1-c06/ex/fent_h.1","OutsideDownPosition"],
-"vup3"  :["d09-1-c06/ex/fent_v.1","InsideUpPosition"],
-"vdown3":["d09-1-c06/ex/fent_v.1","OutsideDownPosition"],
-"hpos3" :["d09-1-c06/ex/fent_h.1","Position"],
-"hgap3" :["d09-1-c06/ex/fent_h.1","gap"],
-"vpos4" :["d09-1-cx1/ex/fent_v.1","Position"],
-"vgap4" :["d09-1-cx1/ex/fent_v.1","gap"],
-"hin4"  :["d09-1-cx1/ex/fent_h.1","InsideUpPosition"],
-"hout4" :["d09-1-cx1/ex/fent_h.1","OutsideDownPosition"],
-"vup4"  :["d09-1-cx1/ex/fent_v.1","InsideUpPosition"],
-"vdown4":["d09-1-cx1/ex/fent_v.1","OutsideDownPosition"],
-"hpos4" :["d09-1-cx1/ex/fent_h.1","Position"],
-"hgap4" :["d09-1-cx1/ex/fent_h.1","gap"],
-"vpos5" :["d09-1-cx2/ex/fent_v.1","Position"],
-"vgap5" :["d09-1-cx2/ex/fent_v.1","gap"],
-"hpos5" :["d09-1-cx2/ex/fent_h.1","Position"],
-"hgap5" :["d09-1-cx2/ex/fent_h.1","gap"],
-"vup5"  :["d09-1-cx2/ex/fent_v.1","InsideUpPosition"],
-"vdown5":["d09-1-cx2/ex/fent_v.1","OutsideDownPosition"],
-"hin5"  :["d09-1-cx2/ex/fent_h.1","InsideUpPosition"],
-"hout5" :["d09-1-cx2/ex/fent_h.1","OutsideDownPosition"],
+#"vup1"  :["d09-1-c01/ex/fent_v.1","InsideUpPosition"],
+#"vdown1":["d09-1-c01/ex/fent_v.1","OutsideDownPosition"],
+#"vpos1" :["d09-1-c01/ex/fent_v.1","Position"],
+#"vgap1" :["d09-1-c01/ex/fent_v.1","gap"],
+#"hpos1" :["d09-1-c01/ex/fent_h.1","Position"],
+#"hgap1" :["d09-1-c01/ex/fent_h.1","gap"],
+#"hout1" :["d09-1-c01/ex/fent_h.1","OutsideDownPosition"],
+#"hin1"  :["d09-1-c01/ex/fent_h.1","InsideUpPosition"],
+#"vpos2" :["d09-1-c04/ex/fent_v.1","Position"],
+#"vgap2" :["d09-1-c04/ex/fent_v.1","gap"],
+#"vup2"  :["d09-1-c04/ex/fent_v.1","InsideUpPosition"],
+#"vdown2":["d09-1-c04/ex/fent_v.1","OutsideDownPosition"],
+#"vpos3" :["d09-1-c06/ex/fent_v.1","Position"],
+#"vgap3" :["d09-1-c06/ex/fent_v.1","gap"],
+#"hin3"  :["d09-1-c06/ex/fent_h.1","InsideUpPosition"],
+#"hout3" :["d09-1-c06/ex/fent_h.1","OutsideDownPosition"],
+#"vup3"  :["d09-1-c06/ex/fent_v.1","InsideUpPosition"],
+#"vdown3":["d09-1-c06/ex/fent_v.1","OutsideDownPosition"],
+#"hpos3" :["d09-1-c06/ex/fent_h.1","Position"],
+#"hgap3" :["d09-1-c06/ex/fent_h.1","gap"],
+#"vpos4" :["d09-1-cx1/ex/fent_v.1","Position"],
+#"vgap4" :["d09-1-cx1/ex/fent_v.1","gap"],
+#"hin4"  :["d09-1-cx1/ex/fent_h.1","InsideUpPosition"],
+#"hout4" :["d09-1-cx1/ex/fent_h.1","OutsideDownPosition"],
+#"vup4"  :["d09-1-cx1/ex/fent_v.1","InsideUpPosition"],
+#"vdown4":["d09-1-cx1/ex/fent_v.1","OutsideDownPosition"],
+#"hpos4" :["d09-1-cx1/ex/fent_h.1","Position"],
+#"hgap4" :["d09-1-cx1/ex/fent_h.1","gap"],
+#"vpos5" :["d09-1-cx2/ex/fent_v.1","Position"],
+#"vgap5" :["d09-1-cx2/ex/fent_v.1","gap"],
+#"hpos5" :["d09-1-cx2/ex/fent_h.1","Position"],
+#"hgap5" :["d09-1-cx2/ex/fent_h.1","gap"],
+#"vup5"  :["d09-1-cx2/ex/fent_v.1","InsideUpPosition"],
+#"vdown5":["d09-1-cx2/ex/fent_v.1","OutsideDownPosition"],
+#"hin5"  :["d09-1-cx2/ex/fent_h.1","InsideUpPosition"],
+#"hout5" :["d09-1-cx2/ex/fent_h.1","OutsideDownPosition"],
 "po1"        :["d09-1-c02/ex/po.1-mt.1","position","delay=1.","timeout=3."],
 "po2"        :["d09-1-c06/ex/po.1-mt_tz.1","position","delay=1.","timeout=3."],
 "po3"        :["d09-1-cx1/ex/po.1-mt_tz.1","position","delay=1.","timeout=3."],
@@ -573,52 +574,51 @@ del __tmp,__ll
 
 #Slits 
 
+__tmp={
+"vup1"  :["d09-1-c01/ex/fent_v.1","d09-1-c01/ex/fent_v.1-mt_u","d09-1-c01/ex/fent_v.1-mt_d","up"],
+"vdown1":["d09-1-c01/ex/fent_v.1","d09-1-c01/ex/fent_v.1-mt_u","d09-1-c01/ex/fent_v.1-mt_d","down"],
+"vpos1" :["d09-1-c01/ex/fent_v.1","d09-1-c01/ex/fent_v.1-mt_u","d09-1-c01/ex/fent_v.1-mt_d","pos"],
+"vgap1" :["d09-1-c01/ex/fent_v.1","d09-1-c01/ex/fent_v.1-mt_u","d09-1-c01/ex/fent_v.1-mt_d","gap"],
+"hpos1" :["d09-1-c01/ex/fent_h.1","d09-1-c01/ex/fent_h.1-mt_i","d09-1-c01/ex/fent_h.1-mt_o","pos"],
+"hgap1" :["d09-1-c01/ex/fent_h.1","d09-1-c01/ex/fent_h.1-mt_i","d09-1-c01/ex/fent_h.1-mt_o","gap"],
+"hout1" :["d09-1-c01/ex/fent_h.1","d09-1-c01/ex/fent_h.1-mt_i","d09-1-c01/ex/fent_h.1-mt_o","out"],
+"hin1"  :["d09-1-c01/ex/fent_h.1","d09-1-c01/ex/fent_h.1-mt_i","d09-1-c01/ex/fent_h.1-mt_o","in"],
+"vpos2" :["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","pos"],
+"vgap2" :["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","gap"],
+"vup2"  :["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","up"],
+"vdown2":["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","down"],
+"vpos3" :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","pos"],
+"vgap3" :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","gap"],
+"hin3"  :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","in"],
+"hout3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","out"],
+"vup3"  :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","up"],
+"vdown3":["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","down"],
+"hpos3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","pos"],
+"hgap3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","gap"],
+"vpos4" :["d09-1-cx1/ex/fent_v.1","d09-1-cx1/ex/fent_v.1-mt_u","d09-1-cx1/ex/fent_v.1-mt_d","pos"],
+"vgap4" :["d09-1-cx1/ex/fent_v.1","d09-1-cx1/ex/fent_v.1-mt_u","d09-1-cx1/ex/fent_v.1-mt_d","gap"],
+"hin4"  :["d09-1-cx1/ex/fent_h.1","d09-1-cx1/ex/fent_h.1-mt_i","d09-1-cx1/ex/fent_h.1-mt_o","in"],
+"hout4" :["d09-1-cx1/ex/fent_h.1","d09-1-cx1/ex/fent_h.1-mt_i","d09-1-cx1/ex/fent_h.1-mt_o","out"],
+"vup4"  :["d09-1-cx1/ex/fent_v.1","d09-1-cx1/ex/fent_v.1-mt_u","d09-1-cx1/ex/fent_v.1-mt_d","up"],
+"vdown4":["d09-1-cx1/ex/fent_v.1","d09-1-cx1/ex/fent_v.1-mt_u","d09-1-cx1/ex/fent_v.1-mt_d","down"],
+"hpos4" :["d09-1-cx1/ex/fent_h.1","d09-1-cx1/ex/fent_h.1-mt_i","d09-1-cx1/ex/fent_h.1-mt_o","pos"],
+"hgap4" :["d09-1-cx1/ex/fent_h.1","d09-1-cx1/ex/fent_h.1-mt_i","d09-1-cx1/ex/fent_h.1-mt_o","gap"],
+"vpos5" :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","pos"],
+"vgap5" :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","gap"],
+"hpos5" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","pos"],
+"hgap5" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","gap"],
+"vup5"  :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","up"],
+"vdown5":["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","down"],
+"hin5"  :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","in"],
+"hout5" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","out"]}
+for i in __tmp:
+    try:
+        __IP.user_ns[i]=motor_slit(__tmp[i][0],__tmp[i][1],__tmp[i][2],__tmp[i][3])
+        __allmotors+=[__IP.user_ns[i],]
+    except Exception, tmp:
+        print tmp
+        print RED+"Cannot define"+RESET+" %s =motor(%s)"%(i,__tmp[i])
 
-#__tmp={
-#"vup1"  :["d09-1-c01/ex/fent_v.1","d09-1-c01/ex/fent_v.1-mt_u","d09-1-c01/ex/fent_v.1-mt_d","up"],
-#"vdown1":["d09-1-c01/ex/fent_v.1","d09-1-c01/ex/fent_v.1-mt_u","d09-1-c01/ex/fent_v.1-mt_d","down"],
-#"vpos1" :["d09-1-c01/ex/fent_v.1","d09-1-c01/ex/fent_v.1-mt_u","d09-1-c01/ex/fent_v.1-mt_d","pos"],
-#"vgap1" :["d09-1-c01/ex/fent_v.1","d09-1-c01/ex/fent_v.1-mt_u","d09-1-c01/ex/fent_v.1-mt_d","gap"],
-#"hpos1" :["d09-1-c01/ex/fent_h.1","d09-1-c01/ex/fent_h.1-mt_i","d09-1-c01/ex/fent_h.1-mt_o","pos"],
-#"hgap1" :["d09-1-c01/ex/fent_h.1","d09-1-c01/ex/fent_h.1-mt_i","d09-1-c01/ex/fent_h.1-mt_o","gap"],
-#"hout1" :["d09-1-c01/ex/fent_h.1","d09-1-c01/ex/fent_h.1-mt_i","d09-1-c01/ex/fent_h.1-mt_o","out"],
-#"hin1"  :["d09-1-c01/ex/fent_h.1","d09-1-c01/ex/fent_h.1-mt_i","d09-1-c01/ex/fent_h.1-mt_o","in"],
-#"vpos2" :["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","pos"],
-#"vgap2" :["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","gap"],
-#"vup2"  :["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","up"],
-#"vdown2":["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","down"],
-#"vpos3" :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","pos"],
-#"vgap3" :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","gap"],
-#"hin3"  :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","in"],
-#"hout3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","out"],
-#"vup3"  :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","up"],
-#"vdown3":["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","down"],
-#"hpos3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","pos"],
-#"hgap3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","gap"],
-#"vpos4" :["d09-1-cx1/ex/fent_v.1","d09-1-cx1/ex/fent_v.1-mt_u","d09-1-cx1/ex/fent_v.1-mt_d","pos"],
-#"vgap4" :["d09-1-cx1/ex/fent_v.1","d09-1-cx1/ex/fent_v.1-mt_u","d09-1-cx1/ex/fent_v.1-mt_d","gap"],
-#"hin4"  :["d09-1-cx1/ex/fent_h.1","d09-1-cx1/ex/fent_h.1-mt_i","d09-1-cx1/ex/fent_h.1-mt_o","in"],
-#"hout4" :["d09-1-cx1/ex/fent_h.1","d09-1-cx1/ex/fent_h.1-mt_i","d09-1-cx1/ex/fent_h.1-mt_o","out"],
-#"vup4"  :["d09-1-cx1/ex/fent_v.1","d09-1-cx1/ex/fent_v.1-mt_u","d09-1-cx1/ex/fent_v.1-mt_d","up"],
-#"vdown4":["d09-1-cx1/ex/fent_v.1","d09-1-cx1/ex/fent_v.1-mt_u","d09-1-cx1/ex/fent_v.1-mt_d","down"],
-#"hpos4" :["d09-1-cx1/ex/fent_h.1","d09-1-cx1/ex/fent_h.1-mt_i","d09-1-cx1/ex/fent_h.1-mt_o","pos"],
-#"hgap4" :["d09-1-cx1/ex/fent_h.1","d09-1-cx1/ex/fent_h.1-mt_i","d09-1-cx1/ex/fent_h.1-mt_o","gap"],
-#"vpos5" :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","pos"],
-#"vgap5" :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","gap"],
-#"hpos5" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","pos"],
-#"hgap5" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","gap"],
-#"vup5"  :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","up"],
-#"vdown5":["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","down"],
-#"hin5"  :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","in"],
-#"hout5" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","out"]}
-#for i in __tmp:
-#    try:
-#        __IP.user_ns[i]=motor_slit(__tmp[i][0],__tmp[i][1],__tmp[i][2],__tmp[i][3])
-#        __allmotors+=[__IP.user_ns[i],]
-#    except Exception, tmp:
-#        print tmp
-#        print RED+"Cannot define"+RESET+" %s =motor(%s)"%(i,__tmp[i])
-#
 
 ###
 ### Define aliases below
@@ -703,6 +703,11 @@ try:
     #When nothing shoudl be defined just set it to None
     #dcm=None
     
+    #dcm=mono1(d=d,H=25.0,mono_name="d09-1-c03/op/mono1",
+    #rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=i200,rz2=rz2, tz1=tz1, bender=bender,
+    #sourceDistance=16.119,delay=0.0,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
+    #WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=40000.)
+
     dcm=mono1(d=d,H=25.0,mono_name="d09-1-c03/op/mono1",
     rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, tz1=tz1, bender=bender,
     sourceDistance=16.119,delay=0.0,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
@@ -723,15 +728,13 @@ except Exception, tmp:
     print tmp
     print "Cannot define dcm (monochromator not set)."
 
-
-# Channel cut Si311 q3
-
-try:
-    q2_energy=channel_cut(d=__d111,theta=q2_theta,tz=q2_tz)
-    q3_energy=channel_cut(d=__d311,theta=q3_theta,tz=q3_tz)
-except Exception, tmp: 
-    print tmp
-    print "cannot initialize q2_energy or q3_energy"
+#QEXAFS to be removed
+#try:
+#    q2_energy=channel_cut(d=__d111,theta=q2_theta,tz=q2_tz)
+#    q3_energy=channel_cut(d=__d311,theta=q3_theta,tz=q3_tz)
+#except Exception, tmp: 
+#    print tmp
+#    print "cannot initialize q2_energy or q3_energy"
 #
 
 
