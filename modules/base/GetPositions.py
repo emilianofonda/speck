@@ -1,4 +1,6 @@
 import os
+from time import sleep
+
 __pySamba_root=os.getenv("SPECK")
 
 def print_file(filename):
@@ -42,7 +44,7 @@ def GetPositions(fname="",hardcopy=False,verbose=1):
     try:
         __allslits=get_ipython().user_ns["__allslits"]
     except:
-        print "No motors!"
+        print "No slits!"
         __allslits=[]
     try:
         __allpiezos=get_ipython().user_ns["__allpiezos"]
@@ -131,6 +133,21 @@ def GetPositions(fname="",hardcopy=False,verbose=1):
     return fname
 
 def SetPositions(filename=""):
+    try:
+        __allmotors=get_ipython().user_ns["__allmotors"]
+    except:
+        print "No motors!"
+        __allmotors=[]
+    try:
+        __allslits=get_ipython().user_ns["__allslits"]
+    except:
+        print "No slits!"
+        __allslits=[]
+    try:
+        __allpiezos=get_ipython().user_ns["__allpiezos"]
+    except:
+        print "No Piezo Motors!"
+        __allpiezos=[]
     if(filename==""):
         if not(NOTK):
             filename=tkFileDialog.askopenfilename(initialdir=__pySamba_root+"/files/encoders/",title="Choose the CORRECT getposition file")
@@ -199,7 +216,7 @@ def SetPositions(filename=""):
                     sleep(.25)
         if(failures>0):
             print "WARNING: I got ",failures," failures."
-            raise exceptions.Exception("SetPositionsFailure failures=%i failedmotors=%i"%(failures,failedmotors))
+            raise Exception("SetPositionsFailure failures=%i failedmotors=%i"%(failures,failedmotors))
     return
 
 

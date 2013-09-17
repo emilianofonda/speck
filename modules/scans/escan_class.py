@@ -1,6 +1,6 @@
 import os,sys
 from time import clock,sleep,asctime,time
-from numpy import cos, sin, pi, log, mod, array, zeros, mean, float32,float64, float16, sqrt, average
+from numpy import cos, sin, pi, log, mod, array, zeros, mean, float32,float64, float16, sqrt, average, arange
 import PyTango
 from PyTango import DeviceProxy, DevState
 import exceptions
@@ -102,7 +102,7 @@ def ReadScanForm(filename):
     res=[]
     usebender=None
     plotSetting=defaultPlotSetting
-    tuning=False
+    tuning=True
     degree=0
     detune=None
     nodark=default_nodark
@@ -395,11 +395,13 @@ class escan_class:
         #
         self.user_dark_values=dark
         try:
-            __Default_Data_Folder="/home/experiences/samba/com-samba/ExperimentalData/"
-            __Default_Backup_Folder="/nfs/ruche-samba/samba-soleil/com-samba/"
+            #__Default_Data_Folder="/home/experiences/samba/com-samba/ExperimentalData/"
+            #__Default_Backup_Folder="/nfs/ruche-samba/samba-soleil/com-samba/"
+            __Default_Data_Folder = get_ipython().user_ns["__Default_Data_Folder"]
+            __Default_Backup_Folder = get_ipython().user_ns["__Default_Backup_Folder"]
             self.currentDataFolder=os.getcwd()
             print "Data Folder is :",self.currentDataFolder
-            if self.currentDataFolder.startswith(__Default_Data_Folder.rstrip("/")):
+            if self.currentDataFolder.startswith(__Default_Data_Folder.rstrip("/")) and __Default_Backup_Folder <> "":
                 self.currentBackupFolder=__Default_Backup_Folder+"/"+\
                 self.currentDataFolder.lstrip(__Default_Data_Folder.rstrip("/"))
                 cbf=self.currentBackupFolder

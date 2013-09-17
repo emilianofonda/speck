@@ -435,6 +435,8 @@ __tmp={
 "po3"        :["d09-1-cx1/ex/po.1-mt_tz.1","position","delay=1.","timeout=3."],
 "po4"        :["d09-1-c07/ex/po.1-mt_tz.1","position"],
 "po5"        :["d09-1-cx2/ex/po.1-mt_tz.1","position"],
+"__bender_c1"    :["d09-1-c03/op/mono1-mt_c.1","position"],
+"__bender_c2"    :["d09-1-c03/op/mono1-mt_c.2","position"],
 "sample_x"    :["d09-1-cx1/ex/tab-mt_tx.1","position"],
 "sample_z"    :["d09-1-cx1/ex/tab-mt_tz.1","position"],
 "sample_rx"    :["d09-1-cx1/ex/tab-mt_rx.1","position"],
