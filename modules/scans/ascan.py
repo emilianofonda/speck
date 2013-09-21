@@ -318,7 +318,11 @@ def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,n
         print "Elapsed Time: %8.6fs" % (cputime() - __time_at_start)
     #
     #Call statistisc calculation
-    if "ScanStats" in glob: ascan_statistics(x[:ml],y[:ml],glob)
+    if "ScanStats" in glob: 
+        ascan_statistics(x[:ml],y[:ml],glob)
+        print BOLD+"\nScanStats:\n---------------------------"+RESET
+        print glob["ScanStats"]()
+        print ""
     #
     print "Total Elapsed Time: %8.6fs" % (cputime() - __time_at_start)
     #
