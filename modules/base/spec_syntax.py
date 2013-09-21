@@ -8,11 +8,11 @@
 from IPython.core.ipapi import get as get_ipython
 
 import exceptions
-from time import time
+from time import time, sleep
 import os
 import thread
 
-from motor_class import motor,piezo,motor_slit,move_motor
+from motor_class import motor,piezo,motor_slit,move_motor, wait_motor
 from moveable import moveable
 from mm4005 import mm4005_motor
 from mono1b import mono1
@@ -149,7 +149,17 @@ def mvr(x,p=None):
         return x.pos(x.pos()+p)
     else:
         return x.pos()
-    
+   
+def Iref(x):
+    "Execute initialize reference position"
+    try:
+        x.InitializeReferencePosition()
+    except:
+        print "Cannot Execute Initialize Reference Position on motor"
+    wait_motor(x)
+    sleep(0.2)
+    return x.pos()
+   
 def mover(x,p=None):
     "Spec like relative move"
     return mvr(x,p)
