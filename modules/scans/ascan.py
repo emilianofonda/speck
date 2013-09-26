@@ -1,6 +1,6 @@
 from time import strftime,gmtime,sleep,localtime,asctime
 from time import time as cputime
-from numpy import round, array, sum, mean
+from numpy import round, array, sum, mean, loadtxt, savetxt
 import os
 from GetPositions import GetPositions
 from GracePlotter import *
@@ -121,8 +121,13 @@ def __backup_data():
     # MUST be declared outside this class and before the escan class!
     #
     try:
-        __Default_Data_Folder="/home/experiences/samba/com-samba/ExperimentalData/"
-        __Default_Backup_Folder="/nfs/ruche-samba/samba-soleil/com-samba/"
+        __Default_Data_Folder = get_ipython().user_ns["__Default_Data_Folder"]
+        __Default_Backup_Folder = get_ipython().user_ns["__Default_Backup_Folder"]
+        if __Default_Backup_Folder == "":
+            print "NO BACKUP: no backup folder defined."
+            return
+        #__Default_Data_Folder="/home/experiences/samba/com-samba/ExperimentalData/"
+        #__Default_Backup_Folder="/nfs/ruche-samba/samba-soleil/com-samba/"
         currentDataFolder=os.getcwd()
         print "Data Folder is :",currentDataFolder
         if currentDataFolder.startswith(__Default_Data_Folder):
@@ -313,7 +318,11 @@ def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,n
         print "Elapsed Time: %8.6fs" % (cputime() - __time_at_start)
     #
     #Call statistisc calculation
-    if "ScanStats" in glob: ascan_statistics(x[:ml],y[:ml],glob)
+    if "ScanStats" in glob: 
+        ascan_statistics(x[:ml],y[:ml],glob)
+        print BOLD+"\nScanStats:\n---------------------------"+RESET
+        print glob["ScanStats"]()
+        print ""
     #
     print "Total Elapsed Time: %8.6fs" % (cputime() - __time_at_start)
     #
@@ -440,7 +449,12 @@ __stepscan=__StepScan()
 #def stepscan_open(name=None,dt=1,glob=globals(),scaler="ct",comment="",fullmca=True):
 def stepscan_open(name=None,dt=1,scaler="ct",comment="",fullmca=True):
     """Open output files and wait for stepscan_step command to save data, reads ct for dt seconds. The default timebase is named ct. fullmca is active by default."""
-    __stepscan=eval("__stepscan",glob)
+    glob  = get_ipython().user_ns
+    try:
+        __stepscan=eval("__stepscan",glob)
+    except:
+        glob["__stepscan"] = __StepScan()
+        __stepscan=eval("__stepscan",glob)
     __stepscan.dt=dt
     __stepscan.fullmca=fullmca
     if scaler in glob:
@@ -488,6 +502,7 @@ def stepscan_open(name=None,dt=1,scaler="ct",comment="",fullmca=True):
     
 #def stepscan_step(glob=globals()):
 def stepscan_step():
+    glob  = get_ipython().user_ns
     __stepscan=eval("__stepscan",glob)
     __cts=__stepscan.cpt.count(__stepscan.dt)
     for j in __cts:
@@ -509,6 +524,7 @@ def stepscan_step():
     
 #def stepscan_close(glob=globals()):
 def stepscan_close():
+    glob  = get_ipython().user_ns
     __stepscan=eval("__stepscan",glob)
     __stepscan.datafile.close()
     ##################### CLOSE MCA FILES ##################

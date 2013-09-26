@@ -1,6 +1,6 @@
 import os,sys
 from time import clock,sleep,asctime,time
-from numpy import cos, sin, pi, log, mod, array, zeros, mean, float32,float64, float16, sqrt, average
+from numpy import cos, sin, pi, log, mod, array, zeros, mean, float32,float64, float16, sqrt, average, arange
 import PyTango
 from PyTango import DeviceProxy, DevState
 import exceptions
@@ -102,7 +102,7 @@ def ReadScanForm(filename):
     res=[]
     usebender=None
     plotSetting=defaultPlotSetting
-    tuning=False
+    tuning=True
     degree=0
     detune=None
     nodark=default_nodark
@@ -395,11 +395,13 @@ class escan_class:
         #
         self.user_dark_values=dark
         try:
-            __Default_Data_Folder="/home/experiences/samba/com-samba/ExperimentalData/"
-            __Default_Backup_Folder="/nfs/ruche-samba/samba-soleil/com-samba/"
+            #__Default_Data_Folder="/home/experiences/samba/com-samba/ExperimentalData/"
+            #__Default_Backup_Folder="/nfs/ruche-samba/samba-soleil/com-samba/"
+            __Default_Data_Folder = get_ipython().user_ns["__Default_Data_Folder"]
+            __Default_Backup_Folder = get_ipython().user_ns["__Default_Backup_Folder"]
             self.currentDataFolder=os.getcwd()
             print "Data Folder is :",self.currentDataFolder
-            if self.currentDataFolder.startswith(__Default_Data_Folder.rstrip("/")):
+            if self.currentDataFolder.startswith(__Default_Data_Folder.rstrip("/")) and __Default_Backup_Folder <> "":
                 self.currentBackupFolder=__Default_Backup_Folder+"/"+\
                 self.currentDataFolder.lstrip(__Default_Data_Folder.rstrip("/"))
                 cbf=self.currentBackupFolder
@@ -1937,7 +1939,7 @@ class escan_class:
             print tmp
         buffer.append("#dcm is focusing at %6.3f m\n"%(self.dcm.sample_at()))
         buffer.append("#dcm  2d spacing is %8.6f m\n"%(self.dcm.d*2.))
-        buffer.append("#2d spacing for common crystals [A]: 2d[Si(111)]=6.2712 2d[Si(220)]=3.8403 2d[Si(311)]=3.2749")
+        buffer.append("#2d spacing for common crystals [A]: 2d[Si(111)]=6.2712 2d[Si(220)]=3.8403 2d[Si(311)]=3.2749\n")
         if self.dark:
             buffer.append("#Dark current has been subtracted, dark current measurements for all counters here below.\n")
         else:
@@ -1982,9 +1984,15 @@ class escan_class:
         except:
             ll=["#Machine Current = nan\n",]
         ll.append("#"+asctime()+"\n")
-        file_buffer+=ll
+        try:
+            GetPositions(verbose=0)
+            for i in wa(verbose=False,returns=True):
+                ll.append("#"+i+"\n")
+        except Exception, tmp:
+            print "Error when getting motors positions!"
+            print tmp
         handler.writelines(ll)
-        if iscan<nscans-1:
+        if iscan < nscans - 1:
             if(not(nowait)):
                 if(not(checkTDL(self.FE))):
                     wait_injection(self.FE,self.stoppersList)
