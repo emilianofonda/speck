@@ -1905,7 +1905,8 @@ class escan_class:
             #Below we retune the first point if we are not at the first scan
         else:
             #The backlash has been perfomed few lines above
-            if self.TUNING and self.iscan>=1:
+#            if self.TUNING and self.iscan>=1:
+            if self.TUNING:
                 print "Retuning first point..."
                 self.dcm.pos(self.tuning_points[0][0],Ts2_Moves=self.Ts2_Moves)
                 if self.RollCorrection:
