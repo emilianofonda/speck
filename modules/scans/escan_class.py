@@ -103,7 +103,7 @@ def ReadScanForm(filename):
     usebender=None
     plotSetting=defaultPlotSetting
     tuning=True
-    degree=0
+    degree=1
     detune=None
     nodark=default_nodark
     detectionMode=None
@@ -1417,11 +1417,14 @@ class escan_class:
                     actual = self.dcm.pos()
                     sleep(self.SettlingTime)
                     tmove = time() - t0
-                    if en <= self.grid[-1][0]:
-                        print "%8.2f\r"%(actual),
-                    elif self.kscan:
-                        print "En=%8.2f k=%5.2f\r"%(actual, sqrt(0.2624 * (actual - self.kscan_e0))),
-                    sys.stdout.flush()
+                    ########################################
+                    #Removed for ALD experiment 4/10/2013
+                    ########################################
+                    #if en <= self.grid[-1][0]:
+                    #    print "%8.2f\r"%(actual),
+                    #elif self.kscan:
+                    #    print "En=%8.2f k=%5.2f\r"%(actual, sqrt(0.2624 * (actual - self.kscan_e0))),
+                    #sys.stdout.flush()
                     #Read mono position BEFORE counting (step mode)
                     theta = self.dcm.m_rx1.pos()
                     etheta = self.dcm.theta2e(theta)
@@ -1912,8 +1915,9 @@ class escan_class:
                 if self.RollCorrection:
                     self.dcm.m_rs2.pos(self.calculate_roll(self.tuning_points[0][0]))
                 if self.detune==1:
-                    __p=self.tuning_points[1][0]
-                    self.tuning_points[1][0]=self.dcm.tune(max(0.,__p-2),min(9.9,__p+2))
+                    #__p=self.tuning_points[1][0]
+                    #self.tuning_points[1][0]=self.dcm.tune(max(0.,__p-2),min(9.9,__p+2))
+                    self.tuning_points[1][0]=self.dcm.tune()
                 else:
                     self.tuning_points[1][0]=self.dcm.detune(self.detune)
                     print "Detuned of ",self.detune*100,"%"
@@ -2007,8 +2011,9 @@ class escan_class:
                 #self.dcm.pos(self.tuning_points[0][-1],Ts2_Moves=self.Ts2_Moves)
                 self.tuning_points[0][-1]=self.dcm.pos()
                 if self.detune==1:
-                    __p=self.tuning_points[1][-1]
-                    self.tuning_points[1][-1]=self.dcm.tune(max(0.5,__p-2),min(9.5,__p+2))
+                    #__p=self.tuning_points[1][-1]
+                    #self.tuning_points[1][-1]=self.dcm.tune(max(0.5,__p-2),min(9.5,__p+2))
+                    self.tuning_points[1][-1]=self.dcm.tune()
                 else:
                     self.tuning_points[1][-1]=self.dcm.detune(self.detune)
                     #print "Detuned of ",self.detune*100,"%"
