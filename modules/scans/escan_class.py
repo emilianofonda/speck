@@ -1417,14 +1417,11 @@ class escan_class:
                     actual = self.dcm.pos()
                     sleep(self.SettlingTime)
                     tmove = time() - t0
-                    ########################################
-                    #Removed for ALD experiment 4/10/2013
-                    ########################################
-                    #if en <= self.grid[-1][0]:
-                    #    print "%8.2f\r"%(actual),
-                    #elif self.kscan:
-                    #    print "En=%8.2f k=%5.2f\r"%(actual, sqrt(0.2624 * (actual - self.kscan_e0))),
-                    #sys.stdout.flush()
+                    if en <= self.grid[-1][0]:
+                        print "%8.2f\r"%(actual),
+                    elif self.kscan:
+                        print "En=%8.2f k=%5.2f\r"%(actual, sqrt(0.2624 * (actual - self.kscan_e0))),
+                    sys.stdout.flush()
                     #Read mono position BEFORE counting (step mode)
                     theta = self.dcm.m_rx1.pos()
                     etheta = self.dcm.theta2e(theta)
@@ -1908,8 +1905,8 @@ class escan_class:
             #Below we retune the first point if we are not at the first scan
         else:
             #The backlash has been perfomed few lines above
-#            if self.TUNING and self.iscan>=1:
-            if self.TUNING:
+            if self.TUNING and self.iscan>=1:
+#            if self.TUNING:
                 print "Retuning first point..."
                 self.dcm.pos(self.tuning_points[0][0],Ts2_Moves=self.Ts2_Moves)
                 if self.RollCorrection:
