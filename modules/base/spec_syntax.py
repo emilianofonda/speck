@@ -138,18 +138,23 @@ def set_lm(x,min_pos = "Undef", max_pos = "Undef"):
         print tmp
         return None
 
-def move(x,p=None):
+def move(*args):
     "Spec like absolute move"
-    return mv(x,p)
+    return mv(*args)
 
         
-def mvr(x,p=None):
+def mvr(*args):
     "Spec like relative move"
-    if p<>None:
-        return x.pos(x.pos()+p)
-    else:
-        return x.pos()
-   
+    if len(args) < 1:
+        raise Exception("origin: mvr","Error: Missing arguments!")
+    elif len(args) == 1:
+        return args[0].pos()
+    elif mod(len(args), 2) == 0:
+        newargs = list(args)
+        for i in range(1, len(args), 2):
+            newargs[i] = (args[i - 1].pos() + args[i])
+        return mv(*newargs)
+        
 def Iref(x):
     "Execute initialize reference position"
     try:
@@ -160,9 +165,9 @@ def Iref(x):
     sleep(0.2)
     return x.pos()
    
-def mover(x,p=None):
+def mover(*args):
     "Spec like relative move"
-    return mvr(x,p)
+    return mvr(*args)
 
 def tw(x,step):
     try:
@@ -184,6 +189,73 @@ def tw(x,step):
 def tweak(x,step):
     return tw(x,step)
 
+
+def stop(*args):
+    """Spec like forward move.
+    May forward one or several motors"""
+    try:
+        for i in args:
+            if "stop" in dir(i):
+                i.stop()
+            elif "DP" in dir(i) and "stop" in dir(i.DP):
+                i.DP.stop()
+            else:
+                if label in dir(i):
+                    print i.label," has no method stop defined."
+        wait_motor(*args)
+    except Exception, tmp:
+        for i in args:
+            try:
+                i.stop()
+            except Exception, tmp2:
+                print tmp2
+                pass
+        raise tmp
+
+def fw(*args):
+    """Spec like forward move.
+    May forward one or several motors"""
+    try:
+        for i in args:
+            if "forward" in dir(i):
+                i.forward()
+            elif "DP" in dir(i) and "forward" in dir(i.DP):
+                i.DP.forward()
+            else:
+                if label in dir(i):
+                    print i.label," has no method forward defined."
+        wait_motor(*args)
+    except Exception, tmp:
+        for i in args:
+            try:
+                i.stop()
+            except Exception, tmp2:
+                print tmp2
+                pass
+        raise tmp
+
+def bw(*args):
+    """Spec like backward move.
+    May forward one or several motors"""
+    try:
+        for i in args:
+            if "backward" in dir(i):
+                i.backward()
+            elif "DP" in dir(i) and "backward" in dir(i.DP):
+                i.DP.backward()
+            else:
+                if label in dir(i):
+                    print i.label," has no method backward defined."
+        wait_motor(*args)
+    except Exception, tmp:
+        for i in args:
+            try:
+                i.stop()
+            except Exception, tmp2:
+                print tmp2
+                pass
+        raise tmp
+            
 def open(*x):
     return Open(*x)
 
