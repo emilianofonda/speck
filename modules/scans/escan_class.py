@@ -103,7 +103,7 @@ def ReadScanForm(filename):
     usebender=None
     plotSetting=defaultPlotSetting
     tuning=True
-    degree=0
+    degree=1
     detune=None
     nodark=default_nodark
     detectionMode=None
@@ -1906,13 +1906,15 @@ class escan_class:
         else:
             #The backlash has been perfomed few lines above
             if self.TUNING and self.iscan>=1:
+#            if self.TUNING:
                 print "Retuning first point..."
                 self.dcm.pos(self.tuning_points[0][0],Ts2_Moves=self.Ts2_Moves)
                 if self.RollCorrection:
                     self.dcm.m_rs2.pos(self.calculate_roll(self.tuning_points[0][0]))
                 if self.detune==1:
-                    __p=self.tuning_points[1][0]
-                    self.tuning_points[1][0]=self.dcm.tune(max(0.,__p-2),min(9.9,__p+2))
+                    #__p=self.tuning_points[1][0]
+                    #self.tuning_points[1][0]=self.dcm.tune(max(0.,__p-2),min(9.9,__p+2))
+                    self.tuning_points[1][0]=self.dcm.tune()
                 else:
                     self.tuning_points[1][0]=self.dcm.detune(self.detune)
                     print "Detuned of ",self.detune*100,"%"
@@ -2006,8 +2008,9 @@ class escan_class:
                 #self.dcm.pos(self.tuning_points[0][-1],Ts2_Moves=self.Ts2_Moves)
                 self.tuning_points[0][-1]=self.dcm.pos()
                 if self.detune==1:
-                    __p=self.tuning_points[1][-1]
-                    self.tuning_points[1][-1]=self.dcm.tune(max(0.5,__p-2),min(9.5,__p+2))
+                    #__p=self.tuning_points[1][-1]
+                    #self.tuning_points[1][-1]=self.dcm.tune(max(0.5,__p-2),min(9.5,__p+2))
+                    self.tuning_points[1][-1]=self.dcm.tune()
                 else:
                     self.tuning_points[1][-1]=self.dcm.detune(self.detune)
                     #print "Detuned of ",self.detune*100,"%"
