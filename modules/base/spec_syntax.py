@@ -259,6 +259,46 @@ def bw(*args):
 def open(*x):
     return Open(*x)
 
+def start(*x):
+    "start action on an object"
+    if type(x) in [tuple,list]:
+        if len(x)==1: x=x[0]    
+    if type(x) in [tuple,list]:
+        States={}
+        for i in x:
+            try:
+                i.start()
+                States[i]=i.state()
+            except Exception, tmp:
+                try:
+                    print "Start on ",i.label,"failed"
+                except:
+                    print "Failure!"
+                raise tmp
+        return States
+    else:
+        return x.start()
+
+def stop(*x):
+    "stop action on an object"
+    if type(x) in [tuple,list]:
+        if len(x)==1: x=x[0]    
+    if type(x) in [tuple,list]:
+        States={}
+        for i in x:
+            try:
+                i.stop()
+                States[i]=i.state()
+            except Exception, tmp:
+                try:
+                    print "Stop on ",i.label,"failed"
+                except:
+                    print "Failure!"
+                raise tmp
+        return States
+    else:
+        return x.stop()
+
 def Open(*x):
     "Open action on an object (valve? Front end? ...)"
     if type(x) in [tuple,list]:

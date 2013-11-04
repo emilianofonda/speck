@@ -288,15 +288,27 @@ except Exception, tmp:
 #    print "No rontec available"
 
 # I200 (home made python controller)
+#try:
+#    from I200 import I200_tango as I200
+#    print "I200 unit :",
+#    i200=I200("d09-1-cx1/ca/mca_rontec_rs232_8.5")
+#    itune=i200.tune
+#    #print i200.currents()
+#    #print i200.status()
+#except Exception, tmp:
+#    print "Error initializing I200."
+#    print tmp
+
+# MOSTAB (home made python controller)
 try:
-    from I200 import I200_tango as I200
-    print "I200 unit :",
-    i200=I200("d09-1-cx1/ca/mca_rontec_rs232_8.5")
-    itune=i200.tune
+    from MOSTAB import MOSTAB_tango as MOSTAB
+    print "MOSTAB unit :",
+    mostab=MOSTAB("d09-1-cx1/ca/mca_rontec_rs232_8.5")
+    itune=mostab.tune
     #print i200.currents()
     #print i200.status()
 except Exception, tmp:
-    print "Error initializing I200."
+    print "Error initializing mostab unit..."
     print tmp
     
 #ACE Avalanche Photodiode Controller (home made python controller)
