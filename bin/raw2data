@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/Local/PyTangoRoot/bin/python
 import numpy as npy
 import sys
 import os
@@ -12,71 +12,83 @@ for i in range(1, len(sys.argv)-1):
     infiles += glob.glob(sys.argv[i])
 
 for infile in infiles:
-    print "Raw data from: %s" % (infile)
-    if infile.endswith("_raw.txt"):
-        outfile = infile[:-8] + "_dat.txt"
-    elif infile.endswith(".txt"):
-        outfile =  infile[:-4] + "_dat.txt"
-    else:
-        outfile =  infile + "_dat.txt"
-    
-    pos={}
-    
-    ll = file(infile,'r').readlines()
-    header = -1
+    if infile.endswith("_cor.dat"):
+        infiles.remove(infile)
+
+for infile in infiles:
     try:
-        header = ll[ll.index("#HEADER\n") + 1][1:].split()
-    except:
-        print "File format unrecognized, skipping"
-    if header >= 0:
-        matx = npy.loadtxt(infile).transpose()
-        motor = matx[0]
-        I0 = matx[header.index("I0")]
-        I1 = matx[header.index("I1")]
-        I2 = matx[header.index("I2")]
-        Clock = matx[header.index("Clock")]
+        print "Raw data from: %s" % (infile)
+        if infile.endswith("_raw.txt"):
+            outfile = infile[:-8] + "_cor.dat"
+        elif infile.endswith(".txt"):
+            outfile =  infile[:-4] + "_cor.dat"
+        else:
+            outfile =  infile + "_cor.dat"
+        
+        pos={}
+        
+        ll = file(infile,'r').readlines()
+        header = -1
         try:
-            Time = matx[header.index("TimeFromEpoch")]
+            header = ll[ll.index("#HEADER\n") + 1][1:].split()
         except:
-            Time = -1
-        
-        rois=[]
-        icrs=[]
-        ocrs=[]
-        for i in range(len(header)):
-            if header[i].startswith("roi_"):
-                rois.append(i)
-            if header[i].startswith("icr_"):
-                icrs.append(i)
-            if header[i].startswith("ocr_"):
-                ocrs.append(i)
-        
-        mux = npy.log(I0 / I1)
-        mus = npy.log(I1 / I2)
-        
-        muf = matx[rois[0]]
-        muf_cor = muf
-        if not(0 in matx[ocrs[0]]):
-            muf_cor = matx[rois[0]] * matx[icrs[0]] / matx[ocrs[0]]
-        for i in range(1, len(rois)):
-            muf += matx[rois[i]]
-        if not(0 in matx[ocrs[i]]):    
-            muf_cor += matx[rois[i]] * matx[icrs[i]] / matx[ocrs[i]]
-        #print matx[ocrs[i]]
-        
-        muf = muf / I0
-        muf_cor = muf_cor / I0
-        
-        #pylab.figure()
-        #pylab.plot(motor, muf_cor)
-        #pylab.show()
-        ot = file(outfile, "w")
-        ot.write("#mux=ln(I0/I1)\n#mus=ln(I1/I2)\n#muf = Sum(ROI)/I0\n#muf_cor = Sum(ROI/OCR*ICR)/I0\n")
-        ot.write("#HEADER\n")
-        ot.write("#%s\tmux\tmuf\tmuf_cor\tmus\tI0\tI1\tI2\n" % header[0])
-        fmt='%.18e\t' * 7 + '%.18e\n'
-        for i in range(len(motor)):
-            ot.write(fmt % (motor[i], mux[i], muf[i], muf_cor[i], mus[i], I0[i], I1[i], I2[i]))
-        ot.close()
-        print "\tData saved in %s" % (outfile)
-    
+            print "File format unrecognized, skipping"
+        if header >= 0:
+            matx = npy.loadtxt(infile).transpose()
+            motor = matx[0]
+            I0 = matx[header.index("I0")]
+            I1 = matx[header.index("I1")]
+            I2 = matx[header.index("I2")]
+            #Clock = matx[header.index("Clock")]
+            try:
+                Time = matx[header.index("TimeFromEpoch")]
+            except:
+                Time = -1
+            
+            rois=[]
+            icrs=[]
+            ocrs=[]
+            for i in range(len(header)):
+                if header[i].startswith("roi_"):
+                    rois.append(i)
+                if header[i].startswith("icr_"):
+                    icrs.append(i)
+                if header[i].startswith("ocr_"):
+                    ocrs.append(i)
+            #print len(rois)
+            #print rois
+            #print len(icrs)
+            #print icrs
+
+            mux = npy.log(I0 / I1)
+            mus = npy.log(I1 / I2)
+            
+            muf = matx[rois[0]] * 1.
+            muf_cor =  matx[rois[0]] * 1.
+            if not(0 in matx[ocrs[0]]):
+                muf_cor = matx[rois[0]] * matx[icrs[0]] / matx[ocrs[0]]
+            for i in range(1, len(rois)):
+                muf += matx[rois[i]]
+                if not(0 in matx[ocrs[i]]):    
+                    muf_cor += matx[rois[i]] * matx[icrs[i]] / matx[ocrs[i]]
+            
+            muf = muf / I0
+            muf_cor = muf_cor / I0 
+            
+            #pylab.figure()
+            #pylab.plot(motor, muf_cor)
+            #pylab.show()
+            ot = file(outfile, "w")
+            ot.write("#1)Energy\n#2)mux=ln(I0/I1)\n#3)muf = Sum(ROI)/I0\n#4)muf_cor = Sum(ROI/OCR*ICR)/I0\n#5)mus=ln(I1/I2)\n")
+            ot.write("#6)I0\n#7)I1\n#8)I2\n")
+            ot.write("#HEADER\n")
+            ot.write("#%s\tmux\tmuf\tmuf_cor\tmus\tI0\tI1\tI2\n" % header[0])
+            fmt='%.18e\t' * 7 + '%.18e\n'
+            for i in range(len(motor)):
+                ot.write(fmt % (motor[i], mux[i], muf[i], muf_cor[i], mus[i], I0[i], I1[i], I2[i]))
+            ot.close()
+            print "\tData saved in %s" % (outfile)
+    except:
+        print "Error dealing with file: ",infile
+        print "Skipping."
+        pass
