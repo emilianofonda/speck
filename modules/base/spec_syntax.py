@@ -1,8 +1,4 @@
 #Spec like commands created on 3/12/2007
-#The import section has been commented out since I got no other way to
-#make the wa work apart from using an execfile instead of import.
-# Hint: the solution is to build a wa object that will be instantiated later on 
-#       during the startup procedure as for the ct from a pseudo_counter
 
 #Imports section
 from IPython.core.ipapi import get as get_ipython
@@ -24,9 +20,6 @@ import Universal_Prefilter
 
 from numpy import mod
 from mycurses import *
-
-def wm(x):
-    return x.pos()
 
 #def whois(x, glob=globals()):
 def whois(x):
@@ -96,6 +89,9 @@ def wa(returns = False, verbose = True):
 
 #def whereall(g=globals()):
 #    return wa(g)
+
+def wm(x):
+    return x.pos()
 
 def whereall():
     return wa()
