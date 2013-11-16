@@ -2,6 +2,9 @@ from time import strftime,gmtime,sleep,localtime,asctime
 from time import time as cputime
 from numpy import round, array, sum, mean, loadtxt, savetxt
 import os
+
+from PyTango import DeviceProxy
+
 from GetPositions import GetPositions
 from GracePlotter import *
 try:
@@ -410,9 +413,10 @@ def pre_scan(handler=None):
         print "ascan: pre_scan: Error when getting motors positions!"
         pass
     try:
-        buffer.append("#Machine Current = %g\n"%(self.ms.read_attribute("current").value))
-    except:
+        buffer.append("#Machine Current = %g\n" % ( DeviceProxy("ans/ca/machinestatus").read_attribute("current").value) )
+    except Exception, tmp:
         buffer.append("#Machine Current = nan\n")
+        print tmp
     buffer.append("#"+asctime()+"\n")
     handler.writelines(buffer)
     return 

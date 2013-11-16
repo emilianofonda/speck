@@ -498,9 +498,9 @@ __tmp={
 "mir2_t2z"    :["d09-1-c05/op/mir2-mt_t2","position"],
 "mir2_t3z"    :["d09-1-c05/op/mir2-mt_t3","position"],
 "mir2_c"    :["d09-1-c05/op/mir2-mt_c.1","position"],
-"keith_I0"      :["d09-1-cx1/ex/amp_iv.7","gain"],
-"keith_I1"      :["d09-1-cx1/ex/amp_iv.8","gain"],
-"keith_I2"      :["d09-1-cx1/ex/amp_iv.9","gain"],
+#"keith_I0"      :["d09-1-cx1/ex/amp_iv.7","gain"],
+#"keith_I1"      :["d09-1-cx1/ex/amp_iv.8","gain"],
+#"keith_I2"      :["d09-1-cx1/ex/amp_iv.9","gain"],
 "forno"     :["D09-1-CX1/EX/eur2408i.1","temperature"],
 "forno_set"     :["d09-1-cx1/ex/eur2408_ctrl.1","temperature"]
 }

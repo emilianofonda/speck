@@ -102,7 +102,7 @@ def ReadScanForm(filename):
     res=[]
     usebender=None
     plotSetting=defaultPlotSetting
-    tuning=True
+    tuning=False
     degree=1
     detune=None
     nodark=default_nodark
