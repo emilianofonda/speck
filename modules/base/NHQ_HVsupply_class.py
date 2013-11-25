@@ -2,7 +2,7 @@ from PyTango import DeviceProxy,DevState
 from time import sleep
 
 class NHQ_HVsupply:
-	def __init__(self,label="",channel="A",speed=50.,deadtime=0.1,timeout=3.,tolerance=1.):
+	def __init__(self,label="",channel="A",speed=50.,deadtime=0.1,timeout=3.,tolerance=2.):
 		"""Control just one of the two HV channels: channels are A and B. Default channel is A.
 		You can currently set the voltage, restore the voltage and change the speed ramp."""
 		self.label=label

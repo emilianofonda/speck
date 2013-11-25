@@ -133,7 +133,7 @@ def __backup_data():
         #__Default_Backup_Folder="/nfs/ruche-samba/samba-soleil/com-samba/"
         currentDataFolder=os.getcwd()
         print "Data Folder is :",currentDataFolder
-        if currentDataFolder.startswith(__Default_Data_Folder):
+        if currentDataFolder.startswith(__Default_Data_Folder) and len(currentDataFolder.split(os.sep))>len(__Default_Data_Folder.split(os.sep)):
             currentBackupFolder=__Default_Backup_Folder+"/"+\
             currentDataFolder.lstrip(__Default_Data_Folder.rstrip("/"))
             cbf=currentBackupFolder

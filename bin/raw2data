@@ -8,7 +8,7 @@ import glob
 #print sys.argv
 
 infiles = []
-for i in range(1, len(sys.argv)-1):
+for i in range(1, len(sys.argv)):
     infiles += glob.glob(sys.argv[i])
 
 for infile in infiles:

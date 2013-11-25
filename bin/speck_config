@@ -1,0 +1,14 @@
+#!/usr/bin/python
+import os,sys,string
+
+for i in ["commands",]:
+    try:
+        exec("import "+i)
+    except:
+        raise Exception("speck: cannot import module %s\n" % (i))
+                            
+args=["",]
+dn = os.path.dirname(os.path.realpath(__file__))
+dn=dn[:dn.rfind(os.sep)]
+
+os.system("nedit "+ dn + "/profile/profile_speck/startup/65_user_config.py")

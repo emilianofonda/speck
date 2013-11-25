@@ -92,7 +92,8 @@ shell.run_cell = new_run_cell
 def mylineparser(line):
     keywords=["mv","mvr","tw","wa","wm","ct","count","ascan","a2scan","dscan","scan",\
     "xascan","xdscan","set_mon","where_mon","fw","bw","stop","start",\
-    "BL_Close","BL_Open","pos","lm","set_lm","domacro","editmacro","timescan"]
+    "BL_Close","BL_Open","pos","lm","set_lm","domacro","editmacro","timescan",
+    "setroi"]
 
     parts = line.split()
     if parts[0] in keywords:
@@ -150,7 +151,7 @@ def mylineparser(line):
 __Universal_Syntax_Keywords={"mv":[],"mvr":[],"fw":[],"bw":[],"start":[],"stop":[],"tw":[],"wa":[],"wm":[],"ct":[],\
 "count":[],"ascan":[],"a2scan":[],"dscan":[],"scan":[],"xascan":[],"escan":[1,2],\
 "xdscan":[],"set_mon":[],"where_mon":[],"BL_Close":[],"BL_Open":[],"pos":[],\
-"lm":[],"set_lm":[],"domacro":[1],"editmacro":[1],"tscan":[],"timescan":[],"close":[],"open":[]}
+"lm":[],"set_lm":[],"domacro":[1],"editmacro":[1],"tscan":[],"timescan":[],"close":[],"open":[],"setroi":[]}
 
 def universal_lineparser(line):
     try:

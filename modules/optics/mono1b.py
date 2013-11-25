@@ -519,7 +519,7 @@ class mono1:
     def calculate_curvatureradius(self,theta):
         return 1./self.calculate_curvature(theta)
 
-    def pos(self,energy=None,wait=True,Ts2_Moves=False,NOFailures=0):
+    def pos(self,energy=None,wait=True,Ts2_Moves=True,NOFailures=0):
         """Move the mono at the desired energy"""
         if NOFailures>5:
             raise Exception("mono1b: too many retries trying the move. (NO>5)")
@@ -572,11 +572,11 @@ class mono1:
             raise tmp
         return self.pos()
 
-    def move(self,energy=None,wait=True,Ts2_Moves=False):
+    def move(self,energy=None,wait=True,Ts2_Moves=True):
         """Please use pos instead. Move is obsolete and subject ro removal in next future. """
         return self.pos(energy,wait,Ts2_Moves)
 
-    def go(self,energy=None,wait=False,Ts2_Moves=False):
+    def go(self,energy=None,wait=False,Ts2_Moves=True):
         """Go to energy and do not wait."""
         return self.pos(energy,wait,Ts2_Moves)    
         

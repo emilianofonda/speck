@@ -227,6 +227,13 @@ try:
     mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig1)
     mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",user_readconfig=user_readconfig2)
     #print "mca1,mca2 --> DxMap cards"
+    def setroi(ch1, ch2):
+    	"""Set roi an ALL channels between ch1 and ch2. Works on mca1 and mca2"""
+	if mca1 <> None:
+		mca1.setROIs(-1, ch1, ch2)
+	if mca2 <> None:
+		mca2.setROIs(-1, ch1, ch2)
+	return 
 except Exception, tmp:
     print "Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.1"
     print "Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.2"
@@ -690,7 +697,7 @@ try:
     #Rz2
     Rz2_par=[14090.] #Rz2_par=[18829.7,-335.001] #[-97804.,]  Do not use: law changed!
     #Rs2
-    Rs2_par=[-4701.] #Rs2_par=[-4550.,]
+    Rs2_par=[-4664.] #Rs2_par=[-4550.,]
     #Rx2
     Rx2_par=[-13204.] #Rx2_par=[-17150.,]
     
@@ -821,12 +828,13 @@ except Exception, tmp:
 ######################################################################################
 
 ####DEFINE HERE THE DARK VALUES USED BY ESCAN
-
+#Modified 19/11/2013
 try:
     USER_DARK_VALUES = {
-    0 : [I0_gain, 0., 0., 0., 330., 334.3, 339.4, 393.7],
-    1 : [I1_gain, 0., 0., 0., 603.9, 608.2, 615.3, 690.5],
-    2 : [I2_gain, 0., 0., 0., 66.7, 67.5, 76.3, 76.3, 165.3]
+    0 : [I0_gain, 0., 0., 0., 72.1, 73.8, 80.6, 160.2],
+#    0 : [I0_gain, 0., 0., 0., 330., 334.3, 339.4, 393.7],
+    1 : [I1_gain, 0., 0., 0., 631.9, 633.6, 639.4, 710.8],
+    2 : [I2_gain, 0., 0., 0., 71.5, 72.7, 75.6, 145.9]
     }
 except Exception, tmp:
     print "Error defining dark current values... maybe amplifiers have not been defined..."
@@ -857,6 +865,8 @@ except Exception, tmp:
 #########################################
 
 try:
+    #in the right order...
+    __allshutters=[FE, obxg, obx]
     FEopen=FE.open
     shclose=obxg.close
     sexclose=obx.close
@@ -864,21 +874,31 @@ except Exception, tmp:
     print tmp
     print "Check state of shutters... something wrong in script..."
 
-def FEclose():
-    FE.close()
-    obxg.close()
-    obx.close()
-    return FE.state()
+#def FEclose():
+#    FE.close()
+#    obxg.close()
+#    obx.close()
+#    return FE.state()
     
-def shopen():
-    FEopen()
-    return obxg.open()
+#def shopen():
+#    FEopen()
+#    return obxg.open()
     
-def sexopen():
-    FEopen()
-    shopen()
-    return obx.open()
+#def sexopen():
+#    FEopen()
+#    shopen()
+#    return obx.open()
 
+def shopen(level=1):
+    for i in range(level+1):
+    	__allshutters[i].open()
+    return
+
+def shclose(level=1):
+    for i in range(len(__allshutters)-1,level-1,-1):
+    	__allshutters[i].close()
+	print __allshutters[i].label," ",__allshutters[i].state()
+    return
 
 ##
 ##  Functions to wait for a certain time, date, for the beam to come back...

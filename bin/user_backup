@@ -1,0 +1,11 @@
+#!/usr/bin/python
+import os,sys,string
+
+dn = os.path.dirname(os.path.realpath(__file__))
+dn=dn[:dn.rfind(os.sep)]
+
+os.putenv("SPECK",dn)
+os.system("export SPECK=%s"%dn)
+execfile(dn + "/config/speck_folders.py")
+os.system(dn+"/bin/do_backup")
+    

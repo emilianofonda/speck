@@ -138,7 +138,6 @@ def move(*args):
     "Spec like absolute move"
     return mv(*args)
 
-        
 def mvr(*args):
     "Spec like relative move"
     if len(args) < 1:
@@ -294,6 +293,48 @@ def stop(*x):
         return States
     else:
         return x.stop()
+
+def OFF(*x):
+    "OFF action on an object"
+    if type(x) in [tuple,list]:
+        if len(x)==1: x=x[0]    
+    if type(x) in [tuple,list]:
+        States={}
+        for i in x:
+            try:
+                i.off()
+                States[i]=i.state()
+            except Exception, tmp:
+                try:
+                    print "OFF on ",i.label,"failed"
+                except:
+                    print "Failure!"
+                raise tmp
+        return States
+    else:
+        return x.off()
+
+def ON(*x):
+    "ON action on an object"
+    if type(x) in [tuple,list]:
+        if len(x)==1: x=x[0]    
+    if type(x) in [tuple,list]:
+        States={}
+        for i in x:
+            try:
+                i.on()
+                States[i]=i.state()
+            except Exception, tmp:
+                try:
+                    print "ON on ",i.label,"failed"
+                except:
+                    print "Failure!"
+                raise tmp
+        return States
+    else:
+        return x.on()
+
+
 
 def Open(*x):
     "Open action on an object (valve? Front end? ...)"
