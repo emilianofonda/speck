@@ -131,7 +131,7 @@ def __backup_data():
             return
         #__Default_Data_Folder="/home/experiences/samba/com-samba/ExperimentalData/"
         #__Default_Backup_Folder="/nfs/ruche-samba/samba-soleil/com-samba/"
-        currentDataFolder=os.getcwd()
+        currentDataFolder=os.path.realpath(os.getcwd())
         print "Data Folder is :",currentDataFolder
         if currentDataFolder.startswith(__Default_Data_Folder) and len(currentDataFolder.split(os.sep))>len(__Default_Data_Folder.split(os.sep)):
             currentBackupFolder=__Default_Backup_Folder+"/"+\
