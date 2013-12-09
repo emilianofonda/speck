@@ -5,7 +5,7 @@ __IP = get_ipython()
 #associated to the instrument
 __tmp=["x","z","phi","filter",\
 "fluo_x","fluo_z","fluo_s",\
-"sample_rx","sample_rx2","theta","theta2"]
+"sample_rx","sample_rx2","theta"]
 for i in __tmp:
 	try:
 		exec("del "+i)
@@ -29,8 +29,8 @@ __samplePos=19.54  #To be checked...
 #NI6602
 try:
 	user_readconfig=[
-	["counter1",	"I01",		"%d",	"cts"],
-	["counter2",	"I00",		"%d",	"cts"],
+	["counter1",	"I00",		"%d",	"cts"],
+	["counter2",	"I01",		"%d",	"cts"],
 	["counter3",	"TEY",		"%d",	"cts"],
 	["counter4",	"CT3",		"%d",	"cts"],
 	["counter5",	"CT4",	        "%d",	"cts"],
@@ -162,6 +162,20 @@ sh_fast=None
 ######################################################################################
 #		INCLUDE SCANS SECTION                                                #
 ######################################################################################
+
+####DEFINE HERE THE DARK VALUES USED BY ESCAN
+#Modified 19/11/2013
+try:
+    USER_DARK_VALUES = {
+    0 : [I0_gain, 164.4,164.4,164.4,164.4,164.4,164.4,164.4],
+    1 : [I1_gain, 0., 0., 0., 0., 0., 0., 0.],
+    2 : [I2_gain, 0., 0., 0., 0., 0., 0., 0.]
+    }
+except Exception, tmp:
+    print "Error defining dark current values... maybe amplifiers have not been defined..."
+    print tmp
+
+
 
 ##########################################################################
 # finally include the escan class to perform energy scans   !            #

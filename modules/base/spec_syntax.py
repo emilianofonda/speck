@@ -303,10 +303,19 @@ def OFF(*x):
         for i in x:
             try:
                 i.off()
-                States[i]=i.state()
             except Exception, tmp:
                 try:
                     print "OFF on ",i.label,"failed"
+                except:
+                    print "Failure!"
+                raise tmp
+        sleep(0.2)
+        for i in x:
+            try:
+                States[i]=i.state()
+            except Exception, tmp:
+                try:
+                    print "State on ",i.label,"failed"
                 except:
                     print "Failure!"
                 raise tmp
@@ -323,10 +332,19 @@ def ON(*x):
         for i in x:
             try:
                 i.on()
-                States[i]=i.state()
             except Exception, tmp:
                 try:
                     print "ON on ",i.label,"failed"
+                except:
+                    print "Failure!"
+                raise tmp
+        sleep(0.2)
+        for i in x:
+            try:
+                States[i]=i.state()
+            except Exception, tmp:
+                try:
+                    print "State on ",i.label,"failed"
                 except:
                     print "Failure!"
                 raise tmp

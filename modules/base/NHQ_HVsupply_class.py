@@ -2,7 +2,7 @@ from PyTango import DeviceProxy,DevState
 from time import sleep
 
 class NHQ_HVsupply:
-	def __init__(self,label="",channel="A",speed=50.,deadtime=0.1,timeout=3.,tolerance=2.):
+	def __init__(self,label="",channel="A",speed=50.,deadtime=0.2,timeout=3.,tolerance=2.):
 		"""Control just one of the two HV channels: channels are A and B. Default channel is A.
 		You can currently set the voltage, restore the voltage and change the speed ramp."""
 		self.label=label
@@ -42,7 +42,7 @@ class NHQ_HVsupply:
 		v0=self.voltage()
 		#if abs(self.att_voltage.value-v0)>self.tolerance:
 		#	return DevState.MOVING
-		sleep(5.)
+		sleep(self.deadtime)
 		#Communication and refresh are very sloooooow!!!!!!!!!
 		if abs(self.voltage()-v0)>(self.tolerance):
 			return DevState.MOVING

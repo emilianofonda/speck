@@ -67,6 +67,7 @@ class MOSTAB_serial:
         ll.append(self.InOutS("?OPRANGE"))
         ll.append(self.InOutS("?PIEZO"))
         ll.append(self.InOutS("?SPEED"))
+        ll.append(self.InOutS("?SLOPE"))
         return ll
 
     def state(self):

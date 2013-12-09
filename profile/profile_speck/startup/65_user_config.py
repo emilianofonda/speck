@@ -722,7 +722,7 @@ try:
     #Si111
     d=__d111
     
-    #When nothing shoudl be defined just set it to None
+    #When nothing should be defined just set it to None
     #dcm=None
     
     #dcm=mono1(d=d,H=25.0,mono_name="d09-1-c03/op/mono1",
@@ -733,7 +733,7 @@ try:
     dcm=mono1(d=d,H=25.0,mono_name="d09-1-c03/op/mono1",
     rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, tz1=tz1, bender=bender,
     sourceDistance=16.119,delay=0.0,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
-    WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=40000.)
+    WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=20000.)
 
     #Bender disable:
     #dcm=mono1(d=d,H=25.0,mono_name="d09-1-c03/op/mono1",
@@ -892,13 +892,14 @@ except Exception, tmp:
 def shopen(level=1):
     for i in range(level+1):
     	__allshutters[i].open()
-    return
+	print __allshutters[i].label," ",__allshutters[i].state()
+    return __allshutters[level].state()
 
 def shclose(level=1):
     for i in range(len(__allshutters)-1,level-1,-1):
     	__allshutters[i].close()
 	print __allshutters[i].label," ",__allshutters[i].state()
-    return
+    return __allshutters[level].state()
 
 ##
 ##  Functions to wait for a certain time, date, for the beam to come back...
