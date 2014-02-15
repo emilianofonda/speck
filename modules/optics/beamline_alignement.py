@@ -5,6 +5,7 @@
 from PyTango import DevState, DeviceProxy
 from time import sleep
 from spec_syntax import mv
+from motor_class import wait_motor
 import os
 import numpy
 
@@ -117,7 +118,7 @@ def SetAngleSEXAFS(theta=None,hgap=25.,SEXAFS=True):
 
 #Do the full job:
 #Nouvelle procedure ... rustine!
-def SetAngle(theta=None,hgap=25.,SEXAFS=True):
+def SetAngle(theta = None,hgap = 25.,SEXAFS = True, bender2 = None):
     """Close the vertical primary slits, align everything, open the primary slits back to the previous value.
     If the previous gap value in mm exceeds the mir1_pitch (mrad) the mir1_pitch (mrad) is taken as slit gap in mm.
     WARNING: uses global variables of the shell as the following:
@@ -141,13 +142,13 @@ def SetAngle(theta=None,hgap=25.,SEXAFS=True):
     FE = shell.user_ns["FE"]
     del shell
 
-    theta2=mir1_pitch.pos()
-    if theta==None:
+    theta2 = mir1_pitch.pos()
+    if theta == None:
         return mir1_pitch.pos()
     try:
-        previous_vgap1=vgap1.pos()
-        festate=FE.state()
-        if festate==DevState.OPEN:
+        previous_vgap1 = vgap1.pos()
+        festate = FE.state()
+        if festate == DevState.OPEN:
             print "Closing front End"
             if FE.close()==DevState.CLOSE:
                 print "Front End closed"
@@ -166,10 +167,16 @@ def SetAngle(theta=None,hgap=25.,SEXAFS=True):
         __s=mir1_pitch.state()
         __s=mir2_pitch.state()
         #Start moving
+        
+        if bender2 == None:
+            mir2_c_target = __m2bender(theta,hgap)
+        else:
+            mir2_c_target = bender2
+            
         mv(mir1_pitch, theta, mir2_pitch, __m2theta(theta), \
         po1, __girder(theta), po2, __obxgZ(theta), po3, __exafsZ(theta),\
         po4, __exafsZ(theta), po5, __exafsZ(theta), \
-        mir1_c, __m1bender(theta,hgap), mir2_c, __m2bender(theta,hgap) )
+        mir1_c, __m1bender(theta,hgap), mir2_c, mir2_c_target )
         mv(mir1_roll, __m1Roll(theta), mir2_roll, __m2Roll(theta))
         mv(mir1_z, __m1Z(theta), mir2_z, __m2Z(theta))
         #mir1_c.go(__m1bender(theta,hgap))
@@ -194,7 +201,8 @@ def SetAngle(theta=None,hgap=25.,SEXAFS=True):
             tpp_aknowledge(0)
             sleep(2.)
             mir1_c.go(__m1bender(theta,hgap))
-            mir2_c.go(__m2bender(theta,hgap))
+            #mir2_c.go(__m2bender(theta,hgap))
+            mir2_c.go(mir2_c_target)
             mir1_pitch.pos(theta)
             mir1_roll.pos(__m1Roll(theta))
             mir1_z.pos(__m1Z(theta))

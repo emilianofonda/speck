@@ -691,14 +691,17 @@ class escan_class:
             raise exceptions.SyntaxError("Wrong value for usebender")
     
     def lagrange(self,x,points=[[0.,],[0.,]]):
-        P=0.
-        n=len(points[0])
-        for i in range(n):
-            p=1.0
-            for j in range(n):
-                if(j!=i):
-                    p=p*(x-points[0][j])/(points[0][i]-points[0][j])
-            P+=p*points[1][i]            
+        if len(points[0])==2:
+            P = (points[1][1] - points[0][1]) / (points[1][0] - points[0][0])) * (x - points[0][0]) + points[0][1]
+        else:
+            P = 0.
+            n = len(points[0])
+            for i in range(n):
+                p=1.0
+                for j in range(n):
+                    if(j!=i):
+                        p=p*(x-points[0][j])/(points[0][i]-points[0][j])
+                P+=p*points[1][i]            
         return P
     
     
@@ -2005,7 +2008,7 @@ class escan_class:
             if self.TUNING:
                 print "Retuning last point..."
                 #print "Tuning at Energy=",self.tuning_points[0][-1]
-                #self.dcm.pos(self.tuning_points[0][-1],Ts2_Moves=self.Ts2_Moves)
+                #self.dcm.pos(self.tuning_points[0][-1], Ts2_Moves=self.Ts2_Moves)
                 self.tuning_points[0][-1]=self.dcm.pos()
                 if self.detune==1:
                     #__p=self.tuning_points[1][-1]

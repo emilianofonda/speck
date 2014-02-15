@@ -489,7 +489,7 @@ class mono1:
 
     def ts2(self,theta):
         """Calculate ts2 position for a given angle"""
-        return self.H*0.5/sin(theta/180.*pi)
+        return max(35., self.H*0.5/sin(theta/180.*pi))
 
     def tz2(self,theta):
         """Calculate tz2 position for a given angle"""
@@ -519,7 +519,7 @@ class mono1:
     def calculate_curvatureradius(self,theta):
         return 1./self.calculate_curvature(theta)
 
-    def pos(self,energy=None,wait=True,Ts2_Moves=True,NOFailures=0):
+    def pos(self,energy=None,wait=True,Ts2_Moves=False,NOFailures=0):
         """Move the mono at the desired energy"""
         if NOFailures>5:
             raise Exception("mono1b: too many retries trying the move. (NO>5)")
@@ -572,11 +572,11 @@ class mono1:
             raise tmp
         return self.pos()
 
-    def move(self,energy=None,wait=True,Ts2_Moves=True):
+    def move(self,energy=None,wait=True,Ts2_Moves=False):
         """Please use pos instead. Move is obsolete and subject ro removal in next future. """
         return self.pos(energy,wait,Ts2_Moves)
 
-    def go(self,energy=None,wait=False,Ts2_Moves=True):
+    def go(self,energy=None,wait=False,Ts2_Moves=False):
         """Go to energy and do not wait."""
         return self.pos(energy,wait,Ts2_Moves)    
         
@@ -778,16 +778,29 @@ class mono1:
         return __rx2
 
     def seten(self,energy=None):
+        try:
+            shell=get_ipython()
+            shell.user_ns["mostab"].stop()
+        except Exception, tmp:
+            print tmp
         if energy==None:
             return self.pos()
         self.enable_tz2()
         if self.m_rx2fine<>None: self.m_rx2fine.pos(5)
+        try:
+            shell.user_ns["mostab"].pos(5.)
+        except Exception, tmp:
+            print tmp
         if self.m_rz2<>None:     self.m_rz2.pos(self.calculate_rz2(energy))
         if self.m_rs2<>None:     self.m_rs2.pos(self.calculate_rs2(energy))
         if self.m_rx2<>None:     self.m_rx2.pos(self.calculate_rx2(energy))
         self.pos(energy,Ts2_Moves=True)
         if energy<=6000.:
             self.m_ts2.pos(35.)
+        try:
+            shell.user_ns["mostab"].start()
+        except:
+            pass
         return self.pos()
     
     def setall(self,energy=None):

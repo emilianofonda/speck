@@ -324,6 +324,7 @@ class MOSTAB_serial:
     def tune(self, p1=1, p2=9, np=50, dt=0.1, offset = 0., draw=True):
         ascan(self, p1, p2, (p1-p2)/float(np), dt = dt, channel=0, graph=0, scaler="cpt")
         self.pos(ScanStats.baricenter_scaled)
+        time.sleep(1)
         return self.start()
 
     def oscbeam(self,p1,p2,dp=0.01, phase = 0., repeat=1):
@@ -360,6 +361,21 @@ class MOSTAB_serial:
         pylab.legend()
         pylab.grid()
         return points
+
+    def report(self):
+        print "MOSTAB at ", self.pos()
+        print "Reporting MOSTAB setup"
+        print "----------------------"
+        print "AMPLITUDE  = ", self("?AMPLITUDE")[1]
+        print "PHASE      = ", self("?PHASE")[1]
+        print "FREQUENCY  = ", self("?FREQUENCY")[1]
+        print "TAU        = ", self("?TAU")[1]
+        print "SLOPE      = ", self("?SLOPE")[1]
+        print "OUTBEAM    = ", self("?OUTBEAM")[1]
+        print "OPRANGE    = ", self("?OPRANGE")[1]
+        print ""
+        print "In case of doubt, please, verify bandwith limit of amplifier..."
+        return
 
 class MOSTAB_tango(MOSTAB_serial):
     def __init__(self, port=None, echo=1, EndOfLine=13, Space=32, deadtime=0.05, EndOfLine_out="\r\n"):

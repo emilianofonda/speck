@@ -335,6 +335,7 @@ try:
     __m="rx2fine"
     rx2fine=piezo("d09-1-c03/op/mono1-mt_rx_fine.2")
     __allpiezos+=[rx2fine]
+    #rx2fine = mostab
 except Exception, tmp:
     #print tmp
     print "I could not define ",__m ,"of the monochromator!"
@@ -491,6 +492,7 @@ __tmp={
 "I0_gain"    :["d09-1-cx1/ex/amp_iv.1","gain"],
 "I1_gain"    :["d09-1-cx1/ex/amp_iv.2","gain"],
 "I2_gain"    :["d09-1-cx1/ex/amp_iv.3","gain"],
+"mostab_gain"    :["d09-1-cx1/ex/amp_iv.4","gain"],
 "mir1_pitch"    :["d09-1-c02/op/mir1-tpp","pitch"],
 "mir1_roll"    :["d09-1-c02/op/mir1-tpp","roll"],
 "mir1_z"    :["d09-1-c02/op/mir1-tpp","zC"],
@@ -678,28 +680,28 @@ try:
 
     #Si220
     #Bender (steps versus 1/R)    
-    #A1_1=503280.0 #+520646.0 #521776.  # 523711.   # 553693    # 538800. 
-    #A0_1=53248.0  #-55962.1  #-59292.2 #-41290.7   #-54703.8   #-51886.8 
-    #A1_2=507372.0 #+511363.0 #535801.0 # 535801    # 520862    # 504967. 
-    #A0_2=58929.8  #-10790.7  #-21530   #-39488.6   #-25208.5   #-22156.9     
+    A1_1=504940.0 #503280.0 #+520646.0 #521776.  # 523711.   # 553693    # 538800. 
+    A0_1=81255.0 #53248.0  #-55962.1  #-59292.2 #-41290.7   #-54703.8   #-51886.8 
+    A1_2=486220.0 #507372.0 #+511363.0 #535801.0 # 535801    # 520862    # 504967. 
+    A0_2=69396.0 #58929.8  #-10790.7  #-21530   #-39488.6   #-25208.5   #-22156.9     
     #Rz2 ()
-    #Rz2_par=[-18000.,-1937.05] #[-111301.,1039.25,-6.01026] #[-110268.,510.453]      #[-201042.,5461.03,-50.5829]
+    Rz2_par=[-20000.,] #[-18000.,-1937.05] #[-111301.,1039.25,-6.01026] #[-110268.,510.453]      #[-201042.,5461.03,-50.5829]
     #Rs2 ()
-    #Rs2_par=[-1343.,] #[-2294.91,-0.127889,4.2417e-6,-3.58466e-11] #[-3135.83,4.46052]       #[-521.,]
+    Rs2_par=[-1150.,]#[-1343.,] #[-2294.91,-0.127889,4.2417e-6,-3.58466e-11] #[-3135.83,4.46052]       #[-521.,]
     #Rx2 ()
-    #Rx2_par=[-8285.5+1096.,192.212,-12.8381,0.37944,-0.00433698]  
+    Rx2_par=[-8257.2,229.33,-14.074,0.36688,-0.003593,] #[-8285.5+1096.,192.212,-12.8381,0.37944,-0.00433698]  
 
     #Si111   
-    A1_1= 561133.0   #545784.
-    A0_1=-106981.0   #-21607.9
-    A1_2= 475432.0   #478509.
-    A0_2= -42899.8   #-42891.0
+    #A1_1= 561133.0   #545784.
+    #A0_1=-106981.0   #-21607.9
+    #A1_2= 475432.0   #478509.
+    #A0_2= -42899.8   #-42891.0
     #Rz2
-    Rz2_par=[14090.] #Rz2_par=[18829.7,-335.001] #[-97804.,]  Do not use: law changed!
+    #Rz2_par=[14090.] #Rz2_par=[18829.7,-335.001] #[-97804.,]  Do not use: law changed!
     #Rs2
-    Rs2_par=[-4664.] #Rs2_par=[-4550.,]
+    #Rs2_par=[-4664.] #Rs2_par=[-4550.,]
     #Rx2
-    Rx2_par=[-13204.] #Rx2_par=[-17150.,]
+    #Rx2_par=[-13204.] #Rx2_par=[-17150.,]
     
     bender=sagittal_bender(bender1_name="d09-1-c03/op/mono1-mt_c.1",bender2_name="d09-1-c03/op/mono1-mt_c.2",\
     controlbox_rawdata1="d09-1-c00/ca/bai.1121-mos.1-cb-rawdata",controlbox_rawdata2="d09-1-c00/ca/bai.1121-mos.1-cb-rawdata.2",\
@@ -718,9 +720,9 @@ except Exception, tmp:
 try:
     print "Defining dcm...",
     #Si220
-    #d=__d220
+    d=__d220
     #Si111
-    d=__d111
+    #d=__d111
     
     #When nothing should be defined just set it to None
     #dcm=None
@@ -733,7 +735,7 @@ try:
     dcm=mono1(d=d,H=25.0,mono_name="d09-1-c03/op/mono1",
     rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, tz1=tz1, bender=bender,
     sourceDistance=16.119,delay=0.0,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
-    WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=20000.)
+    WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=43000.)
 
     #Bender disable:
     #dcm=mono1(d=d,H=25.0,mono_name="d09-1-c03/op/mono1",
@@ -831,10 +833,10 @@ except Exception, tmp:
 #Modified 19/11/2013
 try:
     USER_DARK_VALUES = {
-    0 : [I0_gain, 0., 0., 0., 72.1, 73.8, 80.6, 160.2],
-#    0 : [I0_gain, 0., 0., 0., 330., 334.3, 339.4, 393.7],
-    1 : [I1_gain, 0., 0., 0., 631.9, 633.6, 639.4, 710.8],
-    2 : [I2_gain, 0., 0., 0., 71.5, 72.7, 75.6, 145.9]
+#    0 : [I0_gain, 0., 0., 0., 72.1, 73.8, 80.6, 160.2],
+    0 : [I0_gain, 0., 0., 0., 346.5, 346.9, 352.9, 412.1],
+    1 : [I1_gain, 0., 0., 0., 644.4, 646.6, 654.5, 736.9],
+    2 : [I2_gain, 0., 0., 0., 79.7, 80.6, 87.5, 161.9]
     }
 except Exception, tmp:
     print "Error defining dark current values... maybe amplifiers have not been defined..."
@@ -867,9 +869,9 @@ except Exception, tmp:
 try:
     #in the right order...
     __allshutters=[FE, obxg, obx]
-    FEopen=FE.open
-    shclose=obxg.close
-    sexclose=obx.close
+    #FEopen=FE.open
+    #shclose=obxg.close
+    #sexclose=obx.close
 except Exception, tmp:
     print tmp
     print "Check state of shutters... something wrong in script..."
@@ -891,11 +893,32 @@ except Exception, tmp:
 
 def shopen(level=1):
     for i in range(level+1):
-    	__allshutters[i].open()
+        if "beamLinePSSInterlock" in __allshutters[i].DP.get_attribute_list() and __allshutters[i].DP.beamlinepssinterlock:
+                print "Front End is locked: calling wait_injection()"
+                wait_injection()
+                #raise Exception("Front End locked, verify PSS or try again later.")
+        if "isInterlocked" in __allshutters[i].DP.get_attribute_list() and __allshutters[i].DP.isInterlocked:
+                #raise Exception("Shutter locked, verify PSS or try again later.")
+                while(__allshutters[i].DP.isInterlocked):
+                    print "Waiting for PSS permission to open shutter... " + asctime() + "\r",
+                    sys.stdout.flush()
+                    sleep(1)
+        print ""
+        __allshutters[i].open()
 	print __allshutters[i].label," ",__allshutters[i].state()
+    try:
+        mostab.start()
+        print "mostab: start executed"
+    except:
+        pass
     return __allshutters[level].state()
 
 def shclose(level=1):
+    try:
+        mostab.stop()
+        print "mostab: stop executed"
+    except:
+        pass
     for i in range(len(__allshutters)-1,level-1,-1):
     	__allshutters[i].close()
 	print __allshutters[i].label," ",__allshutters[i].state()
