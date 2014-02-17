@@ -151,7 +151,8 @@ def mylineparser(line):
 __Universal_Syntax_Keywords={"mv":[],"mvr":[],"fw":[],"bw":[],"start":[],"stop":[],"tw":[],"wa":[],"wm":[],"ct":[],\
 "count":[],"ascan":[],"a2scan":[],"dscan":[],"scan":[],"xascan":[],"escan":[1,2],\
 "xdscan":[],"set_mon":[],"where_mon":[],"BL_Close":[],"BL_Open":[],"pos":[],\
-"lm":[],"set_lm":[],"domacro":[1],"editmacro":[1],"tscan":[],"timescan":[],"close":[],"open":[],"setroi":[]}
+"lm":[],"set_lm":[],"domacro":[1],"editmacro":[1],"tscan":[],"timescan":[],"close":[],"open":[],"setroi":[],
+"setuser":[1]}
 
 def universal_lineparser(line):
     try:
@@ -176,7 +177,7 @@ def universal_lineparser(line):
                         if not(parts[need_guimet].startswith("\"") or parts[need_guimet].startswith("\'")):
                             parts[need_guimet] = "\"" + parts[need_guimet] + "\""
                     #If you do not put the righ number of parameters... expect strange behavious!!!!
-                elif len(__Universal_Syntax_Keywords[parts[0]]) > 0:
+                elif len(__Universal_Syntax_Keywords[parts[0]]) > 0 and len(parts)>1:
                     for need_guimet in __Universal_Syntax_Keywords[parts[0]]:
                         if not(parts[need_guimet].startswith("\"") or parts[need_guimet].startswith("\'")):
                             parts[need_guimet] = "\"" + parts[need_guimet] + "\""
