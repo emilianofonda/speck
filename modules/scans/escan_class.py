@@ -689,19 +689,19 @@ class escan_class:
             return self.BENDER
         else:
             raise exceptions.SyntaxError("Wrong value for usebender")
-    
+  
+    def lin_interp(self,x,points=[[0.,],[0.,]]):
+        return (points[1][1] - points[0][1]) / (points[1][0] - points[0][0]) * (x - points[0][0]) + points[0][1]
+            
     def lagrange(self,x,points=[[0.,],[0.,]]):
-        if len(points[0])==2:
-            P = (points[1][1] - points[0][1]) / (points[1][0] - points[0][0])) * (x - points[0][0]) + points[0][1]
-        else:
-            P = 0.
-            n = len(points[0])
-            for i in range(n):
-                p=1.0
-                for j in range(n):
-                    if(j!=i):
-                        p=p*(x-points[0][j])/(points[0][i]-points[0][j])
-                P+=p*points[1][i]            
+        P = 0.
+        n = len(points[0])
+        for i in range(n):
+            p=1.0
+            for j in range(n):
+                if(j!=i):
+                    p=p*(x-points[0][j])/(points[0][i]-points[0][j])
+            P+=p*points[1][i]            
         return P
     
     
@@ -1366,7 +1366,8 @@ class escan_class:
             self.time_spent_for_scan=time()
             #
             #if self.TUNING: 
-            #    p=self.lagrange(self.trajectory["energy"][0],self.tuning_points)
+            #    p=self.lin_interp(self.trajectory["energy"][0],self.tuning_points)
+            ##    p=self.lagrange(self.trajectory["energy"][0],self.tuning_points)
             #    #Set the piezo at the first point by Fibonacci approach
             #    for __backlash_piezo_pos in array(self.__fibonacci(5)[::-1])*(-0.01)+p:
             #        self.dcm.m_rx2fine.pos(__backlash_piezo_pos)
@@ -1396,7 +1397,8 @@ class escan_class:
                     tmeasure = self.trajectory["time"][pointIndex]
                     t0 = time()
                     if self.TUNING: 
-                        p = self.lagrange(en, self.tuning_points)
+                        p = self.lin_interp(en, self.tuning_points)
+                        #p = self.lagrange(en, self.tuning_points)
                         self.dcm.m_rx2fine.go(p)
                         motors_to_wait.append(self.dcm.m_rx2fine)
                     else:

@@ -239,16 +239,25 @@ except Exception, tmp:
     print "Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.2"
     #print tmp
 
+try:
+    from sensor_group import sensor_group
+    mux=sensor("d09-1-c00/ex/tangoparser.1","mux")
+    mus=sensor("d09-1-c00/ex/tangoparser.1","mus")
+    MUXES=sensor_group([["d09-1-c00/ex/tangoparser.1",["mux","mus"]],])
+except Exception, tmp:
+    print tmp
+    print "Cannot define mux and mus on TangoParser"
+
 #ct
 try:
-    cpt=pseudo_counter(masters=[cpt0,])
+    cpt=pseudo_counter(masters=[cpt0,],slaves=[MUXES,])
     #ct=pseudo_counter(masters=[cpt,],slaves2arm2stop=[mca1,])
-    ct=pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2])
+    ct=pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[MUXES,])
 except Exception, tmp:
-    print "Failure defining ct speclike_syntax command"
-    print "Defaulting to cpt... ct=cpt... pysamba survival kit... is XIA dead?"
+    print "Failure defining ct "
+    print "Defaulting to cpt... ct=cpt... "
     ct=cpt
-    #print tmp
+    print tmp
 
 #Beam diagnostics: xbpm...
 #try: 
