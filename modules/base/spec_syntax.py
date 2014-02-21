@@ -417,14 +417,15 @@ def editmacro(macrofilename):
         print tmp
     return filepath + os.sep + macrofilename
 
-def domacro(macrofilename):
+def domacro(macrofilename, n=1):
     """macro file is a python code in the current folder or
-    in the scripts folder in the __pysamba_root folder"""
+    in the scripts folder in the __pysamba_root folder.
+    n may be used to repeat n times the same macro."""
     shell = get_ipython()
     if not(macrofilename in os.listdir(".")):
         if macrofilename in os.listdir(shell.user_ns["__pySamba_root"] + "/scripts"):
             macrofilename = shell.user_ns["__pySamba_root"] + "/scripts/" + macrofilename
-    return shell.user_ns["Universal_Prefilter"].process_macro_file(macrofilename,shell.user_ns)
+    return shell.user_ns["Universal_Prefilter"].process_macro_file(macrofilename,shell.user_ns,n)
 #    return SyntaxPrefilter.process_macro_file(macrofilename,__IP.user_ns)
 
 class pseudo_counter:

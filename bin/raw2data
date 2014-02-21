@@ -33,12 +33,19 @@ for infile in infiles:
             header = ll[ll.index("#HEADER\n") + 1][1:].split()
         except:
             print "File format unrecognized, skipping"
-        if header >= 0:
+        if len(header) >= 0:
             matx = npy.loadtxt(infile).transpose()
             motor = matx[0]
-            I0 = matx[header.index("I0")]
-            I1 = matx[header.index("I1")]
-            I2 = matx[header.index("I2")]
+            if "I0" in header:
+                I0 = matx[header.index("I0")]
+                I1 = matx[header.index("I1")]
+                I2 = matx[header.index("I2")]
+            elif "I00" in header:
+                I0 = matx[header.index("I00")]
+                I1 = I0 * 1.
+                I2 = I0 * 1.
+            else:
+                raise Exception ("Cannot recognize this HEADER")
             #Clock = matx[header.index("Clock")]
             try:
                 Time = matx[header.index("TimeFromEpoch")]
@@ -88,7 +95,8 @@ for infile in infiles:
                 ot.write(fmt % (motor[i], mux[i], muf[i], muf_cor[i], mus[i], I0[i], I1[i], I2[i]))
             ot.close()
             print "\tData saved in %s" % (outfile)
-    except:
+    except Exception, tmp:
+        print tmp
         print "Error dealing with file: ",infile
         print "Skipping."
         pass

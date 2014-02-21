@@ -18,7 +18,7 @@ print "#                Performing SEXAFS definitions                 #"
 print "################################################################"
 
 __samplePos=19.54  #To be checked...
-
+dcm.sample_at(19.54)
 
 ##-------------------------------------------------------------------------------------
 ##Define ReadOut Electronics Here
@@ -29,8 +29,8 @@ __samplePos=19.54  #To be checked...
 #NI6602
 try:
 	user_readconfig=[
-	["counter1",	"I00",		"%d",	"cts"],
-	["counter2",	"I01",		"%d",	"cts"],
+	["counter1",	"I0",		"%d",	"cts"],
+	["counter2",	"I1",		"%d",	"cts"],
 	["counter3",	"TEY",		"%d",	"cts"],
 	["counter4",	"CT3",		"%d",	"cts"],
 	["counter5",	"CT4",	        "%d",	"cts"],
@@ -83,10 +83,15 @@ try:
 except:
 	print RED+"Failure defining dxmap: d09-1-cx2/dt/dtc-mca_xmap.3"+RESET
 
+try:
+    __tmp = sensor_group([["d09-1-c00/ex/tangoparser.2",["smuf"]]])
+except:
+    print "Error defining tangoparser"
+
 #ct
 try:
 	cpt=pseudo_counter(masters=[cpt,])
-	ct=pseudo_counter(masters=[cpt,],slaves2arm2stop=[mca1,])
+	ct=pseudo_counter(masters=[cpt,],slaves2arm2stop=[mca1,],slaves=[__tmp,])
 except:
 	print "Failure defining ct speclike_syntax command"
 	print "Defaulting to cpt... ct=cpt... pysamba survival kit... is XIA dead?"
@@ -167,7 +172,7 @@ sh_fast=None
 #Modified 19/11/2013
 try:
     USER_DARK_VALUES = {
-    0 : [I0_gain, 164.4,164.4,164.4,164.4,164.4,164.4,164.4],
+    0 : [I0_gain, 0., 0., 0., 0., 0., 0., 0.],
     1 : [I1_gain, 0., 0., 0., 0., 0., 0., 0.],
     2 : [I2_gain, 0., 0., 0., 0., 0., 0., 0.]
     }

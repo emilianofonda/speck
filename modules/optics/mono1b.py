@@ -278,10 +278,12 @@ class mono1:
             print "No usable counter: no tuning possible"
         self.counter_channel=counter_channel
         try:
-            self.att_qDistance=self.DP.read_attribute("qDistance")
+            #self.att_qDistance=self.DP.read_attribute("qDistance")
+            raise Exception()
         except:
             print "Cannot read attribute qDistance from ",self.label
             self.att_qDistance=None
+            self.sample_at_position = 15.4
         self.sourceDistance=sourceDistance
         self.H=H
         self.d=d
@@ -428,22 +430,28 @@ class mono1:
             return self.__usebender
 
     def sample_at(self,distance=None):
-        for i in range(5):
-            try:
-                self.att_qDistance=self.DP.read_attribute("qDistance")
-                break
-            except:
-                if i==4: raise Exception("Cannot read focusing distance")
-        if distance==None:
-            return self.att_qDistance.value
+        if distance == None:
+            return self.sample_at_position
         else:
-            self.att_qDistance.value=distance
-            if self.state()==DevState.MOVING:
-                print "Trying to write qDistance on dcm while dcm is moving! wait..."
-                while(self.state()==DevState.MOVING):
-                    sleep(self.deadtime)
-            self.DP.write_attribute("qDistance",distance)
-            return self.sample_at()
+            self.sample_at_position = distance
+
+#    def sample_at(self,distance=None):
+#        for i in range(5):
+#            try:
+#                self.att_qDistance=self.DP.read_attribute("qDistance")
+#                break
+#            except:
+#                if i==4: raise Exception("Cannot read focusing distance")
+#        if distance==None:
+#            return self.att_qDistance.value
+#        else:
+#            self.att_qDistance.value=distance
+#            if self.state()==DevState.MOVING:
+#                print "Trying to write qDistance on dcm while dcm is moving! wait..."
+#                while(self.state()==DevState.MOVING):
+#                    sleep(self.deadtime)
+#            self.DP.write_attribute("qDistance",distance)
+#            return self.sample_at()
 
     def status(self):
         return "Nothing yet"
@@ -654,7 +662,7 @@ class mono1:
             print tmp
         if not(nested):
             dp=0.75
-            optimum=self.old_tune(max(optimum-dp,0.1),min(optimum+dp,9.9),np=np,tolerance=tolerance,countingtime=countingtime,nested=True)
+            optimum=self.old_tune(max(optimum - dp * 2.,0.1),min(optimum + dp*2.,9.9),np=np,tolerance=tolerance,countingtime=countingtime,nested=True)
             self.m_rx2fine.pos(optimum)
             print "Tuning this point took: %5.2f seconds"%(time()-t)
         return optimum

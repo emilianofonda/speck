@@ -221,13 +221,15 @@ def fileparser(filename_in,filename_out):
     fout.close()
     return
 
-def process_macro_file(filename,uns):
-    """This command open your macro convert it to standard language in macro.tmp file and the execute it"""
+def process_macro_file(filename,uns, n=1):
+    """This command open your macro convert it to standard language in macro.tmp file and the execute it.
+    n may be used to repeat the macro n times."""
     macro_tmp_file="macro_%07.4f.tmp" %time()
     #print "Parsing macro ",filename," into temporary file ",macro_tmp_file
     fileparser(filename,macro_tmp_file)
     #print "Executing file ",macro_tmp_file
-    execfile(macro_tmp_file,uns)
+    for __repeat_this_macro in range(n):
+        execfile(macro_tmp_file, uns)
     #print "Removing temporary file ",macro_tmp_file
     os.remove(macro_tmp_file)
     return

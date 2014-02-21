@@ -610,7 +610,8 @@ class escan_class:
         for i in self.auto_fluo_channels:
             self.auto_fluo_mask[i]=1
         self.DARK=array([0.,]*len(self.cpt.read()),dtype=float32)
-        self.tuning_points=[[0.,]*(self.tuningdegree+1),[0.,]*(self.tuningdegree+1)]
+        #self.tuning_points=[[0.,]*(self.tuningdegree+1),[0.,]*(self.tuningdegree+1)]
+        self.tuning_points=[[0.,0.],[0.,0.]]
         #self.TUNING_OK=False
         self.Ts2_Moves=Ts2_Moves
         if self.detectionMode=="sexafs":
@@ -660,15 +661,15 @@ class escan_class:
     def scan_tuning(self,n=1):
         """Sample points evenly in space.  n is the polynome degree, default n is 1, that means 2 points."""        
         #"""Sample points accordingly to Gauss criterion. n is the polynome degree, default n is 1, that means 2 points."""
-        self.tuning_points=[[0.,]*(n+1),[0.,]*(n+1)]
+        n = 1
+        #self.tuning_points=[[0.,]*(n+1),[0.,]*(n+1)]
         #for i in range(n+1):
         #    self.tuning_points[0][i]=-cos(0.5*pi*(2.*i+1.)/(n+1))*(self.e2-self.e1)*0.5+(self.e1+self.e2)*0.5
-        if n<=0:
-            self.tuning_points[0][0]=(self.e2+self.e1)*0.5
-            n=0
-        else:
-            for i in range(n+1):
-                self.tuning_points[0][i]=self.e1+i*(self.e2-self.e1)/float(n)
+        #if n<=0:
+        #    self.tuning_points[0][0]=(self.e2+self.e1)*0.5
+        #    n=0
+        for i in range(2):
+            self.tuning_points[0][i]=self.e1+i*(self.e2-self.e1)/float(n)
         for i in range(n,-1,-1):
             #Backlash recovery
             #self.backlash_recovery(self.tuning_points[0][i])
@@ -691,8 +692,10 @@ class escan_class:
             raise exceptions.SyntaxError("Wrong value for usebender")
   
     def lin_interp(self,x,points=[[0.,],[0.,]]):
-        return (points[1][1] - points[0][1]) / (points[1][0] - points[0][0]) * (x - points[0][0]) + points[0][1]
-            
+        return (points[1][1] - points[1][0]) / (points[0][1] - points[0][0]) * (x - points[0][0]) + points[1][0]
+        #print "Lin_interp :",__pp
+        #return __pp
+        
     def lagrange(self,x,points=[[0.,],[0.,]]):
         P = 0.
         n = len(points[0])
@@ -2018,7 +2021,7 @@ class escan_class:
                     self.tuning_points[1][-1]=self.dcm.tune()
                 else:
                     self.tuning_points[1][-1]=self.dcm.detune(self.detune)
-                    #print "Detuned of ",self.detune*100,"%"
+                    print "Detuned of ",self.detune*100,"%"
         #Close file before backup
         handler.close()
         #Execute backup
