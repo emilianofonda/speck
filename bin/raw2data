@@ -7,6 +7,17 @@ import glob
 
 #print sys.argv
 
+#fluo channels to skip (name of them)
+fout=[]
+if "-fout" in sys.argv:
+    fout_i = sys.argv.index("-fout")
+    for j in sys.argv[fout_i+1:-1]:
+        if j.startswith("-"):
+            break
+        else:
+            fout.append(int(j))
+print fout
+
 infiles = []
 for i in range(1, len(sys.argv)):
     infiles += glob.glob(sys.argv[i])
@@ -56,11 +67,11 @@ for infile in infiles:
             icrs=[]
             ocrs=[]
             for i in range(len(header)):
-                if header[i].startswith("roi_"):
+                if header[i].startswith("roi_") and int(header[i][4:6]) not in fout:
                     rois.append(i)
-                if header[i].startswith("icr_"):
+                if header[i].startswith("icr_") and int(header[i][4:6]) not in fout:
                     icrs.append(i)
-                if header[i].startswith("ocr_"):
+                if header[i].startswith("ocr_") and int(header[i][4:6]) not in fout:
                     ocrs.append(i)
             #print len(rois)
             #print rois
