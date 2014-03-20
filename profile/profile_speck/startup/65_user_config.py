@@ -243,10 +243,11 @@ try:
     from sensor_group import sensor_group
     mux=sensor("d09-1-c00/ex/tangoparser.1","mux")
     mus=sensor("d09-1-c00/ex/tangoparser.1","mus")
-    MUXES=sensor_group([["d09-1-c00/ex/tangoparser.1",["mux","mus"]],])
+    MUXES=sensor_group([["d09-1-c00/ex/tangoparser.1",["mux","mus","muf"]],])
 except Exception, tmp:
     print tmp
     print "Cannot define mux and mus on TangoParser"
+    atk(mux)
 
 #ct
 try:
@@ -741,7 +742,8 @@ try:
     #sourceDistance=16.119,delay=0.0,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
     #WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=40000.)
 
-    dcm=mono1(d=d,H=25.0,mono_name="d09-1-c03/op/mono1",
+    #dcm=mono1(d=d,H=25.0,mono_name="d09-1-c03/op/mono1",
+    dcm=mono1(d=d,H=25.0,mono_name="tmp/monodcm/mono.test",
     rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, tz1=tz1, bender=bender,
     sourceDistance=16.119,delay=0.0,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
     WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=43000.)

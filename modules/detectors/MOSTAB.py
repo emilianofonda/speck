@@ -14,7 +14,7 @@ from tango_serial import tango_serial
 
 class MOSTAB_serial:
 
-    def __init__(self, port=0, baudrate=9600, echo=1, deadtime=0.05):
+    def __init__(self, port=0, baudrate=9600, echo=0, deadtime=0.05):
         self.SerPort=serial.Serial(0)
         self.SerPort.baudrate=baudrate
         self.SerPort.timeout=1

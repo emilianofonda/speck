@@ -283,8 +283,8 @@ class mono1:
         except:
             print "Cannot read attribute qDistance from ",self.label
             self.att_qDistance=None
-            #print "Default distance is now 15.4m"
-            #self.sample_at_position = 15.4
+            print "Default distance is now 15.4m"
+            self.sample_at_position = 15.4
         self.sourceDistance=sourceDistance
         self.H=H
         self.d=d
@@ -528,7 +528,7 @@ class mono1:
     def calculate_curvatureradius(self,theta):
         return 1./self.calculate_curvature(theta)
 
-    def pos(self,energy=None,wait=True,Ts2_Moves=False,NOFailures=0):
+    def pos(self,energy=None,wait=True,Ts2_Moves=False, Tz2_Moves=True,NOFailures=0):
         """Move the mono at the desired energy"""
         if NOFailures>5:
             raise Exception("mono1b: too many retries trying the move. (NO>5)")
@@ -550,9 +550,10 @@ class mono1:
                 #    print "mono1b.py: Hard coded limits of the Si220 bender exceeded"
                 #    raise Exception("Hard bender limits are c1<=310000steps and c2<=395000Steps")
                 move_list+=[self.bender.c1,__c1c2[0],self.bender.c2,__c1c2[1]]
-            if((Ts2_Moves)and(self.usets2())): 
+            if (Ts2_Moves and self.usets2()): 
                 move_list+=[self.m_ts2,self.ts2(theta)]
-            if(self.usetz2()): move_list+=[self.m_tz2,self.tz2(theta)]
+            if (Tz2_Moves and self.usetz2()): 
+                move_list+=[self.m_tz2,self.tz2(theta)]
             #Let's move it, move it!
             #print move_list
             #print __c1c2[0], __c1c2[1]
@@ -581,11 +582,11 @@ class mono1:
             raise tmp
         return self.pos()
 
-    def move(self,energy=None,wait=True,Ts2_Moves=False):
+    def move(self,energy=None,wait=True,Ts2_Moves=False, Tz2_Moves=True):
         """Please use pos instead. Move is obsolete and subject ro removal in next future. """
         return self.pos(energy,wait,Ts2_Moves)
 
-    def go(self,energy=None,wait=False,Ts2_Moves=False):
+    def go(self,energy=None,wait=False,Ts2_Moves=False, Tz2_Moves=True):
         """Go to energy and do not wait."""
         return self.pos(energy,wait,Ts2_Moves)    
         

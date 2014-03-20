@@ -140,8 +140,8 @@ for infile in infiles:
                         while(j < 4 and (j + 1) * (i + 1) <= nchannels):
                             wg2("set label 1 %s at graph 0.1, graph 0.9" % ("'" + "ROI_%02i/I0" % (i * 4  + j) + "'") )
                             wg2("set origin %3.2f,%3.2f" % (j * 0.25, 1.- (i+1) * 1. / nrows))
-                            wg2.plot(Gnuplot.Data(motor, matx[ocrs[i * 4 + j]]/I0, with_="l 1 2"),\
-                            Gnuplot.Data(motor, matx[ocrs[i * 4 + j]] / I0 * matx[icrs[i * 4 + j]] / matx[ocrs[i * 4 + j]], with_="l 3 2"))
+                            wg2.plot(Gnuplot.Data(motor, matx[rois[i * 4 + j]]/I0, with_="l 1 2"),\
+                            Gnuplot.Data(motor, matx[rois[i * 4 + j]] / I0 * matx[icrs[i * 4 + j]] / matx[ocrs[i * 4 + j]], with_="l 3 2"))
                             j += 1
                         pass
                     wg2("unset multi")

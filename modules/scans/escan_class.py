@@ -476,6 +476,8 @@ class escan_class:
             self.RollCorrection=False
         #
         self.notz2=thisform["notz2"]
+        if self.notz2:
+            print "notz2: TZ2 will not be used."
         self.notz2_auto_limit=thisform["notz2_auto_limit"]
         self.detune=thisform["detune"]
         self.dark=not(thisform["nodark"])
@@ -654,7 +656,7 @@ class escan_class:
         points=array(self.__fibonacci(dummypoints+2)[-1:1:-1])*(-de)+energy
         print "Performing backlash recovery over: ",points
         for en in points:
-            self.dcm.pos(en,Ts2_Moves=self.Ts2_Moves)
+            self.dcm.pos(en,Ts2_Moves=self.Ts2_Moves,Tz2_Moves=not(self.notz2))
             sleep(deadtime)
         return
 
@@ -674,12 +676,14 @@ class escan_class:
             #Backlash recovery
             #self.backlash_recovery(self.tuning_points[0][i])
             #
-            self.dcm.pos(self.tuning_points[0][i],Ts2_Moves=self.Ts2_Moves)
+            self.dcm.pos(self.tuning_points[0][i],Ts2_Moves=self.Ts2_Moves,Tz2_Moves=not(self.notz2))
+            print "Tuning point at E=",self.dcm.pos()
             if self.detune==1:
                 self.tuning_points[1][i]=self.dcm.tune()
             else:
                 self.tuning_points[1][i]=self.dcm.detune(self.detune)
                 print "Detuned of ",self.detune*100,"%"
+            print " "
         return self.tuning_points
 
     def usebender(self,flag=None):
@@ -1391,8 +1395,11 @@ class escan_class:
             #
             pointIndex = 0
             #
-            self.dcm.pos(self.trajectory["energy"][0], Ts2_Moves = self.Ts2_Moves)
-            sleep(0.3)
+            dummy_point = 2 * self.trajectory["energy"][0] - self.trajectory["energy"][1]
+            if self.TUNING: 
+                self.dcm.m_rx2fine.pos(self.lin_interp(dummy_point, self.tuning_points))
+            self.dcm.pos(dummy_point, Ts2_Moves = self.Ts2_Moves, Tz2_Moves = not(self.notz2))
+            sleep(1)
             while(pointIndex < len(self.trajectory["energy"])):
                 try:    
                     motors_to_wait=[]
@@ -1420,7 +1427,7 @@ class escan_class:
                     #Let's move..."
                     #if self.notz2:
                     #    self.dcm.disable_tz2()
-                    actual = self.dcm.go(en, Ts2_Moves = self.Ts2_Moves)
+                    actual = self.dcm.go(en, Ts2_Moves = self.Ts2_Moves, Tz2_Moves = not(self.notz2))
                     wait_motor([self.dcm,] + motors_to_wait, verbose=False)  #[self.dcm, self.dcm.m_rs2, self.dcm.m_rx2fine])
                     actual = self.dcm.pos()
                     sleep(self.SettlingTime)
@@ -1916,7 +1923,7 @@ class escan_class:
             if self.TUNING and self.iscan>=1:
 #            if self.TUNING:
                 print "Retuning first point..."
-                self.dcm.pos(self.tuning_points[0][0],Ts2_Moves=self.Ts2_Moves)
+                self.dcm.pos(self.tuning_points[0][0], Ts2_Moves=self.Ts2_Moves, Tz2_Moves=not(self.notz2))
                 if self.RollCorrection:
                     self.dcm.m_rs2.pos(self.calculate_roll(self.tuning_points[0][0]))
                 if self.detune==1:

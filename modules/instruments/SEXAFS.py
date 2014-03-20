@@ -18,7 +18,7 @@ print "#                Performing SEXAFS definitions                 #"
 print "################################################################"
 
 __samplePos=19.54  #To be checked...
-#dcm.sample_at(19.54)
+dcm.sample_at(19.54)
 
 ##-------------------------------------------------------------------------------------
 ##Define ReadOut Electronics Here
