@@ -150,7 +150,7 @@ def mylineparser(line):
 
 __Universal_Syntax_Keywords={"mv":[],"mvr":[],"fw":[],"bw":[],"start":[],"stop":[],"tw":[],"wa":[],"wm":[],"ct":[],\
 "count":[],"ascan":[],"a2scan":[],"dscan":[],"scan":[],"xascan":[],"escan":[1,2],\
-"xdscan":[],"set_mon":[],"where_mon":[],"BL_Close":[],"BL_Open":[],"pos":[],\
+"xdscan":[],"set_mon":[],"where_mon":[],"shopen":[],"shclose":[],"pos":[],\
 "lm":[],"set_lm":[],"domacro":[1],"editmacro":[1],"tscan":[],"timescan":[],"close":[],"open":[],"setroi":[],
 "setuser":[1]}
 

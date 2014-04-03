@@ -472,6 +472,7 @@ __tmp={
 "sample_rx"    :["d09-1-cx1/ex/tab-mt_rx.1","position"],
 "sample_rx2"    :["d09-1-cx1/ex/tab-mt_rx.2","position"],
 "sample_rz"        :["d09-1-cx1/ex/tab-mt_rz.1","position"],
+"option1_x"        :["D09-1-CX1/EX/OPTION1-MT_TX.1","position"],
 "tbt_z"        :["d09-1-cx1/ex/cryo-tbt-mt_tz.1","position"],
 "fluo_x"    :["d09-1-cx1/dt/dtc_ge.1-mt_tx.1","position"],
 "fluo_s"    :["d09-1-cx1/dt/dtc_ge.1-mt_ts.1","position"],
@@ -844,8 +845,9 @@ except Exception, tmp:
 #Modified 19/11/2013
 try:
     USER_DARK_VALUES = {
+    0 : [I0_gain, 0., 0., 0., 0., 0., 0., 78.5],
 #    0 : [I0_gain, 0., 0., 0., 72.1, 73.8, 80.6, 160.2],
-    0 : [I0_gain, 0., 0., 0., 346.5, 346.9, 352.9, 412.1],
+#    0 : [I0_gain, 0., 0., 0., 346.5, 346.9, 352.9, 412.1],
     1 : [I1_gain, 0., 0., 0., 644.4, 646.6, 654.5, 736.9],
     2 : [I2_gain, 0., 0., 0., 79.7, 80.6, 87.5, 161.9]
     }
