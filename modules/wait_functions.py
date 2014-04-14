@@ -88,6 +88,7 @@ def wait_injection(TDL=FE,ol=[obxg,],vs=[],pi=[],maxpressure=1e-5,deadtime=1):
     #Empiric method for waiting injection. To be improved
     try:
         get_ipython().user_ns["mostab"].stop()
+        print "Stop on mostab... OK"
     except:
         pass
     permission=False
@@ -171,7 +172,8 @@ def checkTDL(TDL=FE):
 def interlockTDL(TDL=FE):
     try:
         interlock=(TDL.DP.read_attribute("beamLinePSSInterlock").value) or (TDL.DP.read_attribute("rfInterlock").value) or\
-        (TDL.DP.read_attribute("beamLineInterlock").value) or (TDL.DP.read_attribute("arcInterlock").value)
+        (TDL.DP.read_attribute("beamLineInterlock").value) or (TDL.DP.read_attribute("arcInterlock").value or \
+        (TDL.DP.frontEndStateValue in [2,]))
         interlock2=TDL.interlock()
         return interlock or interlock2
     except:

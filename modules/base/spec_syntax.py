@@ -254,6 +254,26 @@ def bw(*args):
 def open(*x):
     return Open(*x)
 
+def init(*x):
+    "init action on an object"
+    if type(x) in [tuple,list]:
+        if len(x)==1: x=x[0]    
+    if type(x) in [tuple,list]:
+        States={}
+        for i in x:
+            try:
+                i.init()
+                States[i]=i.state()
+            except Exception, tmp:
+                try:
+                    print "Init on ",i.label,"failed"
+                except:
+                    print "Failure!"
+                raise tmp
+        return States
+    else:
+        return x.init()
+
 def start(*x):
     "start action on an object"
     if type(x) in [tuple,list]:

@@ -906,8 +906,12 @@ except Exception, tmp:
 
 def shopen(level=1):
     for i in range(level+1):
+        if "frontEndStateValue" in __allshutters[i].DP.get_attribute_list() and __allshutters[i].DP.frontEndStateValue == 2:
+            print "Front End is locked by Machine Operator"
+            print "I will wait for electron beam injection..."
+            wait_injection()
         if "beamLinePSSInterlock" in __allshutters[i].DP.get_attribute_list() and __allshutters[i].DP.beamlinepssinterlock:
-                print "Front End is locked: calling wait_injection()"
+                print "Front End is beam line locked: calling wait_injection()"
                 wait_injection()
                 #raise Exception("Front End locked, verify PSS or try again later.")
         if "isInterlocked" in __allshutters[i].DP.get_attribute_list() and __allshutters[i].DP.isInterlocked:

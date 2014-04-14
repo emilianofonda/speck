@@ -229,6 +229,8 @@ def SetAngle(theta = None,hgap = 25.,SEXAFS = True, bender2 = None):
             vgap1.pos(0.5)
         else:    
             vgap1.pos(theta-0.2)
+    else:
+        vgap1.pos(theta-0.2)
     print "Primary vertical slits aperture: %6.4f mm"%(vgap1.pos())
     #Turn off the servo motors and less used steppers 
     po1.off()

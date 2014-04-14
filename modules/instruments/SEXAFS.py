@@ -17,8 +17,7 @@ print "################################################################"
 print "#                Performing SEXAFS definitions                 #" 
 print "################################################################"
 
-__samplePos=19.54  #To be checked...
-dcm.sample_at(19.54)
+print "dcm.sample_at should be at 19.54 when beam in SEXAFS."
 
 ##-------------------------------------------------------------------------------------
 ##Define ReadOut Electronics Here

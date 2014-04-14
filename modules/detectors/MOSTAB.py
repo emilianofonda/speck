@@ -327,7 +327,7 @@ class MOSTAB_serial:
         time.sleep(1)
         return self.start()
 
-    def oscbeam(self,p1,p2,dp=0.01, phase = 0., repeat=1):
+    def oscbeam(self,p1,p2,dp=0.01, phase = 0., repeat=3):
         self.mode("OSCILLATION")
         self.InOutS("PHASE %6.1f"% phase)
         points = []
