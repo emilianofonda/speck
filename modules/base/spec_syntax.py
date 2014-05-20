@@ -314,8 +314,8 @@ def stop(*x):
     else:
         return x.stop()
 
-def OFF(*x):
-    "OFF action on an object"
+def off(*x):
+    "off action on an object"
     if type(x) in [tuple,list]:
         if len(x)==1: x=x[0]    
     if type(x) in [tuple,list]:
@@ -343,8 +343,8 @@ def OFF(*x):
     else:
         return x.off()
 
-def ON(*x):
-    "ON action on an object"
+def on(*x):
+    "on action on an object"
     if type(x) in [tuple,list]:
         if len(x)==1: x=x[0]    
     if type(x) in [tuple,list]:
@@ -445,6 +445,8 @@ def domacro(macrofilename, n=1):
     if not(macrofilename in os.listdir(".")):
         if macrofilename in os.listdir(shell.user_ns["__pySamba_root"] + "/scripts"):
             macrofilename = shell.user_ns["__pySamba_root"] + "/scripts/" + macrofilename
+        elif macrofilename + ".py" in os.listdir(shell.user_ns["__pySamba_root"] + "/scripts"):
+            macrofilename = shell.user_ns["__pySamba_root"] + "/scripts/" + macrofilename + ".py"
     return shell.user_ns["Universal_Prefilter"].process_macro_file(macrofilename,shell.user_ns,n)
 #    return SyntaxPrefilter.process_macro_file(macrofilename,__IP.user_ns)
 
