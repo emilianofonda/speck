@@ -88,7 +88,7 @@ __pySamba_scans=__pySamba_root+"/modules/scans/"
 
 
 try:
-    get_ipython().magic("logstart -ot "+__pySamba_root+"/files/log/log.txt rotate")
+    get_ipython().magic("logstart -ort "+__pySamba_root+"/files/log/log.txt rotate")
 except Exception, tmp:
     print tmp
     print "Cannot log commands!"

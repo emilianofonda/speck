@@ -34,7 +34,7 @@ class MOSTAB_serial:
             "SCAN":PyTango.DevState.MOVING,
             "SEARCH":PyTango.DevState.MOVING,
             "RUN":PyTango.DevState.RUNNING,
-            "WAITBEAM":PyTango.DevState.RUNNING,
+            "WAITBEAM":PyTango.DevState.MOVING,
             "RUN":PyTango.DevState.RUNNING,
             "OVERLOAD":PyTango.DevState.ALARM,
             "ALARM":PyTango.DevState.ALARM
@@ -338,7 +338,7 @@ class MOSTAB_serial:
         tau = float(self.InOutS("?TAU")[1])
         
         time.sleep(0.1)
-        for p in numpy.linspace(p1, p2, int((p2-p1)/dp)):
+        for p in numpy.arange(p1, p2+dp, dp):
             print self.pos(p)
             time.sleep(0.1)
             self.InOutS("OSCIL ON")
