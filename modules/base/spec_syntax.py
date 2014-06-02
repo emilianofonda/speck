@@ -156,6 +156,7 @@ def Iref(x):
         x.InitializeReferencePosition()
     except:
         print "Cannot Execute Initialize Reference Position on motor"
+    sleep(0.2)
     wait_motor(x)
     sleep(0.2)
     return x.pos()

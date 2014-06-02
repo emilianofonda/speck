@@ -756,6 +756,7 @@ class escan_class:
                     if mod((len(self.auto_fluo_channels)-ncols**2),ncols)>0:
                         nrows+=1
                     gracewin3('arrange(%i,%i,0.05,0.,0.)'%(ncols,nrows))
+                    gracewin3('with g0;title "%s"'%self.filename)
                     for i in range(nrows*ncols):
                         gracewin3('with g%i'%(i))
                         gracewin3('world xmin %g'%(self.e1))
@@ -781,6 +782,7 @@ class escan_class:
                 gracewin2("timestamp 0., 0.\ntimestamp char size 0.5\ntimestamp on")
                 gracewin2("default char size 0.75")
                 gracewin2('arrange(2,1,0.12,0.1,0.1)')
+                gracewin2('with g0;title "%s"'%self.filename)
                 gracewin2.viewport={}
                 #Reference Absorption    
                 i=0
@@ -836,13 +838,14 @@ class escan_class:
                 gracewin2('xaxis tick minor off\nyaxis tick minor off')
                 gracewin2('redraw')
 
-                #Start gracewin1: absoprtion and fluorescence spectra
+                #Start gracewin1: absorption and fluorescence spectra
                 #Absorption or TEY
                 gracewin1=grace_np.GraceProcess()
                 gracewin1('arrange(2,1,0.12,0.1,0.1)')
                 gracewin1("timestamp 0., 0.\ntimestamp char size 0.5\ntimestamp on")
                 gracewin1("default char size 0.75")
-                gracewin1('with g0;legend 0.1,0.1;with g1;legend 0.1,0.1')
+                gracewin1('with g0;title "%s"'%self.filename)
+                gracewin1('with g0;legend 0.7,0.95;with g1;legend 0.7,0.1')
                 gracewin1.viewport={}
                 i=0
                 gracewin1('with g%i'%(i))
@@ -946,7 +949,7 @@ class escan_class:
                     gracewin5('yaxis label char size 0.6')
                     gracewin5('yaxis label color 2')
                     gracewin5('yaxis label "SEX_Fluo%i"'%(i))
-                gracewin5('with g1;legend 0.1,0.1')
+                gracewin5('with g1;legend 0.7,0.1')
                 gracewin5('redraw')
 
                 #Start gracewin4: SEXAFS fluorescence and TEY spectra
@@ -991,7 +994,7 @@ class escan_class:
                     gracewin4('yaxis label char size 0.75')
                     gracewin4('yaxis label color 2')
                     gracewin4('yaxis label "Sample Electron Yield"')
-                gracewin4('with g0;legend 0.1,0.1')
+                gracewin4('with g0;legend 0.7,0.95')
                 gracewin4('redraw')
             
                 self.gracewins={"sexafs_1":gracewin4,\
@@ -1234,6 +1237,7 @@ class escan_class:
         return
 
     def start(self,filename="",nscans=1,nowait=False):
+        self.filename = filename
         ####Hard coded parameters:####
         _UPDATE_GRAPHICS_EVERY=5
         __FLUSH_TO_DISK_EVERY=10
@@ -1395,7 +1399,7 @@ class escan_class:
             #
             pointIndex = 0
             #
-            dummy_point = 2 * self.trajectory["energy"][0] - self.trajectory["energy"][1]
+            dummy_point = (2 * self.trajectory["energy"][0]) - self.trajectory["energy"][1]
             if self.TUNING: 
                 self.dcm.m_rx2fine.pos(self.lin_interp(dummy_point, self.tuning_points))
             self.dcm.pos(dummy_point, Ts2_Moves = self.Ts2_Moves, Tz2_Moves = not(self.notz2))
