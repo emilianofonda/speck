@@ -6,8 +6,9 @@ import os
 #SPECK_BACKUP_FOLDER=""
 
 SPECK_DATA_FOLDER="/home/experiences/samba/com-samba/ExperimentalData"
-SPECK_BACKUP_FOLDER="/nfs/ruche-samba/samba-soleil/com-samba/"
+#SPECK_BACKUP_FOLDER="/nfs/ruche-samba/samba-soleil/com-samba/"
 #SPECK_BACKUP_FOLDER=""
+SPECK_BACKUP_FOLDER="/nfs/ruche-samba/share-temp/SAMBA"
 
 #####################################################################
 os.putenv("SPECK_DATA_FOLDER",SPECK_DATA_FOLDER)

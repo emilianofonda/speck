@@ -781,8 +781,9 @@ class escan_class:
                 gracewin2=grace_np.GraceProcess()
                 gracewin2("timestamp 0., 0.\ntimestamp char size 0.5\ntimestamp on")
                 gracewin2("default char size 0.75")
-                gracewin2('arrange(2,1,0.12,0.1,0.1)')
+                gracewin2('arrange(2,1,0.15,0.1,0.1)')
                 gracewin2('with g0;title "%s"'%self.filename)
+                gracewin2('with g0;legend 1.13,0.95;with g1;legend 0.9,0.1')
                 gracewin2.viewport={}
                 #Reference Absorption    
                 i=0
@@ -841,11 +842,11 @@ class escan_class:
                 #Start gracewin1: absorption and fluorescence spectra
                 #Absorption or TEY
                 gracewin1=grace_np.GraceProcess()
-                gracewin1('arrange(2,1,0.12,0.1,0.1)')
+                gracewin1('arrange(2,1,0.15,0.1,0.1)')
                 gracewin1("timestamp 0., 0.\ntimestamp char size 0.5\ntimestamp on")
                 gracewin1("default char size 0.75")
                 gracewin1('with g0;title "%s"'%self.filename)
-                gracewin1('with g0;legend 0.7,0.95;with g1;legend 0.7,0.1')
+                gracewin1('with g0;legend 1.13,0.95;with g1;legend 0.9,0.1')
                 gracewin1.viewport={}
                 i=0
                 gracewin1('with g%i'%(i))
@@ -1155,9 +1156,9 @@ class escan_class:
                 #For the fluo counts always overwrite the same curve for short
                 if self.detectionMode in ["fluo","vortex","sexafs"]:
                     for i in range(len(self.auto_fluo_channels)-1):
-                        gp(gws["exafs_3"],i,1,en,gd["fluochannels"][i+1],legend="%i"%i,color=1,noredraw=True)
+                        gp(gws["exafs_3"],i,1,en,gd["fluochannels"][i+1],color=1,noredraw=True)
                     gp(gws["exafs_3"],len(self.auto_fluo_channels)-1,1,en,gd["fluochannels"][len(self.auto_fluo_channels)],\
-                    legend="%i"%i,color=1)
+                    color=1)
                     #gp(gws["exafs_3"],0,1,en,gd["rontec"],color=3)
                     #
             elif self.detectionMode in ["sexafs",]:
