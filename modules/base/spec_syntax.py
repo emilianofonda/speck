@@ -418,6 +418,12 @@ def Close(*x):
     else:
         return x.close()
 
+def state(x):
+    return x.state()
+
+def status(x):
+    print x.status()
+
 #def ct(x=None):
 #    """Counts on all beamline counters... just a spec-like shortcut to cpt.
 #    This will be changed to scan_tools.py when possible."""

@@ -336,7 +336,7 @@ def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,n
         else:
             return array([x[:ml],y[:ml]])
     else:
-        return
+        return 
 
 #def dscan(mot,p1,p2,dp=0.1,dt=0.1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,glob=globals(),scaler="ct",fullmca=False,graph=0):
 def dscan(mot,p1,p2,dp=0.1,dt=0.1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,scaler="ct",fullmca=False,graph=0):

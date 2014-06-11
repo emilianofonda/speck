@@ -24,6 +24,7 @@ class MOSTAB_serial:
             self.InOutS("NOECHO")
         elif echo == 1:
             self.InOutS("ECHO")
+        self.echo = echo
         self.SerPort.flush()
         #self.InOutS("*CLS")
         #Cleanup pending auto profile if active
@@ -44,7 +45,7 @@ class MOSTAB_serial:
     def __call__(self,arg = None):
         if arg <> None:
             return self.InOutS(arg)
-        print "MOSTAB is at ", self.pos()
+        print "MOSTAB at ", self.pos()," is in state ",self.state(), "the outbeam signal is at %sV/10V"%(self("?BEAM")[self.echo].split()[1]) 
         #print "I0=%8.6e I1=%8.6e State=%s" % self.currents()
         #print "mode = %s" % self.pid()["modename"]
         #_i200_status = self.status()
@@ -54,24 +55,24 @@ class MOSTAB_serial:
         #    print "DAC_write_0 = %s DAC_write = %s" % (_i200_status["DAC_write_0"], _i200_status["DAC_write"])
         return
 
-    def status(self):
-        ll=[]
-        ll.append(self.InOutS("?STATE"))
-        ll.append(self.InOutS("?MODE"))
-        ll.append(self.InOutS("?AMPLITUDE"))
-        ll.append(self.InOutS("?FREQUENCY"))
-        ll.append(self.InOutS("?PHASE"))
-        ll.append(self.InOutS("?TAU"))
-        ll.append(self.InOutS("?INBEAM"))
-        ll.append(self.InOutS("?OUTBEAM"))
-        ll.append(self.InOutS("?OPRANGE"))
-        ll.append(self.InOutS("?PIEZO"))
-        ll.append(self.InOutS("?SPEED"))
-        ll.append(self.InOutS("?SLOPE"))
-        return ll
+#   def status(self):
+#       ll=[]
+#       ll.append(self.InOutS("?STATE"))
+#       ll.append(self.InOutS("?MODE"))
+#       ll.append(self.InOutS("?AMPLITUDE"))
+#       ll.append(self.InOutS("?FREQUENCY"))
+#       ll.append(self.InOutS("?PHASE"))
+#       ll.append(self.InOutS("?TAU"))
+#       ll.append(self.InOutS("?INBEAM"))
+#       ll.append(self.InOutS("?OUTBEAM"))
+#       ll.append(self.InOutS("?OPRANGE"))
+#       ll.append(self.InOutS("?PIEZO"))
+#       ll.append(self.InOutS("?SPEED"))
+#       ll.append(self.InOutS("?SLOPE"))
+#       return ll
 
     def state(self):
-        ss = self.InOutS("?STATE")[1]
+        ss = self.InOutS("?STATE")[self.echo]
         return self.states_table[ss]
 
     def open(self):
@@ -108,12 +109,12 @@ class MOSTAB_serial:
         return self.state()
 
     def error(self):
-        return self.InOutS("?ERR")[1]
+        return self.InOutS("?ERR")[self.echo]
 
     def pos(self, dest = None, wait = True):
         """Move the PIEZO to the desired position or report value"""
         if dest == None:
-            return float(self.InOutS("?PIEZO")[1].split(" ")[0])
+            return float(self.InOutS("?PIEZO")[self.echo].split(" ")[0])
         self.InOutS("PIEZO %8.6f" % dest)
         err = self.error()
         if err <> "OK":
@@ -129,7 +130,7 @@ class MOSTAB_serial:
 
 #    def period(self, period = None):
 #        if period == None:
-#            per=self.InOutS("PER?")[1]
+#            per=self.InOutS("PER?")[self.echo]
 #            return float(per.split(" ")[0])
 #        self.InOutS("PER %8.6f" % period)
 #        return self.period()
@@ -167,8 +168,8 @@ class MOSTAB_serial:
 #            ll=self.InOutS("FETCH:PROF?", n=2)
 #            if verbose > 1:
 #                print ll
-#            x.append(float(ll[1].split(",")[1]))
-#            cor_value = float(ll[1].split(",")[0])
+#            x.append(float(ll[self.echo].split(",")[1]))
+#            cor_value = float(ll[self.echo].split(",")[0])
 #            if cor_value == 1.:
 #                cor_value = 0
 #            y.append(cor_value)
@@ -268,7 +269,7 @@ class MOSTAB_serial:
 #    
     def mode(self, mode = None):
         if mode == None:
-            return self.InOutS("?MODE")[1]
+            return self.InOutS("?MODE")[self.echo]
         self.InOutS(mode)
         return self.mode()
 
@@ -281,14 +282,14 @@ class MOSTAB_serial:
 #        NOTA BENE: case of names matters!"""
 #        modes={0:"I1", 1:"I1 + I2", 2:"I1 - I2", 3:"I1 / I2", 4:"(I1 - I2) / (I1 + I2)"}
 #        if kwargs == {}:
-#            mode = int(self.InOutS("CONF:PID:MOD?", n=2)[1].strip())
+#            mode = int(self.InOutS("CONF:PID:MOD?", n=2)[self.echo].strip())
 #            #print "mode = " + modes[mode]
-#            rate = int(self.InOutS("CONF:PID:RAT?", n=2)[1].strip())
-#            limits=(self.InOutS("CONF:PID:LIM?", n=2)[1].strip()).split(",")
-#            limits=[float(limits[0][:-1]),float(limits[1][:-1])]
-#            lowCurrent=float(self.InOutS("CONF:PID:I1I2LOW?", n=2)[1].strip())
-#            KP=float(self.InOutS("CONF:PID:KP?", n=2)[1].strip())
-#            KI=float(self.InOutS("CONF:PID:KI?", n=2)[1].strip())
+#            rate = int(self.InOutS("CONF:PID:RAT?", n=2)[self.echo].strip())
+#            limits=(self.InOutS("CONF:PID:LIM?", n=2)[self.echo].strip()).split(",")
+#            limits=[float(limits[0][:-1]),float(limits[self.echo][:-1])]
+#            lowCurrent=float(self.InOutS("CONF:PID:I1I2LOW?", n=2)[self.echo].strip())
+#            KP=float(self.InOutS("CONF:PID:KP?", n=2)[self.echo].strip())
+#            KI=float(self.InOutS("CONF:PID:KI?", n=2)[self.echo].strip())
 #            return {"mode": mode, "rate": rate, "limits": limits,"lowCurrent": lowCurrent,"KP": KP,"KI": KI,"modename":modes[mode]}
 #        for i in kwargs:
 #            if i == "mode":
@@ -333,9 +334,9 @@ class MOSTAB_serial:
         points = []
         self.InOutS("OSCIL OFF")
         
-        frequency = float(self.InOutS("?FREQUENCY")[1])
-        amplitude = float(self.InOutS("?AMPLITUDE")[1])
-        tau = float(self.InOutS("?TAU")[1])
+        frequency = float(self.InOutS("?FREQUENCY")[self.echo])
+        amplitude = float(self.InOutS("?AMPLITUDE")[self.echo])
+        tau = float(self.InOutS("?TAU")[self.echo])
         
         time.sleep(0.1)
         for p in numpy.arange(p1, p2+dp, dp):
@@ -346,7 +347,7 @@ class MOSTAB_serial:
             main=0.
             quad=0.
             for i in xrange(repeat):
-                t_main, t_quad = map(float, self.InOutS("?OSCBEAM")[1].split())
+                t_main, t_quad = map(float, self.InOutS("?OSCBEAM")[self.echo].split())
                 main += t_main
                 quad += t_quad
             main = main / repeat
@@ -362,20 +363,23 @@ class MOSTAB_serial:
         pylab.grid()
         return points
 
-    def report(self):
-        print "MOSTAB at ", self.pos()
-        print "Reporting MOSTAB setup"
-        print "----------------------"
-        print "AMPLITUDE  = ", self("?AMPLITUDE")[1]
-        print "PHASE      = ", self("?PHASE")[1]
-        print "FREQUENCY  = ", self("?FREQUENCY")[1]
-        print "TAU        = ", self("?TAU")[1]
-        print "SLOPE      = ", self("?SLOPE")[1]
-        print "OUTBEAM    = ", self("?OUTBEAM")[1]
-        print "OPRANGE    = ", self("?OPRANGE")[1]
-        print ""
-        print "In case of doubt, please, verify bandwith limit of amplifier..."
-        return
+    def status(self):
+        ll = ""
+        ll += "MOSTAB at %f\n"%self.pos()
+        ll += "Reporting MOSTAB setup\n"
+        ll += "----------------------\n"
+        ll += "MODE       = %s\n"% self("?MODE")[self.echo]
+        ll += "AMPLITUDE  = %s\n"% self("?AMPLITUDE")[self.echo]
+        ll += "PHASE      = %s\n"% self("?PHASE")[self.echo]
+        ll += "FREQUENCY  = %s\n"% self("?FREQUENCY")[self.echo]
+        ll += "TAU        = %s\n"% self("?TAU")[self.echo]
+        ll += "SLOPE      = %s\n"% self("?SLOPE")[self.echo]
+        ll += "INBEAM     = %s\n"% self("?INBEAM")[self.echo]
+        ll += "OUTBEAM    = %s\n"% self("?OUTBEAM")[self.echo]
+        ll += "OPRANGE    = %s\n"% self("?OPRANGE")[self.echo]
+        ll += "SPEED      = %s\n"% self("?SPEED")[self.echo]
+        ll += "In case of doubt, please, verify bandwith limit of amplifier...\n"
+        return ll
 
 class MOSTAB_tango(MOSTAB_serial):
     def __init__(self, port=None, echo=1, EndOfLine=13, Space=32, deadtime=0.05, EndOfLine_out="\r\n"):
@@ -401,6 +405,7 @@ class MOSTAB_tango(MOSTAB_serial):
             self.InOutS("NOECHO")
         elif echo == 1:
             self.InOutS("ECHO")
+        self.echo = echo
         #if echo in [0, 1]:
         #    self.InOutS("SYST:COMM:TERM %1i"%echo)
         #self.InOutS("*CLS")
