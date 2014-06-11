@@ -65,15 +65,15 @@ def GetPositions(fname="",hardcopy=False,verbose=1):
                 print mot.label,"=",mot.pos()
             except:
                 print "Cannot read motor :", mot.label
-        print "Mirrors TPP positions:"
-        try:
-            print "mirror 1 TPP pitch=%8.6f roll=%8.6f zC=%8.6f\n" %(mir1.pitch(),mir1.roll(),mir1.zC())
-        except:
-            print "Cannot read mirror 1"
-        try:
-            print "mirror 2 TPP pitch=%8.6f roll=%8.6f zC=%8.6f\n" %(mir2.pitch(),mir2.roll(),mir2.zC())
-        except:
-            print "Cannot read mirror 2"
+#        print "Mirrors TPP positions:"
+#        try:
+#            print "mirror 1 TPP pitch=%8.6f roll=%8.6f zC=%8.6f\n" %(mir1.pitch(),mir1.roll(),mir1.zC())
+#        except:
+#            print "Cannot read mirror 1"
+#        try:
+#            print "mirror 2 TPP pitch=%8.6f roll=%8.6f zC=%8.6f\n" %(mir2.pitch(),mir2.roll(),mir2.zC())
+#        except:
+#            print "Cannot read mirror 2"
         for mot in __allslits:
             try:
                 print mot.label," Gap=%6.4f Pos=%6.4f In/Up=%6.4f Out/Down=%6.4f\n"%(mot.gap(),mot.pos(),mot.Up(),mot.Down())
@@ -100,14 +100,14 @@ def GetPositions(fname="",hardcopy=False,verbose=1):
             __encoders_output_file.write("%s = %8.6f \n"%(mot.label, mot.pos() ))
         except:
             __encoders_output_file.write("#Cannot get piezo"+mot.label+"\n")
-    try:
-        __encoders_output_file.write("#mirror 1 TPP pitch=%8.6f roll=%8.6f zC=%8.6f\n"%( mir1.pitch(),mir1.roll(),mir1.zC()))
-    except:
-        __encoders_output_file.write("#Cannot get mirror 1\n")
-    try:
-        __encoders_output_file.write("#mirror 2 TPP pitch=%8.6f roll=%8.6f zC=%8.6f\n"%( mir2.pitch(),mir2.roll(),mir2.zC()))
-    except:
-        __encoders_output_file.write("#Cannot get mirror 2\n")
+#    try:
+#        __encoders_output_file.write("#mirror 1 TPP pitch=%8.6f roll=%8.6f zC=%8.6f\n"%( mir1.pitch(),mir1.roll(),mir1.zC()))
+#    except:
+#        __encoders_output_file.write("#Cannot get mirror 1\n")
+#    try:
+#        __encoders_output_file.write("#mirror 2 TPP pitch=%8.6f roll=%8.6f zC=%8.6f\n"%( mir2.pitch(),mir2.roll(),mir2.zC()))
+#    except:
+#        __encoders_output_file.write("#Cannot get mirror 2\n")
     for mot in __allslits:
         try:
             __encoders_output_file.write("#"+mot.label+" Gap=%6.4f Pos=%6.4f In/Up=%6.4f Out/Down=%6.4f\n"\
@@ -196,9 +196,10 @@ def SetPositions(filename=""):
                     i[0].init()
                     sleep(3.)
                     _noinit=False
-                    i[0].on()
-                    sleep(1.)
-                    _nosh=False
+                    if "on" in dir (i[0]):
+                        i[0].on()
+                        sleep(1.)
+                        _nosh=False
                     i[0].DefinePosition(i[1])
                     _nodef=False
                     sleep(1.)
