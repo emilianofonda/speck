@@ -14,7 +14,7 @@ from tango_serial import tango_serial
 
 class MOSTAB_serial:
 
-    def __init__(self, port=0, baudrate=9600, echo=0, deadtime=0.05):
+    def __init__(self, port=0, baudrate=9600, echo=0, deadtime=0.05, init_file=""):
         self.SerPort=serial.Serial(0)
         self.SerPort.baudrate=baudrate
         self.SerPort.timeout=1
@@ -40,12 +40,53 @@ class MOSTAB_serial:
             "OVERLOAD":PyTango.DevState.ALARM,
             "ALARM":PyTango.DevState.ALARM
             }
+        self.init_file = init_file
         return
+
+    def init(self):
+        print "Setting hard coded SAMBA setup on MOSTAB (MoCo2) unit...",
+        self("MODE OSCILLATION")
+        self("AMPLITUDE 0.025")
+        self("PHASE 76.15")
+        self("FREQUENCY 38.4615")
+        self("TAU 1")
+        self("SLOPE -0.13")
+        self("INBEAM SOFT 1")
+        self("OUTBEAM VOLT NORM UNIP 10 NOAUTO")
+        self("OPRANGE 0.1 9.9 5")
+        self("SPEED 2 10")
+        print "OK."
+        print self.status()
+        print self()
+        return
+
+#   def init(self):
+#       if self.init_file <> "":
+#           try:
+#               ll = file(self.init_file).readlines()
+#           except:
+#               raise Exception("init_file specified not found or not readable: " + self.init_file)
+#       else:
+#           raise Exception("No init_file specified")
+#       print "Setting setup read from %s on MOSTAB (MoCo2) unit..."%(self.init_file)
+#       for i in ll:
+#           cmd = i.strip()
+#           if not cmd.startswith("#"):
+#               try:
+#                   self(cmd)
+#               except Exception, tmp:
+#                   raise Exception("Cannot send command to MOSTAB: " + cmd)
+#       print "...OK."
+#       print self.status()
+#       print self()
+#       return
 
     def __call__(self,arg = None):
         if arg <> None:
             return self.InOutS(arg)
-        print "MOSTAB at ", self.pos()," is in state ",self.state(), "the outbeam signal is at %sV/10V"%(self("?BEAM")[self.echo].split()[1]) 
+        max_Vout,gain_mode = self("?OUTBEAM")[self.echo].split()[-2:]
+        print "MOSTAB at ", self.pos()," is in state ",self.state(), "the outbeam signal is at %sV/%sV gain mode is %s"\
+        %(self("?BEAM")[self.echo].split()[1], max_Vout, gain_mode)
         #print "I0=%8.6e I1=%8.6e State=%s" % self.currents()
         #print "mode = %s" % self.pid()["modename"]
         #_i200_status = self.status()
@@ -382,7 +423,7 @@ class MOSTAB_serial:
         return ll
 
 class MOSTAB_tango(MOSTAB_serial):
-    def __init__(self, port=None, echo=1, EndOfLine=13, Space=32, deadtime=0.05, EndOfLine_out="\r\n"):
+    def __init__(self, port=None, echo=1, EndOfLine=13, Space=32, deadtime=0.05, EndOfLine_out="\r\n", init_file = ""):
         """System is asymmetric: 10 is sent to end command, while 13,10 is received"""
         myEOL={10:"\n",13:"\r"}
         self.serial=tango_serial(port, EndOfLine=[EndOfLine,], space=Space, deadtime=0.1)
@@ -411,6 +452,7 @@ class MOSTAB_tango(MOSTAB_serial):
         #self.InOutS("*CLS")
         #Cleanup pending auto profile if active
         #self.InOutS("PID:PROF 0")
+        self.init_file = init_file
         return
 
     def open(self):
