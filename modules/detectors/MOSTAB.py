@@ -43,43 +43,42 @@ class MOSTAB_serial:
         self.init_file = init_file
         return
 
+#    def init(self):
+#        print "Setting hard coded SAMBA setup on MOSTAB (MoCo2) unit...",
+#        self("MODE OSCILLATION")
+#        self("AMPLITUDE 0.025")
+#        self("PHASE 76.15")
+#        self("FREQUENCY 38.4615")
+#        self("TAU 1")
+#        self("SLOPE -0.13")
+#        self("INBEAM SOFT 1")
+#        self("OUTBEAM VOLT NORM UNIP 10 NOAUTO")
+#        self("OPRANGE 0.1 9.9 5")
+#        self("SPEED 2 10")
+#        print "OK."
+#        print self.status()
+#        print self()
+#        return
+ 
     def init(self):
-        print "Setting hard coded SAMBA setup on MOSTAB (MoCo2) unit...",
-        self("MODE OSCILLATION")
-        self("AMPLITUDE 0.025")
-        self("PHASE 76.15")
-        self("FREQUENCY 38.4615")
-        self("TAU 1")
-        self("SLOPE -0.13")
-        self("INBEAM SOFT 1")
-        self("OUTBEAM VOLT NORM UNIP 10 NOAUTO")
-        self("OPRANGE 0.1 9.9 5")
-        self("SPEED 2 10")
-        print "OK."
+        if self.init_file <> "":
+            try:
+                ll = file(self.init_file).readlines()
+            except:
+                raise Exception("init_file specified not found or not readable: " + self.init_file)
+        else:
+            raise Exception("No init_file specified")
+        print "Setting setup read from %s on MOSTAB (MoCo2) unit..."%(self.init_file)
+        for i in ll:
+            cmd = i.strip()
+            if not cmd.startswith("#"):
+                try:
+                    self(cmd)
+                except Exception, tmp:
+                    raise Exception("Cannot send command to MOSTAB: " + cmd)
+        print "...OK."
         print self.status()
-        print self()
-        return
-
-#   def init(self):
-#       if self.init_file <> "":
-#           try:
-#               ll = file(self.init_file).readlines()
-#           except:
-#               raise Exception("init_file specified not found or not readable: " + self.init_file)
-#       else:
-#           raise Exception("No init_file specified")
-#       print "Setting setup read from %s on MOSTAB (MoCo2) unit..."%(self.init_file)
-#       for i in ll:
-#           cmd = i.strip()
-#           if not cmd.startswith("#"):
-#               try:
-#                   self(cmd)
-#               except Exception, tmp:
-#                   raise Exception("Cannot send command to MOSTAB: " + cmd)
-#       print "...OK."
-#       print self.status()
-#       print self()
-#       return
+        return self()
 
     def __call__(self,arg = None):
         if arg <> None:
@@ -94,7 +93,7 @@ class MOSTAB_serial:
         #    print "Servo not running?"
         #else:
         #    print "DAC_write_0 = %s DAC_write = %s" % (_i200_status["DAC_write_0"], _i200_status["DAC_write"])
-        return
+        return self.pos()
 
 #   def status(self):
 #       ll=[]
