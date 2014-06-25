@@ -8,10 +8,10 @@ __Default_Data_Folder = os.getenv("SPECK_DATA_FOLDER")
 
 def setuser(name=None):
     try:
-        ll=file(os.getenv("SPECK") + "/files/config/user.cfg","r").readlines()
+        ll=file(os.getenv("SPECK") + "/config/user.cfg","r").readlines()
     except:
-        print "Missing user.cfg file in:",dn,"/files/config/"
-        cfgfile=file(os.getenv("SPECK") + "/files/config/user.cfg","w")
+        print "Missing user.cfg file in:",dn,"/config/"
+        cfgfile=file(os.getenv("SPECK") + "/config/user.cfg","w")
         cfgfile.close()
     
     cfg={}
@@ -34,7 +34,7 @@ def setuser(name=None):
         os.chdir(__Default_Data_Folder + os.sep +"%4i" % time.localtime()[0] + os.sep + "%4i%02i%02i" % time.localtime()[0:3] + "_%s" % name)
         cfg["NAME"] = name
         cfg["FOLDER"] = "%4i" % time.localtime()[0] +os.sep + "%4i%02i%02i" % time.localtime()[0:3] + "_%s" % name
-        cfgfile=file(os.getenv("SPECK") + "/files/config/user.cfg","w")
+        cfgfile=file(os.getenv("SPECK") + "/config/user.cfg","w")
         for i in cfg.keys():
             cfgfile.write("%s=%s\n" % (i,cfg[i]))
         cfgfile.close()
