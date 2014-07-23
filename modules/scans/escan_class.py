@@ -10,9 +10,9 @@ import Gnuplot
 
 from mycurses import *
 from wait_functions import checkTDL, wait_injection
-from motor_class import wait_motor
+#from motor_class import wait_motor
 from GetPositions import GetPositions
-from spec_syntax import wa
+from spec_syntax import wa, wait_motor
 
 try:
     import Tkinter

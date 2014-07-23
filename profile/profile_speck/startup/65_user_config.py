@@ -244,6 +244,7 @@ try:
     mux=sensor("d09-1-c00/ex/tangoparser.1","mux")
     mus=sensor("d09-1-c00/ex/tangoparser.1","mus")
     MUXES=sensor_group([["d09-1-c00/ex/tangoparser.1",["mux","mus","muf"]],])
+    #cam2_intensity = sensor_group([["d09-1-c04/dt/vg1.1-analyzer", ["MeanIntensity",]],])
 except Exception, tmp:
     print tmp
     print "Cannot define mux and mus on TangoParser"
@@ -995,16 +996,23 @@ except Exception, tmp:
 #    print "Error loading diffscan"
 #    print tmp
 
-try:
-    vslit=vgap3
-    hslit=hgap3
-except:
-    pass
 
 print "Instruments: default is"+RED+" EXAFS"+RESET+". Type "+RED+"SEXAFS"+RESET+" to use the second experimental hutch."
 
 def SEXAFS():
     return instrument("SEXAFS")
+
+
+####
+#### Define here below lists of moveables for a quick view with "wm"
+####
+
+
+slits=[vgap1,vpos1,hgap1,hpos1,vgap2,vpos2,vgap3,vpos3,hgap3,hpos3,vgap4,vpos4,hgap4,hpos4,vgap5,vpos5,hgap5,hpos5]
+sample=[x, z, phi, theta]
+fluo=[fluo_x, fluo_s, fluo_z]
+sexafs=[sx,sy,sz,sphi]
+optics=[dcm,rx1,rx2,rz2,rx2,rx2fine,tz2,ts2,mir1_pitch,mir1_roll,mir1_z,mir1_c,mir2_pitch,mir2_roll,mir2_z,mir2_c]
 
 ##
 #try:

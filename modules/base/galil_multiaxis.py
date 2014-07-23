@@ -1,4 +1,5 @@
-from motor_class import wait_motor
+#from motor_class import wait_motor
+from spec_syntax import wait_motor
 from PyTango import DeviceProxy, DevState, DevFailed,Database
 from time import sleep,time,asctime
 from numpy import mod, reshape,sort,inf,nan

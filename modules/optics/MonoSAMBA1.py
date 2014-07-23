@@ -9,7 +9,8 @@ from motor_class import *
 from counter_class import counter
 import PyTango
 from PyTango import DeviceProxy, DevState
-from motor_class import move_motor,wait_motor
+#from motor_class import move_motor,wait_motor
+from spec_syntax import move_motor,wait_motor
 import exceptions
 from numpy import arange,sign
 import thread

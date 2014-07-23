@@ -787,31 +787,35 @@ class mono1:
             __rx2+=self.Rx2_par[i]*th**i
         return __rx2
 
-    def seten(self,energy=None):
-        try:
-            shell=get_ipython()
-            shell.user_ns["mostab"].stop()
-        except Exception, tmp:
-            print tmp
-        if energy==None:
-            return self.pos()
-        self.enable_tz2()
-        if self.m_rx2fine<>None: self.m_rx2fine.pos(5)
-        try:
-            shell.user_ns["mostab"].pos(5.)
-        except Exception, tmp:
-            print tmp
-        if self.m_rz2<>None:     self.m_rz2.pos(self.calculate_rz2(energy))
-        if self.m_rs2<>None:     self.m_rs2.pos(self.calculate_rs2(energy))
-        if self.m_rx2<>None:     self.m_rx2.pos(self.calculate_rx2(energy))
-        self.pos(energy,Ts2_Moves=True)
-        if energy<=6000.:
-            self.m_ts2.pos(35.)
-        try:
-            shell.user_ns["mostab"].start()
-        except:
-            pass
-        return self.pos()
+    def seten(self, energy=None):
+        return self.pos(energy,Ts2_Moves=True)
+
+
+#    def seten(self,energy=None):
+#        try:
+#            shell=get_ipython()
+#            shell.user_ns["mostab"].stop()
+#        except Exception, tmp:
+#            print tmp
+#        if energy==None:
+#            return self.pos()
+#        self.enable_tz2()
+#        if self.m_rx2fine<>None: self.m_rx2fine.pos(5)
+#        try:
+#            shell.user_ns["mostab"].pos(5.)
+#        except Exception, tmp:
+#            print tmp
+#        if self.m_rz2<>None:     self.m_rz2.pos(self.calculate_rz2(energy))
+#        if self.m_rs2<>None:     self.m_rs2.pos(self.calculate_rs2(energy))
+#        if self.m_rx2<>None:     self.m_rx2.pos(self.calculate_rx2(energy))
+#        self.pos(energy,Ts2_Moves=True)
+#        if energy<=6000.:
+#            self.m_ts2.pos(35.)
+#        try:
+#            shell.user_ns["mostab"].start()
+#        except:
+#            pass
+#        return self.pos()
     
     def setall(self,energy=None):
         if energy==None:

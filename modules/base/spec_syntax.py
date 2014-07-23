@@ -8,11 +8,12 @@ from time import time, sleep
 import os
 import thread
 
-from motor_class import motor,piezo,motor_slit,move_motor, wait_motor
+from motor_class import motor,piezo,motor_slit
 from moveable import moveable
 from mm4005 import mm4005_motor
 from mono1b import mono1
 
+import PyTango
 from PyTango import DevState
 import Universal_Prefilter
 
@@ -91,13 +92,134 @@ def wa(returns = False, verbose = True):
 #    return wa(g)
 
 def wm(x):
-    return x.pos()
+    if type(x) in [tuple, list]:
+        out = map(lambda i: (whois(i), i.pos()), x)
+        for i in out:
+            print "%s at %g" % (i[0],i[1])
+    else:
+        return x.pos()
 
 def whereall():
     return wa()
 
 #move, mover,whereall, tweak must be removed in the long form
 #mv and mvr should be able to move several motors toghether and maybe take advantage of galilmultiaxis.
+
+
+def move_motor(*motor):
+    """Move one or more motors. Support motor lists or just a motor object.
+    Syntax move_motor(motor1,1,motor2,123.2,motor3,12).
+    Only an even number of parameters is acceptable.
+    """
+    if mod(len(motor),2)<>0 : raise exceptions.SyntaxError("odd number of parameters!")
+    motors=[]
+    textout = map(lambda i: "%s was %g"%(whois(i),i.pos()), motor[::2])
+    for i in textout:
+        print i
+    try:
+        for i in range(0,len(motor),2):
+            motor[i].go(motor[i+1])
+            motors.append(motor[i])
+        return wait_motor(motors)
+    except (KeyboardInterrupt,SystemExit), tmp:
+        for i in motors:
+            i.stop()
+        raise tmp
+    except PyTango.DevFailed, tmp:
+        for i in motors:
+            i.stop()
+        raise tmp
+    except Exception, tmp:
+        print "Unhandled error... raising exception"
+        raise tmp
+
+def wait_motor(motor, deadtime=0.025, timeout=-0.05, delay=None, verbose=True):
+    """Wait for a motor to move and stop. Support motor lists or just a motor object. 
+    To be used inside the class as a general wait procedure and as a 
+    support for multimotor movements through multi motor.go commands."""
+    argument_type=type(motor)
+    if (not(argument_type in [tuple,list])): 
+        motor_list=(motor,)
+    else:
+        motor_list=motor
+    label_list={}
+    if verbose:
+        for i in motor_list:
+            label_list[i] = whois(i)
+    #Now the argument IS a list, anyway.
+    if delay==None:
+        delay=0.
+        for i in motor_list:
+            try:
+                if i.delay>delay: delay=i.delay
+            except:
+                pass
+    try:
+        condition=True
+        t=0.
+        while(condition and (t<timeout)):
+            sleep(deadtime)
+            condition=False
+            for i in motor_list:
+                if(i.state()==DevState.MOVING):
+                    condition=False
+                    break    
+            t+=deadtime
+        condition=True
+        if verbose:
+            for i in map(lambda x: (x.label,x.pos()), motor_list):
+                print " " * 40 + "\r",
+                print "%s    %+8.6e" % (i[0], i[1])
+        while(condition):
+            sleep(deadtime)
+            condition = (DevState.MOVING in map(lambda x: x.state(), motor_list))
+            if verbose:
+                print "\033[%iA" % (len(motor_list)),
+                for i in map(lambda x: (label_list[x], x.pos()), motor_list):
+                    print " " * 40 + "\r",
+                    print "%s    %+8.6e"%(i[0], i[1])
+
+        if verbose: print ""
+        sleep(delay)
+        if len(motor_list) == 1:
+            return motor_list[0].pos()
+        else:
+            return map(lambda x: x.pos(), motor_list)
+    except (KeyboardInterrupt,SystemExit), tmp:
+        for i in motor_list:
+            i.stop()
+        raise tmp
+    except PyTango.DevFailed, tmp:
+        raise tmp
+    except Exception, tmp:
+        print "Unhandled error, raising exception..."
+        raise tmp
+
+def go_motor(*motor):
+    """Move one or more motors. Support motor lists or just a motor object. 
+    Syntax move_motor(motor1,1,motor2,123.2,motor3,12). 
+    Only an even number of parameters is acceptable.
+    """
+    motors=[]
+    if mod(len(motor),2)<>0 : raise exceptions.SyntaxError("odd number of parameters!")
+    try:
+        for i in range(0,len(motor),2):
+            motor[i].go(motor[i+1])
+            motors.append(motor[i])
+        return
+    except (KeyboardInterrupt,SystemExit), tmp:
+        for i in motors:
+            i.stop()
+        raise tmp
+    except PyTango.DevFailed, tmp:
+        for i in motors:
+            i.stop()
+        raise tmp
+    except Exception, tmp:
+        print "Unhandled error... raising exception"
+        raise tmp
+
+
 def mv(*args):
     """Spec like absolute move.
     But, can move one or several motors"""

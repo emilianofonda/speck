@@ -4,8 +4,8 @@
 
 from PyTango import DevState, DeviceProxy
 from time import sleep
-from spec_syntax import mv
-from motor_class import wait_motor
+from spec_syntax import mv, wait_motor
+#from motor_class import wait_motor
 import os
 import numpy
 
@@ -140,6 +140,8 @@ def SetAngle(theta = None,hgap = 25.,SEXAFS = True, bender2 = None):
     po4 = shell.user_ns["po4"]
     po5 = shell.user_ns["po5"]
     FE = shell.user_ns["FE"]
+    shopen = shell.user_ns["shopen"]
+    shclose = shell.user_ns["shclose"]
     del shell
 
     theta2 = mir1_pitch.pos()
@@ -150,7 +152,7 @@ def SetAngle(theta = None,hgap = 25.,SEXAFS = True, bender2 = None):
         festate = FE.state()
         if festate == DevState.OPEN:
             print "Closing front End"
-            if FE.close()==DevState.CLOSE:
+            if FE.close() == DevState.CLOSE:
                 print "Front End closed"
             else:
                 raise "Close on front end failed. Please close front end."

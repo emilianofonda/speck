@@ -89,13 +89,13 @@ for infile in infiles:
             #print len(icrs)
             #print icrs
 
-            if npy.prod(I1)==0. or npy.nan in npy.log(I0/I1):
+            if npy.prod(I1) in [0., 0] or npy.prod(I0) in [0., 0] or npy.nan in npy.log(I0/I1):
                 mux = I0 * 0.
             else:
                 mux = npy.log(I0 / I1)
                 
-            if npy.prod(I2)==0. or npy.nan in npy.log(I1/I2):
-                mus = I0 * 0.
+            if npy.prod(I2) in [0., 0] or npy.prod(I1) in [0., 0] or npy.nan in npy.log(I1/I2):
+                mus = npy.ones(len(I0))
             else:
                 mus = npy.log(I1 / I2)
             
@@ -178,7 +178,9 @@ for infile in infiles:
             ot.write("#%s\tmux\tmuf\tmuf_cor\tmus\tI0\tI1\tI2\n" % header[0])
             fmt='%.18e\t' * 7 + '%.18e\n'
             for i in range(len(motor)):
-                ot.write(fmt % (motor[i], mux[i], muf[i], muf_cor[i], mus[i], I0[i], I1[i], I2[i]))
+                ot_line = fmt % (motor[i], mux[i], muf[i], muf_cor[i], mus[i], I0[i], I1[i], I2[i])
+                ot.write(ot_line.replace("nan", "0"))
+
             ot.close()
             print "\tData saved in %s" % (outfile)
     except Exception, tmp:

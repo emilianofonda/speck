@@ -91,27 +91,29 @@ def findNextFileIndex(prefix,ext,file_index=1):
 
 def ascan_statistics(x,y,glob):
     try:
-        stats=eval("ScanStats",glob)
+        stats = eval("ScanStats", glob)
     except:
         return -1
-    x,y=array(x),array(y)
+    x, y = array(x), array(y)
     #Calculate baricenter
-    sumay=sum(abs(y))
-    if sumay<>0:
-        stats.baricenter=sum(x*abs(y))/sumay
+    sumay = sum(abs(y))
+    if sumay <> 0:
+        stats.baricenter=sum(x * abs(y)) / sumay
     else:
-        stats.baricenter=0.5*(min(x)+max(x))
+        stats.baricenter = 0.5 * (min(x) + max(x))
     #Calculate_baseline substracted baricenter
     miny=min(y)
-    sumay=sum(abs(y-miny))
-    if sumay<>0:
-        stats.baricenter_scaled=sum(x*abs(y-miny))/sumay
+    sumay = sum(abs(y - miny))
+    if sumay <> 0:
+        stats.baricenter_scaled=sum(x * abs(y - miny)) / sumay
     else:
-        stats.baricenter_scaled=0.5*(min(x)+max(x))
+        stats.baricenter_scaled = 0.5 * (min(x) + max(x))
     #Calculate max and max pos
-    stats.max=max(y);stats.max_pos=x[y.argmax()]
+    stats.max = max(y)
+    stats.max_pos = x[y.argmax()]
     #Calculate min and min pos
-    stats.min=min(y);stats.min_pos=x[y.argmin()]
+    stats.min = min(y)
+    stats.min_pos = x[y.argmin()]
     #Calculate pos of maximum derivative (+,-)
     return 0
 
@@ -322,26 +324,26 @@ def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,n
     #
     #Call statistisc calculation
     if "ScanStats" in glob: 
-        ascan_statistics(x[:ml],y[:ml],glob)
-        print BOLD+"\nScanStats:\n---------------------------"+RESET
+        ascan_statistics(x[:ml], y[:ml], glob)
+        print BOLD + "\nScanStats:\n---------------------------" + RESET
         print glob["ScanStats"]()
         print ""
     #
     print "Total Elapsed Time: %8.6fs" % (cputime() - __time_at_start)
     #
-    if returndata==True:
+    if returndata == True:
         if fulldata:
-            full=array(full[:ml])
-            return array([x[:ml],full.transpose()])
+            full = array(full[:ml])
+            return array([x[:ml], full.transpose()])
         else:
-            return array([x[:ml],y[:ml]])
-    else:
-        return 
+            return array([x[:ml], y[:ml]])
+    return 
 
 #def dscan(mot,p1,p2,dp=0.1,dt=0.1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,glob=globals(),scaler="ct",fullmca=False,graph=0):
 def dscan(mot,p1,p2,dp=0.1,dt=0.1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,scaler="ct",fullmca=False,graph=0):
     """Performs a relaive scan calling ascan and then set the motor back to previous position."""
     previous_pos=mot.pos()
+    print "motor %s was at %g"%(whois(mot),mot.pos())
     abs_p1=previous_pos+p1
     abs_p2=previous_pos+p2
     #results=ascan(mot,abs_p1,abs_p2,dp,dt,channel,returndata,fulldata,name,delay=delay,glob=glob,scaler=scaler,fullmca=fullmca,\

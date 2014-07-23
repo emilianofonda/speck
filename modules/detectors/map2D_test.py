@@ -1,4 +1,5 @@
-from motor_class import *
+from spec_syntax import move_motor
+#from motor_class import *
 from rontec_MCA import *
 from time import *
 from numpy import *
