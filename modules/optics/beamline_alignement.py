@@ -48,15 +48,18 @@ def __m1Z(theta):
         return -8.
     else:
         return 0.3
+
 def __m1bender(theta,hgap=25.):
-    if theta<=0.1:
-        return 0.
+    """hgap dependence removed. """
+    if theta<=0.5:
+        return 100e3
     else:
-        h40=74900.*theta+63750.
-        h25=78375.*theta+38437.5
-        h15=79300.*theta+21250.
-        cible=__Parabolix(hgap,[[15,h15],[25,h25],[40,h40]])
-        return cible
+        return 35041.4691771089 * theta + 54787.1074748141
+#        h40=74900.*theta+63750.
+#        h25=78375.*theta+38437.5
+#        h15=79300.*theta+21250.
+#        cible=__Parabolix(hgap,[[15,h15],[25,h25],[40,h40]])
+#        return cible
 
 def __m1Roll(theta):
     return 0.
@@ -69,14 +72,16 @@ def __m2theta(theta):
         return -4.4263e-1+1.2002*theta-3.3557e-2*theta*theta+1.8019e-3*theta*theta*theta
 
 def __m2bender(theta,hgap=25.):
-    if theta<=0.1:
-        return 0.
+    """hgap dependence removed. """
+    if theta<0.5:
+        return 100e3
     else:
-        h40=92275.*theta-41312.5
-        h25=87575.*theta-19562.5
-        h15=87110.*theta-18125.
-        cible=__Parabolix(hgap,[[15,h15],[25,h25],[40,h40]])
-        return cible
+#        h40=92275.*theta-41312.5
+#        h25=87575.*theta-19562.5
+#        h15=87110.*theta-18125.
+#        cible=__Parabolix(hgap,[[15,h15],[25,h25],[40,h40]])
+#        return cible
+        return 98905.4 * theta - 6395.4
         
 def __m2Z(theta):
     base=24.6
@@ -100,16 +105,15 @@ def __girder(theta):
 #Tables
 def __exafsZ(theta):
     #return 22.298+11.463*theta
-    shell=get_ipython()
-    dcm = shell.user_ns["dcm"]
-    del shell
-    return __girder(theta)*5.6+dcm.H
+    #return __girder(theta) * 5.6 + get_ipython().shell.user_ns["dcm"].H
+    return 11.2074018292933 * theta + 0.3438106790538 + get_ipython().user_ns["dcm"].H
     
 def __obxgZ(theta):
-    shell=get_ipython()
-    dcm = shell.user_ns["dcm"]
-    del shell
-    return __girder(theta)*5.6+dcm.H
+    #shell=get_ipython()
+    #dcm = shell.user_ns["dcm"]
+    #del shell
+    return __girder(theta) * 5.6 + get_ipython().user_ns["dcm"].H
+
 
 #Alias for SEXAFS users
 def SetAngleSEXAFS(theta=None,hgap=25.,SEXAFS=True):
@@ -118,12 +122,15 @@ def SetAngleSEXAFS(theta=None,hgap=25.,SEXAFS=True):
 
 #Do the full job:
 #Nouvelle procedure ... rustine!
-def SetAngle(theta = None,hgap = 25.,SEXAFS = True, bender2 = None):
+def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
     """Close the vertical primary slits, align everything, open the primary slits back to the previous value.
     If the previous gap value in mm exceeds the mir1_pitch (mrad) the mir1_pitch (mrad) is taken as slit gap in mm.
     WARNING: uses global variables of the shell as the following:
     mir1_pitch, po1, po2...
+    NOTA BENE: hgap dependence removed. 
     """
+    if theta > 10.5:
+        raise Exception("Value Out Of Bounds! SetAngle must be equal or below 10.5 mrad.")
     shell=get_ipython()
     mir1_pitch = shell.user_ns["mir1_pitch"]
     mir2_pitch = shell.user_ns["mir2_pitch"]
@@ -134,6 +141,7 @@ def SetAngle(theta = None,hgap = 25.,SEXAFS = True, bender2 = None):
     mir1_c = shell.user_ns["mir1_c"]
     mir2_c = shell.user_ns["mir2_c"]
     vgap1 = shell.user_ns["vgap1"] 
+    vgap2 = shell.user_ns["vgap2"] 
     po1 = shell.user_ns["po1"]
     po2 = shell.user_ns["po2"]
     po3 = shell.user_ns["po3"]
@@ -229,11 +237,15 @@ def SetAngle(theta = None,hgap = 25.,SEXAFS = True, bender2 = None):
     if (previous_vgap1>theta): 
         if theta<1e-2:
             vgap1.pos(0.5)
+            vgap2.pos(1)
         else:    
             vgap1.pos(theta-0.2)
+            vgap2.pos(theta)
     else:
         vgap1.pos(theta-0.2)
-    print "Primary vertical slits aperture: %6.4f mm"%(vgap1.pos())
+        vgap2.pos(theta-0.2)
+    print "Primary   vertical slits aperture: vgap1 = %6.4f mm"%(vgap1.pos())
+    print "Secondary vertical slits aperture: vgap2 = %6.4f mm"%(vgap2.pos())
     #Turn off the servo motors and less used steppers 
     po1.off()
     po2.off()
@@ -248,6 +260,6 @@ def SetAngle(theta = None,hgap = 25.,SEXAFS = True, bender2 = None):
             print "OK!"
         else:
             print "Front End did not open? Check Front End and interlocks please..."
-    print "Now: \n1)find beam by scanning po3\n2)tune dcm (if using dcm)\n3)scan po3 again\n4)if necessary tune dcm again.\n"
+    #print "Now: \n1)find beam by scanning po3\n2)tune dcm (if using dcm)\n3)scan po3 again\n4)if necessary tune dcm again.\n"
     return mir1_pitch.pos()
 

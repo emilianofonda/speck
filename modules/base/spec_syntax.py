@@ -579,6 +579,23 @@ def domacro(macrofilename, n=1):
     return shell.user_ns["Universal_Prefilter"].process_macro_file(macrofilename,shell.user_ns,n)
 #    return SyntaxPrefilter.process_macro_file(macrofilename,__IP.user_ns)
 
+def dark(dt=10):
+    """dark use shclose to measure dark current over dt seconds on ct.
+    dt=0 means a clear on all dark values (set them to 0).
+    The shutters are not re opened after command."""
+    shell = get_ipython()
+    shclose = shell.user_ns["shclose"]
+    ct = shell.user_ns["ct"]
+    if dt == 0:
+        ct.clearDark()
+    else:
+        shclose(1)
+        sleep(1)
+        ct.count(dt)
+        ct.writeDark()
+    print ct.readDark()
+    return
+
 class pseudo_counter:
     def __init__(self,masters=[],slaves=[],slaves2arm=[],slaves2arm2stop=[],deadtime=0.,timeout=1):
         """masters are started and waited (all). slaves are only read. 
@@ -609,6 +626,7 @@ class pseudo_counter:
             self.user_readconfig+=i.user_readconfig
             if "read_mca" in dir(i):
                 self.mca_units.append(i)
+        self.dark = self.readDark()
         return
 
     def reinit(self):
@@ -781,4 +799,26 @@ class pseudo_counter:
         except (KeyboardInterrupt, SystemExit), tmp:
             self.stop()
             raise tmp
-    
+   
+    def readDark(self):
+        dark=[]
+        for i in self.all:
+            if "readDark" in dir(i):
+                dark += list(i.readDark())
+            else:
+                dark += [0,] * len(i.user_readconfig) 
+        self.dark = dark
+        return self.dark
+        
+    def writeDark(self):
+        for i in self.all:
+            if "writeDark" in dir(i):
+                i.writeDark()
+        return self.readDark()
+        
+    def clearDark(self):
+        for i in self.all:
+            if "clearDark" in dir(i):
+                i.clearDark()
+        return self.readDark()
+        

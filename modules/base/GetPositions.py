@@ -213,11 +213,12 @@ def SetPositions(filename=""):
                         print "MotorON failed on motor:",i[0].label
                     if(_nodef):
                         print "Define failed on motor:",i[0].label
-                    failedmotors.append(i[0])
+                    failedmotors.append(i[0].label)
                     sleep(.25)
         if(failures>0):
             print "WARNING: I got ",failures," failures."
-            raise Exception("SetPositionsFailure failures=%i failedmotors=%i"%(failures,failedmotors))
+            fmt = "%s\n" * len(failedmotors)
+            raise Exception("SetPositionsFailure failures=%i"%(failures), fmt%(failedmotors))
     return
 
 

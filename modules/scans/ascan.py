@@ -168,7 +168,8 @@ def __backup_data():
     return
 
 #def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,name=None,delay=0.,glob=globals(),scaler="ct",comment="",fullmca=False,graph=0, n = 1):
-def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,name=None,delay=0.,scaler="ct",comment="",fullmca=False,graph=0, n = 1):
+def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,name=None,delay=0.,delay0=0.,\
+scaler="ct",comment="",fullmca=False,graph=0, n = 1):
     """Scan mot from p1 to p2 with step dp, reads ct for dt seconds. The default timebase is named ct."""
     #glob=globals()
     glob  = get_ipython().user_ns
@@ -248,6 +249,8 @@ def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,n
         header="#"+motname+"\t"+"\t".join(map(lambda x:x.label,cpt.user_readconfig))+"\tTimeFromEpoch\n"
         f.write(header)
         try:
+            mot.pos(p1 - dp)
+            sleep(delay0)
             for i in arange(p1,p2+dp,dp):
                 if not(time_scan):
                     mot.pos(i)
@@ -340,14 +343,14 @@ def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,n
     return 
 
 #def dscan(mot,p1,p2,dp=0.1,dt=0.1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,glob=globals(),scaler="ct",fullmca=False,graph=0):
-def dscan(mot,p1,p2,dp=0.1,dt=0.1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,scaler="ct",fullmca=False,graph=0):
+def dscan(mot,p1,p2,dp=0.1,dt=0.1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,delay0=0.,scaler="ct",fullmca=False,graph=0):
     """Performs a relaive scan calling ascan and then set the motor back to previous position."""
     previous_pos=mot.pos()
     print "motor %s was at %g"%(whois(mot),mot.pos())
     abs_p1=previous_pos+p1
     abs_p2=previous_pos+p2
     #results=ascan(mot,abs_p1,abs_p2,dp,dt,channel,returndata,fulldata,name,delay=delay,glob=glob,scaler=scaler,fullmca=fullmca,\
-    results=ascan(mot,abs_p1,abs_p2,dp,dt,channel,returndata,fulldata,name,delay=delay,scaler=scaler,fullmca=fullmca,\
+    results=ascan(mot,abs_p1,abs_p2,dp,dt,channel,returndata,fulldata,name,delay=delay,delay0=delay0,scaler=scaler,fullmca=fullmca,\
     graph=graph)
     mot.pos(previous_pos)
     if results <> None:
@@ -356,15 +359,15 @@ def dscan(mot,p1,p2,dp=0.1,dt=0.1,channel=1,returndata=False,fulldata=False,name
         return
 
 #def tscan(n,t=1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,glob=globals(),scaler="ct",comment="",fullmca=False,graph=0):
-def tscan(n,t=1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,scaler="ct",comment="",fullmca=False,graph=0):
+def tscan(n,t=1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,delay0=0.,scaler="ct",comment="",fullmca=False,graph=0):
     """Perform a time scan by using ascan capabilities. The integration time t and number of points n must be provided. 
     You may use the delay to set a deadtime between steps... if you want... The time scale is referred to actual time."""
     return ascan(cputime, p1=0, p2=n * t, dp = t,dt = t,channel=channel,returndata=returndata,fulldata=fulldata,name=name,delay=delay,\
-    scaler=scaler,comment=comment,fullmca=fullmca,graph=graph)
+    delay0=delay0,scaler=scaler,comment=comment,fullmca=fullmca,graph=graph)
     #glob=glob,scaler=scaler,comment=comment,fullmca=fullmca,graph=graph)
 
 #def mapscan(mot1,p11,p12,dp1,mot2,p21,p22,dp2,dt=0.1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,glob=globals(),scaler="ct"):
-def mapscan(mot1,p11,p12,dp1,mot2,p21,p22,dp2,dt=0.1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,scaler="ct"):
+def mapscan(mot1,p11,p12,dp1,mot2,p21,p22,dp2,dt=0.1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,delay0=0.,scaler="ct"):
     """Scan mot1 from p11 to p12 with step dp1;mot2 from p21 to p22 with step dp2; reads scaler for dt seconds. The default scaler is named ct."""
     x=[]
     y,y0=[],[]
@@ -383,7 +386,7 @@ def mapscan(mot1,p11,p12,dp1,mot2,p21,p22,dp2,dt=0.1,channel=1,returndata=False,
             #x.append(mot1.pos())
             print Dname+"/"+name
             #y0,z0=ascan(mot2,p21,p22,dp2,dt,channel,True,False,Dname+"/"+name,delay,glob,scaler,comment=motname1+"=%9.6f"%(mot1.pos()))
-            y0,z0=ascan(mot2,p21,p22,dp2,dt,channel,True,False,Dname+"/"+name,delay,scaler,comment=motname1+"=%9.6f"%(mot1.pos()))
+            y0,z0=ascan(mot2,p21,p22,dp2,dt,channel,True,False,Dname+"/"+name,delay,delay0,scaler,comment=motname1+"=%9.6f"%(mot1.pos()))
             #y.append(y0)
             z.append(z0)
     except (KeyboardInterrupt,SystemExit), tmp:
@@ -427,7 +430,6 @@ def pre_scan(handler=None):
 samplescan=ascan
 
 #Step scan (stepscan_open, stepscan_step, stepscan_close)
-
 #__stepscan instance of __StepScan must exist in globals to allow stepscan to
 #write into it common values
 class __StepScan:

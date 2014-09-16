@@ -45,7 +45,7 @@ class obx:
 	def close(self):
 		self.command("Close")
 		t=0
-		while(self.state()<>DevState.CLOSE and t<=self.timeout):
+		while(self.state() not in [DevState.CLOSE, DevState.DISABLE] and t<=self.timeout):
 			sleep(self.deadtime)
 			t+=self.deadtime
 		#while(self.state()==DevState.MOVING):
@@ -55,7 +55,7 @@ class obx:
 	def open(self):
 		self.command("Open")
 		t=0.
-		while(self.state()<>DevState.OPEN and t<=self.timeout):
+		while(self.state() not in [DevState.OPEN, DevState.DISABLE] and t<=self.timeout):
 			sleep(self.deadtime)
 			t+=self.deadtime
 		#while(self.state()==DevState.MOVING):

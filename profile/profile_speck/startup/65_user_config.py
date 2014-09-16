@@ -941,6 +941,11 @@ def shclose(level=1):
 	print __allshutters[i].label," ",__allshutters[i].state()
     return __allshutters[level].state()
 
+def shstate(level=1):
+    for i in range(len(__allshutters)):
+        print __allshutters[i].label," ",__allshutters[i].state()
+    return __allshutters[level].state()
+
 ##
 ##  Functions to wait for a certain time, date, for the beam to come back...
 ##  This module has been changed by the user so it is in the user_config.py.
