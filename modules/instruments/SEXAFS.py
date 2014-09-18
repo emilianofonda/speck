@@ -36,7 +36,7 @@ try:
 	["counter6",	"CT5",	        "%d",	"cts"],
 	["counter7",	"Time",	        "%d",	"micros"]
 	]
-	cpt=counter("d09-1-c00/ca/cpt.2",user_readconfig=user_readconfig)
+	cpt=counter("d09-1-c00/ca/cpt.2",user_readconfig=user_readconfig, clock_channel= 6)
 except Exception, tmp:
 	print RED+"I cannot define the main counter!"+RESET
 	print tmp

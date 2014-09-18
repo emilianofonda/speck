@@ -626,10 +626,15 @@ class pseudo_counter:
         self.timeout=timeout
         self.user_readconfig=[]
         self.mca_units=[]
+        n=0
+        self.clock_channel = -1
         for i in self.all:
             self.user_readconfig+=i.user_readconfig
             if "read_mca" in dir(i):
                 self.mca_units.append(i)
+            if "clock_channel" in dir(i):
+                self.clock_channel = i.clock_channel + n
+            n += len(i.user_readconfig)
         self.dark = self.readDark()
         return
 
@@ -638,8 +643,12 @@ class pseudo_counter:
             if "reinit" in dir(i):
                 i.reinit()
         self.user_readconfig = []
+        n=0
         for i in self.all:
             self.user_readconfig += i.user_readconfig
+            if "clock_channel" in dir(i):
+                self.clock_channel = i.clock_channel + n
+            n += len(i.user_readconfig)
         return
 
     def __call__(self,dt=1):
