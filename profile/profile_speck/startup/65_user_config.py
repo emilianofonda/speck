@@ -26,7 +26,6 @@ __samplePos=13.95
 
 #NI6602
 try:
-    #cpt=counter_master("d09-1-c00/ca/cpt.1",["d09-1-c00/ca/cpt.2","d09-1-c00/ca/cpt.3","d09-1-c00/ca/cpt.4"])
     user_readconfig=[
     ["counter1",    "I0",        "%d",    "cts"],
     ["counter2",    "I1",        "%d",    "cts"],
@@ -44,10 +43,10 @@ try:
     ["counter14",    "Empty05",    "%d",    "cts"],
     ["counter15",    "Clock",    "%d",    "cts"]
     ]
-    cpt0=counter("d09-1-c00/ca/cpt.1",user_readconfig=user_readconfig)
+    cpt0=counter("d09-1-c00/ca/cpt.1",user_readconfig=user_readconfig, clock_channel=14)
 except Exception, tmp:
     print "I cannot define counter master."
-    #print tmp
+    print tmp
 
 #dxmap
 try:
@@ -223,10 +222,8 @@ try:
     ["inputCountRate14",    "icr_34",    "%9d",    "cts"],
     ["inputCountRate15",    "icr_35",    "%9d",    "cts"]
     ]
-    #mca=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig0)
     mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig1)
     mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",user_readconfig=user_readconfig2)
-    #print "mca1,mca2 --> DxMap cards"
     def setroi(ch1, ch2):
     	"""Set roi an ALL channels between ch1 and ch2. Works on mca1 and mca2"""
 	if mca1 <> None:
@@ -237,8 +234,6 @@ try:
 except Exception, tmp:
     print "Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.1"
     print "Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.2"
-    #print tmp
-
 try:
     from sensor_group import sensor_group
     mux=sensor("d09-1-c00/ex/tangoparser.1","mux")
@@ -253,7 +248,6 @@ except Exception, tmp:
 #ct
 try:
     cpt=pseudo_counter(masters=[cpt0,],slaves=[MUXES,])
-    #ct=pseudo_counter(masters=[cpt,],slaves2arm2stop=[mca1,])
     ct=pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[MUXES,])
 except Exception, tmp:
     print "Failure defining ct "
@@ -889,22 +883,9 @@ except Exception, tmp:
     print tmp
     print "Check state of shutters... something wrong in script..."
 
-#def FEclose():
-#    FE.close()
-#    obxg.close()
-#    obx.close()
-#    return FE.state()
-    
-#def shopen():
-#    FEopen()
-#    return obxg.open()
-    
-#def sexopen():
-#    FEopen()
-#    shopen()
-#    return obx.open()
 
 def shopen(level=1):
+    """Open shutters up to level specified starting from lower level"""
     for i in range(level+1):
         if "frontEndStateValue" in __allshutters[i].DP.get_attribute_list() and __allshutters[i].DP.frontEndStateValue == 2:
             print "Front End is locked by Machine Operator"
@@ -923,14 +904,16 @@ def shopen(level=1):
         print ""
         __allshutters[i].open()
 	print __allshutters[i].label," ",__allshutters[i].state()
-    try:
-        mostab.start()
-        print "mostab: start executed"
-    except:
-        pass
+    if level >= 1:
+        try:
+            mostab.start()
+            print "mostab: start executed"
+        except:
+            pass
     return __allshutters[level].state()
 
 def shclose(level=1):
+    """Close shutters down to level specified starting from maximum level"""
     try:
         mostab.stop()
         print "mostab: stop executed"
@@ -941,10 +924,20 @@ def shclose(level=1):
 	print __allshutters[i].label," ",__allshutters[i].state()
     return __allshutters[level].state()
 
-def shstate(level=1):
+def shstate():
+    """Provide state of last open shutter starting from lower.
+    -1 means closed beamline
+    0 means front end open
+    1 means level 1 open 
+    2 means level 2 open ..."""
     for i in range(len(__allshutters)):
-        print __allshutters[i].label," ",__allshutters[i].state()
-    return __allshutters[level].state()
+        if __allshutters[i].state() <> DevState.OPEN:
+            break
+    if i == 0:
+        print "Beamline is closed"
+    else:
+        print "Beamline is open up to level:", i - 1
+    return i - 1
 
 ##
 ##  Functions to wait for a certain time, date, for the beam to come back...

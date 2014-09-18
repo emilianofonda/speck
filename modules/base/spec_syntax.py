@@ -585,14 +585,18 @@ def dark(dt=10):
     The shutters are not re opened after command."""
     shell = get_ipython()
     shclose = shell.user_ns["shclose"]
+    shopen = shell.user_ns["shopen"]
+    shstate = shell.user_ns["shstate"]
     ct = shell.user_ns["ct"]
     if dt == 0:
         ct.clearDark()
     else:
+        previous = shstate()
         shclose(1)
         sleep(1)
         ct.count(dt)
         ct.writeDark()
+        shopen(previous)
     print ct.readDark()
     return
 

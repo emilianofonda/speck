@@ -9,12 +9,14 @@ import thread
 from numpy import array
 
 class counter:
-    def __init__(self,cpt=None,deadtime=0.01,maxRetries=5,user_readconfig=[], mask=[]):
+    def __init__(self,cpt=None,deadtime=0.01,maxRetries=5,user_readconfig=[], mask=[], clock_channel=-1):
         """Counters are supposed to be named from 1 up to N... it's a reasonable assumption, I guess...
         If user_readconfig is supplied it must be an appropriate list of lists [["attribute name","label","format","unit"],...].
         The mask is used to remove some counters from the dark calculation: by default all are set to 1 but the last, 
         to remove one counter set the corresponding value to 0:
-        example (deafault)  for 8 counteurs where last is used as timer: [1,]*7 + [0,] or [1, 1, 1, 1, 1, 1, 1, 0]"""
+        example (deafault)  for 8 counteurs where last is used as timer: [1,]*7 + [0,] or [1, 1, 1, 1, 1, 1, 1, 0]
+        if clock is set to -1, there is no clock channel, if clock is set to 0... N that channel is used as a clock and measured for dark correction.
+        when measuring dark, it's value for n seconds is measured too. The clock channel must be set to 0 in the mask."""
         self.init_user_readconfig=user_readconfig
         self.user_readconfig=[]
         if cpt==None:
@@ -74,25 +76,31 @@ class counter:
         except Exception, tmp:
             print "Cannot get attribute list from device ",self.label,"\n"
             raise tmp
+        #CLOCK
+        self.clock_channel = clock_channel
+        if self.clock_channel >= len(self.user_readconfig):
+            raise Exception("%s: clock_channel specified exceeds the number of counters!" % self.label)
         #MASK
         if mask <> []:
-            if len(mask)==len(self.user_readconfig):
+            if len(mask) == len(self.user_readconfig):
                 self.mask = mask
             else:
                 raise Exception("%s Error: specified mask has a length different of the user_readconfig (# of counters)."%self.label)
         else:
             self.mask = [1,] * (len(self.user_readconfig) - 1) + [0,]
+        if self.clock_channel >= 0 and self.clock_channel < len(self.user_readconfig):
+            self.mask[self.clock_channel] = 0
         #DARK
         self.readDark()
 
     def __call__(self,dt=1):
-        tmp=self.count(dt)
-        s=self.label+" counts :"
-        l=3
-        for i in range(0,len(tmp),l):
-            s+="\n"
+        tmp = self.count(dt)
+        s = self.label + " counts :"
+        l = 3
+        for i in range(0, len(tmp), l):
+            s += "\n"
             for j in range(l):
-                if i+j<len(tmp):
+                if i+j < len(tmp):
                     s+="% -20s"%self.user_readconfig[i+j].label+": "+self.user_readconfig[i+j].format%(tmp[i+j])+"%5s"%self.user_readconfig[i+j].unit+"    "
         print s
         return
@@ -233,10 +241,17 @@ class counter:
 
     def writeDark(self):
         """Use it after one dark count to store dark counter values.
-        If a mask is provided, counters corresponding to zeros are set to zero."""
+        If a mask is provided, counters corresponding to zeros are set to zero.
+        The clock frequency (counts/s) is measured too if the clock_channel is specified."""
         dark = list(array(self.read(),"f") * array(self.mask) / self.DP.integrationTime)
-        print "dark values are:", dark
+        if self.clock_channel <> -1:
+            clock_freq = float(self.read()[self.clock_channel]) / self.DP.integrationTime
+            #print "clock value is %f counts/s on channel %i:" % (clock_freq, self.clock_channel)
+        else:
+            clock_freq = -1
+        #print "dark values are:", dark
         self.DP.put_property({'SPECK_DARK_VALUES': map(str, dark)})
+        self.DP.put_property({'SPECK_CLOCK_FREQ': str(clock_freq)})
         return self.readDark()
         
     def readDark(self):
@@ -252,8 +267,14 @@ class counter:
             print "%s WARNING: dark current stored in device has wrong length: adding zeros."%self.label
             dark = dark + ['0',] * (len(self.user_readconfig)-len(dark))
         elif len(dark) == len(self.user_readconfig):
-            print "dark values read from device %s"%self.label
+            pass
+            #print "dark values read from device %s"%self.label
         self.dark = map(float, dark)
+        clock_freq = self.DP.get_property('SPECK_CLOCK_FREQ')['SPECK_CLOCK_FREQ']
+        if len(clock_freq) > 0:
+            self.clock_freq = float(clock_freq[0])
+        else:
+            self.clock_freq = -1
         return self.dark
 
     def clearDark(self):
