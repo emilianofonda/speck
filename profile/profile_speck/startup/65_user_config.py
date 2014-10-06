@@ -41,7 +41,7 @@ try:
     ["counter12",    "Empty03",    "%d",    "cts"],
     ["counter13",    "Empty04",    "%d",    "cts"],
     ["counter14",    "Empty05",    "%d",    "cts"],
-    ["counter15",    "Clock",    "%d",    "cts"]
+    ["counter15",    "Clock",    "%5.2f",    "s"]
     ]
     cpt0=counter("d09-1-c00/ca/cpt.1",user_readconfig=user_readconfig, clock_channel=14)
 except Exception, tmp:
@@ -516,8 +516,6 @@ __tmp={
 #"keith_I0"      :["d09-1-cx1/ex/amp_iv.7","gain"],
 #"keith_I1"      :["d09-1-cx1/ex/amp_iv.8","gain"],
 #"keith_I2"      :["d09-1-cx1/ex/amp_iv.9","gain"],
-#"forno"     :["D09-1-CX1/EX/eur2408i.1","temperature"],
-#"forno_set"     :["d09-1-cx1/ex/eur2408_ctrl.1","temperature"]
 }
 for i in __tmp:
     try:
@@ -1036,3 +1034,5 @@ optics=[dcm,rx1,rx2,rz2,rx2,rx2fine,tz2,ts2,mir1_pitch,mir1_roll,mir1_z,mir1_c,m
 #instrument("SAI")
 #load cameras into ct
 #instrument("CAMERAS")
+#load Eurotherm controllers
+instrument("FORNO")

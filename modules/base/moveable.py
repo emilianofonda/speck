@@ -38,10 +38,10 @@ class moveable:
         self.delay=delay
         self.label=label
         self.att_name=attribute
-        self.movingstate=moving_state
+        self.moving_state=moving_state
         self.deadtime=deadtime
         self.timeout=timeout
-        self.state=self.DP.state
+        #self.state=self.DP.state
         self.status=self.DP.status
         self.ac=self.DP.get_attribute_config([self.att_name,])[0]
         if self.ac.format=="":
@@ -75,12 +75,14 @@ class moveable:
         if x==self.pos(): return self.pos()
         try:
             self.DP.write_attribute(self.att_name,x)
-            if wait:
-                if self.movingstate<>None:
+            if self.moving_state == None:
+                sleep(self.deadtime)
+            elif wait:
+                if self.moving_state<>None:
                     t0=time()
-                    while(self.state()<>self.movingstate and time()-t0<self.timeout):
+                    while(self.state()<>self.moving_state and time()-t0<self.timeout):
                         sleep(self.deadtime)
-                    while(self.state()==self.movingstate):
+                    while(self.state() == self.moving_state):
                         sleep(self.deadtime)
                     sleep(self.delay)
                 else:
@@ -91,8 +93,7 @@ class moveable:
             raise tmp
         except Exception, tmp:
             self.stop()
-            raise tmp
-            
+            raise tmp            
         return self.pos()
 
     def lm(self):
@@ -108,21 +109,17 @@ class moveable:
             max_value = None
         return min_value, max_value
 
-    def set_lm(self, min_value = "Undef" , max_value = "Undef"):
+    def lmset(self, min_value = None , max_value = None):
         """It sets and then returns the soft limits on the moveable attribute.
         If no value is supplied it returns actual limits.
         If None is supplied to one limit, limit is suppressed."""
-        if max_value == "Undef":
-            return self.lm()
-        else:
-            print "Old_limits: ", self.lm()
         if min_value == None:
             #print "lower limit unset"
             min_value = "Not specified"
         else:
             min_value = "%g" % min_value
         if max_value == None:
-            #print "higher limit unset"
+            print "higher limit unset"
             max_value = "Not specified"
         else:
             max_value = "%g" % max_value
@@ -176,7 +173,12 @@ class moveable:
             else:
                 print "DefinePosition "+RED+"not"+RESET+" defined on %s"%self.label
                 return self.pos()
-    
+    def state(self):
+        s = self.DP.state()
+        if s == self.moving_state:
+            return DevState.MOVING
+        else:
+            return s
 
 class sensor(moveable):    
     def pos(self,x=None,wait=True):

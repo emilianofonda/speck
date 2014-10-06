@@ -92,7 +92,7 @@ shell.run_cell = new_run_cell
 def mylineparser(line):
     keywords=["mv","mvr","tw","wa","wm","ct","count","ascan","a2scan","dscan","scan",\
     "xascan","xdscan","set_mon","where_mon","fw","bw","stop","start",\
-    "BL_Close","BL_Open","pos","lm","set_lm","domacro","editmacro","timescan",
+    "BL_Close","BL_Open","pos","lm","lmset","lmunset","domacro","editmacro","timescan",
     "setroi"]
 
     parts = line.split()
@@ -105,7 +105,7 @@ def mylineparser(line):
                 values_list.append(parts[i])
             except:
                 str_list.append(parts[i])
-        if len(values_list)==0 and len(str_list)==1: #for set_lm, ct
+        if len(values_list)==0 and len(str_list)==1: #for lmset, ct
             output_line = parts[0]+"()"
         elif len(values_list)==0 and len(str_list)>1: #for lm, wm, pos, editmacro, domacro 
             output_line = parts[0] + "(" + "\'" + parts[1] + "\'" + ")"
@@ -146,12 +146,12 @@ def mylineparser(line):
 #__Universal_Syntax_Keywords={"mv":[[2,1]],"mvr":[[1]],"tw":[1],"wa":[],"wm":[1],"ct":[],\
 #"count":[],"ascan":[],"a2scan":[1,4],"dscan":[1],"scan":[1],"xascan":[1],"escan":[1,2],\
 #"xdscan":[1],"set_mon":[1],"where_mon":[1],"BL_Close":[],"BL_Open":[],"pos":[1],\
-#"lm":[1],"set_lm":[1],"domacro":[1],"editmacro":[1],"timescan":[]}
+#"lm":[1],"lmset":[1],"domacro":[1],"editmacro":[1],"timescan":[]}
 
 __Universal_Syntax_Keywords={"mv":[],"mvr":[],"fw":[],"bw":[],"start":[],"stop":[],"tw":[],"wa":[],"wm":[],"ct":[],\
 "ascan":[],"a2scan":[],"dscan":[],"init":[],"xascan":[],"escan":[1,2],\
 "xdscan":[],"set_mon":[],"where_mon":[],"shopen":[],"shclose":[], "shstate":[], "pos":[],"on":[],"off":[],\
-"lm":[],"set_lm":[],"domacro":[1],"editmacro":[1],"tscan":[],"timescan":[],"close":[],"open":[],"setroi":[],
+"lm":[],"lmset":[],"lmunset":[],"domacro":[1],"editmacro":[1],"tscan":[],"timescan":[],"close":[],"open":[],"setroi":[],
 "setuser":[1],"state":[],"status":[],"instrument":[1]}
 
 def universal_lineparser(line):

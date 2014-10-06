@@ -42,7 +42,7 @@ def ReadScanForm(filename):
     #
     #Define tuple of known keywords
     #
-    keys=["bend","nobend","tun","notun","detune","nodark","fluo","sexafs","e0","kscan","settling",\
+    keys=["bend","nobend","tun","notun","detune","fluo","sexafs","e0","kscan","settling",\
     "plot","noplot","tey","roi","fast","backup","nobackup","roll","notz2","almostfast",
     "vortex","fullmca","attribute","pitch"]
     #
@@ -64,7 +64,6 @@ def ReadScanForm(filename):
     defaultt0=2.
     defaultt1=6.
     defaultkw=3.
-    default_nodark=True
     default_roi=[]
     default_notz2=False
     default_notz2_auto_limit=0.01
@@ -105,7 +104,6 @@ def ReadScanForm(filename):
     tuning=False
     degree=1
     detune=None
-    nodark=default_nodark
     detectionMode=None
     SettlingTime=defaultSettlingTime
     e0=None
@@ -171,8 +169,6 @@ def ReadScanForm(filename):
                         plotSetting=defaultPlotSetting
                         print "Unknown plot mode :",j[1]
                         print "Plot modes are kinetic (kin) or average (ave)"
-        elif(i.startswith("nodark")):
-            nodark=True
         elif(i.startswith("nobend")):
             usebender=False
         elif(i.startswith("tun")):
@@ -354,7 +350,7 @@ def ReadScanForm(filename):
         print "E0=",e0
     #print "################### End Truncation on data ######################"    
     return {"usebender":usebender,"tuning":tuning,"degree":degree,"res":res,\
-    "detune":detune,"nodark":nodark,"detectionMode":detectionMode,"e0":e0,"kgrid":kgrid,"kscan":kscan,"SettlingTime":SettlingTime,\
+    "detune":detune,"detectionMode":detectionMode,"e0":e0,"kgrid":kgrid,"kscan":kscan,"SettlingTime":SettlingTime,\
     "plotSetting":plotSetting,"roi":roi,"scanMode":scanMode,"backup":backup,\
     "ServoRollParameters":ServoRollParameters,"ServoPitchParameters":ServoPitchParameters,\
     "notz2":notz2,"notz2_auto_limit":notz2_auto_limit,"fullmca":fullmca,"attributes":attributes}
@@ -363,14 +359,11 @@ def ReadScanForm(filename):
 
 
 class escan_class:
-    #def __init__(self,scan_form="",\
-    #    dcm=dcm,cpt=ct,    Ts2_Moves=False,amplis=None,dark=USER_DARK_VALUES):
     def __init__(self,scan_form="",\
     Ts2_Moves=False,amplis=None):
         if(scan_form==""):
             raise exceptions.Exception("Missing scan file! Please provide one.")
         shell = get_ipython()
-        dark = shell.user_ns["USER_DARK_VALUES"]
         self.dcm = shell.user_ns["energy"]
         cpt = shell.user_ns["ct"]
         obx = shell.user_ns["obx"]
@@ -393,7 +386,6 @@ class escan_class:
         #__Default_Data_Folder must be a GLOBAL variable!
         # MUST be declared outside this class and before the escan class!
         #
-        self.user_dark_values=dark
         try:
             #__Default_Data_Folder="/home/experiences/samba/com-samba/ExperimentalData/"
             #__Default_Backup_Folder="/nfs/ruche-samba/samba-soleil/com-samba/"
@@ -480,7 +472,6 @@ class escan_class:
             print "notz2: TZ2 will not be used."
         self.notz2_auto_limit=thisform["notz2_auto_limit"]
         self.detune=thisform["detune"]
-        self.dark=not(thisform["nodark"])
         self.detectionMode=thisform["detectionMode"]
         #################################################################
         #                                    #
@@ -611,7 +602,6 @@ class escan_class:
         self.auto_fluo_mask=zeros(len(self.cpt.user_readconfig))
         for i in self.auto_fluo_channels:
             self.auto_fluo_mask[i]=1
-        self.DARK=array([0.,]*len(self.cpt.read()),dtype=float32)
         #self.tuning_points=[[0.,]*(self.tuningdegree+1),[0.,]*(self.tuningdegree+1)]
         self.tuning_points=[[0.,0.],[0.,0.]]
         #self.TUNING_OK=False
@@ -1455,16 +1445,14 @@ class escan_class:
                     #tc=time()
                     if self.scanMode == "step":
                         cnts = array(self.cpt.count(tmeasure),dtype=float32)
-                        cnts = cnts-self.DARK*tmeasure
-                        cnts[self.timer_channel] = cnts[self.timer_channel]/999984.
+                        #cnts[self.timer_channel] = cnts[self.timer_channel]/999984.
                     elif self.scanMode=="fast":
                         if self.almostMode:
                             self.cpt.wait()
                         else:
                             self.cpt.stop()
                         cnts=array(self.cpt.read(),dtype=float32)
-                        cnts-=self.DARK*cnts[self.timer_channel]/999984.
-                        cnts[self.timer_channel]=cnts[self.timer_channel]/999984.
+                        #cnts[self.timer_channel]=cnts[self.timer_channel]/999984.
                     #
                     #Be careful to convert in float... mind the last dot!
                     #
@@ -1488,7 +1476,7 @@ class escan_class:
                         print tmp
                     #Assertions valid for specific modes
                     if self.detectionMode in ["absorption","fluo","tey","vortex"]:
-                        if i1 <> 0 and i0 <> 0:
+                        if i1 * i0 > 0 :
                             mu = log(abs(i0 / i1))
                         else:
                             mu = 0.
@@ -1521,7 +1509,7 @@ class escan_class:
                                 #Tey
                                 mu = cnts[2] / i0
                                 #Reference foil (counters are apparently reversed in this case...)
-                                if (i0 > 0. and i1 > 0.): 
+                                if (i0 * i1 > 0.): 
                                     mus = log(i1 / i0)
                                 else:
                                     mus = 0.
@@ -1544,12 +1532,12 @@ class escan_class:
                         rontecpoint[0] = fluopoint[1]
                         rontecpoint[1] = dt_correction
                     else:
-                        if i1 <> 0 and i1 <> 0:
+                        if i0 * i1 <> 0:
                             mu = log(abs(i0/i1))
                         else: 
                             mu = 0.
                     if self.detectionMode<>"sexafs":
-                        if i2 <> 0. and i1 <> 0:
+                        if i2 * i1 <> 0:
                             mus = log(abs(i1 / i2))
                         else:
                             mus = 0.
@@ -1642,7 +1630,8 @@ class escan_class:
                     self.graph_data["mux"].append(mu)
                     self.graph_data["mux_ref"].append(mus)
                     t_nor = 1.
-                    if cnts[self.timer_channel] <>0: t_nor = float(cnts[self.timer_channel])
+                    if self.cpt.clock_channel > -1 and cnts[self.cpt.clock_channel] <>0:
+                        t_nor = float(cnts[self.cpt.clock_channel])
                     if self.detectionMode == "sexafs":
                         self.graph_data["i0"].append(cnts[0] / t_nor)
                         self.graph_data["i1"].append(cnts[1] / t_nor)
@@ -1830,52 +1819,7 @@ class escan_class:
     
     def pre_run(self,nowait=False):
         #
-        #Close EXAFS slits, Measure the dark current, open slits.
         #
-        try:
-            #if self.dark and self.scanMode <> "fast":
-            if self.dark:
-                if self.detectionMode == "sexafs":
-                    self.shutters["sexafs"].close()
-                    #_gap=vgap3.pos()
-                    #print "Closing slit3_v.gap to measure dark current...",
-                    #vgap3.pos(-1.)
-                else:
-                    self.shutters["exafs"].close()
-                self.DARK = array(self.cpt.count(10.), dtype=float32) * 0.1
-                #
-                #Depending on instrument set the proper DARK values
-                #
-                if self.detectionMode == "sexafs":
-                    #Apply dark only to the first channels of the actual cpt 
-                    self.DARK[self.timer_channel:] = [0.,] * (len(self.DARK) - self.timer_channel)
-                    #
-                    self.shutters["sexafs"].open()
-                else:
-                    #Set to zero the DARK of the xbpm since it can be before the shutter:
-                    self.DARK[4] = 0.
-                    self.DARK[5] = 0.
-                    #Apply dark only to the first channels of the actual cpt 
-                    self.DARK[self.timer_channel:] = [0.,] * (len(self.DARK) - self.timer_channel)
-                    #
-                    self.shutters["exafs"].open()
-                print "Dark current values are:"
-                print self.DARK[:self.timer_channel]
-            else:
-                self.DARK = array(self.cpt.read(), dtype=float32) * 0.
-                if self.user_dark_values <> None:
-                    for i in self.user_dark_values.keys():
-                        self.DARK[i] = self.user_dark_values[i][self.user_dark_values[i][0].pos()+1]
-                print "Dark current values are:"
-                print self.DARK[:self.timer_channel]
-        except (KeyboardInterrupt,SystemExit), tmp:
-            if self.dark:
-                if self.detectionMode == "sexafs":
-                    self.shutters["sexafs"].open()
-                else:
-                    self.shutters["exafs"].open()
-            print "Error or break while measuring dark current!"
-            raise tmp
         #!
         #! Set correct Ts2 and Tz2 before any other beam operation!
         #!
@@ -1962,13 +1906,6 @@ class escan_class:
         buffer.append("#dcm is focusing at %6.3f m\n"%(self.dcm.sample_at()))
         buffer.append("#dcm  2d spacing is %8.6f m\n"%(self.dcm.d*2.))
         buffer.append("#2d spacing for common crystals [A]: 2d[Si(111)]=6.2712 2d[Si(220)]=3.8403 2d[Si(311)]=3.2749\n")
-        if self.dark:
-            buffer.append("#Dark current has been subtracted, dark current measurements for all counters here below.\n")
-        else:
-            buffer.append("#Dark current has not been measured.\n")
-        buffer.append("#")
-        for i in self.DARK: buffer.append("%g\t"%i)
-        buffer.append("\n")
         try:
             buffer.append("#Machine Current = %g\n"%(self.ms.read_attribute("current").value))
         except:

@@ -488,12 +488,8 @@ class motor:
             max_value = nan
         return min_value, max_value
 
-    def set_lm(self, min_value = "Undef" , max_value = "Undef"):
+    def lmset(self, min_value = None , max_value = None):
         """It sets and then returns the soft limits on the moveable attribute"""
-        if max_value == "Undef":
-            return self.lm()
-        else:
-            print "Old limits: ", self.lm()
         if min_value == None:
             #print "lower limit unset"
             min_value = "Not specified" 

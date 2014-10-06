@@ -161,8 +161,8 @@ def wait_motor(motor, deadtime=0.025, timeout=-0.05, delay=None, verbose=True):
             sleep(deadtime)
             condition=False
             for i in motor_list:
-                if(i.state()==DevState.MOVING):
-                    condition=False
+                if(i.state() == DevState.MOVING):
+                    condition = False
                     break    
             t+=deadtime
         condition=True
@@ -242,19 +242,19 @@ def lm(x):
         print tmp
         return None
 
-def unset_lm(x):
+def lmunset(x):
     try:
-        return x.set_lm(None, None)
+        return x.lmset(None, None)
     except Exception, tmp:
         print tmp
         return None
 
-def set_lm(x,min_pos = "Undef", max_pos = "Undef"):
+def lmset(x,min_pos = None, max_pos = None):
     try:
-        return x.set_lm(min_pos, max_pos)
+        return x.lmset(min_pos, max_pos)
     except Exception, tmp:
         print tmp
-        return None
+        return x.lm()
 
 def move(*args):
     "Spec like absolute move"

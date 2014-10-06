@@ -34,7 +34,7 @@ try:
 	["counter4",	"CT3",		"%d",	"cts"],
 	["counter5",	"CT4",	        "%d",	"cts"],
 	["counter6",	"CT5",	        "%d",	"cts"],
-	["counter7",	"Time",	        "%d",	"micros"]
+	["counter7",	"Time",	        "%5.2f",	"s"]
 	]
 	cpt=counter("d09-1-c00/ca/cpt.2",user_readconfig=user_readconfig, clock_channel= 6)
 except Exception, tmp:

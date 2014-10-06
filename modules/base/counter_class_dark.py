@@ -6,7 +6,7 @@ from PyTango import DevState,DeviceProxy
 from exceptions import NotImplementedError
 import exceptions
 import thread
-from numpy import array
+from numpy import array, round
 
 class counter:
     def __init__(self,cpt=None,deadtime=0.01,maxRetries=5,user_readconfig=[], mask=[], clock_channel=-1):
@@ -190,15 +190,35 @@ class counter:
             raise tmp
 
     def read(self):
-        "Returns a tuple of values. 
+        """Returns a tuple of values. 
         Operations on raw data: 
         1) dark correction (if dark performed)
-        2) normalization of clock value (if specified)"
+        2) normalization of clock value (if specified)"""
         try:
             values = map(lambda x: x.value, self.DP.read_attributes(self.counter_names))
             if self.clock_channel >-1 and self.clock_freq>0: 
-                values[self.clock_channel] = round(values[self.clock_channel] / float(self.clock_freq))
-            return list(array(values) - array(self.dark) * values[self.clock_channel]
+                clock_value = float(values[self.clock_channel]) / float(self.clock_freq)
+                values = list(round(array(values) - array(self.dark) * clock_value))
+                values[self.clock_channel] = clock_value
+            return values
+        except PyTango.DevFailed, tmp:
+            print "Cannot read counters... ",
+            raise tmp
+        except PyTango.CommunicationFailed, tmp:
+            print self.label,": communication Failed... waiting 3 sec more..."
+            if obstinate_retries==self.maxRetries: 
+                print "Maximum retries exceeded!\n"
+                raise tmp
+            else:
+                sleep(3.)
+        except Exception, tmp:
+            print self.label,": is in error. Read function in counter_class, counter instance."
+            raise tmp
+            
+    def readRawData(self):
+        """Returns a tuple of Raw values. """
+        try:
+            return map(lambda x: x.value, self.DP.read_attributes(self.counter_names))
         except PyTango.DevFailed, tmp:
             print "Cannot read counters... ",
             raise tmp
@@ -249,9 +269,9 @@ class counter:
         """Use it after one dark count to store dark counter values.
         If a mask is provided, counters corresponding to zeros are set to zero.
         The clock frequency (counts/s) is measured too if the clock_channel is specified."""
-        dark = list(array(self.read(),"f") * array(self.mask) / self.DP.integrationTime)
+        dark = list(array(self.readRawData(),"f") * array(self.mask) / self.DP.integrationTime)
         if self.clock_channel <> -1:
-            clock_freq = float(self.read()[self.clock_channel]) / self.DP.integrationTime
+            clock_freq = float(self.readRawData()[self.clock_channel]) / self.DP.integrationTime
             #print "clock value is %f counts/s on channel %i:" % (clock_freq, self.clock_channel)
         else:
             clock_freq = -1

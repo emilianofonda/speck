@@ -116,6 +116,8 @@ class dxmap:
     def start(self,dt=1):
         if self.state()<>DevState.RUNNING:
             self.DP.command_inout("Start")
+        else:
+            raise Exception("Trying to start %s when alread in RUNNING state"%self.label)
         return self.state()
         
     def stop(self):
@@ -172,7 +174,8 @@ class dxmap:
                 out=map(lambda x: x.value, out)
             else:
                 raise tmp
-        return out        
+        return out
+        
     def count(self,dt=1):
         """Not working, this is a slave device"""
         return
