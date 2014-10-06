@@ -273,7 +273,7 @@ def mvr(*args):
         return mv(*newargs)
         
 def Iref(x):
-    "Execute initialize reference position"
+    "WARNING: expert command! --> execute initialize reference position."
     try:
         x.InitializeReferencePosition()
     except:
@@ -282,6 +282,24 @@ def Iref(x):
     wait_motor(x)
     sleep(0.2)
     return x.pos()
+
+def Dpos(*args):
+    "WARNING: expert command! --> define the position of the motor."
+    if mod(len(args), 2): 
+        raise Exception("Dpos: odd number of parameters")
+    for i in range(len(args))[::2]:
+        try:
+            args[i].DefinePosition(args[i+1])
+            wait_motor(args[i])
+        except Exception, tmp:
+            print tmp
+            print "Cannot Execute Initialize Reference Position on motor"
+    for i in args[::2]:
+        try:
+            print i.label, " set at ", i.pos()
+        except:
+            pass
+    return map(lambda i: i.pos(), args[0::2])
    
 def mover(*args):
     "Spec like relative move"

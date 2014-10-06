@@ -1,7 +1,7 @@
 from mycurses import *
 from time import time,sleep
 from PyTango import DeviceProxy,DevState
-from numpy import nan
+from numpy import nan, inf
 from exceptions import KeyboardInterrupt,SystemExit,SyntaxError, NotImplementedError, Exception
 class moveable:
     def __init__(self,label="",attribute="",moving_state=DevState.MOVING,stop_command="",deadtime=0.01,timeout=0.1,delay=0.):
@@ -62,8 +62,17 @@ class moveable:
             color=BOLD+BLUE
         else: 
             color=""
-        return self.label+"/"+self.att_name+" (attribute label=%s) at "%self.ac.label+self.ac.format%self.pos()+" %s"%self.ac.unit\
-        +" is in state: "+color+"%s"%(self.state())+RESET
+        fmt = self.label + "/" + self.att_name + " (attribute label=%s) at " + self.ac.format + "[" + self.ac.format + ":" + self.ac.format + "]"\
+        +" %s"+" is in state: " + color + "%s" + RESET
+        #return self.label+"/"+self.att_name+" (attribute label=%s) at "%self.ac.label+self.ac.format%self.pos()+\
+        #"[" + self.ac.format + ":" + self.ac.format + "]" % (*self.lm()) +" %s"%self.ac.unit\
+        #+" is in state: "+color+"%s"%(self.state())+RESET
+        lmts= list(self.lm())
+        if lmts[0] == None:
+            lmts[0] = -inf
+        if lmts[1] == None:
+            lmts[1] = inf
+        return fmt % (self.ac.label, self.pos(), lmts[0], lmts[1], self.ac.unit, self.state())
     
     def __call__(self,x=None):
         print self.__repr__()

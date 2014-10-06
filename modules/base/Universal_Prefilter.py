@@ -148,7 +148,8 @@ def mylineparser(line):
 #"xdscan":[1],"set_mon":[1],"where_mon":[1],"BL_Close":[],"BL_Open":[],"pos":[1],\
 #"lm":[1],"lmset":[1],"domacro":[1],"editmacro":[1],"timescan":[]}
 
-__Universal_Syntax_Keywords={"mv":[],"mvr":[],"fw":[],"bw":[],"start":[],"stop":[],"tw":[],"wa":[],"wm":[],"ct":[],\
+__Universal_Syntax_Keywords={"mv":[],"mvr":[],"fw":[],"bw":[],"start":[],"stop":[],"tw":[],"wa":[],"wm":[],\
+"Iref":[],"Dpos":[],"ct":[],\
 "ascan":[],"a2scan":[],"dscan":[],"init":[],"xascan":[],"escan":[1,2],\
 "xdscan":[],"set_mon":[],"where_mon":[],"shopen":[],"shclose":[], "shstate":[], "pos":[],"on":[],"off":[],\
 "lm":[],"lmset":[],"lmunset":[],"domacro":[1],"editmacro":[1],"tscan":[],"timescan":[],"close":[],"open":[],"setroi":[],
