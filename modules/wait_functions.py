@@ -129,7 +129,7 @@ def wait_injection(TDL=FE,ol=[obxg,],vs=[],pi=[],maxpressure=1e-5,deadtime=1):
                 sys.stdout.flush()
     print "Waiting for injection since ",wtime.asctime(),"\n"
     sys.stdout.flush()
-    if(TDL.state()==DevState.CLOSE): 
+    if(TDL.state() == DevState.CLOSE): 
         for i in ol: i.close()
     while(interlockTDL(TDL)):
         wtime.sleep(1)
@@ -157,26 +157,24 @@ def checkTDL(TDL=FE):
     try:
         s=TDL.state()
     except:
-        print "Unknown Front End state"
+        print "Device Error: Unknown Front End state"
         return True
-    if(s in [DevState.OPEN,DevState.UNKNOWN]):
+    if(s in [DevState.OPEN,]):
         return True
-    if(s in [DevState.CLOSE,DevState.DISABLE]):
+    else:
         return False
-    if(s in [DevState.FAULT,]):
-        #Is this a good choice?
-        return True
-        #return False
-    return True
 
 def interlockTDL(TDL=FE):
-    try:
-        interlock=(TDL.DP.read_attribute("beamLinePSSInterlock").value) or (TDL.DP.read_attribute("rfInterlock").value) or\
-        (TDL.DP.read_attribute("beamLineInterlock").value) or (TDL.DP.read_attribute("arcInterlock").value or \
-        (TDL.DP.frontEndStateValue in [2,]))
-        interlock2=TDL.interlock()
-        return interlock or interlock2
-    except:
-        return False
+    return FE.interlock()
+
+#def interlockTDL(TDL=FE):
+#    try:
+#        interlock=(TDL.DP.read_attribute("beamLinePSSInterlock").value) or (TDL.DP.read_attribute("rfInterlock").value) or\
+#        (TDL.DP.read_attribute("beamLineInterlock").value) or (TDL.DP.read_attribute("arcInterlock").value or \
+#        (TDL.DP.frontEndStateValue in [2,]))
+#        interlock2=TDL.interlock()
+#        return interlock or interlock2
+#    except:
+#        return False
 
 

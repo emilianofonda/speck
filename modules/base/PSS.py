@@ -24,13 +24,13 @@ class obx:
 		return
 
 	def __str__(self):
-                return "VALVE"
+        return "VALVE"
 			
-        def __repr__(self):
-                return self.label+" is %s"%(self.state())
+    def __repr__(self):
+        return self.label+" is %s"%(self.state())
 						
-        def subtype(self):
-                return "VACUUM"
+    def subtype(self):
+        return "VACUUM"
 
 	def command(self,command):
 		"Send the command to the device proxy. Command is a string. May return a value."
@@ -48,8 +48,6 @@ class obx:
 		while(self.state() not in [DevState.CLOSE, DevState.DISABLE] and t<=self.timeout):
 			sleep(self.deadtime)
 			t+=self.deadtime
-		#while(self.state()==DevState.MOVING):
-		#	sleep(self.deadtime)
 		return self.state()
 
 	def open(self):
@@ -58,8 +56,6 @@ class obx:
 		while(self.state() not in [DevState.OPEN, DevState.DISABLE] and t<=self.timeout):
 			sleep(self.deadtime)
 			t+=self.deadtime
-		#while(self.state()==DevState.MOVING):
-		#	sleep(self.deadtime)
 		return self.state()
 
 	def timeout_device(self,tout=None):
