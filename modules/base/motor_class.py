@@ -5,7 +5,7 @@ from PyTango import DeviceProxy, DevState
 from time import sleep,time
 import exceptions
 from exceptions import KeyboardInterrupt,SystemExit,SyntaxError, NotImplementedError, Exception
-from numpy import mean,std,mod, nan
+from numpy import mean,std,mod, nan, inf
 import thread
 
 #def move_motor(*motor):
@@ -156,7 +156,10 @@ class motor:
         return "MOTOR"
 
     def __repr__(self):
-        return self.label+" at %10.6f is in state: %s"%(self.pos(),self.state())
+        lm0, lm1 = self.lm()
+        if lm0 == None: lm0 = -inf
+        if lm1 == None: lm1 = inf
+        return self.label+" at %10.6f [%g:%g] is in state: %s"%(self.pos(), lm0, lm1, self.state())
 
     def subtype(self):
         return "MOTOR"
@@ -481,11 +484,11 @@ class motor:
         try:
             min_value = float(att_cfg.min_value)
         except:
-            min_value = nan
+            min_value = None
         try:
             max_value = float(att_cfg.max_value)
         except:
-            max_value = nan
+            max_value = None
         return min_value, max_value
 
     def lmset(self, min_value = None , max_value = None):

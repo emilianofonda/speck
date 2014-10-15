@@ -62,16 +62,20 @@ class moveable:
             color=BOLD+BLUE
         else: 
             color=""
-        fmt = self.label + "/" + self.att_name + " (attribute label=%s) at " + self.ac.format + "[" + self.ac.format + ":" + self.ac.format + "]"\
-        +" %s"+" is in state: " + color + "%s" + RESET
         #return self.label+"/"+self.att_name+" (attribute label=%s) at "%self.ac.label+self.ac.format%self.pos()+\
         #"[" + self.ac.format + ":" + self.ac.format + "]" % (*self.lm()) +" %s"%self.ac.unit\
         #+" is in state: "+color+"%s"%(self.state())+RESET
         lmts= list(self.lm())
+        lmf0 = self.ac.format
+        lmf1 = self.ac.format
         if lmts[0] == None:
             lmts[0] = -inf
+            lmf0 = "%g"
         if lmts[1] == None:
             lmts[1] = inf
+            lmf1 = "%g"
+        fmt = self.label + "/" + self.att_name + " (attribute label=%s) at " + self.ac.format + "[" + lmf0 + ":" + lmf1 + "]"\
+        +" %s"+" is in state: " + color + " %s " + RESET
         return fmt % (self.ac.label, self.pos(), lmts[0], lmts[1], self.ac.unit, self.state())
     
     def __call__(self,x=None):

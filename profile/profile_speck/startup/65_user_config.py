@@ -27,21 +27,21 @@ __samplePos=13.95
 #NI6602
 try:
     user_readconfig=[
-    ["counter1",    "I0",        "%d",    "cts"],
-    ["counter2",    "I1",        "%d",    "cts"],
-    ["counter3",    "I2",        "%d",    "cts"],
-    ["counter4",    "TEY",        "%d",    "cts"],
-    ["counter5",    "XBPM1",    "%d",    "cts"],
-    ["counter6",    "XBPM2",    "%d",    "cts"],
-    ["counter7",    "Empty01",    "%d",    "cts"],
-    ["counter8",    "SEXI0",    "%d",    "cts"],
-    ["counter9",    "SEXI1",    "%d",    "cts"],
-    ["counter10",    "SEXI2",    "%d",    "cts"],
-    ["counter11",    "Empty02",    "%d",    "cts"],
-    ["counter12",    "Empty03",    "%d",    "cts"],
-    ["counter13",    "Empty04",    "%d",    "cts"],
-    ["counter14",    "Empty05",    "%d",    "cts"],
-    ["counter15",    "Clock",    "%5.2f",    "s"]
+    ["counter1",    "I0",         "%d",    "cts"],
+    ["counter2",    "I1",         "%d",    "cts"],
+    ["counter3",    "I2",         "%d",    "cts"],
+    ["counter4",    "XBPM_S",     "%d",    "cts"],
+    ["counter5",    "Empty01",    "%d",    "cts"],
+    ["counter6",    "Empty02",    "%d",    "cts"],
+    ["counter7",    "Empty03",    "%d",    "cts"],
+    ["counter8",    "Empty04",    "%d",    "cts"],
+    ["counter9",    "Empty05",    "%d",    "cts"],
+    ["counter10",   "Empty06",    "%d",    "cts"],
+    ["counter11",   "Empty07",    "%d",    "cts"],
+    ["counter12",   "Empty08",    "%d",    "cts"],
+    ["counter13",   "Empty09",    "%d",    "cts"],
+    ["counter14",   "Empty10",    "%d",    "cts"],
+    ["counter15",   "Clock",    "%5.2f",    "s"]
     ]
     cpt0=counter("d09-1-c00/ca/cpt.1",user_readconfig=user_readconfig, clock_channel=14)
 except Exception, tmp:
