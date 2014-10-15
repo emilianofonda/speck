@@ -165,7 +165,7 @@ def checkTDL(TDL=FE):
         return False
 
 def interlockTDL(TDL=FE):
-    return FE.interlock()
+    return TDL.interlock()
 
 #def interlockTDL(TDL=FE):
 #    try:
