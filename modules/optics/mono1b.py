@@ -7,9 +7,10 @@ from PyTango import DeviceProxy, DevState
 import galil_multiaxis
 from exceptions import Exception
 import exceptions
-from numpy import arange,sign,array,nan
+from numpy import arange,sign,array,nan,sqrt
 import thread
 import moveable
+from spec_syntax import move_motor
 
 class sagittal_bender:
     def __init__(self,bender1_name="",bender2_name="",controlbox_rawdata1=None,controlbox_rawdata2=None,axis1=None,axis2=None,\
@@ -178,7 +179,7 @@ class sagittal_bender:
         return self.pos()
         
     def go(self,dest):
-        return self.pos(dest,wait=False)
+        return self.pos(dest, wait=False)
         
     def fire(self,dest=None):
         """This is a way to send the go command in a thread. Use it for full speed when multiple go commands
@@ -756,13 +757,13 @@ class mono1:
     
     def calculate_rz2(self,energy):
         """Calculate rz2 for given energy value: parameters are in self.Rz2
-        The polynome is calculated over curvature: rz2=Sum(self.Rz2[i]*1/R**i)"""
-        curv=self.calculate_curvature(self.e2theta(energy))
+        The polynome is calculated over square root of curvature: rz2 = Sum(self.Rz2[i] * sqrt(1/R) **i)"""
+        sqr_curv=sqrt(self.calculate_curvature(self.e2theta(energy)))
         if len(self.Rz2_par)==0:
             return None
         __rz2=0.
         for i in range(len(self.Rz2_par)):
-            __rz2+=self.Rz2_par[i]*curv**i
+            __rz2 += self.Rz2_par[i]*sqr_curv**i
         return __rz2
         
     def calculate_rs2(self,energy):
@@ -778,18 +779,41 @@ class mono1:
 
     def calculate_rx2(self,energy):
         """Calculate rx2 for given energy value: parameters are in self.Rx2
-        The polynome is calculated over theta: rx2=Sum(self.Rs2[i]*(theta**i))"""
-        th=self.e2theta(energy)
+        The polynome is calculated over bender curvature: rx2=Sum(self.Rs2[i]*(curv**i))"""
+        curv = self.calculate_curvature(self.e2theta(energy))
         if len(self.Rx2_par)==0:
             return None
         __rx2=0.
         for i in range(len(self.Rx2_par)):
-            __rx2+=self.Rx2_par[i]*th**i
+            __rx2+=self.Rx2_par[i]*curv**i
         return __rx2
 
     def seten(self, energy=None):
-        return self.pos(energy,Ts2_Moves=True)
-
+        if energy == None:
+            return self.pos(energy,Ts2_Moves=True)
+        try:
+            shell=get_ipython()
+            shell.user_ns["mostab"].stop()
+        except Exception, tmp:
+            print tmp
+        try:
+            shell.user_ns["mostab"].pos(5.)
+        except Exception, tmp:
+            print tmp
+        try:
+            self.m_rx2fine.pos(5)
+        except:
+            pass
+        _rx2 = self.calculate_rx2(energy)
+        _rs2 = self.calculate_rs2(energy)
+        _rz2 = self.calculate_rz2(energy)
+        _ts2 = self.ts2(self.e2theta(energy))
+        move_motor(self.m_rz2, _rz2, self,energy, self.m_ts2, _ts2, self.m_rx2, _rx2, self.m_rs2, _rs2)
+        try:
+            shell.user_ns["mostab"].start()
+        except:
+            pass
+        return self.pos()
 
 #    def seten(self,energy=None):
 #        try:

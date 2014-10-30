@@ -141,9 +141,9 @@ def wait_injection(TDL=FE,ol=[obxg,],vs=[],pi=[],maxpressure=1e-5,deadtime=1):
     for i in ol: i.open()
     l=[TDL.state(),]
     for i in ol: l.append(i.state())
-    print "Delaying 5' for beamline warm-up..."
+    #print "Delaying 5' for beamline warm-up..."
     sys.stdout.flush()
-    wtime.sleep(300.)
+    wtime.sleep(3.)
     try:
         get_ipython().user_ns["mostab"].start()
     except:

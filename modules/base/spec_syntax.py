@@ -8,10 +8,10 @@ from time import time, sleep
 import os
 import thread
 
-from motor_class import motor,piezo,motor_slit
-from moveable import moveable
-from mm4005 import mm4005_motor
-from mono1b import mono1
+#from motor_class import motor,piezo,motor_slit
+#from moveable import moveable
+#from mm4005 import mm4005_motor
+#from mono1b import mono1
 
 import PyTango
 from PyTango import DevState
@@ -64,8 +64,8 @@ def wa(returns = False, verbose = True):
     for i in g:
         if not(i.startswith("_")):
             j=eval(i,g)
-            if isinstance(j,motor) or isinstance(j,piezo) or isinstance(j,motor_slit) \
-            or isinstance(j,mono1) or isinstance(j,mm4005_motor) or isinstance(j,moveable): 
+            if isinstance(j,eval("motor",g)) or isinstance(j,eval("piezo",g)) or isinstance(j,eval("motor_slit",g)) \
+            or isinstance(j,eval("mono1",g)) or isinstance(j,eval("mm4005_motor",g)) or isinstance(j,eval("moveable",g)): 
                 lm.append([i,j])
     lm.sort()
     outout=[]

@@ -14,11 +14,13 @@ from tango_serial import tango_serial
 
 class MOSTAB_serial:
 
-    def __init__(self, port=0, baudrate=9600, echo=0, deadtime=0.05, init_file=""):
+    def __init__(self, port=0, baudrate=9600, echo=0, deadtime=0.05, init_file="",scaler="cpt", channel=3):
         self.SerPort=serial.Serial(0)
         self.SerPort.baudrate=baudrate
         self.SerPort.timeout=1
         self.deadtime = deadtime
+        self.scaler="cpt"
+        self.channel=3
         self.label="MOSTAB_%i" % port
         if echo == 0:
             self.InOutS("NOECHO")
@@ -363,9 +365,10 @@ class MOSTAB_serial:
 #        return self.range()
 #    
     def tune(self, p1=1, p2=9, np=50, dt=0.1, offset = 0., draw=True):
-        ascan(self, p1, p2, (p1-p2)/float(np), dt = dt, channel=0, graph=0, scaler="cpt")
+        ascan(self, p1, p2, (p1-p2)/float(np), dt = dt, channel=self.channel, graph=0, scaler=self.scaler)
         self.pos(ScanStats.baricenter_scaled)
-        time.sleep(1)
+        time.sleep(0.25)
+        self.__call__("TUNE #")
         return self.start()
 
     def oscbeam(self,p1,p2,dp=0.01, phase = 0., repeat=3):
@@ -422,12 +425,14 @@ class MOSTAB_serial:
         return ll
 
 class MOSTAB_tango(MOSTAB_serial):
-    def __init__(self, port=None, echo=1, EndOfLine=13, Space=32, deadtime=0.05, EndOfLine_out="\r\n", init_file = ""):
+    def __init__(self, port=None, echo=1, EndOfLine=13, Space=32, deadtime=0.05, EndOfLine_out="\r\n", init_file = "",scaler="cpt",channel=3):
         """System is asymmetric: 10 is sent to end command, while 13,10 is received"""
         myEOL={10:"\n",13:"\r"}
         self.serial=tango_serial(port, EndOfLine=[EndOfLine,], space=Space, deadtime=0.1)
         self.deadtime=deadtime
         self.label="MOSTAB_" + port
+        self.channel=channel
+        self.scaler=scaler
         self.EndOfLine = myEOL[EndOfLine]
         self.EndOfLine_out = EndOfLine_out
         self.states_table = {

@@ -255,26 +255,6 @@ except Exception, tmp:
     ct=cpt
     print tmp
 
-#Beam diagnostics: xbpm...
-#try: 
-#    xbpm=xbpm_class.xbpm("d09-1-c00/ca/cpt.1",ch1=4,ch2=5,slope=-11.4352,offset=0.)
-#except:
-#    print "I cannot define xbpm"
-#    xbpm=None
-
-#Since qbpm are never working... let's just remove them!
-#try:
-#    qbpm1=xbpm_class.qbpm("tdl-d09-1/dg/xbpm.1")
-#except:
-#    print "Cannot define qbpm1: tdl-d09-1/dg/xbpm.1"
-#    qbpm1=None
-#
-#try:
-#    qbpm2=xbpm_class.qbpm("tdl-d09-1/dg/xbpm.2")
-#except:
-#    print "Cannot define qbpm2: tdl-d09-1/dg/xbpm.2"
-#    qbpm2=None
-
 #HV power supplies
 try:
     HV_I0    =NHQ_HVsupply("d09-1-cx1/ex/mi_cio-hvps.1","A")
@@ -363,98 +343,12 @@ for i in __tmp:
     	#print tmp
         print "Cannot define %s =motor(%s)"%(i,__tmp[i])
 
-#QEXAFS to be removed
-
-##Monochromator2
-#__tmp={
-#"q2_tz":"d09-1-c04/op/mono2-mt_tz.1",
-#"q2_cam":"d09-1-c04/op/mono2-mt_tx.1",
-#"q2_encoder":"d09-1-c04/op/mono2-cd_rx.1",
-#"q2_theta_alone":"d09-1-c04/op/mono2-mt_rx.2"
-#}
-#for i in __tmp:
-#    try:
-#        __IP.user_ns[i]=motor(__tmp[i])
-#        __allmotors+=[__IP.user_ns[i],]
-#    except Exception, tmp:
-#    	#print tmp
-#        print "Cannot define %s =motor(%s)"%(i,__tmp[i])
-#        
-##Monochromator3
-#__tmp={
-#"q3_tz":"d09-1-c04/op/mono3-mt_tz.1",
-#"q3_cam":"d09-1-c04/op/mono3-mt_tx.1",
-#"q3_encoder":"d09-1-c04/op/mono3-cd_rx.1",
-#"q3_theta_alone":"d09-1-c04/op/mono3-mt_rx.2"
-#}
-#for i in __tmp:
-#    try:
-#        __IP.user_ns[i]=motor(__tmp[i])
-#        __allmotors+=[__IP.user_ns[i],]
-#    except Exception, tmp:
-#        print tmp
-#        print "Cannot define %s =motor(%s)"%(i,__tmp[i])
-#
-#try:
-#    class motor_custom(motor):
-#        def start(self):
-#            return self.backward(wait=False)
-#    q2_delta=motor_custom("d09-1-c04/op/mono2-mt_rx.1")
-#    q3_delta=motor_custom("d09-1-c04/op/mono3-mt_rx.1")
-#except Exception, tmp:
-#    print tmp
-#    print "Error extending class for quick delta motors"
-#
-#try:
-#    from motor_double_encoded import motor_double_encoded,motor_separate_encoder
-#    q2_theta=motor_double_encoded("d09-1-c04/op/mono2-mt_rx.2","d09-1-c04/op/mono2-cd_rx.1")
-#    q3_theta=motor_separate_encoder("d09-1-c04/op/mono3-mt_rx.2","d09-1-c04/op/mono3-cd_rx.1")
-#except Exception, tmp:
-#    print tmp
-#    print "Error extending class for quick theta motor"
-
 #################################################
 #             Moveables
 ################################################
 
 #Normal moveables (missing special options)
 __tmp={
-#"vup1"  :["d09-1-c01/ex/fent_v.1","InsideUpPosition"],
-#"vdown1":["d09-1-c01/ex/fent_v.1","OutsideDownPosition"],
-#"vpos1" :["d09-1-c01/ex/fent_v.1","Position"],
-#"vgap1" :["d09-1-c01/ex/fent_v.1","gap"],
-#"hpos1" :["d09-1-c01/ex/fent_h.1","Position"],
-#"hgap1" :["d09-1-c01/ex/fent_h.1","gap"],
-#"hout1" :["d09-1-c01/ex/fent_h.1","OutsideDownPosition"],
-#"hin1"  :["d09-1-c01/ex/fent_h.1","InsideUpPosition"],
-#"vpos2" :["d09-1-c04/ex/fent_v.1","Position"],
-#"vgap2" :["d09-1-c04/ex/fent_v.1","gap"],
-#"vup2"  :["d09-1-c04/ex/fent_v.1","InsideUpPosition"],
-#"vdown2":["d09-1-c04/ex/fent_v.1","OutsideDownPosition"],
-#"vpos3" :["d09-1-c06/ex/fent_v.1","Position"],
-#"vgap3" :["d09-1-c06/ex/fent_v.1","gap"],
-#"hin3"  :["d09-1-c06/ex/fent_h.1","InsideUpPosition"],
-#"hout3" :["d09-1-c06/ex/fent_h.1","OutsideDownPosition"],
-#"vup3"  :["d09-1-c06/ex/fent_v.1","InsideUpPosition"],
-#"vdown3":["d09-1-c06/ex/fent_v.1","OutsideDownPosition"],
-#"hpos3" :["d09-1-c06/ex/fent_h.1","Position"],
-#"hgap3" :["d09-1-c06/ex/fent_h.1","gap"],
-#"vpos4" :["d09-1-cx1/ex/fent_v.1","Position"],
-#"vgap4" :["d09-1-cx1/ex/fent_v.1","gap"],
-#"hin4"  :["d09-1-cx1/ex/fent_h.1","InsideUpPosition"],
-#"hout4" :["d09-1-cx1/ex/fent_h.1","OutsideDownPosition"],
-#"vup4"  :["d09-1-cx1/ex/fent_v.1","InsideUpPosition"],
-#"vdown4":["d09-1-cx1/ex/fent_v.1","OutsideDownPosition"],
-#"hpos4" :["d09-1-cx1/ex/fent_h.1","Position"],
-#"hgap4" :["d09-1-cx1/ex/fent_h.1","gap"],
-#"vpos5" :["d09-1-cx2/ex/fent_v.1","Position"],
-#"vgap5" :["d09-1-cx2/ex/fent_v.1","gap"],
-#"hpos5" :["d09-1-cx2/ex/fent_h.1","Position"],
-#"hgap5" :["d09-1-cx2/ex/fent_h.1","gap"],
-#"vup5"  :["d09-1-cx2/ex/fent_v.1","InsideUpPosition"],
-#"vdown5":["d09-1-cx2/ex/fent_v.1","OutsideDownPosition"],
-#"hin5"  :["d09-1-cx2/ex/fent_h.1","InsideUpPosition"],
-#"hout5" :["d09-1-cx2/ex/fent_h.1","OutsideDownPosition"],
 "po1"        :["d09-1-c02/ex/po.1-mt.1","position","delay=1.","timeout=3."],
 "po2"        :["d09-1-c06/ex/po.1-mt_tz.1","position","delay=1.","timeout=3."],
 "po3"        :["d09-1-cx1/ex/po.1-mt_tz.1","position","delay=1.","timeout=3."],
@@ -617,12 +511,12 @@ __tmp={
 "vdown2":["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","down"],
 "vpos3" :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","pos"],
 "vgap3" :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","gap"],
-"hin3"  :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","in"],
-"hout3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","out"],
+#"hin3"  :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","in"],
+#"hout3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","out"],
 "vup3"  :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","up"],
 "vdown3":["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","down"],
-"hpos3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","pos"],
-"hgap3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","gap"],
+#"hpos3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","pos"],
+#"hgap3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","gap"],
 "vpos4" :["d09-1-cx1/ex/fent_v.1","d09-1-cx1/ex/fent_v.1-mt_u","d09-1-cx1/ex/fent_v.1-mt_d","pos"],
 "vgap4" :["d09-1-cx1/ex/fent_v.1","d09-1-cx1/ex/fent_v.1-mt_u","d09-1-cx1/ex/fent_v.1-mt_d","gap"],
 "hin4"  :["d09-1-cx1/ex/fent_h.1","d09-1-cx1/ex/fent_h.1-mt_i","d09-1-cx1/ex/fent_h.1-mt_o","in"],
@@ -678,22 +572,22 @@ try:
     #These paremeter are NOT copied to tango devices... do it by hand when necessary.
     #C1=A1_1*1/R+A0_1
     #C2=A1_2*1/R+A0_2
-    #Rz2=Rz2_par[0]+Rz2_par[1]*1/R
+    #Rz2=p0+p1*(1/R)**0.5+p2*(1/R)+p3*(1/R)**1.5
     #Rs2=Rs2_par[0]+Rs2_par[1]*energy+Rs2_par[2]*energy**2+...
-    #Rx2=Rx2_par[0]+Rx2_par[1]*theta+...
+    #Rx2=Rx2_par[0]+Rx2_par[1]*(1/R)+...
 
     #Si220
     #Bender (steps versus 1/R)    
-    A1_1 = 488717. #A1_1=504940.0 #503280.0 #+520646.0 #521776.  # 523711.   # 553693    # 538800. 
-    A0_1 = 101943. #A0_1=81255.0 #53248.0  #-55962.1  #-59292.2 #-41290.7   #-54703.8   #-51886.8 
-    A1_2 = 492917. #A1_2=486220.0 #507372.0 #+511363.0 #535801.0 # 535801    # 520862    # 504967. 
-    A0_2 = 104935. #A0_2=69396.0 #58929.8  #-10790.7  #-21530   #-39488.6   #-25208.5   #-22156.9     
+    A1_1 = 493068. #488717. #A1_1=504940.0 #503280.0 #+520646.0 #521776.  # 523711.   # 553693    # 538800. 
+    A0_1 = 99208. #101943. #A0_1=81255.0 #53248.0  #-55962.1  #-59292.2 #-41290.7   #-54703.8   #-51886.8 
+    A1_2 = 487333. #492917. #A1_2=486220.0 #507372.0 #+511363.0 #535801.0 # 535801    # 520862    # 504967. 
+    A0_2 = 107675. #104935. #A0_2=69396.0 #58929.8  #-10790.7  #-21530   #-39488.6   #-25208.5   #-22156.9     
     #Rz2 ()
-    Rz2_par=[-20000.,] #[-18000.,-1937.05] #[-111301.,1039.25,-6.01026] #[-110268.,510.453]      #[-201042.,5461.03,-50.5829]
+    Rz2_par=[-42338.7, 85876.4, -92108.6, 32368.1] #[-18000.,-1937.05] #[-111301.,1039.25,-6.01026] #[-110268.,510.453]      #[-201042.,5461.03,-50.5829]
     #Rs2 ()
-    Rs2_par=[-1150.,]#[-1343.,] #[-2294.91,-0.127889,4.2417e-6,-3.58466e-11] #[-3135.83,4.46052]       #[-521.,]
+    Rs2_par=[-920.,]#[-1343.,] #[-2294.91,-0.127889,4.2417e-6,-3.58466e-11] #[-3135.83,4.46052]       #[-521.,]
     #Rx2 ()
-    Rx2_par=[-8257.2,229.33,-14.074,0.36688,-0.003593,] #[-8285.5+1096.,192.212,-12.8381,0.37944,-0.00433698]  
+    Rx2_par=[-7504.85, 727.716, -1756.17]#[-8257.2,229.33,-14.074,0.36688,-0.003593,]
 
     #Si111   
     #A1_1= 561133.0   #545784.
@@ -1004,7 +898,8 @@ def SEXAFS():
 ####
 
 
-slits=[vgap1,vpos1,hgap1,hpos1,vgap2,vpos2,vgap3,vpos3,hgap3,hpos3,vgap4,vpos4,hgap4,hpos4,vgap5,vpos5,hgap5,hpos5]
+#slits=[vgap1,vpos1,hgap1,hpos1,vgap2,vpos2,vgap3,vpos3,hgap3,hpos3,vgap4,vpos4,hgap4,hpos4,vgap5,vpos5,hgap5,hpos5]
+slits=[vgap1,vpos1,hgap1,hpos1,vgap2,vpos2,vgap3,vpos3,vgap4,vpos4,hgap4,hpos4,vgap5,vpos5,hgap5,hpos5]
 sample=[x, z, phi, theta]
 fluo=[fluo_x, fluo_s, fluo_z]
 sexafs=[sx,sy,sz,sphi]
