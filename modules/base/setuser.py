@@ -22,6 +22,13 @@ def setuser(name=None):
     if name == None:
         if "FOLDER" in cfg.keys():
             os.chdir(__Default_Data_Folder + os.sep + cfg["FOLDER"])
+            #Start logging in speckle session
+            try:
+                os.system("screen -X log off")
+                os.system("screen -X logfile %s" % (os.getcwd() + os.sep + "speckle.log"))
+                os.system("screen -X log on")
+            except:
+                pass
         else:
             print "setuser: No previous user folder defined!"
             return
@@ -38,6 +45,12 @@ def setuser(name=None):
         for i in cfg.keys():
             cfgfile.write("%s=%s\n" % (i,cfg[i]))
         cfgfile.close()
+        try:
+            os.system("screen -X log off")
+            os.system("screen -X logfile %s" % (os.getcwd() + os.sep + "speckle.log"))
+            os.system("screen -X log on")
+        except:
+            pass
     return
 
 
