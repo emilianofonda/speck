@@ -10,7 +10,7 @@ then
         screen -r `echo $SCRS|cut -f 1 -d " "`
     else 
         echo speckle session not found: creating speckle session.
-        screen -S speckle -A speck
+        gnome-terminal --hide-menubar --title=SPECKLE --geometry 140x50+10+20 -e "screen -S speckle -A speck"
     fi    
 else
     echo Multiple speckle sessions exist please connect manually.
@@ -18,6 +18,9 @@ else
     screen -ls|grep speckle
     echo use "screen -x sessionname" to connect
 fi
+
+
+
 
 
 
