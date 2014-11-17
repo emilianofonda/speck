@@ -49,7 +49,8 @@ def setuser(name=None):
             os.system("screen -X log off")
             os.system("screen -X logfile %s" % (os.getcwd() + os.sep + "speckle.log"))
             os.system("screen -X log on")
-        except:
+        except Exception, tmp:
+            print tmp
             pass
     return
 
