@@ -392,7 +392,8 @@ __tmp={
 "I0_gain"    :["d09-1-cx1/ex/amp_iv.1","gain"],
 "I1_gain"    :["d09-1-cx1/ex/amp_iv.2","gain"],
 "I2_gain"    :["d09-1-cx1/ex/amp_iv.3","gain"],
-"mostab_gain"    :["d09-1-cx1/ex/amp_iv.4","gain"],
+"mostab_gain1"    :["d09-1-cx1/ex/amp_iv.10","gain"],
+"mostab_gain2"    :["d09-1-cx1/ex/amp_iv.11","gain"],
 "mir1_pitch"    :["d09-1-c02/op/mir1-tpp","pitch"],
 "mir1_roll"    :["d09-1-c02/op/mir1-tpp","roll"],
 "mir1_z"    :["d09-1-c02/op/mir1-tpp","zC"],
@@ -424,6 +425,13 @@ for i in __tmp:
         print RED+"Failed"+RESET+" defining: %s/%s as %s"%tuple(__tmp[i][0:2]+[i,])
         print RED+"-->"+RESET,tmp
         print UNDERLINE+__cmdstring+RESET
+
+#############################################################
+# DOUBLE FEMTO
+#############################################################
+
+from doubleFEMTO import doubleFEMTO
+mostab_gain = doubleFEMTO(mostab_gain1, mostab_gain2)
 
 ##############################################################
 #        Sensors

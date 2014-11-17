@@ -186,12 +186,15 @@ class moveable:
             else:
                 print "DefinePosition "+RED+"not"+RESET+" defined on %s"%self.label
                 return self.pos()
+
     def state(self):
         s = self.DP.state()
         if s == self.moving_state:
             return DevState.MOVING
         else:
             return s
+    def status(self):
+        return self.DP.status()
 
 class sensor(moveable):    
     def pos(self,x=None,wait=True):
