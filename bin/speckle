@@ -1,0 +1,23 @@
+#!/bin/bash
+if 
+    test -z `screen -ls|grep speckle|cut -f 2|cut -d $'\n' -f 2`
+then
+    if
+        (screen -ls |grep speckle); 
+    then 
+        echo speckle session already exists: connecting to...
+        SCRS=`screen -ls|grep speckle|cut -f 2`
+        screen -r `echo $SCRS|cut -f 1 -d " "`
+    else 
+        echo speckle session not found: creating speckle session.
+        screen -S speckle -A speck
+    fi    
+else
+    echo Multiple speckle sessions exist please connect manually.
+    echo list follows:
+    screen -ls|grep speckle
+    echo use "screen -x sessionname" to connect
+fi
+
+
+
