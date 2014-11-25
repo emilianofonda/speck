@@ -393,6 +393,7 @@ __tmp={
 "I1_gain"    :["d09-1-cx1/ex/amp_iv.2","gain"],
 "I2_gain"    :["d09-1-cx1/ex/amp_iv.3","gain"],
 "mostab_gain1"    :["d09-1-cx1/ex/amp_iv.10","gain"],
+#"mostab_gain2"    :["d09-1-cx1/ex/amp_iv.4","gain"],
 "mostab_gain2"    :["d09-1-cx1/ex/amp_iv.11","gain"],
 "mir1_pitch"    :["d09-1-c02/op/mir1-tpp","pitch"],
 "mir1_roll"    :["d09-1-c02/op/mir1-tpp","roll"],
@@ -791,6 +792,10 @@ def shopen(level=1):
             print "Front End is locked by Machine Operator"
             print "I will wait for electron beam injection..."
             wait_injection()
+        if "beamLineOccInterlock" in __allshutters[i].DP.get_attribute_list() and __allshutters[i].DP.beamlineoccinterlock:
+                print "Front End is beam line locked: calling wait_injection()"
+                wait_injection()
+                #raise Exception("Front End locked, verify PSS or try again later.")
         if "beamLinePSSInterlock" in __allshutters[i].DP.get_attribute_list() and __allshutters[i].DP.beamlinepssinterlock:
                 print "Front End is beam line locked: calling wait_injection()"
                 wait_injection()
