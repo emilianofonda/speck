@@ -484,26 +484,29 @@ class motor:
         try:
             min_value = float(att_cfg.min_value)
         except:
-            min_value = None
+            min_value = -inf
         try:
             max_value = float(att_cfg.max_value)
         except:
-            max_value = None
+            max_value = inf
         return min_value, max_value
 
     def lmset(self, min_value = None , max_value = None):
         """It sets and then returns the soft limits on the moveable attribute"""
-        if min_value == None:
-            #print "lower limit unset"
-            min_value = "Not specified" 
+        att_cfg = self.DP.get_attribute_config(self.att_name)
+        current_min, current_max = att_cfg.min_value, att_cfg.max_value
+        if min_value in [-inf, inf]:
+            min_value = "Not specified"
+        elif min_value == None:
+            min_value = current_min
         else:
             min_value = "%g" % min_value
-        if max_value == None:
-            #print "higher limit unset"
+        if max_value == inf:
             max_value = "Not specified"
+        elif max_value == None:
+            max_value = current_max
         else:
             max_value = "%g" % max_value
-        att_cfg = self.DP.get_attribute_config(self.att_name)
         att_cfg.min_value, att_cfg.max_value = min_value, max_value
         self.DP.set_attribute_config(att_cfg)
         new_limits = self.lm()
