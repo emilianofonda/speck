@@ -3,6 +3,17 @@ from time import time,sleep
 from PyTango import DeviceProxy,DevState
 from numpy import nan, inf
 from exceptions import KeyboardInterrupt,SystemExit,SyntaxError, NotImplementedError, Exception
+
+#The following function should be moved to spec_syntax
+def speckit(name,classname,*args,**kwargs):
+    ip = get_ipython()
+    ip.user_ns[name] = classname(*args,**kwargs)
+    try:
+        ip.user_ns[name].speck_label = name
+    except:
+        pass
+    return
+
 class moveable:
     def __init__(self,label="",attribute="",moving_state=DevState.MOVING,stop_command="",deadtime=0.01,timeout=0.1,delay=0.):
         #print "moveable class: experimental version."
