@@ -367,9 +367,10 @@ class MOSTAB_serial:
     def tune(self, p1=1, p2=9, np=50, dt=0.1, offset = 0., draw=True):
         ascan(self, p1, p2, (p1-p2)/float(np), dt = dt, channel=self.channel, graph=0, scaler=self.scaler)
         self.pos(ScanStats.baricenter_scaled)
-        time.sleep(0.25)
+        time.sleep(1)
         self.__call__("TUNE #")
-        return self.start()
+        time.sleep(1)
+        return self.state()
 
     def oscbeam(self,p1,p2,dp=0.01, phase = 0., repeat=3):
         self.mode("OSCILLATION")

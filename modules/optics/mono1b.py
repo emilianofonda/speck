@@ -335,7 +335,7 @@ class mono1:
         __motor_group=[]
         for i in [rx1, tz2, ts2, rz2, rs2, rx2, c1, c2 ]:
             if i <>None: __motor_group.append(i)
-        self.motor_group=galil_multiaxis.galil_axisgroup(__motor_group)
+        self.motor_group=galil_multiaxis.galil_axisgroup(__motor_group,settlingTime=self.delay)
         self.default_enables={"ts2":False,"tz2":True,"rs2":False,"rz2":False,"rx2":False,"rx2fine":False}
         tpm=[]
         for i in self.motors:
@@ -558,9 +558,11 @@ class mono1:
             #Let's move it, move it!
             #print move_list
             #print __c1c2[0], __c1c2[1]
+            #print "Start at :",time()
             self.motor_group.pos(*move_list)
+            #print "Stop at :",time()
             #
-            sleep(self.delay)
+            #sleep(self.delay)
         except (KeyboardInterrupt,SystemExit), tmp:
             self.stop()
             raise tmp
@@ -808,7 +810,7 @@ class mono1:
         _rs2 = self.calculate_rs2(energy)
         _rz2 = self.calculate_rz2(energy)
         _ts2 = self.ts2(self.e2theta(energy))
-        move_motor(self.m_rz2, _rz2, self,energy, self.m_ts2, _ts2, self.m_rx2, _rx2, self.m_rs2, _rs2)
+        move_motor(self.m_rz2, _rz2, self, energy, self.m_ts2, _ts2, self.m_rx2, _rx2, self.m_rs2, _rs2)
         try:
             shell.user_ns["mostab"].start()
         except:

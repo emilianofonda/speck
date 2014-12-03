@@ -21,7 +21,7 @@ class galil_axisgroup:
     Then we send the command:
         PRx=DeltaMotorSteps
         """
-    def __init__(self,mot_list,deadtime=0.025,timeout=0.1, settlingTime=0.3):
+    def __init__(self,mot_list,deadtime=0.025,timeout=0.05, settlingTime=0):
         self.TANGODataBase=Database()
         self.deadtime = deadtime
         self.timeout = timeout
@@ -138,7 +138,7 @@ class galil_axisgroup:
             #Wait for motors to start
             t=time()
             nomovement=True
-            while time()-t<self.timeout and nomovement:
+            while time()-t < self.timeout and nomovement:
                 for i in mot_list:
                     if i.state()==DevState.MOVING: 
                         nomovement=False

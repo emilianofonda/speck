@@ -1427,11 +1427,11 @@ class escan_class:
                     actual = self.dcm.pos()
                     sleep(self.SettlingTime)
                     tmove = time() - t0
-                    if en <= self.grid[-1][0]:
-                        print "%8.2f\r"%(actual),
-                    elif self.kscan:
-                        print "En=%8.2f k=%5.2f\r"%(actual, sqrt(0.2624 * (actual - self.kscan_e0))),
-                    sys.stdout.flush()
+                    #if en <= self.grid[-1][0]:
+                    #    print "%8.2f\r"%(actual),
+                    #elif self.kscan:
+                    #    print "En=%8.2f k=%5.2f\r"%(actual, sqrt(0.2624 * (actual - self.kscan_e0))),
+                    #sys.stdout.flush()
                     #Read mono position BEFORE counting (step mode)
                     theta = self.dcm.m_rx1.pos()
                     etheta = self.dcm.theta2e(theta)

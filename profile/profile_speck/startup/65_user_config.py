@@ -249,6 +249,8 @@ except Exception, tmp:
 try:
     cpt=pseudo_counter(masters=[cpt0,],slaves=[MUXES,])
     ct=pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[MUXES,])
+    #cpt=pseudo_counter(masters=[cpt0,],slaves=[,])
+    #ct=pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[])
 except Exception, tmp:
     print "Failure defining ct "
     print "Defaulting to cpt... ct=cpt... "
@@ -636,18 +638,18 @@ try:
     
     #dcm=mono1(d=d,H=25.0,mono_name="d09-1-c03/op/mono1",
     #rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=i200,rz2=rz2, tz1=tz1, bender=bender,
-    #sourceDistance=16.119,delay=0.0,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
+    #sourceDistance=16.119,delay=0.2,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
     #WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=40000.)
 
     dcm=mono1(d=d,H=25.0,mono_name="d09-1-c03/op/mono1",
     rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, tz1=tz1, bender=bender,
-    sourceDistance=16.119,delay=0.0,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
+    sourceDistance=16.119,delay=0.2,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
     WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=43000.)
 
     #Bender disable:
     #dcm=mono1(d=d,H=25.0,mono_name="d09-1-c03/op/mono1",
     #rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=None, tz1=tz1, bender=None,
-    #sourceDistance=16.119,delay=0.3,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
+    #sourceDistance=16.119,delay=0.2,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
     #WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.})
     
     #Aliases for dcm operation
