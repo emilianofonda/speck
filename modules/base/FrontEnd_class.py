@@ -64,10 +64,15 @@ class FrontEnd:
         return self.command("Init")
         
     def interlock(self):
-        try:    
-            il=self.DP.read_attribute("frontEndStateValue").value
-        except:
-            print "Warning: cannot read Front End state Value."
+        for i in range(5):
+            try:
+                il=self.DP.read_attribute("frontEndStateValue").value
+                break
+            except:
+                print "Warning: cannot read Front End state Value."
+        sleep(0.1)
+        if i == 4:
+            raise Exception("Cannot Read Front End state Value after 5 Retrials. STOP")
         if(il in [5,10,20,30,70]):
             return True
         else:

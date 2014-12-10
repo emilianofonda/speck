@@ -529,9 +529,9 @@ class mono1:
     def calculate_curvatureradius(self,theta):
         return 1./self.calculate_curvature(theta)
 
-    def pos(self,energy=None,wait=True,Ts2_Moves=False, Tz2_Moves=True,NOFailures=0):
+    def pos(self, energy=None, wait=True, Ts2_Moves=False, Tz2_Moves=True, NOFailures=0):
         """Move the mono at the desired energy"""
-        if NOFailures>5:
+        if NOFailures > 5:
             raise Exception("mono1b: too many retries trying the move. (NO>5)")
         try:
             move_list=[]
@@ -539,18 +539,18 @@ class mono1:
                 ps=self.m_rx1.pos()
                 if ps==0.: return 9.99e12
                 return self.theta2e(ps)
-            if self.emin<>None and energy<self.emin:
+            if self.emin <> None and energy < self.emin:
                 raise Exception("Requested energy below monochromator limit: %7.2f"%self.emin)
-            if self.emax<>None and energy>self.emax:
+            if self.emax <> None and energy > self.emax:
                 raise Exception("Requested energy above monochromator limit: %7.2f"%self.emax)
-            theta=self.e2theta(energy)
-            move_list+=[self.m_rx1,theta]
+            theta = self.e2theta(energy)
+            move_list += [self.m_rx1, theta]
             if(self.__usebender): 
-                __c1c2=self.bender.calculate_steps_for_curv(self.calculate_curvature(theta))
+                __c1c2 = self.bender.calculate_steps_for_curv(self.calculate_curvature(theta))
                 #if __c1c2[0]>310000 or __c1c2[1]>395000:
                 #    print "mono1b.py: Hard coded limits of the Si220 bender exceeded"
                 #    raise Exception("Hard bender limits are c1<=310000steps and c2<=395000Steps")
-                move_list+=[self.bender.c1,__c1c2[0],self.bender.c2,__c1c2[1]]
+                move_list+=[self.bender.c1, __c1c2[0], self.bender.c2, __c1c2[1]]
             if (Ts2_Moves and self.usets2()): 
                 move_list+=[self.m_ts2,self.ts2(theta)]
             if (Tz2_Moves and self.usetz2()): 
@@ -590,7 +590,7 @@ class mono1:
         return self.pos(energy,wait,Ts2_Moves)
 
     def go(self,energy=None,wait=False,Ts2_Moves=False, Tz2_Moves=True):
-        """Go to energy and do not wait."""
+        """Go to energy and do not wait. This does not work with the mono1b class: use of galil_mulitaxis!"""
         return self.pos(energy,wait,Ts2_Moves)    
         
     def theta(self,theta=None,wait=True):

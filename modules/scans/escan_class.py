@@ -1422,16 +1422,21 @@ class escan_class:
                     #Let's move..."
                     #if self.notz2:
                     #    self.dcm.disable_tz2()
-                    actual = self.dcm.go(en, Ts2_Moves = self.Ts2_Moves, Tz2_Moves = not(self.notz2))
-                    wait_motor([self.dcm,] + motors_to_wait, verbose=False)  #[self.dcm, self.dcm.m_rs2, self.dcm.m_rx2fine])
+                    #actual = self.dcm.go(en, Ts2_Moves = self.Ts2_Moves, Tz2_Moves = not(self.notz2))
+                    #wait_motor([self.dcm,] + motors_to_wait, verbose=False)  #[self.dcm, self.dcm.m_rs2, self.dcm.m_rx2fine])
+                    #actual = self.dcm.pos()
+                    actual = self.dcm.pos(en, Ts2_Moves = self.Ts2_Moves, Tz2_Moves = not(self.notz2))
+                    if motors_to_wait <>[]:
+                        wait_motor(motors_to_wait, verbose=False)
                     actual = self.dcm.pos()
-                    sleep(self.SettlingTime)
+                    if self.SettlingTime >0:
+                        sleep(self.SettlingTime)
                     tmove = time() - t0
-                    #if en <= self.grid[-1][0]:
-                    #    print "%8.2f\r"%(actual),
-                    #elif self.kscan:
-                    #    print "En=%8.2f k=%5.2f\r"%(actual, sqrt(0.2624 * (actual - self.kscan_e0))),
-                    #sys.stdout.flush()
+                    if en <= self.grid[-1][0]:
+                        print "%8.2f\r"%(actual),
+                    elif self.kscan:
+                        print "En=%8.2f k=%5.2f\r"%(actual, sqrt(0.2624 * (actual - self.kscan_e0))),
+                    sys.stdout.flush()
                     #Read mono position BEFORE counting (step mode)
                     theta = self.dcm.m_rx1.pos()
                     etheta = self.dcm.theta2e(theta)
