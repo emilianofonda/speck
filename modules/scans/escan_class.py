@@ -1409,11 +1409,21 @@ class escan_class:
                     else:
                         p = self.dcm.m_rx2fine.pos()
                     if self.PitchCorrection: 
-                        self.dcm.m_rx2fine.go(self.calculate_pitch(en))
-                        motors_to_wait.append(self.dcm.m_rx2fine)
+                        try:
+                            self.dcm.m_rx2fine.go(self.calculate_pitch(en))
+                            motors_to_wait.append(self.dcm.m_rx2fine)
+                        except KeyboardInterrupt, tmp:
+                            raise tmp
+                        except:
+                            print "Exception when moving RX2Fine"
                     if self.RollCorrection: 
-                        self.dcm.m_rs2.go(self.calculate_roll(en))
-                        motors_to_wait.append(self.dcm.m_rs2)
+                        try:
+                            self.dcm.m_rs2.go(self.calculate_roll(en))
+                            motors_to_wait.append(self.dcm.m_rs2)
+                        except KeyboardInterrupt, tmp:
+                            raise tmp
+                        except:
+                            print "Exception when moving RS2"
                     if self.scanMode == "fast":
                         if self.almostMode:
                             self.cpt.start(tmeasure)
