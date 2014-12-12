@@ -21,8 +21,8 @@ class galil_axisgroup:
     Then we send the command:
         PRx=DeltaMotorSteps
         """
-    def __init__(self,mot_list,deadtime=0.025,timeout=0.05, settlingTime=0):
-        self.TANGODataBase = Database()
+    def __init__(self,mot_list,deadtime=0.025,timeout=0.15, settlingTime=0):
+        self.TANGODataBase=Database()
         self.deadtime = deadtime
         self.timeout = timeout
         self.settlingTime = settlingTime
@@ -83,6 +83,7 @@ class galil_axisgroup:
         #l_args=len(args)
         #if mod(l_args,2)<>0:
         #    raise Exception("galil_axisgroup: Bad number of arguments")
+        #tt0=time()
         if DevState.MOVING in map(lambda(x): x[0].state(),mots):
             raise Exception("galil_axisgroup: One of the axis is already moving")
         #mots=reshape(args,[l_args/2,2])
@@ -126,6 +127,7 @@ class galil_axisgroup:
         #workaround: additional SettlingTime
         sleep(self.settlingTime)
         #Return actual positions
+        #print "Movement takes:",time()-tt0
         return map(lambda(x): x[0].pos(), mots)
 
     def stop(self):
@@ -136,6 +138,7 @@ class galil_axisgroup:
 
     def wait(self,mot_list):
         """Differs from wait_motor since this calls the galil_axisgroup stop when an exception is raised"""
+        #tt0=time()
         try:
             #Wait for motors to start
             t0 = time()
@@ -157,6 +160,7 @@ class galil_axisgroup:
                         __tmp = lMots.pop(i)
                         break
             sleep(max(0., tEnd - time()))
+            #print "Waited for :",time()-tt0
         except KeyboardInterrupt, tmp:
             print "KeyboardInterrupt Exception catched in galil_axisgroup.wait: stopping motors."
             self.stop()
