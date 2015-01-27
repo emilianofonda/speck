@@ -76,7 +76,12 @@ class moveable:
             lmf1 = "%g"
         fmt = self.label + "/" + self.att_name + " (attribute label=%s) at " + self.ac.format + "[" + lmf0 + ":" + lmf1 + "]"\
         +" %s"+" is in state: " + color + " %s " + RESET
-        return fmt % (self.ac.label, self.pos(), lmts[0], lmts[1], self.ac.unit, self.state())
+        fmt_g = self.label + "/" + self.att_name + " (attribute label=%s) at " + "%g " + "[" + "%g" + ":" + "%g" + "]"\
+        +" %s"+" is in state: " + color + " %s " + RESET
+        try:
+            return fmt % (self.ac.label, self.pos(), lmts[0], lmts[1], self.ac.unit, self.state())
+        except:
+            return fmt_g % (self.ac.label, self.pos(), lmts[0], lmts[1], self.ac.unit, self.state())
     
     def __call__(self,x=None):
         print self.__repr__()

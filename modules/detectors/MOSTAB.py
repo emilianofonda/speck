@@ -364,12 +364,20 @@ class MOSTAB_serial:
 #            pass
 #        return self.range()
 #    
-    def tune(self, p1=1, p2=9, np=50, dt=0.1, offset = 0., draw=True):
+    def tune(self, p1=1, p2=9, np=50, dt=0.1, offset = 0., draw=True, tune="max"):
+        """The tuning procedure can move to max intenisty (tune="max")
+        or to baricenter (tune="center")
+        """
         ascan(self, p1, p2, (p1-p2)/float(np), dt = dt, channel=self.channel, graph=0, scaler=self.scaler)
-        self.pos(ScanStats.baricenter_scaled)
+        if tune == "max":
+            self.pos(ScanStats.max_pos)
+        elif tune =="center":
+            self.pos(ScanStats.baricenter_scaled)
+        else:
+            raise Exception("Unknown tune method request for MOSTAB.tune")
         time.sleep(1)
         self.__call__("TUNE #")
-        time.sleep(1)
+        time.sleep(2)
         return self.state()
 
     def oscbeam(self,p1,p2,dp=0.01, phase = 0., repeat=3):
