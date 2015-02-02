@@ -351,6 +351,7 @@ for i in __tmp:
 
 #Normal moveables (missing special options)
 __tmp={
+"T_dcm_set": ["d09-1-c03/op/bath.1","temperatureSetPoint"],
 "po1"        :["d09-1-c02/ex/po.1-mt.1","position","delay=1.","timeout=3."],
 "po2"        :["d09-1-c06/ex/po.1-mt_tz.1","position","delay=1.","timeout=3."],
 "po3"        :["d09-1-cx1/ex/po.1-mt_tz.1","position","delay=1.","timeout=3."],
@@ -458,7 +459,8 @@ __tmp={
 "pi4_1"        :["d09-1-c04/vi/pi.1","pressure"],
 "pi5_1"        :["d09-1-c05/vi/pi.1","pressure"],
 "pi6_1"        :["d09-1-c06/vi/pi.1","pressure"],
-"pi6_2"        :["d09-1-c06/vi/pi.2","pressure"]
+"pi6_2"        :["d09-1-c06/vi/pi.2","pressure"],
+"T_dcm"        :["d09-1-c03/op/bath.1","temperature"]
 }                                                
 
 __ll=__tmp.keys()
