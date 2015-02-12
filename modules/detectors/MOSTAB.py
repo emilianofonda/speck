@@ -364,7 +364,7 @@ class MOSTAB_serial:
 #            pass
 #        return self.range()
 #    
-    def tune(self, p1=1, p2=9, np=50, dt=0.1, offset = 0., draw=True, tune="center"):
+    def tune(self, p1=2, p2=8, np=60, dt=0.1, offset = 0., draw=True, tune="center"):
         """The tuning procedure can move to max intenisty (tune="max")
         or to baricenter (tune="center")
         """

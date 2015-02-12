@@ -54,7 +54,9 @@ def __m1bender(theta,hgap=25.):
     if theta<=0.5:
         return 100e3
     else:
-        return 35041.4691771089 * theta + 54787.1074748141
+        return 78214.2857189429 * theta + 2142.85711979773
+#       return 35041.4691771089 * theta + 54787.1074748141
+#        return 89375. * theta - 4375.
 #        h40=74900.*theta+63750.
 #        h25=78375.*theta+38437.5
 #        h15=79300.*theta+21250.
@@ -76,12 +78,13 @@ def __m2bender(theta,hgap=25.):
     if theta<0.5:
         return 100e3
     else:
+        return 89392.8571388639 * theta + 7285.71430548794
 #        h40=92275.*theta-41312.5
 #        h25=87575.*theta-19562.5
 #        h15=87110.*theta-18125.
 #        cible=__Parabolix(hgap,[[15,h15],[25,h25],[40,h40]])
 #        return cible
-        return 98905.4 * theta - 6395.4
+#        return 98905.4 * theta - 6395.4
         
 def __m2Z(theta):
     base=24.6
