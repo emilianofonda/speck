@@ -2028,6 +2028,7 @@ class escan_class:
             print "WARNING: Error alerting for end of scan... no Tkinter?\n"
             print "BUT: Ignore this message if escan is working well,\n just report this to your local contact\n"
         return
+
 def escan(filename="",form="",n=1,nowait=False):
     """Provide the start of the filename for the data, the parameters file, the number of scans.
     If you do NOT want to check the presence of beam (injections, beam loss...) set nowait=True."""

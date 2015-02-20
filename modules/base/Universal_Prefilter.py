@@ -232,7 +232,7 @@ def process_macro_file(filename,uns, n=1):
     for __repeat_this_macro in range(n):
         execfile(macro_tmp_file, uns)
     #print "Removing temporary file ",macro_tmp_file
-    os.remove(macro_tmp_file)
+    #os.remove(macro_tmp_file)
     return
 
 #General Cleanup
