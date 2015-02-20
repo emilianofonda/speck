@@ -113,7 +113,7 @@ def wait_injection(TDL=FE,ol=[obxg,],vs=[],pi=[],maxpressure=1e-5,deadtime=1):
                 if i.state()==DevState.FAULT:
                     try:
                         i.DP.faultack()
-                        sleep(deadtime)
+                        wtime.sleep(deadtime)
                     except:
                         raise Exception(RED+"Unresolved Vacuum Problem: call 9797 and local contact!"+RESET)
                 vstates.append(i.open())

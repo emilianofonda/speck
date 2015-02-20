@@ -1,3 +1,5 @@
+from time import sleep
+
 print
 print "################################################################"
 print "#                Executing user config.                        #" 

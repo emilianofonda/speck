@@ -1,5 +1,6 @@
 import PyTango
 from numpy import nan
+from time import sleep
 class sensor_group:
     def __init__(self,dev_atts={},functions=[]):
         """
