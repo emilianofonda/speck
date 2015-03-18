@@ -414,6 +414,10 @@ __tmp={
 "mir2_t2z"    :["d09-1-c05/op/mir2-mt_t2","position"],
 "mir2_t3z"    :["d09-1-c05/op/mir2-mt_t3","position"],
 "mir2_c"    :["d09-1-c05/op/mir2-mt_c.1","position"],
+"vpos5" :["d09-1-c06/ex/fent_v.2-mt_pos","position"],
+"vgap5" :["d09-1-c06/ex/fent_v.2-mt_gap","position"],
+"hpos5" :["d09-1-c06/ex/fent_h.2-mt_pos","position"],
+"hgap5" :["d09-1-c06/ex/fent_h.2-mt_gap","position"],
 #"keith_I0"      :["d09-1-cx1/ex/amp_iv.7","gain"],
 #"keith_I1"      :["d09-1-cx1/ex/amp_iv.8","gain"],
 #"keith_I2"      :["d09-1-cx1/ex/amp_iv.9","gain"],
@@ -524,12 +528,12 @@ __tmp={
 "vgap2" :["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","gap"],
 "vup2"  :["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","up"],
 "vdown2":["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","down"],
-"vpos3" :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","pos"],
-"vgap3" :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","gap"],
+#"vpos3" :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","pos"],
+#"vgap3" :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","gap"],
 #"hin3"  :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","in"],
 #"hout3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","out"],
-"vup3"  :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","up"],
-"vdown3":["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","down"],
+#"vup3"  :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","up"],
+#"vdown3":["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","down"],
 #"hpos3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","pos"],
 #"hgap3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","gap"],
 "vpos4" :["d09-1-cx1/ex/fent_v.1","d09-1-cx1/ex/fent_v.1-mt_u","d09-1-cx1/ex/fent_v.1-mt_d","pos"],
@@ -540,14 +544,14 @@ __tmp={
 "vdown4":["d09-1-cx1/ex/fent_v.1","d09-1-cx1/ex/fent_v.1-mt_u","d09-1-cx1/ex/fent_v.1-mt_d","down"],
 "hpos4" :["d09-1-cx1/ex/fent_h.1","d09-1-cx1/ex/fent_h.1-mt_i","d09-1-cx1/ex/fent_h.1-mt_o","pos"],
 "hgap4" :["d09-1-cx1/ex/fent_h.1","d09-1-cx1/ex/fent_h.1-mt_i","d09-1-cx1/ex/fent_h.1-mt_o","gap"],
-"vpos5" :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","pos"],
-"vgap5" :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","gap"],
-"hpos5" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","pos"],
-"hgap5" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","gap"],
-"vup5"  :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","up"],
-"vdown5":["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","down"],
-"hin5"  :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","in"],
-"hout5" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","out"]}
+"vpos6" :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","pos"],
+"vgap6" :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","gap"],
+"hpos6" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","pos"],
+"hgap6" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","gap"],
+"vup6"  :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","up"],
+"vdown6":["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","down"],
+"hin6"  :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","in"],
+"hout6" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","out"]}
 for i in __tmp:
     try:
         __IP.user_ns[i]=motor_slit(__tmp[i][0],__tmp[i][1],__tmp[i][2],__tmp[i][3])
@@ -918,7 +922,8 @@ def SEXAFS():
 
 
 #slits=[vgap1,vpos1,hgap1,hpos1,vgap2,vpos2,vgap3,vpos3,hgap3,hpos3,vgap4,vpos4,hgap4,hpos4,vgap5,vpos5,hgap5,hpos5]
-slits=[vgap1,vpos1,hgap1,hpos1,vgap2,vpos2,vgap3,vpos3,vgap4,vpos4,hgap4,hpos4,vgap5,vpos5,hgap5,hpos5]
+#slits=[vgap1,vpos1,hgap1,hpos1,vgap2,vpos2,vgap3,vpos3,vgap4,vpos4,hgap4,hpos4,vgap5,vpos5,hgap5,hpos5]
+slits=[vgap1,vpos1,hgap1,hpos1,vgap2,vpos2,vgap4,vpos4,hgap4,hpos4,vgap5,vpos5,hgap5,hpos5,vgap6,vpos6,hgap6,hpos6]
 sample=[x, z, phi, theta]
 fluo=[fluo_x, fluo_s, fluo_z]
 sexafs=[sx,sy,sz,sphi]
