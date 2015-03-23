@@ -410,7 +410,7 @@ class MOSTAB_serial:
             raise Exception("Unknown tune method request for MOSTAB.tune")
         self.pos(pt)
         time.sleep(1)
-        self.InOutS("OPRANGE %4.2f %4.2f %4.2f" % (pt - oprange*0.5, pt + oprange*0.5, pt))
+        self.InOutS("OPRANGE %4.2f %4.2f %4.2f" % (max(0, pt - oprange*0.5), min(10., pt + oprange*0.5), pt))
         self.__call__("TUNE #")
         time.sleep(2)
         return self.state()

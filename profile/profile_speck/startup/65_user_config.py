@@ -300,7 +300,14 @@ try:
     from MOSTAB import MOSTAB_tango as MOSTAB
     print "MOSTAB unit :",
     mostab=MOSTAB("d09-1-cx1/ca/mca_rontec_rs232_8.5",init_file = __IP.user_ns["__pySamba_root"] + "/config/mostab.cfg")
-    itune=mostab.tune
+    def itune(*args,**kwargs):
+        opr = 3.56/(0.10 * dcm.pos() * 1e-3 - 0.16) * 0.9
+        if "oprange" in kwargs.keys():
+            return mostab.tune(*args,**kwargs)
+        else:
+            kwargs["oprange"] = opr
+            return mostab.tune(*args,**kwargs)
+    #itune=mostab.tune
     #print i200.currents()
     #print i200.status()
 except Exception, tmp:
