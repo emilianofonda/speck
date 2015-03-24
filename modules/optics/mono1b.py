@@ -799,6 +799,7 @@ class mono1:
         except Exception, tmp:
             print tmp
         try:
+            shell.user_ns["mostab"].lmset(1.,9.)
             shell.user_ns["mostab"].pos(5.)
         except Exception, tmp:
             print tmp

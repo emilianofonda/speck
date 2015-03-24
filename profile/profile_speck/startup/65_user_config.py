@@ -373,7 +373,6 @@ __tmp={
 "sample_rx"    :["d09-1-cx1/ex/tab-mt_rx.1","position"],
 "sample_rx2"    :["d09-1-cx1/ex/tab-mt_rx.2","position"],
 "sample_rz"        :["d09-1-cx1/ex/tab-mt_rz.1","position"],
-"option1_x"        :["D09-1-CX1/EX/OPTION1-MT_TX.1","position"],
 "tbt_z"        :["d09-1-cx1/ex/cryo-tbt-mt_tz.1","position"],
 "fluo_x"    :["d09-1-cx1/dt/dtc_ge.1-mt_tx.1","position"],
 "fluo_s"    :["d09-1-cx1/dt/dtc_ge.1-mt_ts.1","position"],
@@ -425,6 +424,8 @@ __tmp={
 "vgap5" :["d09-1-c06/ex/fent_v.2-mt_gap","position"],
 "hpos5" :["d09-1-c06/ex/fent_h.2-mt_pos","position"],
 "hgap5" :["d09-1-c06/ex/fent_h.2-mt_gap","position"],
+"cryo4z" :["d09-1-cx1/ex/option1-mt_tz.1","position"],
+"cryo4set" :["d09-1-cx1/ex/cryo4.1-ctrl","temperatureSetPoint"],
 #"keith_I0"      :["d09-1-cx1/ex/amp_iv.7","gain"],
 #"keith_I1"      :["d09-1-cx1/ex/amp_iv.8","gain"],
 #"keith_I2"      :["d09-1-cx1/ex/amp_iv.9","gain"],
@@ -473,7 +474,9 @@ __tmp={
 "pi5_1"        :["d09-1-c05/vi/pi.1","pressure"],
 "pi6_1"        :["d09-1-c06/vi/pi.1","pressure"],
 "pi6_2"        :["d09-1-c06/vi/pi.2","pressure"],
-"T_dcm"        :["d09-1-c03/op/bath.1","temperature"]
+"T_dcm"        :["d09-1-c03/op/bath.1","temperature"],
+"cryo4temp1" :["d09-1-cx1/ex/cryo4.1-ctrl","temperature1"],
+"cryo4temp2" :["d09-1-cx1/ex/cryo4.1-ctrl","temperature2"],
 }                                                
 
 __ll=__tmp.keys()
