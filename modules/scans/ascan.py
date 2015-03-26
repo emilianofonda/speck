@@ -250,7 +250,8 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
         f.write(header)
         try:
             if not time_scan: 
-                mot.pos(p1 - dp)
+                #mot.pos(p1 - dp)
+                mot.pos(p1)
             sleep(delay0)
             for i in arange(p1,p2+dp,dp):
                 if not time_scan:

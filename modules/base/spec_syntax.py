@@ -353,13 +353,7 @@ def fw(*args):
     May forward one or several motors"""
     try:
         for i in args:
-            if "forward" in dir(i):
-                i.forward()
-            elif "DP" in dir(i) and "forward" in dir(i.DP):
-                i.DP.forward()
-            else:
-                if label in dir(i):
-                    print i.label," has no method forward defined."
+            i.forward()
         wait_motor(*args)
     except Exception, tmp:
         for i in args:
@@ -375,13 +369,7 @@ def bw(*args):
     May forward one or several motors"""
     try:
         for i in args:
-            if "backward" in dir(i):
-                i.backward()
-            elif "DP" in dir(i) and "backward" in dir(i.DP):
-                i.DP.backward()
-            else:
-                if label in dir(i):
-                    print i.label," has no method backward defined."
+            i.backward()
         wait_motor(*args)
     except Exception, tmp:
         for i in args:
