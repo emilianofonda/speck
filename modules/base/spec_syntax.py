@@ -322,6 +322,7 @@ def tw(x,step):
                     print "[Ctrl-C to exit] [Press Return to Step] [Type value to change step]"
     except exceptions.KeyboardInterrupt:
         return x.pos()
+
 def tweak(x,step):
     return tw(x,step)
 

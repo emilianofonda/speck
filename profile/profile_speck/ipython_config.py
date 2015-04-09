@@ -1,8 +1,9 @@
 # Configuration file for ipython.
-
+import time
 c = get_config()
-c.PromptManager.in_template = u'\w\nSpeck #\\#>'
-
+#c.PromptManager.in_template = u'\w\nSpeck #\\#>'
+#c.PromptManager.in_template = u'\w\n %s Speck[\#]>'%time.asctime()
+c.PromptManager.in_template = u'\w\n \T Speck[\#]>'
 
 #An example from the net on how change prompt for ipython<0.11 (V. Kuznetsov)
 #Modified to fit spooky
