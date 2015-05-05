@@ -206,7 +206,7 @@ def SetPositions(filename=""):
                     print i[0].label," is at ",i[0].pos()," should be at ",i[1]
                 except:
                     failures+=1
-                    i[0].state()
+                    #i[0].state()
                     if(_noinit):
                         print "Init failed on motor:",i[0].label
                     if(_nosh):
