@@ -94,7 +94,8 @@ def __m2Z(theta):
     if theta<=1e-2:
         return 33.
     else:
-        return base+(Max-base)*(theta**rate/(theta**rate+xhalf**rate))
+        return base+(Max-base)*(theta**rate/(theta**rate+xhalf**rate)) \
+        + get_ipython().user_ns["dcm"].H - 25.
         
 def __m2Roll(theta):
     return -5.
@@ -145,6 +146,7 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
     mir2_c = shell.user_ns["mir2_c"]
     vgap1 = shell.user_ns["vgap1"] 
     vgap2 = shell.user_ns["vgap2"] 
+    vpos2 = shell.user_ns["vpos2"] 
     po1 = shell.user_ns["po1"]
     po2 = shell.user_ns["po2"]
     po3 = shell.user_ns["po3"]
@@ -247,8 +249,10 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
     else:
         vgap1.pos(theta-0.2)
         vgap2.pos(theta+2.)
+    vpos2.pos(get_ipython().user_ns["dcm"].H - 25.)
     print "Primary   vertical slits aperture: vgap1 = %6.4f mm"%(vgap1.pos())
     print "Secondary vertical slits aperture: vgap2 = %6.4f mm"%(vgap2.pos())
+    print "Secondary vertical slits position: vpos2 = %6.4f mm"%(vpos2.pos())
     #Turn off the servo motors and less used steppers 
     po1.off()
     po2.off()

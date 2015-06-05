@@ -759,14 +759,24 @@ class mono1:
     
     def calculate_rz2(self,energy):
         """Calculate rz2 for given energy value: parameters are in self.Rz2
-        The polynome is calculated over square root of curvature: rz2 = Sum(self.Rz2[i] * sqrt(1/R) **i)"""
-        sqr_curv=sqrt(self.calculate_curvature(self.e2theta(energy)))
+        The polynome is calculated over square root of curvature: rz2 = Sum(self.Rz2[i] * angle **i)"""
         if len(self.Rz2_par)==0:
             return None
         __rz2=0.
         for i in range(len(self.Rz2_par)):
-            __rz2 += self.Rz2_par[i]*sqr_curv**i
+            __rz2 += self.Rz2_par[i]*dcm.e2theta(energy)**i
         return __rz2
+
+#   def calculate_rz2(self,energy):
+#       """Calculate rz2 for given energy value: parameters are in self.Rz2
+#       The polynome is calculated over square root of curvature: rz2 = Sum(self.Rz2[i] * sqrt(1/R) **i)"""
+#       sqr_curv=sqrt(self.calculate_curvature(self.e2theta(energy)))
+#       if len(self.Rz2_par)==0:
+#           return None
+#       __rz2=0.
+#       for i in range(len(self.Rz2_par)):
+#           __rz2 += self.Rz2_par[i]*sqr_curv**i
+#       return __rz2
         
     def calculate_rs2(self,energy):
         """Calculate rs2 for given energy value: parameters are in self.Rs2
