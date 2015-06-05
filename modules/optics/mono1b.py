@@ -764,7 +764,7 @@ class mono1:
             return None
         __rz2=0.
         for i in range(len(self.Rz2_par)):
-            __rz2 += self.Rz2_par[i]*dcm.e2theta(energy)**i
+            __rz2 += self.Rz2_par[i]*self.e2theta(energy)**i
         return __rz2
 
 #   def calculate_rz2(self,energy):
