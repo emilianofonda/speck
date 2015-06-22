@@ -1557,11 +1557,11 @@ class escan_class:
                         else:
                             mus = 0.
                     if self.detectionMode in ["fluo", "vortex"]:
-                        line_buffer += ("%8.2f\t%8.6f\t%8.6f\t%8.6f\t" % (etheta, theta, fluopoint[0], mus))
+                        line_buffer += ("%-8.2f\t%8.6f\t%8.6f\t%8.6f\t" % (etheta, theta, fluopoint[0], mus))
                     elif self.detectionMode in ["sexafs",]:
-                        line_buffer += ("%8.2f\t%8.6f\t%8.6f\t%8.6f\t" % (etheta, theta, fluopoint[0], mu))
+                        line_buffer += ("%-8.2f\t%8.6f\t%8.6f\t%8.6f\t" % (etheta, theta, fluopoint[0], mu))
                     else:
-                        line_buffer += ("%8.2f\t%8.6f\t%8.6f\t%8.6f\t"%(etheta,theta,mu,mus))
+                        line_buffer += ("%-8.2f\t%8.6f\t%8.6f\t%8.6f\t"%(etheta,theta,mu,mus))
                     #The user_readconfig should be used instead...
                     for i in cnts:
                         line_buffer += ("%g\t"%(i))
@@ -1864,7 +1864,7 @@ class escan_class:
     def pre_scan(self,handler=None,nowait=False):
         """Execute all operations needed before every and each scan."""
         #Backlash recovery
-        #if self.iscan>=1 or not(self.TUNING): self.backlash_recovery(self.e1)
+        if self.iscan>=0 or not(self.TUNING): self.backlash_recovery(self.e1)
         #
         if self.RollCorrection:
             try:

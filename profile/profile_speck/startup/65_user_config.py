@@ -436,7 +436,7 @@ __tmp={
 "hpos5" :["d09-1-c06/ex/fent_h.2-mt_pos","position"],
 "hgap5" :["d09-1-c06/ex/fent_h.2-mt_gap","position"],
 "cryo4z" :["d09-1-cx1/ex/option1-mt_tz.1","position"],
-"cryo4set" :["d09-1-cx1/ex/cryo4.1-ctrl","temperatureSetPoint"],
+#"cryo4set" :["d09-1-cx1/ex/cryo4.1-ctrl","temperatureSetPoint"],
 #"keith_I0"      :["d09-1-cx1/ex/amp_iv.7","gain"],
 #"keith_I1"      :["d09-1-cx1/ex/amp_iv.8","gain"],
 #"keith_I2"      :["d09-1-cx1/ex/amp_iv.9","gain"],
@@ -486,8 +486,8 @@ __tmp={
 "pi6_1"        :["d09-1-c06/vi/pi.1","pressure"],
 "pi6_2"        :["d09-1-c06/vi/pi.2","pressure"],
 "T_dcm"        :["d09-1-c03/op/bath.1","temperature"],
-"cryo4temp1" :["d09-1-cx1/ex/cryo4.1-ctrl","temperature1"],
-"cryo4temp2" :["d09-1-cx1/ex/cryo4.1-ctrl","temperature2"],
+#"cryo4temp1" :["d09-1-cx1/ex/cryo4.1-ctrl","temperature1"],
+#"cryo4temp2" :["d09-1-cx1/ex/cryo4.1-ctrl","temperature2"],
 }                                                
 
 __ll=__tmp.keys()
@@ -627,7 +627,7 @@ try:
     #Rs2 ()
     Rs2_par=[-1050.,]#[-1343.,]
     #Rx2 ()
-    Rx2_par=[-12985.6,]#[-7504.85, 727.716, -1756.17]#[-8257.2,229.33,-14.074,0.36688,-0.003593,]
+    Rx2_par=[-13015.3, 669.076, -1647.08] #[-12985.6,]#[-7504.85, 727.716, -1756.17]#[-8257.2,229.33,-14.074,0.36688,-0.003593,]
 
     #Si111   
     #A1_1= 561133.0   #545784.
@@ -723,7 +723,8 @@ __tmp={
 "vs3":    "d09-1-c03/vi/vs.1",
 "vs4":    "d09-1-c04/vi/vs.1",
 "vs5":    "d09-1-c05/vi/vs.1",
-"vs6":    "d09-1-cx1/vi/vs.1"}
+#"vs6":    "d09-1-cx1/vi/vs.1"
+}
 
 for i in __tmp:
     try:
