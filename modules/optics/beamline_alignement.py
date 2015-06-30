@@ -241,15 +241,16 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
             raise tmp
     if (previous_vgap1>theta): 
         if theta<1e-2:
-            vgap1.pos(0.5)
+            vgap1.pos(0.4)
             vgap2.pos(2.)
         else:    
-            vgap1.pos(theta-0.2)
+            vgap1.pos(max(0.1,theta-0.4))
             vgap2.pos(theta+2.)
     else:
-        vgap1.pos(theta-0.2)
+        vgap1.pos(max(0.1,theta-0.4))
         vgap2.pos(theta+2.)
-    vpos2.pos(get_ipython().user_ns["dcm"].H - 25.)
+    #The -1 in the following line is an empiric al correction : 30/6/2015
+    vpos2.pos(get_ipython().user_ns["dcm"].H - 25. -1.)
     print "Primary   vertical slits aperture: vgap1 = %6.4f mm"%(vgap1.pos())
     print "Secondary vertical slits aperture: vgap2 = %6.4f mm"%(vgap2.pos())
     print "Secondary vertical slits position: vpos2 = %6.4f mm"%(vpos2.pos())
