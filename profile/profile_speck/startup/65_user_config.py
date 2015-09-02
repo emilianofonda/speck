@@ -8,8 +8,7 @@ print "################################################################"
 
 #To mantain syntax compatibility with this old file:
 
-__IP=get_ipython()
-	
+__IP=get_ipython()	
 ##Usefull constants
 #Values of d below are used everywhere... hopefully.
 __d220=1.92015585
@@ -629,7 +628,7 @@ try:
     #Rs2 ()
     Rs2_par=[-1050.,]#[-1343.,]
     #Rx2 ()
-    Rx2_par=[-13015.3 + 5477.5, 669.076, -1647.08] #[-12985.6,]#[-7504.85, 727.716, -1756.17]#[-8257.2,229.33,-14.074,0.36688,-0.003593,]
+    Rx2_par=[-13015.3 + 2477.5, 669.076, -1647.08] #[-12985.6,]#[-7504.85, 727.716, -1756.17]#[-8257.2,229.33,-14.074,0.36688,-0.003593,]
 
     #Si111   
     #A1_1= 561133.0   #545784.
@@ -676,7 +675,8 @@ try:
     rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, tz1=tz1, bender=bender,
     sourceDistance=16.119,delay=0.3,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
     WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=43000.)
-
+    
+	 
     #Bender disable:
     #dcm=mono1(d=d,H=25.0,mono_name="d09-1-c03/op/mono1",
     #rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=None, tz1=tz1, bender=None,
@@ -691,6 +691,15 @@ try:
 except Exception, tmp: 
     print tmp
     print "Cannot define dcm (monochromator not set)."
+
+from mono1c import mono1 as monoTest
+try:
+    dcmTest=monoTest(d=d,H=26.0,mono_name="d09-1-c03/op/mono1",\
+    rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, tz1=tz1, bender=bender,\
+    sourceDistance=16.119,delay=0.3,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,\
+    WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=43000.)
+except Exception, tmp:
+    print tmp
 
 #QEXAFS to be removed
 #try:
