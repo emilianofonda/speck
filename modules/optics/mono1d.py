@@ -23,10 +23,10 @@ class sagittal_bender:
         bender.c2=A1_2*1/R+A0_2"""
         #self.DP=None
         self.label="Bender :"+bender1_name+" + "+bender2_name
-        self.c1=motor(bender1_name)
-        self.c2=motor(bender2_name)
-        self.timeout=timeout
-        self.deadtime=deadtime
+        self.c1 = motor(bender1_name)
+        self.c2 = motor(bender2_name)
+        self.timeout = timeout
+        self.deadtime = deadtime
         self.cb1=DeviceProxy(controlbox_rawdata1)
         self.cb2=DeviceProxy(controlbox_rawdata2)
         self.axis1=axis1
@@ -271,9 +271,9 @@ class mono1:
         """Experimental version: should use the galil_axisgroup. 
         Initialisation is different and everything is modified with respect to mono1.py. Under active test since first half 2009.
         Change in defaults 2/11/2009: ts2 never moves if you do not ask it explicitly. Use the seten command."""
-        self.DP=DeviceProxy(mono_name)
-        self.label=mono_name
-        self.bender=bender
+        self.DP = DeviceProxy(mono_name)
+        self.label = mono_name
+        self.bender = bender
         try:
             self.counter=counter(counter_label)
         except:
@@ -289,74 +289,43 @@ class mono1:
             print "Default distance is now 15.4m"
             self.sample_at_position = 15.4
         self.sourceDistance=sourceDistance
+        self.bender=bender
+        self.timeout=timeout
+        self.deadtime=deadtime
+        self.delay=delay
+        self.counter_channel=counter_channel
         self.H=H
         self.d=d
         self.emin=emin
         self.emax=emax
         self.motors=[]
         self.m_rx1=rx1
-        self.__userx1=True
-        self.__usetz2=True
-        self.__usets2=True
-        self.__userx2=True
-        self.__users2=True
-        self.__userz2=True
-        self.__userx2fine=True
-        self.WhiteBeamPositions=WhiteBeam
-        if(rx1==None): self.__userx1=False
         self.m_tz2=tz2
-        if(tz2==None): self.__usetz2=False
         self.m_ts2=ts2
-        if(ts2==None): self.__usets2=False
         self.m_rx2=rx2
-        if(rx2==None): self.__userx2=False
         self.m_rz2=rz2
-        if(rz2==None): self.__userz2=False
         self.m_rs2=rs2
-        if(rs2==None): self.__users2=False
         self.m_rx2fine=rx2fine
-        if(rx2fine==None): self.__userx2fine=False
         self.m_tz1=tz1
-        if(tz1==None): self.__usetz1=False
-        if(bender==None):
-            self.bender=bender
-            self.__usebender=False
-            c1=None
-            c2=None
-        else:
-            self.bender=bender
-            self.__usebender=True
-            self.motors=[self.bender,]+self.motors
-            c1=bender.c1
-            c2=bender.c2
-        self.timeout=timeout
-        self.deadtime=deadtime
-        self.delay=delay
-        self.counter_channel=counter_channel
-        self.motors=[self.m_rx1,self.m_tz2,self.m_ts2,self.m_rx2fine,self.m_rz2,self.m_rs2,self.m_rx2,self.m_tz1]
         __motor_group=[]
-        for i in [rx1, tz2, ts2, rz2, rs2, rx2, c1, c2 ]:
-            if i <>None: __motor_group.append(i)
-        self.motor_group=galil_multiaxis.galil_axisgroup(__motor_group,settlingTime=self.delay)
-        self.default_enables={"ts2":False,"tz2":True,"rs2":False,"rz2":False,"rx2":False,"rx2fine":False}
-        tpm=[]
-        for i in self.motors:
-            if(i<>None): tpm.append(i)
-        self.motors=tpm
-        #for i in self.motors:
-        #    i.verbose=False
-        self.Rz2_par=Rz2_par
-        self.Rs2_par=Rs2_par
-        self.Rx2_par=Rx2_par
+        for i in [rx1, tz2, ts2, rz2, rs2, rx2, self.bender.c1, self.bender.c2 ]:
+            if i <>None: 
+                __motor_group.append(i)
+                self.motors.append(i)
+        self.motor_group = galil_multiaxis.galil_axisgroup(__motor_group, settlingTime=self.delay)
+        
+        self.Rz2_par = Rz2_par
+        self.Rs2_par = Rs2_par
+        self.Rx2_par = Rx2_par
         
         #Section LocalTable. This part relies on the dcm device
         
         if self.DP.get_property("SPECK_UseLocalTable")["SPECK_UseLocalTable"] ==[]:
-            self.DP.put_property({"SPECK_UseLocalTable":False})
+            self.DP.put_property({"SPECK_UseLocalTable": False})
         if self.DP.get_property("SPECK_LocalTable")["SPECK_LocalTable"] == []:
-            self.DP.put_property({"SPECK_LocalTable":[0,"Energy","C1","C2"]})
-            self.DP.put_property({"SPECK_UseLocalTable":False})
-        print "\n\nmono1c: Reading LocalTable from database...",
+            self.DP.put_property({"SPECK_LocalTable": [0,"Energy","C1","C2","RS2"]})
+            self.DP.put_property({"SPECK_UseLocalTable": False})
+        print "\n\nmono1d: Reading LocalTable from database...",
         self.readTable()
         print "OK"
         return
@@ -389,23 +358,23 @@ class mono1:
         self.LocalTable = {"Points":int(lt[0])}
         if self.LocalTable["Points"] == 0:
             self.useLocalTable = False
-            for i in ["Energy","C1","C2"]:
+            for i in ["Energy","C1","C2","RS2"]:
                 self.LocalTable[i] = array([],"f")
-            for i in ["Energy","C1","C2"]:
+            for i in ["Energy","C1","C2","RS2"]:
                 self.LocalTable[i + "_spline"] = []
             self.useLocalTable = False
             return
-        for i in range(3): 
+        for i in range(4): 
             #print array(lt[i * (np+1) + 2:(np+1) * (i+1) + 1],"f")
             self.LocalTable[lt[i * (np + 1) + 1]] = array(lt[i * (np+1) + 2:(np+1) * (i+1) + 1],"f")
         #print self.LocalTable
         if np == 1:
-            for i in ["Energy","C1","C2"]:
+            for i in ["Energy","C1","C2","RS2"]:
                 self.LocalTable[i + "_spline"] = []
             self.useLocalTable = False
             return
         x = self.LocalTable["Energy"]
-        for i in ["C1","C2"]:
+        for i in ["C1","C2","RS2"]:
             y = self.LocalTable[i]
             self.LocalTable[i + "_spline"] = interpolate.splrep(x,y,k=min(3,np-1))
         return
@@ -416,7 +385,7 @@ class mono1:
             print "Cannot Write Table to database for less than 2 points"
             return
         outList =[self.LocalTable["Points"],]
-        for i in ["Energy","C1","C2"]:
+        for i in ["Energy","C1","C2","RS2"]:
             outList += [i,] + list(self.LocalTable[i])
         self.DP.put_property({"SPECK_LocalTable": outList})
         return
@@ -444,7 +413,8 @@ class mono1:
         Before creating a new table the command clearLocalTable must be used 
         to remove the old table values.
         A value in energy closer than xtol is replaced"""
-        pointValue = {"Energy": self.pos(), "C1": self.bender.c1.pos(), "C2": self.bender.c2.pos()}
+        pointValue = {"Energy": self.pos(), "C1": self.bender.c1.pos(),\
+        "C2": self.bender.c2.pos(),"RS2": self.rs2.pos()}
         idx = self.LocalTable["Energy"].searchsorted(pointValue["Energy"])
         if numpy.any(abs(self.LocalTable["Energy"] - pointValue["Energy"]) < xtol ):
             #Replace Value
@@ -454,11 +424,11 @@ class mono1:
             print idx
             if (abs(self.LocalTable["Energy"][idx] - pointValue["Energy"]) > xtol):
                 idx = min(idx +1, len(self.LocalTable["Energy"]-1))
-            for i in ["Energy","C1","C2"]:
+            for i in ["Energy","C1","C2","RS2"]:
                 self.LocalTable[i][idx] = pointValue[i]
         else:
             self.LocalTable["Points"] += 1
-            for i in ["Energy","C1","C2"]:
+            for i in ["Energy","C1","C2","RS2"]:
                 self.LocalTable[i] = array(list(self.LocalTable[i][:idx]) + [pointValue[i],]\
                 + list(self.LocalTable[i][idx:]),"f")
         #Update database if possible
@@ -472,51 +442,67 @@ class mono1:
         return
         
     def clearLocalTable(self):
-        self.DP.put_property({"SPECK_LocalTable":[0,"Energy","C1","C2"]})
+        self.DP.put_property({"SPECK_LocalTable":[0,"Energy","C1","C2","RS2"]})
         self.DP.put_property({"SPECK_UseLocalTable":False})
         self.readTable()
         self.useLocalTable = False
         return
    
     def disable_ts2(self):
-        self.__usets2=False
+        self.DP.enabledTs2 = False
         return
         
     def enable_ts2(self):
-        self.__usets2=True
+        self.DP.enabledTs2 = True
         return
 
-    def usets2(self,value=None):
-        if(value in [True,False]): 
-            self.__usets2=value
-        else :
-            return self.__usets2
-
     def disable_tz2(self):
-        self.__usetz2=False
+        self.DP.enabledTz2 = False
         return
         
     def enable_tz2(self):
-        self.__usetz2=True
+        self.DP.enabledTz2 = True
         return
 
-    def usetz2(self,value=None):
-        if(value in [True,False]): 
-            self.__usetz2=value
-        else :
-            return self.__usetz2
-    
     def disable_bender(self):
-        return self.usebender(False)
-
+        self.DP.enabledBender = False
+        return
+        
     def enable_bender(self):
-        return self.usebender(True)
+        self.DP.enabledBender = True
+        return
 
-    def usebender(self,value=None):
-        if(value in [True,False]): 
-            self.__usebender=value
-        else :
-            return self.__usebender
+    def enable_rx2(self):
+        self.DP.enabledRx2 = True
+        return
+
+    def disable_rx2(self):
+        self.DP.enabledRx2 = False
+        return
+
+    def enable_rs2(self):
+        self.DP.enabledRs2 = True
+        return
+        
+    def disable_rs2(self):
+        self.DP.enabledRs2 = False
+        return
+
+    def enable_rz2(self):
+        self.DP.enabledRz2 = True
+        return
+        
+    def disable_rz2(self):
+        self.DP.enabledRz2 = False
+        return
+
+    def enable_rx2fine(self):
+        self.DP.enabledRx2Fine = True
+        return
+        
+    def disable_rx2fine(self):
+        self.DP.enabledRx2Fine = False
+        return
 
 #    def sample_at(self,distance=None):
 #        if distance == None:
@@ -632,28 +618,37 @@ class mono1:
                 raise Exception("Requested energy above monochromator limit: %7.2f"%self.emax)
             theta = self.e2theta(energy)
             move_list += [self.m_rx1, theta]
-            if(self.__usebender): 
-                if self.useLocalTable and\
-                min(self.LocalTable["Energy"])<=energy<=max(self.LocalTable["Energy"]):
+            if self.useLocalTable and min(self.LocalTable["Energy"])\
+            <= energy <= max(self.LocalTable["Energy"]):
+                if(self.DP.enabledBender): 
                     __c1c2 = [interpolate.splev(energy, self.LocalTable["C1_spline"]),\
                     interpolate.splev(energy, self.LocalTable["C2_spline"])]
-                else:    
+                    move_list += [self.bender.c1, __c1c2[0], self.bender.c2, __c1c2[1]]
+                if(self.DP.enabledRx2) and ("RX2" in self.LocalTable.keys()):
+                    move_list += [self.rx2, interpolate.splev(energy, self.LocalTable["RX2_spline"])]
+                if(self.DP.enabledRx2Fine) and ("RX2FINE" in self.LocalTable.keys()):
+                    move_list += [self.rx2fine, interpolate.splev(energy, self.LocalTable["RX2FINE_spline"])]
+                if(self.DP.enabledRs2) and ("RS2" in self.LocalTable.keys()):
+                    move_list += [self.rs2, interpolate.splev(energy, self.LocalTable["RS2_spline"])]
+                if(self.DP.enabledRz2) and ("RZ2" in self.LocalTable.keys()):
+                    move_list += [self.rz2, interpolate.splev(energy, self.LocalTable["RZ2_spline"])]
+            else:
+                if(self.DP.enabledBender): 
                     __c1c2 = self.bender.calculate_steps_for_curv(self.calculate_curvature(theta))
-                    #if __c1c2[0]>310000 or __c1c2[1]>395000:
-                    #    print "mono1b.py: Hard coded limits of the Si220 bender exceeded"
-                    #    raise Exception("Hard bender limits are c1<=310000steps and c2<=395000Steps")
-                move_list+=[self.bender.c1, __c1c2[0], self.bender.c2, __c1c2[1]]
-            if (Ts2_Moves and self.usets2()): 
-                move_list+=[self.m_ts2,self.ts2(theta)]
-            if (Tz2_Moves and self.usetz2()): 
-                move_list+=[self.m_tz2,self.tz2(theta)]
-            #Let's move it, move it!
+                    move_list+=[self.bender.c1, __c1c2[0], self.bender.c2, __c1c2[1]]
+
+            #Common part: TZ2 and TS2 should never be used in a LocalTable
+            
+            if (Ts2_Moves and self.DP.enabledTs2): 
+                move_list += [self.m_ts2, self.ts2(theta)]
+            if (Tz2_Moves and self.DP.enabledTz2): 
+                move_list += [self.m_tz2, self.tz2(theta)]
+                
             #print move_list
             #print __c1c2[0], __c1c2[1]
             #print "Start at :",time()
             self.motor_group.pos(*move_list)
             #print "Stop at :",time()
-            #
             #sleep(self.delay)
         except (KeyboardInterrupt,SystemExit), tmp:
             self.stop()
@@ -665,7 +660,7 @@ class mono1:
             print "Waiting 1 s"
             sleep(1.)
             print self.label,":(mono1b) state is now", self.state()
-            self.pos(energy,wait=wait,Ts2_Moves=Ts2_Moves,NOFailures=NOFailures)
+            self.pos(energy, wait=wait, Ts2_Moves=Ts2_Moves, Tz2_Moves=Tz2_Moves, NOFailures=NOFailures)
             #raise tmp
         except PyTango.DevError, tmp:
             self.stop()
@@ -679,11 +674,11 @@ class mono1:
 
     def move(self,energy=None,wait=True,Ts2_Moves=False, Tz2_Moves=True):
         """Please use pos instead. Move is obsolete and subject ro removal in next future. """
-        return self.pos(energy,wait,Ts2_Moves)
+        return self.pos(energy,wait,Ts2_Moves, Tz2_Moves)
 
     def go(self,energy=None,wait=False,Ts2_Moves=False, Tz2_Moves=True):
         """Go to energy and do not wait. This does not work with the mono1b class: use of galil_mulitaxis!"""
-        return self.pos(energy,wait,Ts2_Moves)    
+        return self.pos(energy,wait,Ts2_Moves, Tz2_Moves)    
         
     def theta(self,theta=None,wait=True):
         if(theta==None):

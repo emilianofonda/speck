@@ -692,7 +692,7 @@ except Exception, tmp:
     print tmp
     print "Cannot define dcm (monochromator not set)."
 
-from mono1c import mono1 as monoTest
+from mono1d import mono1 as monoTest
 try:
     dcmTest=monoTest(d=d,H=26.0,mono_name="d09-1-c03/op/mono1",\
     rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, tz1=tz1, bender=bender,\
