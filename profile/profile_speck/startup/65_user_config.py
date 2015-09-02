@@ -244,23 +244,25 @@ except Exception, tmp:
     print "Cannot Define kam as a camera: from class simple_camera"
     raise tmp
     
-try:
-    from sensor_group import sensor_group
-    mux=sensor("d09-1-c00/ex/tangoparser.1","mux")
-    mus=sensor("d09-1-c00/ex/tangoparser.1","mus")
-    MUXES=sensor_group([["d09-1-c00/ex/tangoparser.1",["mux","mus","muf"]],])
-    #MUXES=sensor_group([["d09-1-c00/ex/tangoparser.1",["mux","mus","muf","muPL"]],])
-    #cam2_intensity = sensor_group([["d09-1-c04/dt/vg1.1-analyzer", ["MeanIntensity",]],])
-    KamRoi = sensor_group([["d09-1-cx1/dt/vg2-basler-roicounters",["sum0","sum1"]],])
-except Exception, tmp:
-    print tmp
-    print "Cannot define mux and mus on TangoParser"
-    atk(mux)
+#try:
+#    from sensor_group import sensor_group
+#    mux=sensor("d09-1-c00/ex/tangoparser.1","mux")
+#    mus=sensor("d09-1-c00/ex/tangoparser.1","mus")
+#    MUXES=sensor_group([["d09-1-c00/ex/tangoparser.1",["mux","mus","muf"]],])
+#    MUXES=sensor_group([["d09-1-c00/ex/tangoparser.1",["mux","mus","muf","muPL"]],])
+#    cam2_intensity = sensor_group([["d09-1-c04/dt/vg1.1-analyzer", ["MeanIntensity",]],])
+#    KamRoi = sensor_group([["d09-1-cx1/dt/vg2-basler-roicounters",["sum0","sum1"]],])
+#except Exception, tmp:
+#    print tmp
+#    print "Cannot define mux and mus on TangoParser"
+#    atk(mux)
 
 #ct
 try:
-    cpt=pseudo_counter(masters=[cpt0,],slaves=[MUXES,])
-    ct=pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[MUXES,])
+    cpt=pseudo_counter(masters=[cpt0,],slaves=[])
+    ct=pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[])
+    #cpt=pseudo_counter(masters=[cpt0,],slaves=[MUXES,])
+    #ct=pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[MUXES,])
     #ct=pseudo_counter(masters=[cpt0, kam],slaves2arm2stop=[mca1,mca2],slaves=[MUXES,KamRoi])
     #cpt=pseudo_counter(masters=[cpt0,],slaves=[,])
     #ct=pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[])

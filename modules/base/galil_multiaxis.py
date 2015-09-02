@@ -52,7 +52,12 @@ class galil_axisgroup:
         if mod(l_args,2)<>0:
             raise Exception("galil_axisgroup: Bad number of arguments")
         if DevState.MOVING in map(lambda(x): x.state(),args[0::2]):
-            raise Exception("galil_axisgroup: One of the axis is already moving")
+            for i in range(4):
+                sleep(0.2)
+                if not DevState.MOVING in map(lambda(x): x.state(),args[0::2]):
+                    break
+            if i >=3: 
+                raise Exception("galil_axisgroup: One of the axis is already moving")
         mots=reshape(args,[l_args/2,2])
         #Backlash list:
         mots2move=[]
