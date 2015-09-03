@@ -619,16 +619,16 @@ try:
 
     #Si220
     #Bender (steps versus 1/R)    
-    A1_1 = 501530. #481888.35048462    #493068. #488717. #A1_1=504940.0 #503280.0 #+520646.0 #521776.
-    A0_1 = 90173.9 #91054.1663915865   #99208. #101943. #A0_1=81255.0 #53248.0  #-55962.1  #-59292.2
-    A1_2 = 492346. #493502.288067641   #487333. #492917. #A1_2=486220.0 #507372.0 #+511363.0 #535801.0
-    A0_2 = 112661. #111904.850053559   #107675. #104935. #A0_2=69396.0 #58929.8  #-10790.7  #-21530   
+    A1_1 = 493185. #501530. #481888.35048462    #493068. #488717.
+    A0_1 = 94558. #90173.9 #91054.1663915865   #99208. #101943. 
+    A1_2 = 503208.#492346. #493502.288067641   #487333. #492917.
+    A0_2 = 99103. #112661. #111904.850053559   #107675. #104935.
     #Rz2 ()
-    Rz2_par = [-17703.5, 138.964, -4.18379]  
+    Rz2_par = [-16095, -95.087]#[-17703.5, 138.964, -4.18379]  
     #Rs2 ()
-    Rs2_par=[-1050.,]#[-1343.,]
+    Rs2_par = [-1050.,]#[-1343.,]
     #Rx2 ()
-    Rx2_par=[-13015.3 + 2477.5, 669.076, -1647.08] #[-12985.6,]#[-7504.85, 727.716, -1756.17]#[-8257.2,229.33,-14.074,0.36688,-0.003593,]
+    Rx2_par = [-10401., 1334.7, -2304.7] #[-12985.6,]#[-7504.85, 727.716, -1756.17]
 
     #Si111   
     #A1_1= 561133.0   #545784.
@@ -671,11 +671,17 @@ try:
     #sourceDistance=16.119,delay=0.3,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
     #WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=40000.)
 
-    dcm=mono1(d=d,H=26.0,mono_name="d09-1-c03/op/mono1",
-    rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, tz1=tz1, bender=bender,
-    sourceDistance=16.119,delay=0.3,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
-    WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=43000.)
+    #dcm=mono1(d=d,H=26.0,mono_name="d09-1-c03/op/mono1",
+    #rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, tz1=tz1, bender=bender,
+    #sourceDistance=16.119,delay=0.3,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
+    #WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=43000.)
     
+    from mono1d import mono1 as monoTest
+
+    dcm=monoTest(d=d,H=26.0,mono_name="d09-1-c03/op/mono1",\
+    rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, tz1=tz1, bender=bender,\
+    sourceDistance=16.119,delay=0.3,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,\
+    WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=43000.)
 	 
     #Bender disable:
     #dcm=mono1(d=d,H=25.0,mono_name="d09-1-c03/op/mono1",
@@ -692,14 +698,6 @@ except Exception, tmp:
     print tmp
     print "Cannot define dcm (monochromator not set)."
 
-from mono1d import mono1 as monoTest
-try:
-    dcmTest=monoTest(d=d,H=26.0,mono_name="d09-1-c03/op/mono1",\
-    rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, tz1=tz1, bender=bender,\
-    sourceDistance=16.119,delay=0.3,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,\
-    WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=43000.)
-except Exception, tmp:
-    print tmp
 
 #QEXAFS to be removed
 #try:

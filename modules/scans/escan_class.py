@@ -474,9 +474,9 @@ class escan_class:
         self.detune=thisform["detune"]
         self.detectionMode=thisform["detectionMode"]
         #################################################################
-        #                                    #
+        #                                                               #
         # Defining different parameters for CX1 and CX2: very delicate! #
-        #                                    #
+        #                                                               #
         #################################################################
         if self.detectionMode=="sexafs":
             self.stoppersList=sexafsStoppers

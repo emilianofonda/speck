@@ -323,11 +323,16 @@ class mono1:
         if self.DP.get_property("SPECK_UseLocalTable")["SPECK_UseLocalTable"] ==[]:
             self.DP.put_property({"SPECK_UseLocalTable": False})
         if self.DP.get_property("SPECK_LocalTable")["SPECK_LocalTable"] == []:
-            self.DP.put_property({"SPECK_LocalTable": [0,"Energy","C1","C2","RS2"]})
+            self.DP.put_property({"SPECK_LocalTable": [0,"Energy","C1","C2","RS2","RX2FINE"]})
             self.DP.put_property({"SPECK_UseLocalTable": False})
-        print "\n\nmono1d: Reading LocalTable from database...",
+        print "\nmono1d: Reading LocalTable from database...",
         self.readTable()
         print "OK"
+        #print "Using Local Table ? ",
+        #if self.useLocalTable:
+        #    print "Yes"
+        #else:
+        #    print "No"
         return
         
     def __str__(self):
@@ -354,27 +359,36 @@ class mono1:
         """This function reads the table from the database and prepare the spline for interpolation.
         ADVANCED FEATURE: this function is for the code internal use only. """
         lt = self.DP.get_property("SPECK_LocalTable")["SPECK_LocalTable"]
+        ult = self.DP.get_property("SPECK_UseLocalTable")["SPECK_UseLocalTable"]
+        if ult == []:
+            self.useLocalTable = False
+        elif ult[0] == "False":
+            self.useLocalTable = False
+        elif ult[0] == "True":
+            self.useLocalTable = True
+        else:
+            self.useLocalTable = False
         np = int(lt[0])
         self.LocalTable = {"Points":int(lt[0])}
         if self.LocalTable["Points"] == 0:
             self.useLocalTable = False
-            for i in ["Energy","C1","C2","RS2"]:
+            for i in ["Energy","C1","C2","RS2","RX2FINE"]:
                 self.LocalTable[i] = array([],"f")
-            for i in ["Energy","C1","C2","RS2"]:
+            for i in ["Energy","C1","C2","RS2","RX2FINE"]:
                 self.LocalTable[i + "_spline"] = []
             self.useLocalTable = False
             return
-        for i in range(4): 
+        for i in range(5): 
             #print array(lt[i * (np+1) + 2:(np+1) * (i+1) + 1],"f")
             self.LocalTable[lt[i * (np + 1) + 1]] = array(lt[i * (np+1) + 2:(np+1) * (i+1) + 1],"f")
         #print self.LocalTable
         if np == 1:
-            for i in ["Energy","C1","C2","RS2"]:
+            for i in ["Energy","C1","C2","RS2","RX2FINE"]:
                 self.LocalTable[i + "_spline"] = []
             self.useLocalTable = False
             return
         x = self.LocalTable["Energy"]
-        for i in ["C1","C2","RS2"]:
+        for i in ["C1","C2","RS2","RX2FINE"]:
             y = self.LocalTable[i]
             self.LocalTable[i + "_spline"] = interpolate.splrep(x,y,k=min(3,np-1))
         return
@@ -385,7 +399,7 @@ class mono1:
             print "Cannot Write Table to database for less than 2 points"
             return
         outList =[self.LocalTable["Points"],]
-        for i in ["Energy","C1","C2","RS2"]:
+        for i in ["Energy","C1","C2","RS2","RX2FINE"]:
             outList += [i,] + list(self.LocalTable[i])
         self.DP.put_property({"SPECK_LocalTable": outList})
         return
@@ -414,21 +428,21 @@ class mono1:
         to remove the old table values.
         A value in energy closer than xtol is replaced"""
         pointValue = {"Energy": self.pos(), "C1": self.bender.c1.pos(),\
-        "C2": self.bender.c2.pos(),"RS2": self.rs2.pos()}
+        "C2": self.bender.c2.pos(),"RS2": self.m_rs2.pos(),"RX2FINE": self.m_rx2fine.pos()}
         idx = self.LocalTable["Energy"].searchsorted(pointValue["Energy"])
         if numpy.any(abs(self.LocalTable["Energy"] - pointValue["Energy"]) < xtol ):
             #Replace Value
-            print "Replacing Value in Table"
+            print "Replacing Value in Table at position ",
             idx = min(self.LocalTable["Energy"].searchsorted(pointValue["Energy"]),\
             len(self.LocalTable["Energy"])-1)
-            print idx
             if (abs(self.LocalTable["Energy"][idx] - pointValue["Energy"]) > xtol):
-                idx = min(idx +1, len(self.LocalTable["Energy"]-1))
-            for i in ["Energy","C1","C2","RS2"]:
+                idx = max(idx-1, 0)
+            print idx
+            for i in ["Energy","C1","C2","RS2","RX2FINE"]:
                 self.LocalTable[i][idx] = pointValue[i]
         else:
             self.LocalTable["Points"] += 1
-            for i in ["Energy","C1","C2","RS2"]:
+            for i in ["Energy","C1","C2","RS2","RX2FINE"]:
                 self.LocalTable[i] = array(list(self.LocalTable[i][:idx]) + [pointValue[i],]\
                 + list(self.LocalTable[i][idx:]),"f")
         #Update database if possible
@@ -442,7 +456,7 @@ class mono1:
         return
         
     def clearLocalTable(self):
-        self.DP.put_property({"SPECK_LocalTable":[0,"Energy","C1","C2","RS2"]})
+        self.DP.put_property({"SPECK_LocalTable":[0,"Energy","C1","C2","RS2","RX2FINE"]})
         self.DP.put_property({"SPECK_UseLocalTable":False})
         self.readTable()
         self.useLocalTable = False
@@ -602,7 +616,7 @@ class mono1:
     def calculate_curvatureradius(self,theta):
         return 1./self.calculate_curvature(theta)
 
-    def pos(self, energy=None, wait=True, Ts2_Moves=False, Tz2_Moves=True, NOFailures=0):
+    def pos(self, energy=None, wait=True, Ts2_Moves=True, Tz2_Moves=True, NOFailures=0):
         """Move the mono at the desired energy"""
         if NOFailures > 5:
             raise Exception("mono1b: too many retries trying the move. (NO>5)")
@@ -625,13 +639,13 @@ class mono1:
                     interpolate.splev(energy, self.LocalTable["C2_spline"])]
                     move_list += [self.bender.c1, __c1c2[0], self.bender.c2, __c1c2[1]]
                 if(self.DP.enabledRx2) and ("RX2" in self.LocalTable.keys()):
-                    move_list += [self.rx2, interpolate.splev(energy, self.LocalTable["RX2_spline"])]
+                    move_list += [self.m_rx2, interpolate.splev(energy, self.LocalTable["RX2_spline"])]
                 if(self.DP.enabledRx2Fine) and ("RX2FINE" in self.LocalTable.keys()):
-                    move_list += [self.rx2fine, interpolate.splev(energy, self.LocalTable["RX2FINE_spline"])]
+                    self.m_rx2fine.pos(max(0.1,min(9.9,interpolate.splev(energy, self.LocalTable["RX2FINE_spline"]))))
                 if(self.DP.enabledRs2) and ("RS2" in self.LocalTable.keys()):
-                    move_list += [self.rs2, interpolate.splev(energy, self.LocalTable["RS2_spline"])]
+                    move_list += [self.m_rs2, interpolate.splev(energy, self.LocalTable["RS2_spline"])]
                 if(self.DP.enabledRz2) and ("RZ2" in self.LocalTable.keys()):
-                    move_list += [self.rz2, interpolate.splev(energy, self.LocalTable["RZ2_spline"])]
+                    move_list += [self.m_rz2, interpolate.splev(energy, self.LocalTable["RZ2_spline"])]
             else:
                 if(self.DP.enabledBender): 
                     __c1c2 = self.bender.calculate_steps_for_curv(self.calculate_curvature(theta))
@@ -672,11 +686,11 @@ class mono1:
             raise tmp
         return self.pos()
 
-    def move(self,energy=None,wait=True,Ts2_Moves=False, Tz2_Moves=True):
+    def move(self,energy=None,wait=True,Ts2_Moves=True, Tz2_Moves=True):
         """Please use pos instead. Move is obsolete and subject ro removal in next future. """
         return self.pos(energy,wait,Ts2_Moves, Tz2_Moves)
 
-    def go(self,energy=None,wait=False,Ts2_Moves=False, Tz2_Moves=True):
+    def go(self,energy=None,wait=False,Ts2_Moves=True, Tz2_Moves=True):
         """Go to energy and do not wait. This does not work with the mono1b class: use of galil_mulitaxis!"""
         return self.pos(energy,wait,Ts2_Moves, Tz2_Moves)    
         
@@ -900,6 +914,9 @@ class mono1:
             shell.user_ns["mostab"].pos(5.)
         except Exception, tmp:
             print tmp
+        print "Enabling Ts2 movement...",
+        self.enable_ts2()
+        print "OK"
         try:
             self.m_rx2fine.pos(5)
         except:
@@ -908,7 +925,10 @@ class mono1:
         _rs2 = self.calculate_rs2(energy)
         _rz2 = self.calculate_rz2(energy)
         _ts2 = self.ts2(self.e2theta(energy))
-        move_motor(self.m_rz2, _rz2, self, energy, self.m_ts2, _ts2, self.m_rx2, _rx2, self.m_rs2, _rs2)
+        move_motor(self.m_rz2, _rz2, self, energy, self.m_rx2, _rx2, self.m_rs2, _rs2)
+        print "Disabling Ts2 movement...",
+        self.disable_ts2()
+        print "OK"
         try:
             shell.user_ns["mostab"].start()
         except:
