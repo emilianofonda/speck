@@ -461,7 +461,32 @@ class mono1:
         self.readTable()
         self.useLocalTable = False
         return
-   
+    
+    def printTable(self):
+        cols= self.LocalTable.keys()
+        cols.remove("Energy")
+        cols.remove("Points")
+        cols= ["Energy",]+cols
+        for i in list(cols):
+            if i.endswith("_spline"):
+                cols.remove(i)
+        for i in cols:
+            print "%-15s\t"%i,
+        print ""
+        for i in range(self.LocalTable['Points']):
+            for j in cols:
+                out ="%-15.5f\t" % (self.LocalTable[j][i])
+                print out,
+            print ""
+        return
+    
+    def printEnables(self):
+        print "Active Couplings"
+        print "________________"
+        for i in ["ts2","tz2","bender","rz2","rs2","rx2","rx2fine"]:
+            print "%8s active ?"%i, self.DP.__getattr__("enabled"+i)
+        return
+
     def disable_ts2(self):
         self.DP.enabledTs2 = False
         return
@@ -657,11 +682,17 @@ class mono1:
                 move_list += [self.m_ts2, self.ts2(theta)]
             if (Tz2_Moves and self.DP.enabledTz2): 
                 move_list += [self.m_tz2, self.tz2(theta)]
-                
             #print move_list
             #print __c1c2[0], __c1c2[1]
             #print "Start at :",time()
             self.motor_group.pos(*move_list)
+            #move_motor(*move_list,verbose=False)
+            #RS2 workaround... to be removed if a closed loop is available.
+            if self.useLocalTable and \
+            min(self.LocalTable["Energy"])<= energy <= max(self.LocalTable["Energy"]) \
+            and self.DP.enabledRs2 and ("RS2" in self.LocalTable.keys()):
+                self.motor_group.pos(self.m_rs2, interpolate.splev(energy, self.LocalTable["RS2_spline"]))
+                #move_motor(self.m_rs2, interpolate.splev(energy, self.LocalTable["RS2_spline"]),verbose=False)
             #print "Stop at :",time()
             #sleep(self.delay)
         except (KeyboardInterrupt,SystemExit), tmp:
@@ -727,9 +758,9 @@ class mono1:
             return
         cpt=self.counter
         channel=self.counter_channel
-        if(self.__userx2fine==False): 
-            print "dcm setup excludes a piezo. Tuning is nonsense without the piezo."
-            return 0.
+        #if(self.__userx2fine==False): 
+        #    print "dcm setup excludes a piezo. Tuning is nonsense without the piezo."
+        #    return 0.
         if(np<4):
             print "I use minimum 4 intervals (5 points). I set np=4."
             np=4
@@ -782,9 +813,9 @@ class mono1:
             return
         cpt=self.counter
         channel=self.counter_channel
-        if(self.__userx2fine==False): 
-            print "dcm setup excludes a piezo. Tuning is nonsense without the piezo."
-            return 0.
+        #if(self.__userx2fine==False): 
+        #    print "dcm setup excludes a piezo. Tuning is nonsense without the piezo."
+        #    return 0.
         if(np<4):
             print "I use minimum 4 intervals (5 points). I set np=4."
             np=4

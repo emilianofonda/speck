@@ -1,9 +1,9 @@
 #from motor_class import wait_motor
 from spec_syntax import wait_motor
 from PyTango import DeviceProxy, DevState, DevFailed,Database
-from time import sleep,time,asctime
-from numpy import mod, reshape,sort,inf,nan
-from exceptions import Exception,KeyboardInterrupt
+from time import sleep, time, asctime
+from numpy import mod, reshape, sort, inf, nan, all, any
+from exceptions import Exception, KeyboardInterrupt
 
 class galil_axisgroup:
     """This class is used to speed up multiaxis movements on the Galil 8 axis Controller. 
@@ -147,21 +147,25 @@ class galil_axisgroup:
             t=time()
             nomovement=True
             while time()-t < self.timeout and nomovement:
-                for i in mot_list:
-                    if i.state()==DevState.MOVING: 
-                        nomovement=False
-                        break
+                if any(map(lambda x: x.state() == DevState.MOVING, mot_list)):
+                    break
+                #for i in mot_list:
+                #    if i.state()==DevState.MOVING: 
+                #        nomovement=False
+                #        break
                 if self.deadtime>0:
                     sleep(self.deadtime)
             #Wait for motors to stop
             i=0
             l=len(mot_list)
-            for retries in range(1):
+            for retries in range(3):
                 while True:
-                    if mot_list[i].state() <> DevState.MOVING:
-                        i += 1
-                        if i == len(mot_list):
-                            break
+                    if all(map(lambda x: x.state() <> DevState.MOVING, mot_list)):
+                        break
+                    #if mot_list[i].state() <> DevState.MOVING:
+                    #    i += 1
+                    #    if i == len(mot_list):
+                    #        break
                     if self.deadtime > 0:
                         sleep(self.deadtime)
                 i=0

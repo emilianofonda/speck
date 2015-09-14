@@ -585,9 +585,9 @@ class escan_class:
             print "##########################################################################################"
             print RESET
         #
-        if self.notz2:
-            self.previous_dcm_tz2_setting=self.dcm.usetz2()
-            self.dcm.disable_tz2()
+        #if self.notz2:
+        #    self.previous_dcm_tz2_setting=self.dcm.DP.enabledtz2
+        #    self.dcm.disable_tz2()
         self.cpt=cpt
         #self.cpt_header="\t".join(map(lambda x:x.label,self.cpt.user_readconfig))+"\t"
         self.cpt_header=""
@@ -622,12 +622,12 @@ class escan_class:
         
     def set_ts2(self):
         """Set Ts2 at the right position for this scan"""
-        dest=self.dcm.ts2(self.dcm.e2theta((self.e1+self.e2)*0.5))
+        #dest=self.dcm.ts2(self.dcm.e2theta((self.e1+self.e2)*0.5))
         return self.dcm.m_ts2.pos(dest)
 
     def set_tz2(self):
         """Set Tz2 at the right position for this scan: used only when notz2 is chosen"""
-        dest=self.dcm.tz2(self.dcm.e2theta((self.e1+self.e2)*0.5))
+        #dest=self.dcm.tz2(self.dcm.e2theta((self.e1+self.e2)*0.5))
         return self.dcm.m_tz2.pos(dest)
 
     def __fibonacci(self,n):
@@ -1999,10 +1999,10 @@ class escan_class:
         
     def after_run(self,handler=None,nowait=False):
         """All operations to be accomplished after an entire series of scans"""
-        if self.notz2:
-            self.dcm.usetz2(self.previous_dcm_tz2_setting)
-        if(self.BENDER):
-            self.dcm.usebender(self.__previous_dcm_bender_state)
+        #if self.notz2:
+        #    self.dcm.usetz2(self.previous_dcm_tz2_setting)
+        #if(self.BENDER):
+        #    self.dcm.usebender(self.__previous_dcm_bender_state)
         self.EndOfRunAlert()
         return
     
