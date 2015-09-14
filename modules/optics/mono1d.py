@@ -393,8 +393,9 @@ class mono1:
             self.LocalTable[i + "_spline"] = interpolate.splrep(x,y,k=min(3,np-1))
         return
 
-    def writeTable(self):
-        """Code internal use only: advanced feature. Write in-memory table to database"""
+    def writeTable(self, fileName=""):
+        """Code internal use only: advanced feature. Write in-memory table to database.
+        If a fileName is specified the table is written to a file and to the database."""
         if self.LocalTable["Points"] < 1:
             print "Cannot Write Table to database for less than 2 points"
             return
@@ -402,7 +403,27 @@ class mono1:
         for i in ["Energy","C1","C2","RS2","RX2FINE"]:
             outList += [i,] + list(self.LocalTable[i])
         self.DP.put_property({"SPECK_LocalTable": outList})
+        if fileName == "":
+            return
+        else:
+            fOut = file(fileName, "w")
+            for i in outlist:
+                fOut.write(str(i)+"\n")
+            fOut.close()
         return
+
+    def readTableFile(self, fileName = ""):
+        """This function reads the table from a file, puts it in the database and then re read it to memory
+        Use setLocalTable or unsetLocalTable to activate or disable the table."""
+        if fileName <> "":
+            fIn = file(fileName, "r")
+            ll = fIn.readlines()
+            fIn.close()
+            outList = ll.split("\n")
+            self.DP.put_property({"SPECK_LocalTable": outList})
+            self.readTable()
+        else:
+            return
 
     def setLocalTable(self):
         """Turn on the local mode. The bender will follow a local interpolation.
