@@ -474,9 +474,9 @@ class escan_class:
         self.detune=thisform["detune"]
         self.detectionMode=thisform["detectionMode"]
         #################################################################
-        #                                    #
+        #                                                               #
         # Defining different parameters for CX1 and CX2: very delicate! #
-        #                                    #
+        #                                                               #
         #################################################################
         if self.detectionMode=="sexafs":
             self.stoppersList=sexafsStoppers
@@ -585,9 +585,9 @@ class escan_class:
             print "##########################################################################################"
             print RESET
         #
-        if self.notz2:
-            self.previous_dcm_tz2_setting=self.dcm.usetz2()
-            self.dcm.disable_tz2()
+        #if self.notz2:
+        #    self.previous_dcm_tz2_setting=self.dcm.DP.enabledtz2
+        #    self.dcm.disable_tz2()
         self.cpt=cpt
         #self.cpt_header="\t".join(map(lambda x:x.label,self.cpt.user_readconfig))+"\t"
         self.cpt_header=""
@@ -622,12 +622,12 @@ class escan_class:
         
     def set_ts2(self):
         """Set Ts2 at the right position for this scan"""
-        dest=self.dcm.ts2(self.dcm.e2theta((self.e1+self.e2)*0.5))
+        #dest=self.dcm.ts2(self.dcm.e2theta((self.e1+self.e2)*0.5))
         return self.dcm.m_ts2.pos(dest)
 
     def set_tz2(self):
         """Set Tz2 at the right position for this scan: used only when notz2 is chosen"""
-        dest=self.dcm.tz2(self.dcm.e2theta((self.e1+self.e2)*0.5))
+        #dest=self.dcm.tz2(self.dcm.e2theta((self.e1+self.e2)*0.5))
         return self.dcm.m_tz2.pos(dest)
 
     def __fibonacci(self,n):
@@ -1557,11 +1557,11 @@ class escan_class:
                         else:
                             mus = 0.
                     if self.detectionMode in ["fluo", "vortex"]:
-                        line_buffer += ("%8.2f\t%8.6f\t%8.6f\t%8.6f\t" % (etheta, theta, fluopoint[0], mus))
+                        line_buffer += ("%-8.2f\t%8.6f\t%8.6f\t%8.6f\t" % (etheta, theta, fluopoint[0], mus))
                     elif self.detectionMode in ["sexafs",]:
-                        line_buffer += ("%8.2f\t%8.6f\t%8.6f\t%8.6f\t" % (etheta, theta, fluopoint[0], mu))
+                        line_buffer += ("%-8.2f\t%8.6f\t%8.6f\t%8.6f\t" % (etheta, theta, fluopoint[0], mu))
                     else:
-                        line_buffer += ("%8.2f\t%8.6f\t%8.6f\t%8.6f\t"%(etheta,theta,mu,mus))
+                        line_buffer += ("%-8.2f\t%8.6f\t%8.6f\t%8.6f\t"%(etheta,theta,mu,mus))
                     #The user_readconfig should be used instead...
                     for i in cnts:
                         line_buffer += ("%g\t"%(i))
@@ -1864,7 +1864,7 @@ class escan_class:
     def pre_scan(self,handler=None,nowait=False):
         """Execute all operations needed before every and each scan."""
         #Backlash recovery
-        #if self.iscan>=1 or not(self.TUNING): self.backlash_recovery(self.e1)
+        if self.iscan>=0 or not(self.TUNING): self.backlash_recovery(self.e1)
         #
         if self.RollCorrection:
             try:
@@ -1999,10 +1999,10 @@ class escan_class:
         
     def after_run(self,handler=None,nowait=False):
         """All operations to be accomplished after an entire series of scans"""
-        if self.notz2:
-            self.dcm.usetz2(self.previous_dcm_tz2_setting)
-        if(self.BENDER):
-            self.dcm.usebender(self.__previous_dcm_bender_state)
+        #if self.notz2:
+        #    self.dcm.usetz2(self.previous_dcm_tz2_setting)
+        #if(self.BENDER):
+        #    self.dcm.usebender(self.__previous_dcm_bender_state)
         self.EndOfRunAlert()
         return
     

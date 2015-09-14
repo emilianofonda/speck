@@ -249,10 +249,12 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
         header="#"+motname+"\t"+"\t".join(map(lambda x:x.label,cpt.user_readconfig))+"\tTimeFromEpoch\n"
         f.write(header)
         try:
-            mot.pos(p1 - dp)
+            if not time_scan: 
+                #mot.pos(p1 - dp)
+                mot.pos(p1)
             sleep(delay0)
             for i in arange(p1,p2+dp,dp):
-                if not(time_scan):
+                if not time_scan:
                     mot.pos(i)
                     sleep(delay)
                     x.append(mot.pos())

@@ -8,8 +8,7 @@ print "################################################################"
 
 #To mantain syntax compatibility with this old file:
 
-__IP=get_ipython()
-	
+__IP=get_ipython()	
 ##Usefull constants
 #Values of d below are used everywhere... hopefully.
 __d220=1.92015585
@@ -236,21 +235,34 @@ try:
 except Exception, tmp:
     print "Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.1"
     print "Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.2"
+
 try:
-    from sensor_group import sensor_group
-    mux=sensor("d09-1-c00/ex/tangoparser.1","mux")
-    mus=sensor("d09-1-c00/ex/tangoparser.1","mus")
-    MUXES=sensor_group([["d09-1-c00/ex/tangoparser.1",["mux","mus","muf"]],])
-    #cam2_intensity = sensor_group([["d09-1-c04/dt/vg1.1-analyzer", ["MeanIntensity",]],])
+    from simple_camera import camera
+    kam = camera("d09-1-cx1/dt/vg2-basler")
 except Exception, tmp:
-    print tmp
-    print "Cannot define mux and mus on TangoParser"
-    atk(mux)
+    print "Cannot Define kam as a camera: from class simple_camera"
+    raise tmp
+    
+#try:
+#    from sensor_group import sensor_group
+#    mux=sensor("d09-1-c00/ex/tangoparser.1","mux")
+#    mus=sensor("d09-1-c00/ex/tangoparser.1","mus")
+#    MUXES=sensor_group([["d09-1-c00/ex/tangoparser.1",["mux","mus","muf"]],])
+#    MUXES=sensor_group([["d09-1-c00/ex/tangoparser.1",["mux","mus","muf","muPL"]],])
+#    cam2_intensity = sensor_group([["d09-1-c04/dt/vg1.1-analyzer", ["MeanIntensity",]],])
+#    KamRoi = sensor_group([["d09-1-cx1/dt/vg2-basler-roicounters",["sum0","sum1"]],])
+#except Exception, tmp:
+#    print tmp
+#    print "Cannot define mux and mus on TangoParser"
+#    atk(mux)
 
 #ct
 try:
-    cpt=pseudo_counter(masters=[cpt0,],slaves=[MUXES,])
-    ct=pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[MUXES,])
+    cpt=pseudo_counter(masters=[cpt0,],slaves=[])
+    ct=pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[])
+    #cpt=pseudo_counter(masters=[cpt0,],slaves=[MUXES,])
+    #ct=pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[MUXES,])
+    #ct=pseudo_counter(masters=[cpt0, kam],slaves2arm2stop=[mca1,mca2],slaves=[MUXES,KamRoi])
     #cpt=pseudo_counter(masters=[cpt0,],slaves=[,])
     #ct=pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[])
 except Exception, tmp:
@@ -300,7 +312,14 @@ try:
     from MOSTAB import MOSTAB_tango as MOSTAB
     print "MOSTAB unit :",
     mostab=MOSTAB("d09-1-cx1/ca/mca_rontec_rs232_8.5",init_file = __IP.user_ns["__pySamba_root"] + "/config/mostab.cfg")
-    itune=mostab.tune
+    def itune(*args,**kwargs):
+        opr = 3.56/(0.10 * dcm.pos() * 1e-3 - 0.16) * 0.9
+        if "oprange" in kwargs.keys():
+            return mostab.tune(*args,**kwargs)
+        else:
+            kwargs["oprange"] = opr
+            return mostab.tune(*args,**kwargs)
+    #itune=mostab.tune
     #print i200.currents()
     #print i200.status()
 except Exception, tmp:
@@ -321,7 +340,7 @@ except Exception, tmp:
 
 #Monochromator1
 try:
-    __m="rx2fine"
+    __m="vgap4fine"
     rx2fine=piezo("d09-1-c03/op/mono1-mt_rx_fine.2")
     __allpiezos+=[rx2fine]
     #rx2fine = mostab
@@ -366,7 +385,6 @@ __tmp={
 "sample_rx"    :["d09-1-cx1/ex/tab-mt_rx.1","position"],
 "sample_rx2"    :["d09-1-cx1/ex/tab-mt_rx.2","position"],
 "sample_rz"        :["d09-1-cx1/ex/tab-mt_rz.1","position"],
-"option1_x"        :["D09-1-CX1/EX/OPTION1-MT_TX.1","position"],
 "tbt_z"        :["d09-1-cx1/ex/cryo-tbt-mt_tz.1","position"],
 "fluo_x"    :["d09-1-cx1/dt/dtc_ge.1-mt_tx.1","position"],
 "fluo_s"    :["d09-1-cx1/dt/dtc_ge.1-mt_ts.1","position"],
@@ -414,6 +432,12 @@ __tmp={
 "mir2_t2z"    :["d09-1-c05/op/mir2-mt_t2","position"],
 "mir2_t3z"    :["d09-1-c05/op/mir2-mt_t3","position"],
 "mir2_c"    :["d09-1-c05/op/mir2-mt_c.1","position"],
+"vpos5" :["d09-1-c06/ex/fent_v.2-mt_pos","position"],
+"vgap5" :["d09-1-c06/ex/fent_v.2-mt_gap","position"],
+"hpos5" :["d09-1-c06/ex/fent_h.2-mt_pos","position"],
+"hgap5" :["d09-1-c06/ex/fent_h.2-mt_gap","position"],
+"cryo4z" :["d09-1-cx1/ex/option1-mt_tz.1","position"],
+#"cryo4set" :["d09-1-cx1/ex/cryo4.1-ctrl","temperatureSetPoint"],
 #"keith_I0"      :["d09-1-cx1/ex/amp_iv.7","gain"],
 #"keith_I1"      :["d09-1-cx1/ex/amp_iv.8","gain"],
 #"keith_I2"      :["d09-1-cx1/ex/amp_iv.9","gain"],
@@ -462,7 +486,9 @@ __tmp={
 "pi5_1"        :["d09-1-c05/vi/pi.1","pressure"],
 "pi6_1"        :["d09-1-c06/vi/pi.1","pressure"],
 "pi6_2"        :["d09-1-c06/vi/pi.2","pressure"],
-"T_dcm"        :["d09-1-c03/op/bath.1","temperature"]
+"T_dcm"        :["d09-1-c03/op/bath.1","temperature"],
+#"cryo4temp1" :["d09-1-cx1/ex/cryo4.1-ctrl","temperature1"],
+#"cryo4temp2" :["d09-1-cx1/ex/cryo4.1-ctrl","temperature2"],
 }                                                
 
 __ll=__tmp.keys()
@@ -524,12 +550,12 @@ __tmp={
 "vgap2" :["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","gap"],
 "vup2"  :["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","up"],
 "vdown2":["d09-1-c04/ex/fent_v.1","d09-1-c04/ex/fent_v.1-mt_u","d09-1-c04/ex/fent_v.1-mt_d","down"],
-"vpos3" :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","pos"],
-"vgap3" :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","gap"],
+#"vpos3" :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","pos"],
+#"vgap3" :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","gap"],
 #"hin3"  :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","in"],
 #"hout3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","out"],
-"vup3"  :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","up"],
-"vdown3":["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","down"],
+#"vup3"  :["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","up"],
+#"vdown3":["d09-1-c06/ex/fent_v.1","d09-1-c06/ex/fent_v.1-mt_u","d09-1-c06/ex/fent_v.1-mt_d","down"],
 #"hpos3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","pos"],
 #"hgap3" :["d09-1-c06/ex/fent_h.1","d09-1-c06/ex/fent_h.1-mt_i","d09-1-c06/ex/fent_h.1-mt_o","gap"],
 "vpos4" :["d09-1-cx1/ex/fent_v.1","d09-1-cx1/ex/fent_v.1-mt_u","d09-1-cx1/ex/fent_v.1-mt_d","pos"],
@@ -540,14 +566,14 @@ __tmp={
 "vdown4":["d09-1-cx1/ex/fent_v.1","d09-1-cx1/ex/fent_v.1-mt_u","d09-1-cx1/ex/fent_v.1-mt_d","down"],
 "hpos4" :["d09-1-cx1/ex/fent_h.1","d09-1-cx1/ex/fent_h.1-mt_i","d09-1-cx1/ex/fent_h.1-mt_o","pos"],
 "hgap4" :["d09-1-cx1/ex/fent_h.1","d09-1-cx1/ex/fent_h.1-mt_i","d09-1-cx1/ex/fent_h.1-mt_o","gap"],
-"vpos5" :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","pos"],
-"vgap5" :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","gap"],
-"hpos5" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","pos"],
-"hgap5" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","gap"],
-"vup5"  :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","up"],
-"vdown5":["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","down"],
-"hin5"  :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","in"],
-"hout5" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","out"]}
+"vpos6" :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","pos"],
+"vgap6" :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","gap"],
+"hpos6" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","pos"],
+"hgap6" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","gap"],
+"vup6"  :["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","up"],
+"vdown6":["d09-1-cx2/ex/fent_v.1","d09-1-cx2/ex/fent_v.1-mt_u.1","d09-1-cx2/ex/fent_v.1-mt_d.1","down"],
+"hin6"  :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","in"],
+"hout6" :["d09-1-cx2/ex/fent_h.1","d09-1-cx2/ex/fent_h.1-mt_i.1","d09-1-cx2/ex/fent_h.1-mt_o.1","out"]}
 for i in __tmp:
     try:
         __IP.user_ns[i]=motor_slit(__tmp[i][0],__tmp[i][1],__tmp[i][2],__tmp[i][3])
@@ -587,22 +613,22 @@ try:
     #These paremeter are NOT copied to tango devices... do it by hand when necessary.
     #C1=A1_1*1/R+A0_1
     #C2=A1_2*1/R+A0_2
-    #Rz2=p0+p1*(1/R)**0.5+p2*(1/R)+p3*(1/R)**1.5
+    #Rz2=p0 + p1 * theta + p2 * theta**2
     #Rs2=Rs2_par[0]+Rs2_par[1]*energy+Rs2_par[2]*energy**2+...
     #Rx2=Rx2_par[0]+Rx2_par[1]*(1/R)+...
 
     #Si220
     #Bender (steps versus 1/R)    
-    A1_1 = 481888.35048462 #493068. #488717. #A1_1=504940.0 #503280.0 #+520646.0 #521776.  # 523711.   
-    A0_1 = 91054.1663915865 #99208. #101943. #A0_1=81255.0 #53248.0  #-55962.1  #-59292.2 #-41290.7 
-    A1_2 = 493502.288067641 #487333. #492917. #A1_2=486220.0 #507372.0 #+511363.0 #535801.0 # 535801    
-    A0_2 = 111904.850053559 #107675. #104935. #A0_2=69396.0 #58929.8  #-10790.7  #-21530   #-39488.6       
+    A1_1 = 493185. #501530. #481888.35048462    #493068. #488717.
+    A0_1 = 94558. #90173.9 #91054.1663915865   #99208. #101943. 
+    A1_2 = 503208.#492346. #493502.288067641   #487333. #492917.
+    A0_2 = 99103. #112661. #111904.850053559   #107675. #104935.
     #Rz2 ()
-    Rz2_par=[-19825.6, 6987.25] #[-42338.7, 85876.4, -92108.6, 32368.1] #[-18000.,-1937.05] 
+    Rz2_par = [-16095, -95.087]#[-17703.5, 138.964, -4.18379]  
     #Rs2 ()
-    Rs2_par=[-920.,]#[-1343.,] #[-2294.91,-0.127889,4.2417e-6,-3.58466e-11] #[-3135.83,4.46052]       #[-521.,]
+    Rs2_par = [-1050.,]#[-1343.,]
     #Rx2 ()
-    Rx2_par=[-8200.,]#[-7504.85, 727.716, -1756.17]#[-8257.2,229.33,-14.074,0.36688,-0.003593,]
+    Rx2_par = [-10401., 1334.7, -2304.7] #[-12985.6,]#[-7504.85, 727.716, -1756.17]
 
     #Si111   
     #A1_1= 561133.0   #545784.
@@ -645,11 +671,18 @@ try:
     #sourceDistance=16.119,delay=0.3,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
     #WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=40000.)
 
-    dcm=mono1(d=d,H=25.0,mono_name="d09-1-c03/op/mono1",
-    rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, tz1=tz1, bender=bender,
-    sourceDistance=16.119,delay=0.3,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
-    WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=43000.)
+    #dcm=mono1(d=d,H=26.0,mono_name="d09-1-c03/op/mono1",
+    #rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, tz1=tz1, bender=bender,
+    #sourceDistance=16.119,delay=0.3,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
+    #WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=43000.)
+    
+    from mono1d import mono1 as monoTest
 
+    dcm=monoTest(d=d,H=26.0,mono_name="d09-1-c03/op/mono1",\
+    rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, tz1=tz1, bender=bender,\
+    sourceDistance=16.119,delay=0.3,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,\
+    WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=43000.)
+	 
     #Bender disable:
     #dcm=mono1(d=d,H=25.0,mono_name="d09-1-c03/op/mono1",
     #rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=None, tz1=tz1, bender=None,
@@ -664,6 +697,7 @@ try:
 except Exception, tmp: 
     print tmp
     print "Cannot define dcm (monochromator not set)."
+
 
 #QEXAFS to be removed
 #try:
@@ -698,7 +732,8 @@ __tmp={
 "vs3":    "d09-1-c03/vi/vs.1",
 "vs4":    "d09-1-c04/vi/vs.1",
 "vs5":    "d09-1-c05/vi/vs.1",
-"vs6":    "d09-1-cx1/vi/vs.1"}
+#"vs6":    "d09-1-cx1/vi/vs.1"
+}
 
 for i in __tmp:
     try:
@@ -918,7 +953,8 @@ def SEXAFS():
 
 
 #slits=[vgap1,vpos1,hgap1,hpos1,vgap2,vpos2,vgap3,vpos3,hgap3,hpos3,vgap4,vpos4,hgap4,hpos4,vgap5,vpos5,hgap5,hpos5]
-slits=[vgap1,vpos1,hgap1,hpos1,vgap2,vpos2,vgap3,vpos3,vgap4,vpos4,hgap4,hpos4,vgap5,vpos5,hgap5,hpos5]
+#slits=[vgap1,vpos1,hgap1,hpos1,vgap2,vpos2,vgap3,vpos3,vgap4,vpos4,hgap4,hpos4,vgap5,vpos5,hgap5,hpos5]
+slits=[vgap1,vpos1,hgap1,hpos1,vgap2,vpos2,vgap4,vpos4,hgap4,hpos4,vgap5,vpos5,hgap5,hpos5,vgap6,vpos6,hgap6,hpos6]
 sample=[x, z, phi, theta]
 fluo=[fluo_x, fluo_s, fluo_z]
 sexafs=[sx,sy,sz,sphi]

@@ -1,14 +1,16 @@
-from math import sin,cos,tan,asin,pi
 from time import sleep,time
-from motor_class import *
-from counter_class import counter
 import PyTango
 from PyTango import DeviceProxy, DevState
-import galil_multiaxis
 from exceptions import Exception
 import exceptions
-from numpy import arange,sign,array,nan,sqrt
+import numpy, scipy
+from numpy import sin,cos,tan,arcsin,pi,arange,sign,array,nan,sqrt
+from scipy import interpolate
 import thread
+
+from motor_class import *
+from counter_class import counter
+import galil_multiaxis
 import moveable
 from spec_syntax import move_motor
 
@@ -346,6 +348,17 @@ class mono1:
         self.Rz2_par=Rz2_par
         self.Rs2_par=Rs2_par
         self.Rx2_par=Rx2_par
+        
+        #Section LocalTable. This part relies on the dcm device
+        
+        if self.DP.get_property("SPECK_UseLocalTable")["SPECK_UseLocalTable"] ==[]:
+            self.DP.put_property({"SPECK_UseLocalTable":False})
+        if self.DP.get_property("SPECK_LocalTable")["SPECK_LocalTable"] == []:
+            self.DP.put_property({"SPECK_LocalTable":[0,"Energy","C1","C2"]})
+            self.DP.put_property({"SPECK_UseLocalTable":False})
+        print "\n\nmono1c: Reading LocalTable from database...",
+        self.readTable()
+        print "OK"
         return
         
     def __str__(self):
@@ -357,6 +370,9 @@ class mono1:
     def subtype(self):
         return "SAMBA MONOCHROMATOR"
 
+    def init(self):
+        return self.DP.init()
+
     def on(self):
         for i in self.motors: i.on()
         return self.state()
@@ -364,33 +380,104 @@ class mono1:
     def off(self):
         for i in self.motors: i.off()
         return self.state()
-    
-    def whitebeam(self):
-        print "Moving to white beam operation. Hope you are sure of what you are doing..."
-        print "Motors should move to:"
-        print "Rx1:",self.WhiteBeamPositions["rx1"]
-        print "Tz1:",self.WhiteBeamPositions["tz1"]
-        print "Tz2:",self.WhiteBeamPositions["tz2"]
-        print "Ready to move in 30s..."
-        sleep(30.)
-        print " OK, let's go..."
-        motors_moved={}
-        if self.WhiteBeamPositions["rx1"]<>None:
-            self.m_rx1.go(self.WhiteBeamPositions["rx1"])
-        if self.WhiteBeamPositions["tz1"]<>None:
-            self.m_tz1.go(self.WhiteBeamPositions["tz1"])
-        if self.WhiteBeamPositions["tz2"]<>None:
-            self.m_tz2.go(self.WhiteBeamPositions["tz2"])
-        wait_motor([self.m_tz1,self.m_rx1,self.m_tz2])
-        if self.WhiteBeamPositions["tz1"]<>None:
-            motors_moved["tz1"]=self.m_tz1.pos()
-        if self.WhiteBeamPositions["rx1"]<>None:
-            motors_moved["rx1"]=self.m_rx1.pos()
-        if self.WhiteBeamPositions["tz2"]<>None:
-            motors_moved["tz2"]=self.m_tz2.pos()
-        print self.label," is in white beam position."
-        return motors_moved
+   
+    def readTable(self):
+        """This function reads the table from the database and prepare the spline for interpolation.
+        ADVANCED FEATURE: this function is for the code internal use only. """
+        lt = self.DP.get_property("SPECK_LocalTable")["SPECK_LocalTable"]
+        np = int(lt[0])
+        self.LocalTable = {"Points":int(lt[0])}
+        if self.LocalTable["Points"] == 0:
+            self.useLocalTable = False
+            for i in ["Energy","C1","C2"]:
+                self.LocalTable[i] = array([],"f")
+            for i in ["Energy","C1","C2"]:
+                self.LocalTable[i + "_spline"] = []
+            self.useLocalTable = False
+            return
+        for i in range(3): 
+            #print array(lt[i * (np+1) + 2:(np+1) * (i+1) + 1],"f")
+            self.LocalTable[lt[i * (np + 1) + 1]] = array(lt[i * (np+1) + 2:(np+1) * (i+1) + 1],"f")
+        #print self.LocalTable
+        if np == 1:
+            for i in ["Energy","C1","C2"]:
+                self.LocalTable[i + "_spline"] = []
+            self.useLocalTable = False
+            return
+        x = self.LocalTable["Energy"]
+        for i in ["C1","C2"]:
+            y = self.LocalTable[i]
+            self.LocalTable[i + "_spline"] = interpolate.splrep(x,y,k=min(3,np-1))
+        return
+
+    def writeTable(self):
+        """Code internal use only: advanced feature. Write in-memory table to database"""
+        if self.LocalTable["Points"] < 1:
+            print "Cannot Write Table to database for less than 2 points"
+            return
+        outList =[self.LocalTable["Points"],]
+        for i in ["Energy","C1","C2"]:
+            outList += [i,] + list(self.LocalTable[i])
+        self.DP.put_property({"SPECK_LocalTable": outList})
+        return
+
+    def setLocalTable(self):
+        """Turn on the local mode. The bender will follow a local interpolation.
+        Use unsetLocalTable to turn this option off. If the table is not defined, 
+        the useLocalTable flag will be set to False"""
+        self.useLocalTable = True
+        self.DP.put_property({"SPECK_UseLocalTable":True})
+        self.readTable()
+        return
+
+    def unsetLocalTable(self):
+        """Turn off the local mode. The bender will not follow a local interpolation.
+        Use setLocalTable to turn this option on."""
+        self.useLocalTable = False
+        self.DP.put_property({"SPECK_UseLocalTable":False})
+        return
+
+    def takeValue(self, xtol=100):
+        """Take current position and use it for LocalTable interpolation.
+        The setLocalTable command must be used only after the table has been 
+        completed (2 values at least).
+        Before creating a new table the command clearLocalTable must be used 
+        to remove the old table values.
+        A value in energy closer than xtol is replaced"""
+        pointValue = {"Energy": self.pos(), "C1": self.bender.c1.pos(), "C2": self.bender.c2.pos()}
+        idx = self.LocalTable["Energy"].searchsorted(pointValue["Energy"])
+        if numpy.any(abs(self.LocalTable["Energy"] - pointValue["Energy"]) < xtol ):
+            #Replace Value
+            print "Replacing Value in Table"
+            idx = min(self.LocalTable["Energy"].searchsorted(pointValue["Energy"]),\
+            len(self.LocalTable["Energy"])-1)
+            print idx
+            if (abs(self.LocalTable["Energy"][idx] - pointValue["Energy"]) > xtol):
+                idx = min(idx +1, len(self.LocalTable["Energy"]-1))
+            for i in ["Energy","C1","C2"]:
+                self.LocalTable[i][idx] = pointValue[i]
+        else:
+            self.LocalTable["Points"] += 1
+            for i in ["Energy","C1","C2"]:
+                self.LocalTable[i] = array(list(self.LocalTable[i][:idx]) + [pointValue[i],]\
+                + list(self.LocalTable[i][idx:]),"f")
+        #Update database if possible
+        if self.LocalTable["Points"] > 1:
+            print "Syncing table to database...",
+            self.writeTable()
+            print "OK"
+            print "Reading table from database...",
+            self.readTable()
+            print "OK"
+        return
         
+    def clearLocalTable(self):
+        self.DP.put_property({"SPECK_LocalTable":[0,"Energy","C1","C2"]})
+        self.DP.put_property({"SPECK_UseLocalTable":False})
+        self.readTable()
+        self.useLocalTable = False
+        return
+   
     def disable_ts2(self):
         self.__usets2=False
         return
@@ -491,7 +578,7 @@ class mono1:
         
     def e2theta(self,energy):
         """Calculate the energy for a given angle"""
-        return asin(12398.41857/(2.*self.d*energy))/pi*180.
+        return arcsin(12398.41857/(2.*self.d*energy))/pi*180.
 
     def theta2e(self,theta):
         """Calculate the angle for a given energy"""
@@ -546,10 +633,15 @@ class mono1:
             theta = self.e2theta(energy)
             move_list += [self.m_rx1, theta]
             if(self.__usebender): 
-                __c1c2 = self.bender.calculate_steps_for_curv(self.calculate_curvature(theta))
-                #if __c1c2[0]>310000 or __c1c2[1]>395000:
-                #    print "mono1b.py: Hard coded limits of the Si220 bender exceeded"
-                #    raise Exception("Hard bender limits are c1<=310000steps and c2<=395000Steps")
+                if self.useLocalTable and\
+                min(self.LocalTable["Energy"])<=energy<=max(self.LocalTable["Energy"]):
+                    __c1c2 = [interpolate.splev(energy, self.LocalTable["C1_spline"]),\
+                    interpolate.splev(energy, self.LocalTable["C2_spline"])]
+                else:    
+                    __c1c2 = self.bender.calculate_steps_for_curv(self.calculate_curvature(theta))
+                    #if __c1c2[0]>310000 or __c1c2[1]>395000:
+                    #    print "mono1b.py: Hard coded limits of the Si220 bender exceeded"
+                    #    raise Exception("Hard bender limits are c1<=310000steps and c2<=395000Steps")
                 move_list+=[self.bender.c1, __c1c2[0], self.bender.c2, __c1c2[1]]
             if (Ts2_Moves and self.usets2()): 
                 move_list+=[self.m_ts2,self.ts2(theta)]

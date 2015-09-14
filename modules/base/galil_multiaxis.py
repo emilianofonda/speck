@@ -1,9 +1,9 @@
 #from motor_class import wait_motor
 from spec_syntax import wait_motor
 from PyTango import DeviceProxy, DevState, DevFailed,Database
-from time import sleep,time,asctime
-from numpy import mod, reshape,sort,inf,nan
-from exceptions import Exception,KeyboardInterrupt
+from time import sleep, time, asctime
+from numpy import mod, reshape, sort, inf, nan, all, any
+from exceptions import Exception, KeyboardInterrupt
 
 class galil_axisgroup:
     """This class is used to speed up multiaxis movements on the Galil 8 axis Controller. 
@@ -56,6 +56,14 @@ class galil_axisgroup:
         if DevState.MOVING in map(lambda(x): x.state(),args[0::2]):
             raise Exception("galil_axisgroup: One of the axis is already moving")
         mots=reshape(args, [l_args / 2, 2])
+#       if DevState.MOVING in map(lambda(x): x.state(),args[0::2]):
+#           for i in range(2):
+#               sleep(0.1)
+#               if not DevState.MOVING in map(lambda(x): x.state(),args[0::2]):
+#                   break
+#           if i >=2: 
+#               raise Exception("galil_axisgroup: One of the axis is already moving")
+#       mots=reshape(args,[l_args/2,2])
         #Backlash list:
         mots2move=[]
         mots_backlash=[]
@@ -141,25 +149,48 @@ class galil_axisgroup:
         #tt0=time()
         try:
             #Wait for motors to start
-            t0 = time()
-            nomovement = True
-            while nomovement and time()-t0 < self.timeout:
-                for i in mot_list:
-                    if i.state() == DevState.MOVING: 
-                        nomovement = False
-                        break
-                if nomovement and self.deadtime > 0:
+#<<<<<<< HEAD
+#           timeOut = time() + self.timeout
+#           nomovement = True
+#           while nomovement and time() < timeOut:
+#               for i in mot_list:
+#                   if i.state() == DevState.MOVING: 
+#                       nomovement = False
+#                       break
+#               if nomovement and self.deadtime > 0:
+#                   sleep(self.deadtime)
+#           #Wait for motors to stop
+#           lMots = list(mot_list)
+#           tEnd = time()
+#           while len(lMots) >= 0:
+#               for i in range(len(lMots)):
+#                   if i.state() <> DevState.MOVING:
+#                       tEnd = time() + self.mot_dict[lMots[i]]["SettlingTime"]
+#                       __tmp = lMots.pop(i)
+#                       break
+#           sleep(max(0., tEnd - time()))
+#======
+            timeOut = time() + self.timeout
+            nomovement=True
+            while time() < timeOut and nomovement:
+                if any(map(lambda x: x.state() == DevState.MOVING, mot_list)):
+                    break
+                if self.deadtime > 0:
                     sleep(self.deadtime)
             #Wait for motors to stop
-            lMots = list(mot_list)
-            tEnd = time()
-            while len(lMots) >= 0:
-                for i in range(len(lMots)):
-                    if i.state() <> DevState.MOVING:
-                        tEnd = time() + self.mot_dict[lMots[i]]["SettlingTime"]
-                        __tmp = lMots.pop(i)
+            i=0
+            l=len(mot_list)
+            for retries in range(3):
+                while True:
+                    if all(map(lambda x: x.state() <> DevState.MOVING, mot_list)):
                         break
-            sleep(max(0., tEnd - time()))
+                    #if mot_list[i].state() <> DevState.MOVING:
+                    #    i += 1
+                    #    if i == len(mot_list):
+                    #        break
+                    if self.deadtime > 0:
+                        sleep(self.deadtime)
+                i=0
             #print "Waited for :",time()-tt0
         except KeyboardInterrupt, tmp:
             print "KeyboardInterrupt Exception catched in galil_axisgroup.wait: stopping motors."

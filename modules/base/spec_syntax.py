@@ -106,21 +106,25 @@ def whereall():
 #mv and mvr should be able to move several motors toghether and maybe take advantage of galilmultiaxis.
 
 
-def move_motor(*motor):
+def move_motor(*motor,**kw):
     """Move one or more motors. Support motor lists or just a motor object.
     Syntax move_motor(motor1,1,motor2,123.2,motor3,12).
     Only an even number of parameters is acceptable.
     """
+    verbose=True
+    if "verbose" in kw.keys():
+        verbose = kw["verbose"]
     if mod(len(motor),2)<>0 : raise exceptions.SyntaxError("odd number of parameters!")
     motors=[]
-    textout = map(lambda i: "%s was %g"%(whois(i),i.pos()), motor[::2])
-    for i in textout:
-        print i
+    if verbose:
+        textout = map(lambda i: "%s was %g"%(whois(i),i.pos()), motor[::2])
+        for i in textout:
+            print i
     try:
         for i in range(0,len(motor),2):
             motor[i].go(motor[i+1])
             motors.append(motor[i])
-        return wait_motor(motors)
+        return wait_motor(motors, verbose=verbose)
     except (KeyboardInterrupt,SystemExit), tmp:
         for i in motors:
             i.stop()
@@ -322,6 +326,7 @@ def tw(x,step):
                     print "[Ctrl-C to exit] [Press Return to Step] [Type value to change step]"
     except exceptions.KeyboardInterrupt:
         return x.pos()
+
 def tweak(x,step):
     return tw(x,step)
 
@@ -353,13 +358,7 @@ def fw(*args):
     May forward one or several motors"""
     try:
         for i in args:
-            if "forward" in dir(i):
-                i.forward()
-            elif "DP" in dir(i) and "forward" in dir(i.DP):
-                i.DP.forward()
-            else:
-                if label in dir(i):
-                    print i.label," has no method forward defined."
+            i.forward()
         wait_motor(*args)
     except Exception, tmp:
         for i in args:
@@ -375,13 +374,7 @@ def bw(*args):
     May forward one or several motors"""
     try:
         for i in args:
-            if "backward" in dir(i):
-                i.backward()
-            elif "DP" in dir(i) and "backward" in dir(i.DP):
-                i.DP.backward()
-            else:
-                if label in dir(i):
-                    print i.label," has no method backward defined."
+            i.backward()
         wait_motor(*args)
     except Exception, tmp:
         for i in args:

@@ -4,6 +4,7 @@ import time
 from ascan import ascan, ScanStats
 
 import numpy
+from numpy import inf, nan
 import pylab
 from pylab import plot
 
@@ -86,7 +87,8 @@ class MOSTAB_serial:
         if arg <> None:
             return self.InOutS(arg)
         max_Vout,gain_mode = self("?OUTBEAM")[self.echo].split()[-2:]
-        print "MOSTAB at ", self.pos()," is in state ",self.state(), "the outbeam signal is at %sV/%sV gain mode is %s"\
+        minp, maxp = self.lm()
+        print "MOSTAB at ", self.pos(),"[%4.2f:%4.2f]"%(minp, maxp)," is in state ",self.state(), "the outbeam signal is at %sV/%sV gain mode is %s"\
         %(self("?BEAM")[self.echo].split()[1], max_Vout, gain_mode)
         #print "I0=%8.6e I1=%8.6e State=%s" % self.currents()
         #print "mode = %s" % self.pid()["modename"]
@@ -133,6 +135,31 @@ class MOSTAB_serial:
                 out.append(self.SerPort.readline())
             return out
 
+    def lm(self):
+        ss = self.InOutS("?OPRANGE")[self.echo]
+        ss = ss.split()
+        return float(ss[0]), float(ss[1])
+    
+    def lmset(self, min_value = None, max_value = None):
+        ll = self.lm()
+        current_min, current_max =ll[0], ll[1] 
+        if min_value in [-inf, inf]:
+            min_value = 0.
+        elif min_value == None:
+            min_value = current_min
+        if max_value == inf:
+            max_value = 10.
+        elif max_value == None:
+            max_value = current_max
+        self.InOutS("OPRANGE %4.2f %4.2f %4.2f" % (min_value, max_value, (min_value+max_value)*0.5))
+        new_limits = self.lm()
+        print "New limits: ", new_limits
+        return new_limits
+        
+        ss = self.InOutS("?OPRANGE")[self.echo]
+        ss = ss.split()
+        return float(ss[0]),float(ss[1])
+
     def version(self):
         return self.InOutS("?VER")[1:]
 
@@ -160,6 +187,10 @@ class MOSTAB_serial:
         self.InOutS("PIEZO %8.6f" % dest)
         err = self.error()
         if err <> "OK":
+            pmin, pmax = self.lm()
+            if dest <= pmin or dest >= pmax:
+                raise Exception("You tried to move MOSTAB out of limits.\n \
+                If necessary, set limits with command lmset.")
             raise Exception("MOSTAB: " + err)
         time.sleep(self.deadtime)
         if wait:
@@ -364,18 +395,24 @@ class MOSTAB_serial:
 #            pass
 #        return self.range()
 #    
-    def tune(self, p1=2, p2=8, np=60, dt=0.1, offset = 0., draw=True, tune="center"):
+    def tune(self, p1=2, p2=8, np=60, dt=0.1, oprange=1.2, offset = 0., draw=True, tune="center"):
         """The tuning procedure can move to max intenisty (tune="max")
         or to baricenter (tune="center")
         """
+        self.InOutS("OPRANGE 0. 10. 5.")
         ascan(self, p1, p2, (p1-p2)/float(np), dt = dt, channel=self.channel, graph=0, scaler=self.scaler)
         if tune == "max":
-            self.pos(ScanStats.max_pos)
+            pt = ScanStats.max_pos
         elif tune =="center":
-            self.pos(ScanStats.baricenter_scaled)
+            pt = ScanStats.baricenter_scaled
         else:
+            pt = None
             raise Exception("Unknown tune method request for MOSTAB.tune")
-        time.sleep(1)
+        self.pos(0.1)
+        self.InOutS("OPRANGE %4.2f %4.2f %4.2f" % (max(0., pt - oprange*0.5), min(10., pt + oprange*0.5), pt))
+        time.sleep(0.1)
+        self.pos(pt)
+        time.sleep(0.1)
         self.__call__("TUNE #")
         time.sleep(2)
         return self.state()
