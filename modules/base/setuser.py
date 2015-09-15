@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import os,sys,string,time
+from ascan import filename2ruche
 
 #dn = os.path.dirname(os.path.realpath(__file__))
 #dn=dn[:dn.rfind(os.sep)]
@@ -52,6 +53,10 @@ def setuser(name=None):
         except Exception, tmp:
             print tmp
             pass
+        try:
+            os.makedirs(filename2ruche(""))
+        except:
+            print "CANNOT MAKE RUCHE FOLDER: "+filename2ruche("")
     return
 
 
