@@ -15,7 +15,7 @@ from tango_serial import tango_serial
 
 class MOSTAB_serial:
 
-    def __init__(self, port=0, baudrate=9600, echo=0, deadtime=0.05, init_file="",scaler="cpt", channel=3):
+    def __init__(self, port=0, baudrate=9600, echo=0, deadtime=0.05, init_file="",scaler="cpt", channel=0):
         self.SerPort=serial.Serial(0)
         self.SerPort.baudrate=baudrate
         self.SerPort.timeout=1
@@ -164,6 +164,11 @@ class MOSTAB_serial:
         return self.InOutS("?VER")[1:]
 
     def start(self):
+        if self.mode("OSCILLATION"):
+            self.InOutS("OSCIL ON")
+        time.sleep(0.1)
+        print "?OSCIL"
+        print self("?OSCIL")[1]
         self.InOutS("GO")
         err = self.error()
         if err <> "OK":
@@ -413,8 +418,11 @@ class MOSTAB_serial:
         time.sleep(0.1)
         self.pos(pt)
         time.sleep(0.1)
-        self.__call__("TUNE #")
-        time.sleep(2)
+        if self.mode() == "POSITION":
+            self.__call__("TUNE #")
+            time.sleep(2)
+        else:
+            self.start()
         return self.state()
 
     def oscbeam(self,p1,p2,dp=0.01, phase = 0., repeat=3):
@@ -471,7 +479,7 @@ class MOSTAB_serial:
         return ll
 
 class MOSTAB_tango(MOSTAB_serial):
-    def __init__(self, port=None, echo=1, EndOfLine=13, Space=32, deadtime=0.05, EndOfLine_out="\r\n", init_file = "",scaler="cpt",channel=3):
+    def __init__(self, port=None, echo=1, EndOfLine=13, Space=32, deadtime=0.05, EndOfLine_out="\r\n", init_file = "",scaler="cpt",channel=0):
         """System is asymmetric: 10 is sent to end command, while 13,10 is received"""
         myEOL={10:"\n",13:"\r"}
         self.serial=tango_serial(port, EndOfLine=[EndOfLine,], space=Space, deadtime=0.1)

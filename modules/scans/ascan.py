@@ -117,6 +117,28 @@ def ascan_statistics(x,y,glob):
     #Calculate pos of maximum derivative (+,-)
     return 0
 
+def filename2ruche(filename):
+    ##############################################################
+    #
+    #Returns complete filename to save data directly in ruche
+    #it works only if
+    #current folder is in data path
+    #__Default_Data_Folder must be a GLOBAL variable!
+    # MUST be declared outside this class and before the escan class!
+    #
+    __Default_Data_Folder = get_ipython().user_ns["__Default_Data_Folder"]
+    __Default_Backup_Folder = get_ipython().user_ns["__Default_Backup_Folder"]
+    if __Default_Backup_Folder == "":
+        print "No backup/ruche folder defined."
+        return
+    currentDataFolder=os.path.realpath(os.getcwd())
+    currentBackupFolder=__Default_Backup_Folder+os.sep+\
+    currentDataFolder.lstrip(__Default_Data_Folder.rstrip(os.sep))
+    cbf=currentBackupFolder
+    #currentBackupFolder=cbf[:cbf.rstrip(os.sep).rfind(os.sep)]
+    ruche_filename = currentBackupFolder + os.sep +filename
+    return ruche_filename
+
 def __backup_data():
     ##############################################################
     #
