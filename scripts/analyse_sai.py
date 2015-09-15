@@ -1,6 +1,8 @@
 from numpy import fft
 import tables
 
+sai = DeviceProxy("d09-1-c00/ca/sai.1")
+
 def make_fft(buffer, sampling,integration_time):
     """sampling in Hz, integration time in seconds"""
     it = integration_time *1000.
@@ -13,8 +15,11 @@ def plot_fft(freq, ft_module, label=""):
     plot(freq[1:len(freq)/2], ft_module[1:len(freq)/2], label=label)
     return
 
-def load_sai_channel(name,branch="root.entry.scan_data.channel",channel=0):
-    sai = tables.openFile(name)
+def load_sai_channel(name,branch="root.entry.scan_data.channel",channel=0, dataInRuche = True):
+    if dataInRuche:
+        sai = tables.openFile(filename2ruche(name))
+    else:
+        sai = tables.openFile(name)
     pt2data = eval("sai."+branch+"%i"%channel)
     dd = pt2data.read()
     sai.close()
@@ -110,7 +115,8 @@ def acquire_sai(fileName="",integrationTime=1,sampling=10000.,AcqPerNexus=10,dat
     return
 
 
-def single_shot(sai):
+def single_shot(filename="sai", card="sai"):
+    sai = eval(card)
     sai.nexusFileGeneration = True
     sai.start()
     sleep(0.5)
@@ -123,7 +129,8 @@ def single_shot(sai):
         ll = os.listdir("/nfs/srv5/spool1/sai")
     ll.sort()
     for i in ll:
-        totoFile = findNextFileName("./nightshift","nxs")
+        totoFile = findNextFileName(filename2ruche(filename),"nxs")
         os.system("cp /nfs/srv5/spool1/sai/%s "%i + totoFile + "&& rm /nfs/srv5/spool1/sai/%s"%i )
+    print "Saving data in: ", totoFile
     return
 

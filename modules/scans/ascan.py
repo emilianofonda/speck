@@ -136,7 +136,7 @@ def filename2ruche(filename):
     currentDataFolder.lstrip(__Default_Data_Folder.rstrip(os.sep))
     cbf=currentBackupFolder
     #currentBackupFolder=cbf[:cbf.rstrip(os.sep).rfind(os.sep)]
-    ruche_filename = currentBackupFolder + filename
+    ruche_filename = currentBackupFolder + os.sep +filename
     return ruche_filename
 
 def __backup_data():
