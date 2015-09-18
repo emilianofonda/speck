@@ -211,11 +211,12 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
         name = "ascan_out"
     ext = "txt"
     #w=Gnuplot.Gnuplot(persist=1)
-    w=Gnuplot.Gnuplot()
-    w('set data style linespoints')
-    w("set grid")
-    w("set title '"+name+"'")
-    w("set ylabel 'channel=%i'"%(channel))
+    if graph >=0:
+        w=Gnuplot.Gnuplot()
+        w('set data style linespoints')
+        w("set grid")
+        w("set title '"+name+"'")
+        w("set ylabel 'channel=%i'"%(channel))
     for scan_number in xrange(__no_scans):
         x = []
         y = []
@@ -245,7 +246,8 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
                 motname = whois(mot)
                 print "motor name is : ", motname
                 f.write("#mot=%s p1=%g p2=%g dp=%g dt=%g\n"%(motname, p1, p2, dp, dt))
-                w("set xlabel '" + motname + "'")
+                if graph >=0:
+                    w("set xlabel '" + motname + "'")
             else:
                 time_scan = True
                 motname = "time"
@@ -309,11 +311,12 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
                         __fullmca_line_format="%d\t"*(len(__fullmca_line)-1)+"%d\n"
                         mca_files[mca_channel].write(__fullmca_line_format%tuple(__fullmca_line))
                 ######################################################################################
-                if len(mod(x,5)==0):
+                if graph >=0 and len(mod(x,5)==0):
                     w.plot(Gnuplot.Data(x,y))
                     #xplot(x,y)
                     f.flush()
-            w.plot(Gnuplot.Data(x,y))
+            if graph >= 0:
+                w.plot(Gnuplot.Data(x,y))
         except (KeyboardInterrupt,SystemExit), tmp:
             print "Scan finished on user request"
             f.close()
@@ -339,7 +342,8 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
         #You could use this if persist=1 does not work:
         ml=min(len(x),len(y))
         try:
-            xplot(x[:ml],y[:ml],graph=graph)
+            if graph >= 0 :
+                xplot(x[:ml],y[:ml],graph=graph)
         except (KeyboardInterrupt,SystemExit), tmp:
             print "Scan finished on user request"
             raise tmp
