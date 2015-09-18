@@ -405,7 +405,7 @@ class MOSTAB_serial:
         or to baricenter (tune="center")
         """
         self.InOutS("OPRANGE 0. 10. 5.")
-        ascan(self, p1, p2, (p1-p2)/float(np), dt = dt, channel=self.channel, graph=0, scaler=self.scaler)
+        rocca = ascan(self, p1, p2, (p1-p2)/float(np), dt = dt, channel=self.channel, graph=-1, scaler=self.scaler, returndata=True)
         if tune == "max":
             pt = ScanStats.max_pos
         elif tune =="center":
@@ -413,7 +413,7 @@ class MOSTAB_serial:
         else:
             pt = None
             raise Exception("Unknown tune method request for MOSTAB.tune")
-        self.pos(0.1)
+        #self.pos(0.1)
         self.InOutS("OPRANGE %4.2f %4.2f %4.2f" % (max(0., pt - oprange*0.5), min(10., pt + oprange*0.5), pt))
         time.sleep(0.1)
         self.pos(pt)
@@ -421,6 +421,23 @@ class MOSTAB_serial:
         if self.mode() == "POSITION":
             self.__call__("TUNE #")
             time.sleep(2)
+        elif self.mode() == "OSCILLATION":
+            dp = float(self("?AMPLITUDE")[self.echo])
+            phi = float(self("?PHASE")[self.echo])
+            ob_xy = self.oscbeam(pt - 2 * dp, pt + 2 * dp, 0.25 * dp, phase = phi, repeat = 3)
+            ob_fit = numpy.polyfit(ob_xy[0], ob_xy[1], 1)
+            pylab.subplot(1,2,2)
+            pylab.plot(ob_xy[0], ob_fit[0] * ob_xy[0] + ob_fit[1], "g--", linewidth=3)
+            pylab.text(pt, max(ob_xy[1])*0.5, "SLOPE = %4.2f" % ob_fit[0])
+            pylab.xlabel("Volts")
+            pylab.ylabel("Channel = %i"%self.channel)
+            pylab.subplot(1,2,1)
+            pylab.plot(rocca[0],rocca[1],"b-")
+            pylab.plot(rocca[0],rocca[1],"r*")
+            pylab.xlabel("Volts")
+            pylab.draw()
+            self("SLOPE %4.2f" % ob_fit[0])
+            self.start()
         else:
             self.start()
         return self.state()
@@ -452,7 +469,8 @@ class MOSTAB_serial:
             points.append([p, main, quad])
         points = numpy.array(points).transpose()
         pylab.figure()
-        pylab.title("Ph= %6.4f Freq= %3.1f A=%5.3f T=%3.1f" % (phase, frequency, amplitude, tau) )
+        pylab.subplot(1,2,2)
+        pylab.title("Ph= %6.4f Freq= %3.1f A=%5.3f T=%4.2f" % (phase, frequency, amplitude, tau) )
         pylab.plot(points[0], points[1],"b-",label ="main") 
         pylab.plot(points[0], points[2], "r-", label="quad")
         pylab.plot(points[0], points[2], "r+")
