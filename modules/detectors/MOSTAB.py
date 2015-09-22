@@ -169,6 +169,7 @@ class MOSTAB_serial:
         time.sleep(0.1)
         print "?OSCIL"
         print self("?OSCIL")[1]
+        time.sleep(0.2)
         self.InOutS("GO")
         err = self.error()
         if err <> "OK":
@@ -424,7 +425,7 @@ class MOSTAB_serial:
         elif self.mode() == "OSCILLATION":
             dp = float(self("?AMPLITUDE")[self.echo])
             phi = float(self("?PHASE")[self.echo])
-            ob_xy = self.oscbeam(pt - 2 * dp, pt + 2 * dp, 0.25 * dp, phase = phi, repeat = 3)
+            ob_xy = self.oscbeam(pt - 2 * dp, pt + 2 * dp, 0.25 * dp, phase = phi, repeat = 10)
             ob_fit = numpy.polyfit(ob_xy[0], ob_xy[1], 1)
             pylab.subplot(1,2,2)
             pylab.plot(ob_xy[0], ob_fit[0] * ob_xy[0] + ob_fit[1], "g--", linewidth=3)

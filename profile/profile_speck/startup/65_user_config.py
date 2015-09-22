@@ -852,6 +852,9 @@ def shopen(level=1):
 	print __allshutters[i].label," ",__allshutters[i].state()
     if level >= 1:
         try:
+            sleep(0.2)
+            mostab.start()
+            sleep(0.2)
             mostab.start()
             print "mostab: start executed"
         except:
