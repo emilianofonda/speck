@@ -140,7 +140,7 @@ def ReadScanForm(filename):
             backup=True
         elif(i.startswith("fast")):
             scanMode="fast"
-            print RED + "Scan Mode fast has changed! this is a step mode with counting time = 0.1 s/point"  + RESET
+            print RED + "Scan Mode fast has changed! this is a step mode with counting time = 0.2 s/point"  + RESET
         elif(i.startswith("almostfast")):
             print RED + "Scan Mode almostfast has been removed! this will be treated ad a step mode"  + RESET
             scanMode="step"
@@ -523,7 +523,7 @@ class escan_class:
             else:
                 ck=(self.kgrid[3]-self.kgrid[2])/((self.kgrid[0]+self.kgrid[1])**self.kgrid[4]-(k1+self.kgrid[1])**self.kgrid[4])
             if self.scanMode == "fast":
-                self.kscan_t = numpy.ones(len(self.kscan_e)) * 0.1
+                self.kscan_t = numpy.ones(len(self.kscan_e)) * 0.2
             else:
                 self.kscan_t=self.kgrid[2]+\
                 +ck*(arange(k1+self.kgrid[1],self.kgrid[0]+self.kgrid[1],self.kgrid[1])**self.kgrid[4]-k1**self.kgrid[4])
@@ -545,20 +545,20 @@ class escan_class:
                 if(ni+2<len(self.grid)):
                     en+=self.grid[ni][1]
                     if self.scanMode == "fast":
-                        tmeasure = 0.1
+                        tmeasure = 0.2
                     else:
                         tmeasure=float(self.grid[ni][2])
                     if(en>=self.grid[ni+1][0]): 
                         en=self.grid[ni+1][0]
                         if self.scanMode == "fast":
-                            tmeasure = 0.1
+                            tmeasure = 0.2
                         else:
                             tmeasure=float(self.grid[ni+1][2])
                         ni+=1
                 elif(ni+2==len(self.grid)):
                     en+=self.grid[ni][1]
                     if self.scanMode == "fast":
-                        tmeasure = 0.1
+                        tmeasure = 0.2
                     else:
                         tmeasure=float(self.grid[ni][2])
                 self.trajectory["energy"].append(en)

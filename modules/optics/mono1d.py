@@ -339,6 +339,9 @@ class mono1:
         return "MOTOR"
         
     def __repr__(self):
+        print ""
+        self.printTable()
+        self.printEnables()
         return self.label+" at %10.6f"%(self.pos())
     
     def subtype(self):
@@ -407,7 +410,7 @@ class mono1:
             return
         else:
             fOut = file(fileName, "w")
-            for i in outlist:
+            for i in outList:
                 fOut.write(str(i)+"\n")
             fOut.close()
         return
@@ -422,6 +425,7 @@ class mono1:
             outList = ll.split("\n")
             self.DP.put_property({"SPECK_LocalTable": outList})
             self.readTable()
+            self.setLocalTable()
         else:
             return
 
@@ -474,16 +478,26 @@ class mono1:
             print "Reading table from database...",
             self.readTable()
             print "OK"
+            print "Activating table...",
+            self.setLocalTable()
+            print "OK"
         return
         
     def clearLocalTable(self):
         self.DP.put_property({"SPECK_LocalTable":[0,"Energy","C1","C2","RS2","RX2FINE"]})
         self.DP.put_property({"SPECK_UseLocalTable":False})
         self.readTable()
-        self.useLocalTable = False
+        self.unsetLocalTable()
         return
     
     def printTable(self):
+        print "--------------------------"
+        print "Using Table ?",
+        if self.useLocalTable:
+            print "Yes"
+        else:
+            print "No"
+        print "--------------------------"
         cols= self.LocalTable.keys()
         cols.remove("Energy")
         cols.remove("Points")
