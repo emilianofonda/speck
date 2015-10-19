@@ -422,7 +422,7 @@ class mono1:
             fIn = file(fileName, "r")
             ll = fIn.readlines()
             fIn.close()
-            outList = ll.split("\n")
+            outList = map(lambda x: x.strip(), ll)
             self.DP.put_property({"SPECK_LocalTable": outList})
             self.readTable()
             self.setLocalTable()

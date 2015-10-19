@@ -65,7 +65,7 @@ def wa(returns = False, verbose = True):
         if not(i.startswith("_")):
             j=eval(i,g)
             if isinstance(j,eval("motor",g)) or isinstance(j,eval("piezo",g)) or isinstance(j,eval("motor_slit",g)) \
-            or isinstance(j,eval("mono1",g)) or isinstance(j,eval("mm4005_motor",g)) or isinstance(j,eval("moveable",g)): 
+            or isinstance(j,eval("mono1",g)) or isinstance(j,eval("monoTest",g)) or isinstance(j,eval("mm4005_motor",g)) or isinstance(j,eval("moveable",g)): 
                 lm.append([i,j])
     lm.sort()
     outout=[]

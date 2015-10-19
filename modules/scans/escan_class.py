@@ -1,5 +1,6 @@
 import os,sys
 from time import clock,sleep,asctime,time
+import numpy
 from numpy import cos, sin, pi, log, mod, array, zeros, mean, float32,float64, float16, sqrt, average, arange
 import PyTango
 from PyTango import DeviceProxy, DevState
@@ -139,8 +140,10 @@ def ReadScanForm(filename):
             backup=True
         elif(i.startswith("fast")):
             scanMode="fast"
+            print RED + "Scan Mode fast has changed! this is a step mode with counting time = 0.2 s/point"  + RESET
         elif(i.startswith("almostfast")):
-            scanMode="almostfast"
+            print RED + "Scan Mode almostfast has been removed! this will be treated ad a step mode"  + RESET
+            scanMode="step"
         elif(i.startswith("notz2")):
             j=i.replace("="," ")
             j=j.split()
@@ -415,17 +418,17 @@ class escan_class:
         ###Rustine revoltante !!!!!
         ###Il faut definir un controlleur pour le machinestatus et le passer en argument...
         try:
-            self.ms=DeviceProxy("ans/ca/machinestatus")
+            self.ms = DeviceProxy("ans/ca/machinestatus")
         except:
-            print RED+"Cannot define a device proxy for the machinestatus ans/ca/machinestatus"+RESET
+            print RED + "Cannot define a device proxy for the machinestatus ans/ca/machinestatus"+RESET
         ###
-        thisform=ReadScanForm(scan_form)
-        f=file(scan_form,"r")
-        self.formtext=f.readlines()
+        thisform = ReadScanForm(scan_form)
+        f = file(scan_form,"r")
+        self.formtext = f.readlines()
         f.close()
         #
-        attributes=thisform["attributes"]
-        self.attributes=[]
+        attributes = thisform["attributes"]
+        self.attributes = []
         #Transforms attributes to attribute proxies
         for i in attributes:
             try:
@@ -437,42 +440,42 @@ class escan_class:
                 raise tmp
         del attributes
         self.backup=thisform["backup"]
-        bend=thisform["usebender"]
-        tuning=thisform["tuning"]
-        degree=thisform["degree"]
-        self.grid=thisform["res"]
-        self.TUNING=tuning
+        bend = thisform["usebender"]
+        tuning = thisform["tuning"]
+        degree = thisform["degree"]
+        self.grid = thisform["res"]
+        self.TUNING = tuning
         print "Tuning is set to :",self.TUNING
-        if(self.TUNING==None): 
-            self.TUNING=True
-            self.tuningdegree=1
-        elif(self.TUNING==False):
-            self.tuningdegree=0
-        elif(self.TUNING==True):
-            self.tuningdegree=degree
+        if(self.TUNING == None): 
+            self.TUNING = True
+            self.tuningdegree = 1
+        elif(self.TUNING == False):
+            self.tuningdegree = 0
+        elif(self.TUNING == True):
+            self.tuningdegree = degree
         else:
             raise exceptions.Exception("The tuning flag is not properly set. Verify scan file.",self.TUNING)
         #Pitch correction (Explicit, deactivates the tuning)
         self.ServoPitchParameters=thisform["ServoPitchParameters"]
-        if self.ServoPitchParameters<>[]:
-            self.PitchCorrection=True
-            self.TUNING=False
-            print RED+"Pitch correction explicitly specified: deactivating auto tuning of piezo."+RESET
+        if self.ServoPitchParameters <> []:
+            self.PitchCorrection = True
+            self.TUNING = False
+            print RED + "Pitch correction explicitly specified: deactivating auto tuning of piezo." + RESET
         else:
             self.PitchCorrection=False
         #Roll correction
-        self.ServoRollParameters=thisform["ServoRollParameters"]
-        if self.ServoRollParameters<>[]:
-            self.RollCorrection=True
+        self.ServoRollParameters = thisform["ServoRollParameters"]
+        if self.ServoRollParameters <> []:
+            self.RollCorrection = True
         else:
-            self.RollCorrection=False
+            self.RollCorrection = False
         #
-        self.notz2=thisform["notz2"]
+        self.notz2 = thisform["notz2"]
         if self.notz2:
             print "notz2: TZ2 will not be used."
-        self.notz2_auto_limit=thisform["notz2_auto_limit"]
-        self.detune=thisform["detune"]
-        self.detectionMode=thisform["detectionMode"]
+        self.notz2_auto_limit = thisform["notz2_auto_limit"]
+        self.detune = thisform["detune"]
+        self.detectionMode = thisform["detectionMode"]
         #################################################################
         #                                                               #
         # Defining different parameters for CX1 and CX2: very delicate! #
@@ -494,9 +497,9 @@ class escan_class:
         self.scanMode=thisform["scanMode"]
         print BLUE+"Scan Mode is :"+RESET,self.scanMode
         self.almostMode=False
-        if self.scanMode=="almostfast":
-            self.almostMode=True
-            self.scanMode="fast"
+        #if self.scanMode=="almostfast":
+        #    self.almostMode=True
+        #    self.scanMode="fast"
         self.AFTER_INJECTION=False
         self.fullmca=thisform["fullmca"]
         if(bend==None):
@@ -515,14 +518,16 @@ class escan_class:
             #k1=sqrt(0.2625*(self.grid[-1][0]-self.kscan_e0))+self.kgrid[1]
             k1=sqrt(0.2625*(self.grid[-1][0]+self.grid[-2][1]-self.kscan_e0))
             self.kscan_e=3.8095238095*arange(k1+self.kgrid[1],self.kgrid[0]+self.kgrid[1],self.kgrid[1])**2+self.kscan_e0
-            #self.kscan_t=(arange(k1+self.kgrid[1],self.kgrid[0]+self.kgrid[1],self.kgrid[1])-k1+1.)**self.kgrid[3]*self.kgrid[2]
             if self.kgrid[4]==0:
                 ck=0.
             else:
                 ck=(self.kgrid[3]-self.kgrid[2])/((self.kgrid[0]+self.kgrid[1])**self.kgrid[4]-(k1+self.kgrid[1])**self.kgrid[4])
-            self.kscan_t=self.kgrid[2]+\
-            +ck*(arange(k1+self.kgrid[1],self.kgrid[0]+self.kgrid[1],self.kgrid[1])**self.kgrid[4]-k1**self.kgrid[4])
-            #Calculate kscan iterators
+            if self.scanMode == "fast":
+                self.kscan_t = numpy.ones(len(self.kscan_e)) * 0.2
+            else:
+                self.kscan_t=self.kgrid[2]+\
+                +ck*(arange(k1+self.kgrid[1],self.kgrid[0]+self.kgrid[1],self.kgrid[1])**self.kgrid[4]-k1**self.kgrid[4])
+            # kscan iterators
             kscan_energy=iter(self.kscan_e)
             kscan_time=iter(self.kscan_t)
         ####
@@ -539,14 +544,23 @@ class escan_class:
             if en<=self.grid[-1][0]:
                 if(ni+2<len(self.grid)):
                     en+=self.grid[ni][1]
-                    tmeasure=float(self.grid[ni][2])
+                    if self.scanMode == "fast":
+                        tmeasure = 0.2
+                    else:
+                        tmeasure=float(self.grid[ni][2])
                     if(en>=self.grid[ni+1][0]): 
                         en=self.grid[ni+1][0]
-                        tmeasure=float(self.grid[ni+1][2])
+                        if self.scanMode == "fast":
+                            tmeasure = 0.2
+                        else:
+                            tmeasure=float(self.grid[ni+1][2])
                         ni+=1
                 elif(ni+2==len(self.grid)):
                     en+=self.grid[ni][1]
-                    tmeasure=float(self.grid[ni][2])
+                    if self.scanMode == "fast":
+                        tmeasure = 0.2
+                    else:
+                        tmeasure=float(self.grid[ni][2])
                 self.trajectory["energy"].append(en)
                 self.trajectory["time"].append(tmeasure)
             elif self.kscan:
@@ -562,7 +576,7 @@ class escan_class:
         IntegrationTime=sum(self.trajectory["time"])
         MovingTime=self.scanNumberOfPoints*0.75
         print "---------------------------------------------"
-        print "Extimated Scan Time: please, consider only the moving time in fast mode."
+        #print "Extimated Scan Time: please, consider only the moving time in fast mode."
         print "Following values are calculated for ONE scan."
         print "---------------------------------------------"
         print "Extimated Moving time (minutes):",MovingTime/60.
@@ -1424,17 +1438,11 @@ class escan_class:
                             raise tmp
                         except:
                             print "Exception when moving RS2"
-                    if self.scanMode == "fast":
-                        if self.almostMode:
-                            self.cpt.start(tmeasure)
-                        else:
-                            self.cpt.start(10)
-                    #Let's move..."
-                    #if self.notz2:
-                    #    self.dcm.disable_tz2()
-                    #actual = self.dcm.go(en, Ts2_Moves = self.Ts2_Moves, Tz2_Moves = not(self.notz2))
-                    #wait_motor([self.dcm,] + motors_to_wait, verbose=False)  #[self.dcm, self.dcm.m_rs2, self.dcm.m_rx2fine])
-                    #actual = self.dcm.pos()
+                    #if self.scanMode == "fast":
+                    #    if self.almostMode:
+                    #        self.cpt.start(tmeasure)
+                    #    else:
+                    #        self.cpt.start(10)
                     actual = self.dcm.pos(en, Ts2_Moves = self.Ts2_Moves, Tz2_Moves = not(self.notz2))
                     if motors_to_wait <>[]:
                         wait_motor(motors_to_wait, verbose=False)
@@ -1458,18 +1466,7 @@ class escan_class:
                     ##Counting section: different strategies depending on mode
                     ##
                     #tc=time()
-                    if self.scanMode == "step":
-                        cnts = array(self.cpt.count(tmeasure),dtype=float32)
-                        #cnts[self.timer_channel] = cnts[self.timer_channel]/999984.
-                    elif self.scanMode=="fast":
-                        if self.almostMode:
-                            self.cpt.wait()
-                        else:
-                            self.cpt.stop()
-                        cnts=array(self.cpt.read(),dtype=float32)
-                        #cnts[self.timer_channel]=cnts[self.timer_channel]/999984.
-                    #
-                    #Be careful to convert in float... mind the last dot!
+                    cnts = array(self.cpt.count(tmeasure),dtype=float32)
                     #
                     #Counting now is finished: last corrections common to all modes follow
                     #
