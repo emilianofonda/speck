@@ -65,7 +65,7 @@ class counter:
             _l_att=self.DP.get_attribute_list()
             nc=0
             for i in _l_att:
-                if i.startswith("counter"):
+                if i.startswith("counter") and i[-1] in ["0","1","2","3","4","5","6","7"]:
                     nc+=1
             #reset user_readconfig and reread it from device
             self.user_readconfig=[]

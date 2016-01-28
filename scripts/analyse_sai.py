@@ -6,7 +6,7 @@ sai = DeviceProxy("d09-1-c00/ca/sai.1")
 def make_fft(buffer, sampling,integration_time):
     """sampling in Hz, integration time in seconds"""
     it = integration_time *1000.
-    f = fft.fftfreq(100000,1/10000.)
+    f = fft.fftfreq(len(buffer),1./sampling)
     ft = fft.fft(buffer)
     ft_module = sqrt(ft.imag **2 + ft.real **2)
     return f, ft_module, ft.imag, ft.real 
@@ -25,7 +25,7 @@ def load_sai_channel(name,branch="root.entry.scan_data.channel",channel=0, dataI
     sai.close()
     return dd
 
-def makeFTfigure(filename, sampling, integration_time, figN=1, channel=0, branch="root.entry.scan_data.channel", fmax=500,ymax=1000.):
+def makeFTfigure(filename, sampling, integration_time, figN=1, channel=0, branch="root.entry.scan_data.channel", fmax=500,ymax=None):
     figure(figN)
     figure(figN).clear()
     data = load_sai_channel(filename,branch,channel)
@@ -36,8 +36,8 @@ def makeFTfigure(filename, sampling, integration_time, figN=1, channel=0, branch
         plot_fft(ftdata[0], ftdata[1] + yoff)
         yoff += max(ftdata[1][1:-1])*0.04
     title(filename)
-    xlim(xmax = fmax/10)
-    ylim(ymax = ymax)
+    xlim(xmax = fmax/5)
+    if ymax <> None: ylim(ymax = ymax)
     xlabel("Hz")
     ylabel("I0 FFT modulus")
     grid()
@@ -57,7 +57,7 @@ def makeFTfigure(filename, sampling, integration_time, figN=1, channel=0, branch
     savefig(filename+".png")
     return
 
-def compareFTfigure(fileList, sampling, integration_time, figN=1, channel=0, branch="root.entry.scan_data.channel", fmax=500,ymax=1000.):
+def compareFTfigure(fileList, sampling, integration_time, figN=1, channel=0, branch="root.entry.scan_data.channel", fmax=500,ymax=None):
     figure(figN)
     figure(figN).clear()
     for filename in fileList:
@@ -70,8 +70,8 @@ def compareFTfigure(fileList, sampling, integration_time, figN=1, channel=0, bra
         ftdata=array(ftdata)
         ftdata = mean(ftdata, axis=0)
         plot_fft(ftdata[0], ftdata[1], label= filename)
-        xlim(xmax = fmax/10)
-        ylim(ymax = ymax)
+        xlim(xmax = fmax/5)
+        if ymax <> None: ylim(ymax = ymax)
         xlabel("Hz")
         ylabel("I0 FFT modulus")
         grid()

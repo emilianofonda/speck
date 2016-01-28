@@ -2,7 +2,8 @@
 
 #Imports section
 from IPython.core.ipapi import get as get_ipython
-
+from numpy import log, sin, cos, tan, exp, sum
+import numpy
 import exceptions
 from time import time, sleep
 import os
@@ -279,7 +280,12 @@ def mvr(*args):
 def Iref(x):
     "WARNING: expert command! --> execute initialize reference position."
     try:
-        x.InitializeReferencePosition()
+        if "InitializeReferencePosition" in dir(x) or "InitializeReferencePosition" in x.device_command_list:
+            x.InitializeReferencePosition()
+        elif "InitReferencePosition" in x.device_command_list:
+            x.InitReferencePosition()
+        else:
+             print Exception("Cannot Execute Initialize Reference Position on motor")
     except:
         print "Cannot Execute Initialize Reference Position on motor"
     sleep(0.2)
@@ -612,7 +618,7 @@ def dark(dt=10):
     return
 
 class pseudo_counter:
-    def __init__(self,masters=[],slaves=[],slaves2arm=[],slaves2arm2stop=[],deadtime=0.,timeout=1):
+    def __init__(self,masters=[],slaves=[],slaves2arm=[],slaves2arm2stop=[],posts=[],deadtime=0.,timeout=1):
         """masters are started and waited (all). slaves are only read. 
         slaves2arm are armed before masters with a start command.
         slaves2arm2stop are armed with a stop before masters,
@@ -627,6 +633,11 @@ class pseudo_counter:
         self.user_readconfig that is a list containing attribute information for all read values in TANGO format:
             (class PyTango.AttributeInfoEx)
         Only self.read functions returning 1D lists are accepted.
+        
+        posts are used in place of tango parsers:
+        formulas are based on ch[number of channel] values and diplayed at the end as additional channels;
+        posts cannot calculate over other posts.
+        posts=[{"name":"Delta","formula":"ch[1]-ch[2]","format":"%6.3f","units"}]
         """
         self.masters=masters
         self.slaves=slaves
@@ -647,6 +658,15 @@ class pseudo_counter:
                 self.clock_channel = i.clock_channel + n
             n += len(i.user_readconfig)
         self.dark = self.readDark()
+        self.posts = []
+        for i in posts:
+            if not "name" in i.keys() or not "formula" in i.keys():
+                raise Exception("Missing parameters in posts definition, check config.")
+            if not "units" in i.keys():
+                i["units"]=""
+            if not "format" in i.keys():
+                i["format"]="%9g"
+            self.posts.append(i)
         return
 
     def reinit(self):
@@ -664,7 +684,7 @@ class pseudo_counter:
 
     def __call__(self,dt=1):
         tmp = self.count(dt)
-        ltmp = len(tmp)
+        ltmp = len(tmp)-len(self.posts)
         s = ""
         l = 3
         for i in range(0,ltmp,l):
@@ -674,6 +694,14 @@ class pseudo_counter:
                     s += BOLD + "%03i " % (i + j) + RED + "% -10s" % self.user_readconfig[i+j].label + ":" + RESET\
                     + "%9s" % (self.user_readconfig[i+j].format % (tmp[i+j]))+" % -6s " % self.user_readconfig[i+j].unit + " "
         print s
+        print "User Defined Post Calculations:"
+        nchan = ltmp
+        for i in self.posts:
+            try:
+                print BOLD + "%03i " % (nchan) + RED + "% -10s" % i["name"] + ":" + RESET + i["format"] % tmp[nchan] + i["units"]
+            except Exception, CatchedExc:
+                print CatchedExc
+            nchan = nchan + 1
         return
 
     def state(self):
@@ -780,7 +808,16 @@ class pseudo_counter:
             counts += i.read()
         if len(counts) <> len(self.user_readconfig):
             self.reinit()
-        return counts
+        #Use counts for calculating posts (duplicate values for security of original counts)
+        ch = [] + counts
+        cposts = []
+        for i in self.posts:
+            try:
+                cposts.append(eval(i["formula"]))
+            except Exception, catchExc:
+                cposts.append(numpy.nan)
+                print catchExc,":",i["name"], "=", i["formula"]
+        return counts + cposts
 
     def read_mca(self):
         """read all mca units in self.mca_units.

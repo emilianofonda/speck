@@ -52,22 +52,22 @@ try:
     ["channel05",    "mca_05",    "%9d",    "cts"],
     ["channel06",    "mca_06",    "%9d",    "cts"],
     ["channel07",    "mca_07",    "%9d",    "cts"],    
-    ["outputCountRate00",    "ocr_00",    "%9d",    "cts"],
-    ["outputCountRate01",    "ocr_01",    "%9d",    "cts"],
-    ["outputCountRate02",    "ocr_02",    "%9d",    "cts"],
-    ["outputCountRate03",    "ocr_03",    "%9d",    "cts"],
-    ["outputCountRate04",    "ocr_04",    "%9d",    "cts"],
-    ["outputCountRate05",    "ocr_05",    "%9d",    "cts"],
-    ["outputCountRate06",    "ocr_06",    "%9d",    "cts"],
-    ["outputCountRate07",    "ocr_07",    "%9d",    "cts"],
-    ["inputCountRate00",    "icr_00",    "%9d",    "cts"],
-    ["inputCountRate01",    "icr_01",    "%9d",    "cts"],
-    ["inputCountRate02",    "icr_02",    "%9d",    "cts"],
-    ["inputCountRate03",    "icr_03",    "%9d",    "cts"],
-    ["inputCountRate04",    "icr_04",    "%9d",    "cts"],
-    ["inputCountRate05",    "icr_05",    "%9d",    "cts"],
-    ["inputCountRate06",    "icr_06",    "%9d",    "cts"],
-    ["inputCountRate07",    "icr_07",    "%9d",    "cts"]]
+    ["outputCountRate00",    "ocr_00",    "%9d",    "cps"],
+    ["outputCountRate01",    "ocr_01",    "%9d",    "cps"],
+    ["outputCountRate02",    "ocr_02",    "%9d",    "cps"],
+    ["outputCountRate03",    "ocr_03",    "%9d",    "cps"],
+    ["outputCountRate04",    "ocr_04",    "%9d",    "cps"],
+    ["outputCountRate05",    "ocr_05",    "%9d",    "cps"],
+    ["outputCountRate06",    "ocr_06",    "%9d",    "cps"],
+    ["outputCountRate07",    "ocr_07",    "%9d",    "cps"],
+    ["inputCountRate00",    "icr_00",    "%9d",    "cps"],
+    ["inputCountRate01",    "icr_01",    "%9d",    "cps"],
+    ["inputCountRate02",    "icr_02",    "%9d",    "cps"],
+    ["inputCountRate03",    "icr_03",    "%9d",    "cps"],
+    ["inputCountRate04",    "icr_04",    "%9d",    "cps"],
+    ["inputCountRate05",    "icr_05",    "%9d",    "cps"],
+    ["inputCountRate06",    "icr_06",    "%9d",    "cps"],
+    ["inputCountRate07",    "icr_07",    "%9d",    "cps"]]
     user_readconfig1=[
     ["channel00",    "mca_00",    "%9d",    "cts"],
     ["channel01",    "mca_01",    "%9d",    "cts"],
@@ -109,46 +109,46 @@ try:
     ["roi17_01",    "roi_17_1",    "%9d",    "cts"],
     ["roi18_01",    "roi_18_1",    "%9d",    "cts"],
     ["roi19_01",    "roi_19_1",    "%9d",    "cts"],
-    ["outputCountRate00",    "ocr_00",    "%9d",    "cts"],
-    ["outputCountRate01",    "ocr_01",    "%9d",    "cts"],
-    ["outputCountRate02",    "ocr_02",    "%9d",    "cts"],
-    ["outputCountRate03",    "ocr_03",    "%9d",    "cts"],
-    ["outputCountRate04",    "ocr_04",    "%9d",    "cts"],
-    ["outputCountRate05",    "ocr_05",    "%9d",    "cts"],
-    ["outputCountRate06",    "ocr_06",    "%9d",    "cts"],
-    ["outputCountRate07",    "ocr_07",    "%9d",    "cts"],
-    ["outputCountRate08",    "ocr_08",    "%9d",    "cts"],
-    ["outputCountRate09",    "ocr_09",    "%9d",    "cts"],
-    ["outputCountRate10",    "ocr_10",    "%9d",    "cts"],
-    ["outputCountRate11",    "ocr_11",    "%9d",    "cts"],
-    ["outputCountRate12",    "ocr_12",    "%9d",    "cts"],
-    ["outputCountRate13",    "ocr_13",    "%9d",    "cts"],
-    ["outputCountRate14",    "ocr_14",    "%9d",    "cts"],
-    ["outputCountRate15",    "ocr_15",    "%9d",    "cts"],
-    ["outputCountRate16",    "ocr_16",    "%9d",    "cts"],
-    ["outputCountRate17",    "ocr_17",    "%9d",    "cts"],
-    ["outputCountRate18",    "ocr_18",    "%9d",    "cts"],
-    ["outputCountRate19",    "ocr_19",    "%9d",    "cts"],
-    ["inputCountRate00",    "icr_00",    "%9d",    "cts"],
-    ["inputCountRate01",    "icr_01",    "%9d",    "cts"],
-    ["inputCountRate02",    "icr_02",    "%9d",    "cts"],
-    ["inputCountRate03",    "icr_03",    "%9d",    "cts"],
-    ["inputCountRate04",    "icr_04",    "%9d",    "cts"],
-    ["inputCountRate05",    "icr_05",    "%9d",    "cts"],
-    ["inputCountRate06",    "icr_06",    "%9d",    "cts"],
-    ["inputCountRate07",    "icr_07",    "%9d",    "cts"],
-    ["inputCountRate08",    "icr_08",    "%9d",    "cts"],
-    ["inputCountRate09",    "icr_09",    "%9d",    "cts"],
-    ["inputCountRate10",    "icr_10",    "%9d",    "cts"],
-    ["inputCountRate11",    "icr_11",    "%9d",    "cts"],
-    ["inputCountRate12",    "icr_12",    "%9d",    "cts"],
-    ["inputCountRate13",    "icr_13",    "%9d",    "cts"],
-    ["inputCountRate14",    "icr_14",    "%9d",    "cts"],
-    ["inputCountRate15",    "icr_15",    "%9d",    "cts"],
-    ["inputCountRate16",    "icr_16",    "%9d",    "cts"],
-    ["inputCountRate17",    "icr_17",    "%9d",    "cts"],
-    ["inputCountRate18",    "icr_18",    "%9d",    "cts"],
-    ["inputCountRate19",    "icr_19",    "%9d",    "cts"]]
+    ["outputCountRate00",    "ocr_00",    "%9d",    "cps"],
+    ["outputCountRate01",    "ocr_01",    "%9d",    "cps"],
+    ["outputCountRate02",    "ocr_02",    "%9d",    "cps"],
+    ["outputCountRate03",    "ocr_03",    "%9d",    "cps"],
+    ["outputCountRate04",    "ocr_04",    "%9d",    "cps"],
+    ["outputCountRate05",    "ocr_05",    "%9d",    "cps"],
+    ["outputCountRate06",    "ocr_06",    "%9d",    "cps"],
+    ["outputCountRate07",    "ocr_07",    "%9d",    "cps"],
+    ["outputCountRate08",    "ocr_08",    "%9d",    "cps"],
+    ["outputCountRate09",    "ocr_09",    "%9d",    "cps"],
+    ["outputCountRate10",    "ocr_10",    "%9d",    "cps"],
+    ["outputCountRate11",    "ocr_11",    "%9d",    "cps"],
+    ["outputCountRate12",    "ocr_12",    "%9d",    "cps"],
+    ["outputCountRate13",    "ocr_13",    "%9d",    "cps"],
+    ["outputCountRate14",    "ocr_14",    "%9d",    "cps"],
+    ["outputCountRate15",    "ocr_15",    "%9d",    "cps"],
+    ["outputCountRate16",    "ocr_16",    "%9d",    "cps"],
+    ["outputCountRate17",    "ocr_17",    "%9d",    "cps"],
+    ["outputCountRate18",    "ocr_18",    "%9d",    "cps"],
+    ["outputCountRate19",    "ocr_19",    "%9d",    "cps"],
+    ["inputCountRate00",    "icr_00",    "%9d",    "cps"],
+    ["inputCountRate01",    "icr_01",    "%9d",    "cps"],
+    ["inputCountRate02",    "icr_02",    "%9d",    "cps"],
+    ["inputCountRate03",    "icr_03",    "%9d",    "cps"],
+    ["inputCountRate04",    "icr_04",    "%9d",    "cps"],
+    ["inputCountRate05",    "icr_05",    "%9d",    "cps"],
+    ["inputCountRate06",    "icr_06",    "%9d",    "cps"],
+    ["inputCountRate07",    "icr_07",    "%9d",    "cps"],
+    ["inputCountRate08",    "icr_08",    "%9d",    "cps"],
+    ["inputCountRate09",    "icr_09",    "%9d",    "cps"],
+    ["inputCountRate10",    "icr_10",    "%9d",    "cps"],
+    ["inputCountRate11",    "icr_11",    "%9d",    "cps"],
+    ["inputCountRate12",    "icr_12",    "%9d",    "cps"],
+    ["inputCountRate13",    "icr_13",    "%9d",    "cps"],
+    ["inputCountRate14",    "icr_14",    "%9d",    "cps"],
+    ["inputCountRate15",    "icr_15",    "%9d",    "cps"],
+    ["inputCountRate16",    "icr_16",    "%9d",    "cps"],
+    ["inputCountRate17",    "icr_17",    "%9d",    "cps"],
+    ["inputCountRate18",    "icr_18",    "%9d",    "cps"],
+    ["inputCountRate19",    "icr_19",    "%9d",    "cps"]]
     user_readconfig2=[
     ["channel00",    "mca_20",    "%9d",    "cts"],
     ["channel01",    "mca_21",    "%9d",    "cts"],
@@ -182,38 +182,38 @@ try:
     ["roi13_01",    "roi_33_1",    "%9d",    "cts"],
     ["roi14_01",    "roi_34_1",    "%9d",    "cts"],
     ["roi15_01",    "roi_35_1",    "%9d",    "cts"],
-    ["outputCountRate00",    "ocr_20",    "%9d",    "cts"],
-    ["outputCountRate01",    "ocr_21",    "%9d",    "cts"],
-    ["outputCountRate02",    "ocr_22",    "%9d",    "cts"],
-    ["outputCountRate03",    "ocr_23",    "%9d",    "cts"],
-    ["outputCountRate04",    "ocr_24",    "%9d",    "cts"],
-    ["outputCountRate05",    "ocr_25",    "%9d",    "cts"],
-    ["outputCountRate06",    "ocr_26",    "%9d",    "cts"],
-    ["outputCountRate07",    "ocr_27",    "%9d",    "cts"],
-    ["outputCountRate08",    "ocr_28",    "%9d",    "cts"],
-    ["outputCountRate09",    "ocr_29",    "%9d",    "cts"],
-    ["outputCountRate10",    "ocr_30",    "%9d",    "cts"],
-    ["outputCountRate11",    "ocr_31",    "%9d",    "cts"],
-    ["outputCountRate12",    "ocr_32",    "%9d",    "cts"],
-    ["outputCountRate13",    "ocr_33",    "%9d",    "cts"],
-    ["outputCountRate14",    "ocr_34",    "%9d",    "cts"],
-    ["outputCountRate15",    "ocr_35",    "%9d",    "cts"],
-    ["inputCountRate00",    "icr_20",    "%9d",    "cts"],
-    ["inputCountRate01",    "icr_21",    "%9d",    "cts"],
-    ["inputCountRate02",    "icr_22",    "%9d",    "cts"],
-    ["inputCountRate03",    "icr_23",    "%9d",    "cts"],
-    ["inputCountRate04",    "icr_24",    "%9d",    "cts"],
-    ["inputCountRate05",    "icr_25",    "%9d",    "cts"],
-    ["inputCountRate06",    "icr_26",    "%9d",    "cts"],
-    ["inputCountRate07",    "icr_27",    "%9d",    "cts"],
-    ["inputCountRate08",    "icr_28",    "%9d",    "cts"],
-    ["inputCountRate09",    "icr_29",    "%9d",    "cts"],
-    ["inputCountRate10",    "icr_30",    "%9d",    "cts"],
-    ["inputCountRate11",    "icr_31",    "%9d",    "cts"],
-    ["inputCountRate12",    "icr_32",    "%9d",    "cts"],
-    ["inputCountRate13",    "icr_33",    "%9d",    "cts"],
-    ["inputCountRate14",    "icr_34",    "%9d",    "cts"],
-    ["inputCountRate15",    "icr_35",    "%9d",    "cts"]
+    ["outputCountRate00",   "ocr_20",    "%9d",    "cps"],
+    ["outputCountRate01",   "ocr_21",    "%9d",    "cps"],
+    ["outputCountRate02",   "ocr_22",    "%9d",    "cps"],
+    ["outputCountRate03",   "ocr_23",    "%9d",    "cps"],
+    ["outputCountRate04",   "ocr_24",    "%9d",    "cps"],
+    ["outputCountRate05",   "ocr_25",    "%9d",    "cps"],
+    ["outputCountRate06",   "ocr_26",    "%9d",    "cps"],
+    ["outputCountRate07",   "ocr_27",    "%9d",    "cps"],
+    ["outputCountRate08",   "ocr_28",    "%9d",    "cps"],
+    ["outputCountRate09",   "ocr_29",    "%9d",    "cps"],
+    ["outputCountRate10",   "ocr_30",    "%9d",    "cps"],
+    ["outputCountRate11",   "ocr_31",    "%9d",    "cps"],
+    ["outputCountRate12",   "ocr_32",    "%9d",    "cps"],
+    ["outputCountRate13",   "ocr_33",    "%9d",    "cps"],
+    ["outputCountRate14",   "ocr_34",    "%9d",    "cps"],
+    ["outputCountRate15",   "ocr_35",    "%9d",    "cps"],
+    ["inputCountRate00",    "icr_20",    "%9d",    "cps"],
+    ["inputCountRate01",    "icr_21",    "%9d",    "cps"],
+    ["inputCountRate02",    "icr_22",    "%9d",    "cps"],
+    ["inputCountRate03",    "icr_23",    "%9d",    "cps"],
+    ["inputCountRate04",    "icr_24",    "%9d",    "cps"],
+    ["inputCountRate05",    "icr_25",    "%9d",    "cps"],
+    ["inputCountRate06",    "icr_26",    "%9d",    "cps"],
+    ["inputCountRate07",    "icr_27",    "%9d",    "cps"],
+    ["inputCountRate08",    "icr_28",    "%9d",    "cps"],
+    ["inputCountRate09",    "icr_29",    "%9d",    "cps"],
+    ["inputCountRate10",    "icr_30",    "%9d",    "cps"],
+    ["inputCountRate11",    "icr_31",    "%9d",    "cps"],
+    ["inputCountRate12",    "icr_32",    "%9d",    "cps"],
+    ["inputCountRate13",    "icr_33",    "%9d",    "cps"],
+    ["inputCountRate14",    "icr_34",    "%9d",    "cps"],
+    ["inputCountRate15",    "icr_35",    "%9d",    "cps"]
     ]
     mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig1)
     mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",user_readconfig=user_readconfig2)
@@ -228,35 +228,19 @@ except Exception, tmp:
     print "Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.1"
     print "Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.2"
 
-try:
-    from simple_camera import camera
-    kam = camera("d09-1-cx1/dt/vg2-basler")
-except Exception, tmp:
-    print "Cannot Define kam as a camera: from class simple_camera"
-    raise tmp
     
-#try:
-#    from sensor_group import sensor_group
-#    mux=sensor("d09-1-c00/ex/tangoparser.1","mux")
-#    mus=sensor("d09-1-c00/ex/tangoparser.1","mus")
-#    MUXES=sensor_group([["d09-1-c00/ex/tangoparser.1",["mux","mus","muf"]],])
-#    MUXES=sensor_group([["d09-1-c00/ex/tangoparser.1",["mux","mus","muf","muPL"]],])
-#    cam2_intensity = sensor_group([["d09-1-c04/dt/vg1.1-analyzer", ["MeanIntensity",]],])
-#    KamRoi = sensor_group([["d09-1-cx1/dt/vg2-basler-roicounters",["sum0","sum1"]],])
-#except Exception, tmp:
-#    print tmp
-#    print "Cannot define mux and mus on TangoParser"
-#    atk(mux)
-
 #ct
 try:
-    cpt=pseudo_counter(masters=[cpt0,],slaves=[])
-    ct=pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[])
-    #cpt=pseudo_counter(masters=[cpt0,],slaves=[MUXES,])
-    #ct=pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[MUXES,])
-    #ct=pseudo_counter(masters=[cpt0, kam],slaves2arm2stop=[mca1,mca2],slaves=[MUXES,KamRoi])
-    #cpt=pseudo_counter(masters=[cpt0,],slaves=[,])
-    #ct=pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[])
+    cpt = pseudo_counter(masters=[cpt0,],slaves=[])
+
+    ctPosts=[
+    {"name":"MUX","formula":"log(float(ch[0])/ch[1])","units":"","format":"%9.7f"},
+    {"name":"MUS","formula":"log(float(ch[1])/ch[2])","units":"","format":"%9.7f"},
+    {"name":"MUF","formula":"float(sum(ch[7:26] + ch[67:82]))/ch[0]","units":"","format":"%9.7e"},
+    {"name":"DeadTime","formula":"100.-100.* numpy.average(numpy.array(ch[48:66] + ch[99:114],'f') / numpy.array(ch[28:46] + ch[83:98],'f'))",
+    "units":"%","format":"%6.4f"},
+    ]
+    ct = pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[], posts= ctPosts)
 except Exception, tmp:
     print "Failure defining ct "
     print "Defaulting to cpt... ct=cpt... "
@@ -305,7 +289,8 @@ try:
     print "MOSTAB unit :",
     mostab=MOSTAB("d09-1-cx1/ca/mca_rontec_rs232_8.5",init_file = __IP.user_ns["__pySamba_root"] + "/config/mostab.cfg")
     def itune(*args,**kwargs):
-        opr = 3.56/(0.10 * dcm.pos() * 1e-3 - 0.16) * 0.9
+        #Multipiled by 4 on 18/11/2015
+        opr = 3.56/(0.10 * dcm.pos() * 1e-3 - 0.16) * 0.9 *4
         if "oprange" in kwargs.keys():
             return mostab.tune(*args,**kwargs)
         else:
@@ -364,12 +349,21 @@ for i in __tmp:
 
 #Normal moveables (missing special options)
 __tmp={
-"T_dcm_set": ["d09-1-c03/op/bath.1","temperatureSetPoint"],
+#"T_dcm_set": ["d09-1-c03/op/bath.1","temperatureSetPoint"],
 "po1"        :["d09-1-c02/ex/po.1-mt.1","position","delay=1.","timeout=3."],
 "po2"        :["d09-1-c06/ex/po.1-mt_tz.1","position","delay=1.","timeout=3."],
 "po3"        :["d09-1-cx1/ex/po.1-mt_tz.1","position","delay=1.","timeout=3."],
 "po4"        :["d09-1-c07/ex/po.1-mt_tz.1","position"],
-"po5"        :["d09-1-cx2/ex/po.1-mt_tz.1","position"],
+"po5"        :["d09-1-cx2/ex/po.1-mt_tz.1","position"],\
+#PBR BEGINS
+#"pbrRZ2"      :["DT/TEST_DEVICE/Axis1_Rz2","position"],
+#"pbrTS2"      :["DT/TEST_DEVICE/Axis2_TS2","position"],
+#"pbrTZ2"      :["DT/TEST_DEVICE/Axis3_TZ2","position"],
+#"pbrRX1"      :["DT/TEST_DEVICE/Axis4_RX1","position"],
+#"pbrC1"       :["DT/TEST_DEVICE/Axis5_C1","position"],
+#"pbrC2"       :["DT/TEST_DEVICE/Axis6_C2","position"],
+#"pbrRS2"      :["DT/TEST_DEVICE/Axis8_RS2","position"],
+#PBR END
 "bender_c1"    :["d09-1-c03/op/mono1-mt_c.1","position"],
 "bender_c2"    :["d09-1-c03/op/mono1-mt_c.2","position"],
 "sample_x"    :["d09-1-cx1/ex/tab-mt_tx.1","position"],
@@ -382,7 +376,7 @@ __tmp={
 "fluo_s"    :["d09-1-cx1/dt/dtc_ge.1-mt_ts.1","position"],
 "fluo_z"    :["d09-1-cx1/dt/dtc_ge.1-mt_tz.1","position"],
 "raman_x"    :["d09-1-cx1/ex/raman-tx.1","position"],
-"raman_z"    :["d09-1-cx1/ex/raman-tz.1","position"],
+"z2"    :["d09-1-cx1/ex/raman-tz.1","position"],
 "filter"    :["d09-1-cx1/ex/pfi.1-mt_rs.1","position"],
 "sx"        :["d09-1-cx2/ex/sex-mt_tx.1","position"],
 "sy"        :["d09-1-cx2/ex/sex-mt_ty.1","position"],
@@ -478,7 +472,7 @@ __tmp={
 "pi5_1"        :["d09-1-c05/vi/pi.1","pressure"],
 "pi6_1"        :["d09-1-c06/vi/pi.1","pressure"],
 "pi6_2"        :["d09-1-c06/vi/pi.2","pressure"],
-"T_dcm"        :["d09-1-c03/op/bath.1","temperature"],
+#"T_dcm"        :["d09-1-c03/op/bath.1","temperature"],
 #"cryo4temp1" :["d09-1-cx1/ex/cryo4.1-ctrl","temperature1"],
 #"cryo4temp2" :["d09-1-cx1/ex/cryo4.1-ctrl","temperature2"],
 }                                                
@@ -611,16 +605,16 @@ try:
 
     #Si220
     #Bender (steps versus 1/R)    
-    A1_1 = 493185. #501530. #481888.35048462    #493068. #488717.
-    A0_1 = 94558. #90173.9 #91054.1663915865   #99208. #101943. 
-    A1_2 = 503208.#492346. #493502.288067641   #487333. #492917.
-    A0_2 = 99103. #112661. #111904.850053559   #107675. #104935.
+    A1_1 = 499995. #501530. #481888.35048462    #493068. #488717.
+    A0_1 = 92538. #90173.9 #91054.1663915865   #99208. #101943. 
+    A1_2 = 501407.#492346. #493502.288067641   #487333. #492917.
+    A0_2 = 129223. #112661. #111904.850053559   #107675. #104935.
     #Rz2 ()
     Rz2_par = [-16095, -95.087]#[-17703.5, 138.964, -4.18379]  
     #Rs2 ()
     Rs2_par = [-1050.,]#[-1343.,]
     #Rx2 ()
-    Rx2_par = [-10401., 1334.7, -2304.7] #[-12985.6,]#[-7504.85, 727.716, -1756.17]
+    Rx2_par = [-10401.+3000, 1334.7, -2304.7] #[-12985.6,]#[-7504.85, 727.716, -1756.17]
 
     #Si111   
     #A1_1= 561133.0   #545784.
@@ -634,10 +628,19 @@ try:
     #Rx2
     #Rx2_par=[-13204.] #Rx2_par=[-17150.,]
     
+    #Galil Version
     bender=sagittal_bender(bender1_name="d09-1-c03/op/mono1-mt_c.1",bender2_name="d09-1-c03/op/mono1-mt_c.2",\
     controlbox_rawdata1="d09-1-c00/ca/bai.1121-mos.1-cb-rawdata",controlbox_rawdata2="d09-1-c00/ca/bai.1121-mos.1-cb-rawdata.2",\
     axis1=6,axis2=7,\
     A1_1=A1_1,A0_1=A0_1,A1_2=A1_2,A0_2=A0_2)
+
+    #PowerBrick Version
+    #overwrite bender sagittal_definition
+    #from mono1PBR import sagittal_bender
+    #bender = sagittal_bender(bender1_name = "DT/TEST_DEVICE/Axis5_C1", bender2_name = "DT/TEST_DEVICE/Axis6_C2",\
+    #A1_1 = A1_1, A0_1 = A0_1, A1_2 = A1_2, A0_2 = A0_2)
+    #bender.timeout=0
+    #bender.deadtime=0.01
     
     #When you want to set no bender
     #bender=None
@@ -661,25 +664,41 @@ try:
     #dcm=mono1(d=d,H=25.0,mono_name="d09-1-c03/op/mono1",
     #rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=i200,rz2=rz2, tz1=tz1, bender=bender,
     #sourceDistance=16.119,delay=0.3,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
-    #WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=40000.)
+    #WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4750.,emax=40000.)
 
     #dcm=mono1(d=d,H=26.0,mono_name="d09-1-c03/op/mono1",
     #rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, tz1=tz1, bender=bender,
     #sourceDistance=16.119,delay=0.3,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
-    #WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=43000.)
-    
+    #WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4750.,emax=43000.)
+
+
+    #Mono Test for Galil  BEGINS
+
     from mono1d import mono1 as monoTest
 
     dcm=monoTest(d=d,H=26.0,mono_name="d09-1-c03/op/mono1",\
     rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, tz1=tz1, bender=bender,\
     sourceDistance=16.119,delay=0.25,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,\
-    WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4500.,emax=43000.)
-	 
-    #Bender disable:
-    #dcm=mono1(d=d,H=25.0,mono_name="d09-1-c03/op/mono1",
-    #rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=None, tz1=tz1, bender=None,
-    #sourceDistance=16.119,delay=0.3,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
-    #WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.})
+    WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.},emin=4750.,emax=43000.)
+	
+    #Mono Test for Galil ENDS
+    
+    ##Bender disable:  activate only if you want to remove the bender
+    ##dcm=mono1(d=d,H=25.0,mono_name="d09-1-c03/op/mono1",
+    ##rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=None, tz1=tz1, bender=None,
+    ##sourceDistance=16.119,delay=0.3,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,
+    ##WhiteBeam={"rx1":0.,"tz2":24.,"tz1":8.})
+    
+    #Mono Test for PowerBrick BEGINS
+    #from mono1PBR import mono1 as monoTest
+
+    #dcm=monoTest(d=d,H=26.0,mono_name="d09-1-c03/op/mono1",\
+    #rx1=pbrRX1,tz2=pbrTZ2,ts2=pbrTS2,rx2=rx2,rs2=pbrRS2,rx2fine=rx2fine,rz2=pbrRZ2, tz1=tz1, bender=bender,\
+    #sourceDistance=16.119,delay=0.,Rz2_par=Rz2_par,Rs2_par=Rs2_par,Rx2_par=Rx2_par,\
+    #emin=4750.,emax=43000.)
+    #dcm.deadtime = 0.02
+    #dcm.timeout = 0.0
+    #Mono Test for PowerBrick ENDS
     
     #Aliases for dcm operation
     energy=dcm
@@ -769,19 +788,6 @@ except Exception, tmp:
 #        INCLUDE SCANS SECTION                                                #
 ######################################################################################
 
-####DEFINE HERE THE DARK VALUES USED BY ESCAN
-#Modified 19/11/2013
-try:
-    USER_DARK_VALUES = {
-    0 : [I0_gain, 0., 0., 0., 0., 0., 0., 78.5],
-#    0 : [I0_gain, 0., 0., 0., 72.1, 73.8, 80.6, 160.2],
-#    0 : [I0_gain, 0., 0., 0., 346.5, 346.9, 352.9, 412.1],
-    1 : [I1_gain, 0., 0., 0., 644.4, 646.6, 654.5, 736.9],
-    2 : [I2_gain, 0., 0., 0., 79.7, 80.6, 87.5, 161.9]
-    }
-except Exception, tmp:
-    print "Error defining dark current values... maybe amplifiers have not been defined..."
-    print tmp
 
 
 ##########################################################################
@@ -947,37 +953,27 @@ def SEXAFS():
 ####
 
 
-#slits=[vgap1,vpos1,hgap1,hpos1,vgap2,vpos2,vgap3,vpos3,hgap3,hpos3,vgap4,vpos4,hgap4,hpos4,vgap5,vpos5,hgap5,hpos5]
-#slits=[vgap1,vpos1,hgap1,hpos1,vgap2,vpos2,vgap3,vpos3,vgap4,vpos4,hgap4,hpos4,vgap5,vpos5,hgap5,hpos5]
 slits=[vgap1,vpos1,hgap1,hpos1,vgap2,vpos2,vgap4,vpos4,hgap4,hpos4,vgap5,vpos5,hgap5,hpos5,vgap6,vpos6,hgap6,hpos6]
 sample=[x, z, phi, theta]
 fluo=[fluo_x, fluo_s, fluo_z]
 sexafs=[sx,sy,sz,sphi]
 optics=[dcm,rx1,rx2,rz2,rx2,rx2fine,tz2,ts2,mir1_pitch,mir1_roll,mir1_z,mir1_c,mir2_pitch,mir2_roll,mir2_z,mir2_c]
 
-##
-#try:
-#    __cryostat__=DeviceProxy("d09-1-cx1/ex/cryo4.1-ctrl")
-#    def set_temp(t=None):
-#        __c=__cryostat__
-#        if t==None:
-#            print "Temperature is :",__c.temperature
-#            print "Set Point is :",__c.temperatureSetPoint
-#            return
-#        __c.temperatureSetPoint=t
-#        sleep(3)
-#        return __c.temperatureSetPoint
-#
-#except:
-#    print "Error defining set_temp"
 
 #Load marccd 
 #instrument("MARCCD")
+
 #Load mar345
 #instrument("MAR345")
+
 #load sai into ct
 #instrument("SAI")
+
 #load cameras into ct
 #instrument("CAMERAS")
+
 #load Eurotherm controllers
 instrument("FORNO")
+
+#Enable setMCAconfig and getMCAconfig
+domacro("changePeakingTime")
