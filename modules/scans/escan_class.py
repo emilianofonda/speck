@@ -1344,8 +1344,8 @@ class escan_class:
             fnameFull = fdir + os.sep + fnameFull
             fname = fdir + os.sep + fname
             dirname = fdir + os.sep + dirname
-            fF = file(fnameFull,"a")
-            f  = file(fname,"a")
+            fullFile = file(fnameFull,"a")
+            shortFile  = file(fname,"a")
             ###################### FULL MCA FILES! #####################################
             self.mca_files={}
             if self.fullmca:
@@ -1357,7 +1357,7 @@ class escan_class:
             ##
             ##Pre scan: get header. The prescan returns the header to be buffered for backup
             ##
-            file_buffer=self.pre_scan(handler=f,handlerFull=fF,nowait=nowait)
+            file_buffer=self.pre_scan(handler=shortFile,handlerFull=fullFile,nowait=nowait)
             ##
             ##
             #thisline="#Energy\tAngle\tmu\tmus\tI0\tI1\tI2\tTEY\tXBPM1\tXBPM2\tRontec_Zero\
@@ -1380,12 +1380,12 @@ class escan_class:
             thisline+="\n"
             #Move line to buffer and then write it to file
             file_buffer.append(thisline)
-            fF.write(thisline)
+            fullFile.write(thisline)
             shortHeader="#Energy\tAngle\tmux\tmuf\tmus"
-            hh = map(lambda i:"muF%02i"%i, range(len(self.cpt.read_mca().keys())) )
-            for H in hh: 
-                shortHeader += "\t" + H
-            f.write("#HEADER\n"+"#"+shortHeader+"\n")
+            #hh = map(lambda i:"muF%02i"%i, range(len(self.cpt.read_mca().keys())) )
+            #for H in hh: 
+            #   shortHeader += "\t" + H
+            shortFile.write("#HEADER\n"+"#"+shortHeader+"\n")
             file_index+=1
             print "Scanning file :",fname
             self.time_spent_for_scan=time()
@@ -1620,8 +1620,8 @@ class escan_class:
                     # Write buffer to disk and reset it
                     #
                     try:
-                        f.write(line_buffer)
-                        f.write(shortLineBuffer)
+                        fullFile.write(line_buffer)
+                        shortFile.write(shortLineBuffer)
                         ###The file buffer is update in case of no failure only to avoid double entries
                         file_buffer.append(line_buffer)
                         ###if there are no errors the line_buffer is reset.
@@ -1637,7 +1637,7 @@ class escan_class:
                     pointIndex += 1
                     try:
                         if waitflush == __FLUSH_TO_DISK_EVERY:
-                            f.flush()
+                            shortFile.flush()
                             waitflush = 0
                         else:
                             waitflush += 1
@@ -1740,9 +1740,9 @@ class escan_class:
                             #Setting to False the TUNING option prevent the after_scan hook
                             #to perform a useless and time consuming scan_tuning
                             self.TUNING=False
-                            self.after_scan(f,fF,nowait,iscan,nscans,file_buffer,fname,fnameFull)
-                            f.close()
-                            fF.close()
+                            self.after_scan(shortFile,fullFile,nowait,iscan,nscans,file_buffer,fname,fnameFull)
+                            shortFile.close()
+                            fullFile.close()
                             print "Scan finished on user request."
                             try:
                                 self.update_grace_windows(iscan)
@@ -1752,7 +1752,7 @@ class escan_class:
                                 self.update_grace_windows(iscan)
                             except:
                                 pass
-                            self.after_run(handler=f, handlerFull=fF,nowait=nowait)
+                            self.after_run(handler=shortFile, handlerFull=fullFile,nowait=nowait)
                             raise tmp
                         if mychoice==2:
                             #Repeat last point... maybe this is idiot
@@ -1789,8 +1789,9 @@ class escan_class:
                         #Setting to False the TUNING option prevent the after_scan hook
                         #to perform a useless and time consuming scan_tuning
                         self.TUNING=False
-                        self.after_scan(f,fF,nowait,iscan,nscans,file_buffer,fname,fnameFull)
-                        f.close()
+                        self.after_scan(shortFile,fullFile,nowait,iscan,nscans,file_buffer,fname,fnameFull)
+                        shortFile.close()
+			fullFile.close()
                         print "Scan finished on user request."
                         raise tmp
                 except PyTango.DevFailed, tmp:
@@ -1801,13 +1802,14 @@ class escan_class:
                     #Setting to False the TUNING option prevent the after_scan hook
                     #to perform a useless and time consuming scan_tuning
                     self.TUNING=False
-                    self.after_scan(f, fF, nowait,iscan,nscans,file_buffer,fname, fnameFull)
-                    f.close()
+                    self.after_scan(shortFile, fullFile, nowait,iscan,nscans,file_buffer,fname, fnameFull)
+                    shortFile.close()
+	            fullFile.close()
                     ##################### CLOSE MCA FILES ##################
                     for mca_channel in self.mca_files.keys():
                         self.mca_files[mca_channel].close()
                     ########################################################
-                    self.after_run(handler=f, handlerFull=fF,nowait=nowait)
+                    self.after_run(handler=shortFile, handlerFull=fullFile,nowait=nowait)
                     raise tmp
             ##
             ##After scan
@@ -1827,11 +1829,11 @@ class escan_class:
             #
             #After scan will close file, no more data written after after_scan!
             #
-            self.after_scan(f, fF, nowait, iscan, nscans, file_buffer, fname,fnameFull)
+            self.after_scan(shortFile, fullFile, nowait, iscan, nscans, file_buffer, fname,fnameFull)
             #
             #the file has been closed in after_scan        
-            #f.close()
-            #
+            #fullFile.close()
+            #shortFile.close()
             file_buffer = []
             print "Scan ",iscan+1,"out of ",nscans," scans finished."
             
@@ -1844,7 +1846,7 @@ class escan_class:
         ##
         ##After run
         ##
-        self.after_run(handler=f,handlerFull=fF, nowait=nowait)
+        self.after_run(handler=shortFile,handlerFull=fullFile, nowait=nowait)
         #Hello world!
         print "Series of scans finished, may the python be with you! :-)"
         return
@@ -1995,6 +1997,7 @@ class escan_class:
                     self.tuning_points[1][-1]=self.dcm.detune(self.detune)
                     print "Detuned of ",self.detune*100,"%"
         #Close file before backup
+        handler.close()
         handlerFull.close()
         #Execute backup
         #thread.start_new_thread(self.backup_data,())

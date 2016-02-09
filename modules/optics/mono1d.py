@@ -268,9 +268,7 @@ class mono1:
         timeout=.05,deadtime=0.03,delay=0.0,sourceDistance=None,counter_label="d09-1-c00/ca/cpt.1",counter_channel=0,\
         Rz2_par=[],Rs2_par=[],Rx2_par=[],
         WhiteBeam={"rx1":None,"tz1":None,"tz2":None},emin=None,emax=None):
-        """Experimental version: should use the galil_axisgroup. 
-        Initialisation is different and everything is modified with respect to mono1.py. Under active test since first half 2009.
-        Change in defaults 2/11/2009: ts2 never moves if you do not ask it explicitly. Use the seten command."""
+        """Experimental version: it uses the galil_axisgroup."""
         self.DP = DeviceProxy(mono_name)
         self.label = mono_name
         self.bender = bender
@@ -323,7 +321,7 @@ class mono1:
         if self.DP.get_property("SPECK_UseLocalTable")["SPECK_UseLocalTable"] ==[]:
             self.DP.put_property({"SPECK_UseLocalTable": False})
         if self.DP.get_property("SPECK_LocalTable")["SPECK_LocalTable"] == []:
-            self.DP.put_property({"SPECK_LocalTable": [0,"Energy","C1","C2","RS2","RX2FINE"]})
+            self.DP.put_property({"SPECK_LocalTable": ["SampleAt",13.95,0,"Energy","C1","C2","RS2","RX2FINE"]})
             self.DP.put_property({"SPECK_UseLocalTable": False})
         print "\nmono1d: Reading LocalTable from database...",
         self.readTable()
@@ -362,6 +360,8 @@ class mono1:
         """This function reads the table from the database and prepare the spline for interpolation.
         ADVANCED FEATURE: this function is for the code internal use only. """
         lt = self.DP.get_property("SPECK_LocalTable")["SPECK_LocalTable"]
+	self.LocalTable = {"SampleAt" :float(lt[1])}
+	lt = lt[2:]
         ult = self.DP.get_property("SPECK_UseLocalTable")["SPECK_UseLocalTable"]
         if ult == []:
             self.useLocalTable = False
@@ -372,7 +372,7 @@ class mono1:
         else:
             self.useLocalTable = False
         np = int(lt[0])
-        self.LocalTable = {"Points":int(lt[0])}
+        self.LocalTable["Points"] = int(lt[0])
         if self.LocalTable["Points"] == 0:
             self.useLocalTable = False
             for i in ["Energy","C1","C2","RS2","RX2FINE"]:
@@ -394,6 +394,10 @@ class mono1:
         for i in ["C1","C2","RS2","RX2FINE"]:
             y = self.LocalTable[i]
             self.LocalTable[i + "_spline"] = interpolate.splrep(x,y,k=min(3,np-1))
+        x = map(lambda x: self.calculate_curvature(self.e2theta(x), distance = self.LocalTable["SampleAt"]), self.LocalTable["Energy"])
+	for i in ["C1","C2"]:
+	    y = self.LocalTable[i]
+	    self.LocalTable[i + "_polyfit"] = numpy.polyfit(x, y, deg=1)
         return
 
     def writeTable(self, fileName=""):
@@ -402,7 +406,7 @@ class mono1:
         if self.LocalTable["Points"] < 1:
             print "Cannot Write Table to database for less than 2 points"
             return
-        outList =[self.LocalTable["Points"],]
+        outList =["SampleAt",self.LocalTable["SampleAt"],self.LocalTable["Points"],]
         for i in ["Energy","C1","C2","RS2","RX2FINE"]:
             outList += [i,] + list(self.LocalTable[i])
         self.DP.put_property({"SPECK_LocalTable": outList})
@@ -470,6 +474,7 @@ class mono1:
             for i in ["Energy","C1","C2","RS2","RX2FINE"]:
                 self.LocalTable[i] = array(list(self.LocalTable[i][:idx]) + [pointValue[i],]\
                 + list(self.LocalTable[i][idx:]),"f")
+	self.LocalTable["SampleAt"] = self.sample_at()
         #Update database if possible
         if self.LocalTable["Points"] > 1:
             print "Syncing table to database...",
@@ -484,7 +489,7 @@ class mono1:
         return
         
     def clearLocalTable(self):
-        self.DP.put_property({"SPECK_LocalTable":[0,"Energy","C1","C2","RS2","RX2FINE"]})
+        self.DP.put_property({"SPECK_LocalTable":["SampleAt",13.95,0,"Energy","C1","C2","RS2","RX2FINE"]})
         self.DP.put_property({"SPECK_UseLocalTable":False})
         self.readTable()
         self.unsetLocalTable()
@@ -498,12 +503,14 @@ class mono1:
         else:
             print "No"
         print "--------------------------"
-        cols= self.LocalTable.keys()
-        cols.remove("Energy")
+        print "Table has been created for focusing at %4.2f m from monochromator."%self.LocalTable["SampleAt"]
+	cols= self.LocalTable.keys()
+        cols.remove("SampleAt")
+	cols.remove("Energy")
         cols.remove("Points")
         cols= ["Energy",]+cols
         for i in list(cols):
-            if i.endswith("_spline"):
+            if i.endswith("_spline") or i.endswith("_polyfit"):
                 cols.remove(i)
         for i in cols:
             print "%-15s\t"%i,
@@ -652,20 +659,24 @@ class mono1:
         """Calculate tz2 position for a given angle"""
         return self.H*0.5/cos(theta/180.*pi)
     
-    def calculate_curvature(self,theta):
+    def calculate_curvature(self,theta, distance=None):
         """The sample distance and source distance are referred to the center of rotation of the first crystal.
         This is not exact, but turns out to be a good approximation. The more accurate code is commented and ready for use."""
-        th=theta/180.*pi
+	th=theta/180.*pi
         #rec_p1=1./(self.sourceDistance+self.H/sin(2.*th))
-        if self.sourceDistance<>0.:
-            rec_p1=1./self.sourceDistance
-        else:
+	if self.sourceDistance<>0.:
+	    rec_p1=1./self.sourceDistance 
+	else:
             raise Exception("Monochromator "+self.label+"sourceDistance=0 !")
+	
         #rec_q1=1./self.sample_at()-H*cos(2*th)/sin(2*th)
-        if self.sample_at()<>0.: 
-            rec_q1=1./self.sample_at()
-        else:    
-            raise Exception("Monochromator "+self.label+"Cannot compute actual sample distance!")
+        if distance <> None :
+		rec_q1 = 1./float(distance)
+	else:
+		if self.sample_at()<>0.: 
+        	    rec_q1=1./self.sample_at()
+	        else:    
+        	    raise Exception("Monochromator "+self.label+"Cannot compute actual sample distance!")
         if th<>0.:
             curv=0.5*(rec_p1+rec_q1)/sin(th)
         else:
@@ -695,8 +706,11 @@ class mono1:
             if self.useLocalTable and min(self.LocalTable["Energy"])\
             <= energy <= max(self.LocalTable["Energy"]):
                 if(self.DP.enabledBender): 
-                    __c1c2 = [interpolate.splev(energy, self.LocalTable["C1_spline"]),\
-                    interpolate.splev(energy, self.LocalTable["C2_spline"])]
+                    #__c1c2 = [interpolate.splev(energy, self.LocalTable["C1_spline"]),\
+                    #interpolate.splev(energy, self.LocalTable["C2_spline"])]
+		    curv = self.calculate_curvature(theta)
+		    __c1c2 = [numpy.polyval(self.LocalTable["C1_polyfit"], curv),\
+                    numpy.polyval(self.LocalTable["C2_polyfit"], curv)]
                     move_list += [self.bender.c1, __c1c2[0], self.bender.c2, __c1c2[1]]
                 if(self.DP.enabledRx2) and ("RX2" in self.LocalTable.keys()):
                     move_list += [self.m_rx2, interpolate.splev(energy, self.LocalTable["RX2_spline"])]

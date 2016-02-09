@@ -110,7 +110,8 @@ def __girder(theta):
 def __exafsZ(theta):
     #return 22.298+11.463*theta
     #return __girder(theta) * 5.6 + get_ipython().shell.user_ns["dcm"].H
-    return 11.2074018292933 * theta + 0.3438106790538 + get_ipython().user_ns["dcm"].H
+    #Offset -1.17 since 9/2/2016 due to ion chambers realignement. (EF)
+    return 11.2074018292933 * theta + 0.3438106790538 -1.17 + get_ipython().user_ns["dcm"].H
     
 def __obxgZ(theta):
     #shell=get_ipython()
