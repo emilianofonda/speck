@@ -10,30 +10,21 @@ import thread
 
 from motor_class import *
 from counter_class import counter
-import galil_multiaxis
 import moveable
 from spec_syntax import move_motor
 
 class sagittal_bender:
-    def __init__(self,bender1_name="",bender2_name="",A1_1=None,A0_1=None,A1_2=None,A0_2=None,deadtime=0.03,timeout=.05):
-        """The bender motors and the control box raw data device are passed by their tango addresses.
-        The axis are the axis numbers on the rawdata device (0 to 7) axis1 for motor1 and axis2 for motor2.
+    def __init__(self,bender1_name="",bender2_name="",DataViewer="",deadtime=0.01,timeout=.0):
+        """ Help to come.
         bender.c1=A1_1*1/R+A0_1
         bender.c2=A1_2*1/R+A0_2"""
-        #self.DP=None
+        
         self.label="Bender :"+bender1_name+" + "+bender2_name
         self.c1 = moveable.moveable(bender1_name,"position")
         self.c2 = moveable.moveable(bender2_name,"position")
+        self.DataViewer = DeviceProxy(DataViewer)
         self.timeout = timeout
         self.deadtime = deadtime
-        #self.max_as=max_as
-        self.asy_value=self.c1.pos()-self.c2.pos()
-        #self.MotOff=MotOff
-        self.A1_1=A1_1
-        self.A0_1=A0_1
-        self.A1_2=A1_2
-        self.A0_2=A0_2
-        #self.bender_offset=bender_offset
         return
         
     def __str__(self):
@@ -113,10 +104,10 @@ class sagittal_bender:
         curv=0.5*(C1-A0_1)/A1_1+0.5*(C2-A0_2)/A1_2
         The position is returned in 1/m or the bender is sent to that value."""
         if dest==None:
-            return ((self.c1.pos()-self.A0_1)/self.A1_1+(self.c2.pos()-self.A0_2)/self.A1_2)*0.5
+            return ((self.c1.pos()-self.DataViewer.A10)/self.DataViewer.A11+(self.c2.pos()-self.DataViewer.A20)/self.DataViewer.A21)*0.5
         else:
-            self.c1.go(dest*self.A1_1+self.A0_1)
-            self.c2.go(dest*self.A1_2+self.A0_2)
+            self.c1.go(dest*self.DataViewer.A11+self.DataViewer.A10)
+            self.c2.go(dest*self.DataViewer.A21+self.DataViewer.A20)
             if not wait: return dest
             wait_motor(self.c1,self.c2)
             return self.curv()
@@ -124,7 +115,7 @@ class sagittal_bender:
     def calculate_steps_for_curv(self,dest=None):
         """Curvature in 1/m. Returns the C1 and C2 bender motors steps for the specified 1/r in 1/m.
         The calibration is in the A1_1,A0_1... constants. C1=A1_1/R+A0_1, C2=..."""
-        return [dest*self.A1_1+self.A0_1,dest*self.A1_2+self.A0_2]
+        return [dest*self.DataViewer.A11+self.DataViewer.A10,dest*self.DataViewer.A21+self.DataViewer.A20]
     
     def pos(self,dest=None,wait=True):
         if(dest==None):
@@ -173,12 +164,10 @@ class sagittal_bender:
         return self.pos(dest, wait=False)
         
     def fire(self,dest=None):
-        """This is a way to send the go command in a thread. Use it for full speed when multiple go commands
-        have to be sent in series on different motors. It returns the thread ID. Use only if you are aware of thread risks.
-        This is an experimental feature at present. Prefer go since it already uses threads."""
+        """Legacy, to be dropped."""
         if dest==None:
                     return self.go()
-        return thread.start_new_thread(self.go,(dest,))
+        return self.go(dest)
                                                             
     def asy(self,dest=None,wait=True):
         """Asymmetry is defined as bender1-bender2, this is a signed value: positive means bender1>bender2."""
@@ -244,7 +233,8 @@ class sagittal_bender:
     
 
 class mono1:
-    def __init__(self,d,H,mono_name,\
+    def __init__(self,\
+        monoName="",DataViewer="",\
         rx1=None,\
         tz2=None,\
         ts2=None,\
@@ -254,12 +244,14 @@ class mono1:
         rz2=None,\
         tz1=None,\
         bender=None,\
-        timeout=.00,deadtime=0.02,delay=0.0,sourceDistance=None,counter_label="d09-1-c00/ca/cpt.1",counter_channel=0,\
-        Rz2_par=[],Rs2_par=[],Rx2_par=[],
+        timeout=.00,deadtime=0.01,delay=0.0,
+        counter_label="d09-1-c00/ca/cpt.1",
+        counter_channel=0,\
         emin=None,emax=None):
         """Experimental version: use galil and powerBrick moveables"""
-        self.DP = DeviceProxy(mono_name)
-        self.label = mono_name
+        self.DP = DeviceProxy(monoName)
+        self.DataViewer = DeviceProxy(DataViewer)
+        self.label = monoName
         self.bender = bender
         try:
             self.counter=counter(counter_label)
@@ -267,22 +259,11 @@ class mono1:
             self.counter=None
             print "No usable counter: no tuning possible"
         self.counter_channel=counter_channel
-        try:
-            self.att_qDistance=self.DP.read_attribute("qDistance")
-            #raise Exception()
-        except:
-            print "Cannot read attribute qDistance from ",self.label
-            self.att_qDistance=None
-            print "Default distance is now 15.4m"
-            self.sample_at_position = 15.4
-        self.sourceDistance=sourceDistance
         self.bender=bender
         self.timeout=timeout
         self.deadtime=deadtime
         self.delay=delay
         self.counter_channel=counter_channel
-        self.H=H
-        self.d=d
         self.emin=emin
         self.emax=emax
         self.motors=[]
@@ -295,25 +276,15 @@ class mono1:
         self.m_rx2fine=rx2fine
         self.m_tz1=tz1
 
-        self.Rz2_par = Rz2_par
-        self.Rs2_par = Rs2_par
-        self.Rx2_par = Rx2_par
-        
-        #Section LocalTable. This part relies on the dcm device
-        
-        if self.DP.get_property("SPECK_UseLocalTable")["SPECK_UseLocalTable"] ==[]:
+        ##Section LocalTable. This part relies on the dcm device
+        if list(self.DP.get_property("SPECK_UseLocalTable")["SPECK_UseLocalTable"]) ==[]:
             self.DP.put_property({"SPECK_UseLocalTable": False})
-        if self.DP.get_property("SPECK_LocalTable")["SPECK_LocalTable"] == []:
-            self.DP.put_property({"SPECK_LocalTable": [0,"Energy","C1","C2","RS2","RX2FINE"]})
+        if list(self.DP.get_property("SPECK_LocalTable")["SPECK_LocalTable"]) == []:
+            self.DP.put_property({"SPECK_LocalTable": [0,"Energy","C1","C2","RS2"]})
             self.DP.put_property({"SPECK_UseLocalTable": False})
-        print "\nmono1d: Reading LocalTable from database...",
+        print "\nmono1PBR: Reading LocalTable from database...",
         self.readTable()
         print "OK"
-        #print "Using Local Table ? ",
-        #if self.useLocalTable:
-        #    print "Yes"
-        #else:
-        #    print "No"
         return
         
     def __str__(self):
@@ -340,10 +311,10 @@ class mono1:
         return self.state()
    
     def readTable(self):
-        """This function reads the table from the database and prepare the spline for interpolation.
+        """This function reads the table from the database and prepare the interpolation.
         ADVANCED FEATURE: this function is for the code internal use only. """
-        lt = self.DP.get_property("SPECK_LocalTable")["SPECK_LocalTable"]
-        ult = self.DP.get_property("SPECK_UseLocalTable")["SPECK_UseLocalTable"]
+        lt = list(self.DP.get_property("SPECK_LocalTable")["SPECK_LocalTable"])
+        ult = list(self.DP.get_property("SPECK_UseLocalTable")["SPECK_UseLocalTable"])
         if ult == []:
             self.useLocalTable = False
         elif ult[0] == "False":
@@ -356,25 +327,25 @@ class mono1:
         self.LocalTable = {"Points":int(lt[0])}
         if self.LocalTable["Points"] == 0:
             self.useLocalTable = False
-            for i in ["Energy","C1","C2","RS2","RX2FINE"]:
+            for i in ["Energy","C1","C2","RS2"]:
                 self.LocalTable[i] = array([],"f")
-            for i in ["Energy","C1","C2","RS2","RX2FINE"]:
-                self.LocalTable[i + "_spline"] = []
+            #for i in ["Energy","C1","C2","RS2","RX2FINE"]:
+            #    self.LocalTable[i + "_spline"] = []
             self.useLocalTable = False
             return
-        for i in range(5): 
+        for i in range(4): 
             #print array(lt[i * (np+1) + 2:(np+1) * (i+1) + 1],"f")
             self.LocalTable[lt[i * (np + 1) + 1]] = array(lt[i * (np+1) + 2:(np+1) * (i+1) + 1],"f")
         #print self.LocalTable
         if np == 1:
-            for i in ["Energy","C1","C2","RS2","RX2FINE"]:
-                self.LocalTable[i + "_spline"] = []
             self.useLocalTable = False
+            #for i in ["Energy","C1","C2","RS2","RX2FINE"]:
+            #    self.LocalTable[i + "_spline"] = []
             return
-        x = self.LocalTable["Energy"]
-        for i in ["C1","C2","RS2","RX2FINE"]:
-            y = self.LocalTable[i]
-            self.LocalTable[i + "_spline"] = interpolate.splrep(x,y,k=min(3,np-1))
+        #x = self.LocalTable["Energy"]
+        #for i in ["C1","C2","RS2","RX2FINE"]:
+        #    y = self.LocalTable[i]
+        #    self.LocalTable[i + "_spline"] = interpolate.splrep(x,y,k=min(3,np-1))
         return
 
     def writeTable(self, fileName=""):
@@ -426,7 +397,7 @@ class mono1:
         self.DP.put_property({"SPECK_UseLocalTable":False})
         return
 
-    def takeValue(self, xtol=100):
+    def takeValue(self, xtol=10):
         """Take current position and use it for LocalTable interpolation.
         The setLocalTable command must be used only after the table has been 
         completed (2 values at least).
@@ -483,9 +454,9 @@ class mono1:
         cols.remove("Energy")
         cols.remove("Points")
         cols= ["Energy",]+cols
-        for i in list(cols):
-            if i.endswith("_spline"):
-                cols.remove(i)
+        #for i in list(cols):
+        #    if i.endswith("_spline"):
+        #        cols.remove(i)
         for i in cols:
             print "%-15s\t"%i,
         print ""
@@ -499,100 +470,71 @@ class mono1:
     def printEnables(self):
         print "Active Couplings"
         print "________________"
-        for i in ["ts2","tz2","bender","rz2","rs2","rx2","rx2fine"]:
-            print "%8s active ?"%i, self.DP.__getattr__("enabled"+i)
+        for i in ["Ts2","Rz2","Rs2"]:
+            print "%8s active ?"%i, bool(self.DataViewer.__getattr__("Enable"+i))
+        return
+
+    def calculateParametersFromTable(self):
+        """Take the localTable and calculate the coeffs of equations.
+        Write them in the dataviewer. The original coeffs can be restored with restoreDefaultValues
+        Rs2 and Rz2 are hardcoded to be linearly interpolated."""
+               
+        return
+
+    def restoreDefaultValues(self):
+        """Use the DefaultValues stored as a property in DataViewer to reset the coeffs of equations.
+        Values are written in the property SPECK_DefaultValues of DataViewer."""
+        DefVal = self.DataViewer.get_property("SPECK_DefaultValues")['SPECK_DefaultValues']
+        for i in DefVal:
+            s = i.split("=")
+            self.DataViewer.write_attribute(i[0].strip(),float(i[1]))
         return
 
     def disable_ts2(self):
-        self.DP.enabledTs2 = False
+        self.DataViewer.EnableTs2 = 0
         return
-        
     def enable_ts2(self):
-        self.DP.enabledTs2 = True
-        return
-
-    def disable_tz2(self):
-        self.DP.enabledTz2 = False
-        return
-        
-    def enable_tz2(self):
-        self.DP.enabledTz2 = True
-        return
-
-    def disable_bender(self):
-        self.DP.enabledBender = False
-        return
-        
-    def enable_bender(self):
-        self.DP.enabledBender = True
-        return
-
-    def enable_rx2(self):
-        self.DP.enabledRx2 = True
-        return
-
-    def disable_rx2(self):
-        self.DP.enabledRx2 = False
+        self.DataViewer.EnableTs2 = 1
         return
 
     def enable_rs2(self):
-        self.DP.enabledRs2 = True
+        self.DataViewer.EnableRs2 = 1
         return
-        
     def disable_rs2(self):
-        self.DP.enabledRs2 = False
+        self.DataViewer.EnableRs2 = 0
         return
 
     def enable_rz2(self):
-        self.DP.enabledRz2 = True
+        self.DataViewer.EnableRz2 = 1
         return
-        
     def disable_rz2(self):
-        self.DP.enabledRz2 = False
+        self.DataViewer.EnableRz2 = 0
         return
-
-    def enable_rx2fine(self):
-        self.DP.enabledRx2Fine = True
-        return
-        
-    def disable_rx2fine(self):
-        self.DP.enabledRx2Fine = False
-        return
-
-#    def sample_at(self,distance=None):
-#        if distance == None:
-#            return self.sample_at_position
-#        else:
-#            self.sample_at_position = distance
 
     def sample_at(self,distance=None):
-        for i in range(5):
-            try:
-                self.att_qDistance=self.DP.read_attribute("qDistance")
-                break
-            except:
-                if i==4: raise Exception("Cannot read focusing distance")
         if distance==None:
-            return self.att_qDistance.value
+            return self.DataViewer.q
         else:
-            self.att_qDistance.value=distance
             if self.state()==DevState.MOVING:
-                print "Trying to write qDistance on dcm while dcm is moving! wait..."
-                while(self.state()==DevState.MOVING):
-                    sleep(self.deadtime)
-            self.DP.write_attribute("qDistance",distance)
+                raise Exception("Trying to write q on dcm while dcm is moving!")
+            self.DataViewer.q = float(distance)
             return self.sample_at()
 
     def status(self):
         return "Nothing yet"
 
     def state(self):
-        """State returns MOVING if one of the motors is moving, in any other case combined state is returned. 
-        This is a workaround since OFF has priority over MOVING, but the code must follow motors movement even if one is OFF."""
+        """In the PBR setup of SAMBA if the combined axis is in DISABLE state, it doesn't mean that the mono is not MOVING.
+        On the other hand if the combined state is MOVING the other axis may be in disable. The state machine differs from usual."""
+        s = self.state() 
+        if s == DevState.MOVING:
+            return s
+        elif s == DevState.OFF:
+            return DevState.OFF
         j=[]
         for i in self.motors:
-            tmp=i.state()
-            if tmp==DevState.MOVING: return DevState.MOVING
+            tmp = i.state()
+            if tmp == DevState.MOVING: return DevState.MOVING
             j.append(tmp)
         if j==[DevState.STANDBY,]*len(j):
             return DevState.STANDBY
@@ -610,6 +552,7 @@ class mono1:
         return j
 
     def stop(self):
+        self.DP.stop()
         for i in self.motors:
             try:
                 i.stop()
@@ -619,50 +562,39 @@ class mono1:
         
     def e2theta(self,energy):
         """Calculate the energy for a given angle"""
-        return arcsin(12398.41857/(2.*self.d*energy))/pi*180.
+        return arcsin(12398.41857/(2.*self.DataViewer.d*energy))/pi*180.
 
     def theta2e(self,theta):
         """Calculate the angle for a given energy"""
-        return 12398.41857/(2.*self.d*sin(theta/180.*pi))
+        return 12398.41857/(2.*self.DataViewer.d*sin(theta/180.*pi))
 
     def ts2(self,theta):
         """Calculate ts2 position for a given angle"""
-        return max(35., self.H*0.5/sin(theta/180.*pi))
+        return max(35., self.DataVivewer.H*0.5/sin(theta/180.*pi))
 
     def tz2(self,theta):
         """Calculate tz2 position for a given angle"""
-        return self.H*0.5/cos(theta/180.*pi)
+        return self.DataViewer.H*0.5/cos(theta/180.*pi)
     
     def calculate_curvature(self,theta):
         """The sample distance and source distance are referred to the center of rotation of the first crystal.
         This is not exact, but turns out to be a good approximation. The more accurate code is commented and ready for use."""
         th=theta/180.*pi
-        #rec_p1=1./(self.sourceDistance+self.H/sin(2.*th))
-        if self.sourceDistance<>0.:
-            rec_p1=1./self.sourceDistance
-        else:
-            raise Exception("Monochromator "+self.label+"sourceDistance=0 !")
-        #rec_q1=1./self.sample_at()-H*cos(2*th)/sin(2*th)
+        rec_p1=1./self.DataViewer.q
         if self.sample_at()<>0.: 
             rec_q1=1./self.sample_at()
         else:    
-            raise Exception("Monochromator "+self.label+"Cannot compute actual sample distance!")
-        if th<>0.:
-            curv=0.5*(rec_p1+rec_q1)/sin(th)
-        else:
-            raise Exception("Monochromator "+self.label+"Cannot compute curvature!\n\
-            theta=%g 1/p=%g 1/q=%g"%(theta,rec_p1,rec_q1))
-        return curv
+            raise Exception("Monochromator "+self.label+" sample_at() == 0 ?!?")
+        if th<=0.:
+            raise Exception("Monochromator "+self.label+"Cannot compute curvature for theta<=0!")
+        return 0.5 * (rec_p1 + rec_q1) / sin(th)
     
     def calculate_curvatureradius(self,theta):
         return 1./self.calculate_curvature(theta)
 
-    def pos(self, energy=None, wait=True, Ts2_Moves=True, Tz2_Moves=True, NOFailures=0):
-        """Move the mono at the desired energy"""
-        if NOFailures > 5:
-            raise Exception("mono1b: too many retries trying the move. (NO>5)")
+    def pos(self, energy=None, wait=True):
+        """Move the mono at the desired energy, it uses current couplings and mode."""
         try:
-            move_list=[]
             if(energy==None):
                 ps=self.m_rx1.pos()
                 if ps==0.: return 9.99e12
@@ -672,57 +604,15 @@ class mono1:
             if self.emax <> None and energy > self.emax:
                 raise Exception("Requested energy above monochromator limit: %7.2f"%self.emax)
             theta = self.e2theta(energy)
-            move_list += [self.m_rx1, theta]
-            if self.useLocalTable and min(self.LocalTable["Energy"])\
-            <= energy <= max(self.LocalTable["Energy"]):
-                if(self.DP.enabledBender): 
-                    __c1c2 = [interpolate.splev(energy, self.LocalTable["C1_spline"]),\
-                    interpolate.splev(energy, self.LocalTable["C2_spline"])]
-                    move_list += [self.bender.c1, __c1c2[0], self.bender.c2, __c1c2[1]]
-                if(self.DP.enabledRx2) and ("RX2" in self.LocalTable.keys()):
-                    move_list += [self.m_rx2, interpolate.splev(energy, self.LocalTable["RX2_spline"])]
-                if(self.DP.enabledRx2Fine) and ("RX2FINE" in self.LocalTable.keys()):
-                    self.m_rx2fine.pos(max(0.1,min(9.9,interpolate.splev(energy, self.LocalTable["RX2FINE_spline"]))))
-                if(self.DP.enabledRs2) and ("RS2" in self.LocalTable.keys()):
-                    move_list += [self.m_rs2, interpolate.splev(energy, self.LocalTable["RS2_spline"])]
-                if(self.DP.enabledRz2) and ("RZ2" in self.LocalTable.keys()):
-                    move_list += [self.m_rz2, interpolate.splev(energy, self.LocalTable["RZ2_spline"])]
-            else:
-                if(self.DP.enabledBender): 
-                    __c1c2 = self.bender.calculate_steps_for_curv(self.calculate_curvature(theta))
-                    move_list+=[self.bender.c1, __c1c2[0], self.bender.c2, __c1c2[1]]
-
-            #Common part: TZ2 and TS2 should never be used in a LocalTable
-            
-            if (Ts2_Moves and self.DP.enabledTs2): 
-                move_list += [self.m_ts2, self.ts2(theta)]
-            if (Tz2_Moves and self.DP.enabledTz2): 
-                move_list += [self.m_tz2, self.tz2(theta)]
-            #print move_list
-            #print __c1c2[0], __c1c2[1]
-            #print "Start at :",time()
-            #self.motor_group.pos(*move_list)
-            move_motor(*move_list,deadtime=self.deadtime,timeout=self.timeout,delay=self.delay,verbose=False)
-            #RS2 workaround... to be removed if a closed loop is available.
-            if self.useLocalTable and \
-            min(self.LocalTable["Energy"])<= energy <= max(self.LocalTable["Energy"]) \
-            and self.DP.enabledRs2 and ("RS2" in self.LocalTable.keys()):
-                #self.motor_group.pos(self.m_rs2, interpolate.splev(energy, self.LocalTable["RS2_spline"]))
-                move_motor(self.m_rs2, interpolate.splev(energy, self.LocalTable["RS2_spline"]),verbose=False)
-            #print "Stop at :",time()
-            #sleep(self.delay)
+        #
+        #Write movement code here 
+        #
         except (KeyboardInterrupt,SystemExit), tmp:
             self.stop()
             raise tmp
         except PyTango.DevFailed, tmp:
-            NOFailures+=1
             self.stop()
-            print "Error while moving... retrying #",NOFailures
-            print "Waiting 1 s"
-            sleep(1.)
-            print self.label,":(mono1b) state is now", self.state()
-            self.pos(energy, wait=wait, Ts2_Moves=Ts2_Moves, Tz2_Moves=Tz2_Moves, NOFailures=NOFailures)
-            #raise tmp
+            raise tmp
         except PyTango.DevError, tmp:
             self.stop()
             raise tmp
@@ -733,13 +623,13 @@ class mono1:
             raise tmp
         return self.pos()
 
-    def move(self,energy=None,wait=True,Ts2_Moves=True, Tz2_Moves=True):
+    def move(self,energy=None,wait=True):
         """Please use pos instead. Move is obsolete and subject ro removal in next future. """
-        return self.pos(energy,wait,Ts2_Moves, Tz2_Moves)
+        return self.pos(energy,wait)
 
-    def go(self,energy=None,wait=False,Ts2_Moves=True, Tz2_Moves=True):
+    def go(self,energy=None,wait=False):
         """Go to energy and do not wait. This does not work with the mono1b class: use of galil_mulitaxis!"""
-        return self.pos(energy,wait,Ts2_Moves, Tz2_Moves)    
+        return self.pos(energy,wait)    
         
     def theta(self,theta=None,wait=True):
         if(theta==None):
@@ -905,48 +795,6 @@ class mono1:
         print "Detuned=",inow/0.2," Position=",p
         return p
     
-    def calculate_rz2(self,energy):
-        """Calculate rz2 for given energy value: parameters are in self.Rz2
-        The polynome is calculated over square root of curvature: rz2 = Sum(self.Rz2[i] * angle **i)"""
-        if len(self.Rz2_par)==0:
-            return None
-        __rz2=0.
-        for i in range(len(self.Rz2_par)):
-            __rz2 += self.Rz2_par[i]*self.e2theta(energy)**i
-        return __rz2
-
-#   def calculate_rz2(self,energy):
-#       """Calculate rz2 for given energy value: parameters are in self.Rz2
-#       The polynome is calculated over square root of curvature: rz2 = Sum(self.Rz2[i] * sqrt(1/R) **i)"""
-#       sqr_curv=sqrt(self.calculate_curvature(self.e2theta(energy)))
-#       if len(self.Rz2_par)==0:
-#           return None
-#       __rz2=0.
-#       for i in range(len(self.Rz2_par)):
-#           __rz2 += self.Rz2_par[i]*sqr_curv**i
-#       return __rz2
-        
-    def calculate_rs2(self,energy):
-        """Calculate rs2 for given energy value: parameters are in self.Rs2
-        The polynome is calculated over theta: rs2=Sum(self.Rs2[i]*theta**i)"""
-        #th=self.e2theta(energy)
-        if len(self.Rs2_par)==0:
-            return None
-        __rs2=0.
-        for i in range(len(self.Rs2_par)):
-            __rs2+=self.Rs2_par[i]*energy**i
-        return __rs2
-
-    def calculate_rx2(self,energy):
-        """Calculate rx2 for given energy value: parameters are in self.Rx2
-        The polynome is calculated over bender curvature: rx2=Sum(self.Rs2[i]*(curv**i))"""
-        curv = self.calculate_curvature(self.e2theta(energy))
-        if len(self.Rx2_par)==0:
-            return None
-        __rx2=0.
-        for i in range(len(self.Rx2_par)):
-            __rx2+=self.Rx2_par[i]*curv**i
-        return __rx2
 
     def seten(self, energy=None):
         if energy == None:
@@ -968,11 +816,9 @@ class mono1:
             self.m_rx2fine.pos(5)
         except:
             pass
-        _rx2 = self.calculate_rx2(energy)
-        _rs2 = self.calculate_rs2(energy)
-        _rz2 = self.calculate_rz2(energy)
-        _ts2 = self.ts2(self.e2theta(energy))
-        move_motor(self.m_rz2, _rz2, self, energy, self.m_rx2, _rx2, self.m_rs2, _rs2)
+        #
+        #Insert Move code here
+        #
         print "Disabling Ts2 movement...",
         self.disable_ts2()
         print "OK"
@@ -980,45 +826,5 @@ class mono1:
             shell.user_ns["mostab"].start()
         except:
             pass
-        return self.pos()
-
-#    def seten(self,energy=None):
-#        try:
-#            shell=get_ipython()
-#            shell.user_ns["mostab"].stop()
-#        except Exception, tmp:
-#            print tmp
-#        if energy==None:
-#            return self.pos()
-#        self.enable_tz2()
-#        if self.m_rx2fine<>None: self.m_rx2fine.pos(5)
-#        try:
-#            shell.user_ns["mostab"].pos(5.)
-#        except Exception, tmp:
-#            print tmp
-#        if self.m_rz2<>None:     self.m_rz2.pos(self.calculate_rz2(energy))
-#        if self.m_rs2<>None:     self.m_rs2.pos(self.calculate_rs2(energy))
-#        if self.m_rx2<>None:     self.m_rx2.pos(self.calculate_rx2(energy))
-#        self.pos(energy,Ts2_Moves=True)
-#        if energy<=6000.:
-#            self.m_ts2.pos(35.)
-#        try:
-#            shell.user_ns["mostab"].start()
-#        except:
-#            pass
-#        return self.pos()
-    
-    def setall(self,energy=None):
-        if energy==None:
-            return self.pos()
-        self.pos(energy,Ts2_Moves=True)
-        tmp=self.calculate_rz2(energy)
-        if tmp<>None: self.m_rz2.pos(tmp)
-        tmp=self.calculate_rs2(energy)
-        if tmp<>None: self.m_rs2.pos(tmp)
-        self.m_rx2fine.pos(5.)
-        tmp=self.calculate_rx2(energy)
-        if tmp<>None: self.m_rx2.pos(tmp)
-        self.tune()
         return self.pos()
 

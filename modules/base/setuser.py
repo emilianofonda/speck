@@ -25,9 +25,10 @@ def setuser(name=None):
             os.chdir(__Default_Data_Folder + os.sep + cfg["FOLDER"])
             #Start logging in speckle session
             try:
-                os.system("screen -X log off")
-                os.system("screen -X logfile %s" % (os.getcwd() + os.sep + "speckle.log"))
-                os.system("screen -X log on")
+                pass
+                #os.system("screen -X log off")
+                #os.system("screen -X logfile %s" % (os.getcwd() + os.sep + "speckle.log"))
+                #os.system("screen -X log on")
             except:
                 pass
         else:
@@ -47,9 +48,10 @@ def setuser(name=None):
             cfgfile.write("%s=%s\n" % (i,cfg[i]))
         cfgfile.close()
         try:
-            os.system("screen -X log off")
-            os.system("screen -X logfile %s" % (os.getcwd() + os.sep + "speckle.log"))
-            os.system("screen -X log on")
+            pass
+            #os.system("screen -X log off")
+            #os.system("screen -X logfile %s" % (os.getcwd() + os.sep + "speckle.log"))
+            #os.system("screen -X log on")
         except Exception, tmp:
             print tmp
             pass

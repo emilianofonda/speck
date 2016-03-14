@@ -375,29 +375,34 @@ class mono1:
         self.LocalTable["Points"] = int(lt[0])
         if self.LocalTable["Points"] == 0:
             self.useLocalTable = False
-            for i in ["Energy","C1","C2","RS2","RX2FINE"]:
+            for i in ["Energy","C1","C2","RS2"]:
                 self.LocalTable[i] = array([],"f")
-            for i in ["Energy","C1","C2","RS2","RX2FINE"]:
+            for i in ["Energy","C1","C2","RS2"]:
                 self.LocalTable[i + "_spline"] = []
             self.useLocalTable = False
             return
-        for i in range(5): 
+        for i in range(4): 
             #print array(lt[i * (np+1) + 2:(np+1) * (i+1) + 1],"f")
             self.LocalTable[lt[i * (np + 1) + 1]] = array(lt[i * (np+1) + 2:(np+1) * (i+1) + 1],"f")
         #print self.LocalTable
         if np == 1:
-            for i in ["Energy","C1","C2","RS2","RX2FINE"]:
+            for i in ["Energy","C1","C2","RS2"]:
                 self.LocalTable[i + "_spline"] = []
             self.useLocalTable = False
             return
+        #Interpolate over Energy
         x = self.LocalTable["Energy"]
-        for i in ["C1","C2","RS2","RX2FINE"]:
+        for i in ["C1","C2","RS2"]:
             y = self.LocalTable[i]
             self.LocalTable[i + "_spline"] = interpolate.splrep(x,y,k=min(3,np-1))
+        for  i in ["RS2",]:
+	        y = self.LocalTable[i]
+	        self.LocalTable[i + "_polyfit"] = numpy.polyfit(x, y, deg=1)
+        #Interpolate over Curvature
         x = map(lambda x: self.calculate_curvature(self.e2theta(x), distance = self.LocalTable["SampleAt"]), self.LocalTable["Energy"])
-	for i in ["C1","C2"]:
-	    y = self.LocalTable[i]
-	    self.LocalTable[i + "_polyfit"] = numpy.polyfit(x, y, deg=1)
+        for i in ["C1","C2"]:
+	        y = self.LocalTable[i]
+	        self.LocalTable[i + "_polyfit"] = numpy.polyfit(x, y, deg=1)
         return
 
     def writeTable(self, fileName=""):
@@ -407,7 +412,7 @@ class mono1:
             print "Cannot Write Table to database for less than 2 points"
             return
         outList =["SampleAt",self.LocalTable["SampleAt"],self.LocalTable["Points"],]
-        for i in ["Energy","C1","C2","RS2","RX2FINE"]:
+        for i in ["Energy","C1","C2","RS2"]:
             outList += [i,] + list(self.LocalTable[i])
         self.DP.put_property({"SPECK_LocalTable": outList})
         if fileName == "":
@@ -457,7 +462,7 @@ class mono1:
         to remove the old table values.
         A value in energy closer than xtol is replaced"""
         pointValue = {"Energy": self.pos(), "C1": self.bender.c1.pos(),\
-        "C2": self.bender.c2.pos(),"RS2": self.m_rs2.pos(),"RX2FINE": self.m_rx2fine.pos()}
+        "C2": self.bender.c2.pos(),"RS2": self.m_rs2.pos()}
         idx = self.LocalTable["Energy"].searchsorted(pointValue["Energy"])
         if numpy.any(abs(self.LocalTable["Energy"] - pointValue["Energy"]) < xtol ):
             #Replace Value
@@ -467,11 +472,11 @@ class mono1:
             if (abs(self.LocalTable["Energy"][idx] - pointValue["Energy"]) > xtol):
                 idx = max(idx-1, 0)
             print idx
-            for i in ["Energy","C1","C2","RS2","RX2FINE"]:
+            for i in ["Energy","C1","C2","RS2"]:
                 self.LocalTable[i][idx] = pointValue[i]
         else:
             self.LocalTable["Points"] += 1
-            for i in ["Energy","C1","C2","RS2","RX2FINE"]:
+            for i in ["Energy","C1","C2","RS2"]:
                 self.LocalTable[i] = array(list(self.LocalTable[i][:idx]) + [pointValue[i],]\
                 + list(self.LocalTable[i][idx:]),"f")
 	self.LocalTable["SampleAt"] = self.sample_at()
@@ -489,7 +494,7 @@ class mono1:
         return
         
     def clearLocalTable(self):
-        self.DP.put_property({"SPECK_LocalTable":["SampleAt",13.95,0,"Energy","C1","C2","RS2","RX2FINE"]})
+        self.DP.put_property({"SPECK_LocalTable":["SampleAt",13.95,0,"Energy","C1","C2","RS2"]})
         self.DP.put_property({"SPECK_UseLocalTable":False})
         self.readTable()
         self.unsetLocalTable()
@@ -703,8 +708,9 @@ class mono1:
                 raise Exception("Requested energy above monochromator limit: %7.2f"%self.emax)
             theta = self.e2theta(energy)
             move_list += [self.m_rx1, theta]
-            if self.useLocalTable and min(self.LocalTable["Energy"])\
-            <= energy <= max(self.LocalTable["Energy"]):
+            #if self.useLocalTable and min(self.LocalTable["Energy"])\
+            #<= energy <= max(self.LocalTable["Energy"]):
+            if self.useLocalTable:
                 if(self.DP.enabledBender): 
                     #__c1c2 = [interpolate.splev(energy, self.LocalTable["C1_spline"]),\
                     #interpolate.splev(energy, self.LocalTable["C2_spline"])]
@@ -716,8 +722,9 @@ class mono1:
                     move_list += [self.m_rx2, interpolate.splev(energy, self.LocalTable["RX2_spline"])]
                 if(self.DP.enabledRx2Fine) and ("RX2FINE" in self.LocalTable.keys()):
                     self.m_rx2fine.pos(max(0.1,min(9.9,interpolate.splev(energy, self.LocalTable["RX2FINE_spline"]))))
-                if(self.DP.enabledRs2) and ("RS2" in self.LocalTable.keys()):
-                    move_list += [self.m_rs2, interpolate.splev(energy, self.LocalTable["RS2_spline"])]
+                #if(self.DP.enabledRs2) and ("RS2" in self.LocalTable.keys()):
+                #    move_list += [self.m_rs2, numpy.polyval(self.LocalTable["RS2_polyfit"], energy)]
+                #    #move_list += [self.m_rs2, interpolate.splev(energy, self.LocalTable["RS2_spline"])]
                 if(self.DP.enabledRz2) and ("RZ2" in self.LocalTable.keys()):
                     move_list += [self.m_rz2, interpolate.splev(energy, self.LocalTable["RZ2_spline"])]
             else:
@@ -737,11 +744,12 @@ class mono1:
             self.motor_group.pos(*move_list)
             #move_motor(*move_list,verbose=False)
             #RS2 workaround... to be removed if a closed loop is available.
-            if self.useLocalTable and \
-            min(self.LocalTable["Energy"])<= energy <= max(self.LocalTable["Energy"]) \
-            and self.DP.enabledRs2 and ("RS2" in self.LocalTable.keys()):
-                self.motor_group.pos(self.m_rs2, interpolate.splev(energy, self.LocalTable["RS2_spline"]))
-                #move_motor(self.m_rs2, interpolate.splev(energy, self.LocalTable["RS2_spline"]),verbose=False)
+            #if self.useLocalTable and \
+            #min(self.LocalTable["Energy"])<= energy <= max(self.LocalTable["Energy"]) \
+            if self.useLocalTable and self.DP.enabledRs2 and ("RS2" in self.LocalTable.keys()):
+                self.motor_group.pos(self.m_rs2, numpy.polyval(self.LocalTable["RS2_polyfit"], energy))
+                #move_motor(self.m_rs2, numpy.polyval(self.LocalTable["RS2_polyfit"], energy), verbose=False)
+                #self.motor_group.pos(self.m_rs2, interpolate.splev(energy, self.LocalTable["RS2_spline"]))
             #print "Stop at :",time()
             #sleep(self.delay)
         except (KeyboardInterrupt,SystemExit), tmp:
