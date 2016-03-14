@@ -28,17 +28,16 @@ class sagittal_bender:
         return
         
     def __str__(self):
-        return "MOTOR"
+        return self.__repr__()
         
     def __repr__(self):
         return self.label+" at %10.6f"%(self.pos())
     
-    def subtype(self):
-        return "SAGITTAL BENDER"
-    
     def compute_state(self):
-        """State returns MOVING if one of the benders is moving, in any other case combined state with (state of 1) OR (state of 2) is returned. 
-        This is a workaround since OFF has priority over MOVING and the code must follow motors movement even if one is OFF."""
+        """State returns MOVING if one of the benders is moving, in any other case combined state 
+        with (state of 1) OR (state of 2) is returned. 
+        This is a workaround since OFF has priority over MOVING and the code must follow 
+        motors movement even if one is OFF."""
         s1=self.c1.state()
         s2=self.c2.state()
         s12=[s1,s2]
@@ -248,7 +247,7 @@ class mono1:
         counter_label="d09-1-c00/ca/cpt.1",
         counter_channel=0,\
         emin=None,emax=None):
-        """Experimental version: use galil and powerBrick moveables"""
+        """Experimental version that mixes galil and powerBrick moveables"""
         self.DP = DeviceProxy(monoName)
         self.DataViewer = DeviceProxy(DataViewer)
         self.label = monoName
@@ -288,17 +287,11 @@ class mono1:
         return
         
     def __str__(self):
-        return "MOTOR"
+        return self.__repr__()
         
     def __repr__(self):
-        print ""
-        self.printTable()
-        self.printEnables()
         return self.label+" at %10.6f"%(self.pos())
     
-    def subtype(self):
-        return "SAMBA MONOCHROMATOR"
-
     def init(self):
         return self.DP.init()
 
@@ -312,6 +305,7 @@ class mono1:
    
     def readTable(self):
         """This function reads the table from the database and prepare the interpolation.
+        Coefficients are then written to PowerBrick through the DataViewer
         ADVANCED FEATURE: this function is for the code internal use only. """
         lt = list(self.DP.get_property("SPECK_LocalTable")["SPECK_LocalTable"])
         ult = list(self.DP.get_property("SPECK_UseLocalTable")["SPECK_UseLocalTable"])
@@ -329,33 +323,39 @@ class mono1:
             self.useLocalTable = False
             for i in ["Energy","C1","C2","RS2"]:
                 self.LocalTable[i] = array([],"f")
-            #for i in ["Energy","C1","C2","RS2","RX2FINE"]:
-            #    self.LocalTable[i + "_spline"] = []
             self.useLocalTable = False
             return
         for i in range(4): 
-            #print array(lt[i * (np+1) + 2:(np+1) * (i+1) + 1],"f")
             self.LocalTable[lt[i * (np + 1) + 1]] = array(lt[i * (np+1) + 2:(np+1) * (i+1) + 1],"f")
         #print self.LocalTable
         if np == 1:
             self.useLocalTable = False
-            #for i in ["Energy","C1","C2","RS2","RX2FINE"]:
-            #    self.LocalTable[i + "_spline"] = []
             return
-        #x = self.LocalTable["Energy"]
-        #for i in ["C1","C2","RS2","RX2FINE"]:
-        #    y = self.LocalTable[i]
-        #    self.LocalTable[i + "_spline"] = interpolate.splrep(x,y,k=min(3,np-1))
+        #Calculate coefficients and update DataViewer
+        x = self.e2theta(self.LocalTable["Energy"])
+        crv = self.calculate_curvature(x)
+        A11, A10 = numpy.polyfit(crv, self.LocalTable["C1"])
+        A21, A20 = numpy.polyfit(crv, self.LocalTable["C2"])
+        self.DataView.A11 = A11
+        self.DataView.A10 = A10 - self.bender.c1.offset()
+        self.DataView.A11 = A21
+        self.DataView.A10 = A20 - self.bender.c2.offset()
+        self.DataView.Rs2_C5 = 0.
+        self.DataView.Rs2_C4 = 0.
+        self.DataView.Rs2_C3 = 0.
+        self.DataView.Rs2_C2 = 0.
+        self.DataView.Rs2_C1, self.DataView.Rs2_C0 = numpy.polyfit(x, self.LocalTable["RS2"])
         return
 
     def writeTable(self, fileName=""):
         """Code internal use only: advanced feature. Write in-memory table to database.
-        If a fileName is specified the table is written to a file and to the database."""
+        If a fileName is specified the table is written to a file and to the database.
+        """
         if self.LocalTable["Points"] < 1:
             print "Cannot Write Table to database for less than 2 points"
             return
         outList =[self.LocalTable["Points"],]
-        for i in ["Energy","C1","C2","RS2","RX2FINE"]:
+        for i in ["Energy","C1","C2","RS2"]:
             outList += [i,] + list(self.LocalTable[i])
         self.DP.put_property({"SPECK_LocalTable": outList})
         if fileName == "":
@@ -395,6 +395,7 @@ class mono1:
         Use setLocalTable to turn this option on."""
         self.useLocalTable = False
         self.DP.put_property({"SPECK_UseLocalTable":False})
+        self.restoreDefaultValues()
         return
 
     def takeValue(self, xtol=10):
@@ -405,7 +406,7 @@ class mono1:
         to remove the old table values.
         A value in energy closer than xtol is replaced"""
         pointValue = {"Energy": self.pos(), "C1": self.bender.c1.pos(),\
-        "C2": self.bender.c2.pos(),"RS2": self.m_rs2.pos(),"RX2FINE": self.m_rx2fine.pos()}
+        "C2": self.bender.c2.pos(),"RS2": self.m_rs2.pos(),}
         idx = self.LocalTable["Energy"].searchsorted(pointValue["Energy"])
         if numpy.any(abs(self.LocalTable["Energy"] - pointValue["Energy"]) < xtol ):
             #Replace Value
@@ -415,11 +416,11 @@ class mono1:
             if (abs(self.LocalTable["Energy"][idx] - pointValue["Energy"]) > xtol):
                 idx = max(idx-1, 0)
             print idx
-            for i in ["Energy","C1","C2","RS2","RX2FINE"]:
+            for i in ["Energy","C1","C2","RS2"]:
                 self.LocalTable[i][idx] = pointValue[i]
         else:
             self.LocalTable["Points"] += 1
-            for i in ["Energy","C1","C2","RS2","RX2FINE"]:
+            for i in ["Energy","C1","C2","RS2"]:
                 self.LocalTable[i] = array(list(self.LocalTable[i][:idx]) + [pointValue[i],]\
                 + list(self.LocalTable[i][idx:]),"f")
         #Update database if possible
@@ -436,50 +437,39 @@ class mono1:
         return
         
     def clearLocalTable(self):
-        self.DP.put_property({"SPECK_LocalTable":[0,"Energy","C1","C2","RS2","RX2FINE"]})
+        self.DP.put_property({"SPECK_LocalTable":[0,"Energy","C1","C2","RS2"]})
         self.DP.put_property({"SPECK_UseLocalTable":False})
         self.readTable()
         self.unsetLocalTable()
         return
     
     def printTable(self):
-        print "--------------------------"
-        print "Using Table ?",
+        s = "--------------------------\n"
+        s += "Using Table ?"
         if self.useLocalTable:
-            print "Yes"
+            s+= "Yes\n"
         else:
-            print "No"
-        print "--------------------------"
+            s+= "No\n"
+        s+= "--------------------------\n"
         cols= self.LocalTable.keys()
         cols.remove("Energy")
         cols.remove("Points")
-        cols= ["Energy",]+cols
-        #for i in list(cols):
-        #    if i.endswith("_spline"):
-        #        cols.remove(i)
+        cols= ["Energy",] + cols
         for i in cols:
-            print "%-15s\t"%i,
-        print ""
+            s += "%-15s\t"%i
         for i in range(self.LocalTable['Points']):
             for j in cols:
                 out ="%-15.5f\t" % (self.LocalTable[j][i])
-                print out,
-            print ""
-        return
+                s+= out
+            s+="\n"
+        return s + "\n"
     
     def printEnables(self):
-        print "Active Couplings"
-        print "________________"
+        s = "Active Couplings\n"
+        s += "________________\n"
         for i in ["Ts2","Rz2","Rs2"]:
-            print "%8s active ?"%i, bool(self.DataViewer.__getattr__("Enable"+i))
-        return
-
-    def calculateParametersFromTable(self):
-        """Take the localTable and calculate the coeffs of equations.
-        Write them in the dataviewer. The original coeffs can be restored with restoreDefaultValues
-        Rs2 and Rz2 are hardcoded to be linearly interpolated."""
-               
-        return
+            s += "%8s active ? %s\n"% (i, bool(self.DataViewer.__getattr__("Enable"+i)))
+        return s
 
     def restoreDefaultValues(self):
         """Use the DefaultValues stored as a property in DataViewer to reset the coeffs of equations.
@@ -520,13 +510,42 @@ class mono1:
             self.DataViewer.q = float(distance)
             return self.sample_at()
 
+    def check(self):
+        """Test mode and validity of configuration.
+        Returns a dictionary: {"valid":bool,"reason":string} """
+        s=""
+        valid = True
+        if self.DP.movingMode == 1:
+            if self.DP.velocity > 0:
+                if self.DP.movingTime <= 0:
+                    s += "Linear Motion with constant energy speed.\n"
+                elif self.DP.movingTime > 0:
+                    s += "Linear Motion programmed over %g s : please, do not use." 
+                    valide = False
+        elif self.DP.movingMode == 0:
+            s += "Fast Motion: individual maximum motor speed used.\n"
+            if self.DataView.EnableRz2:
+                valid = False
+                s += "Can't work with Rz2 enabled!\n" 
+        else:
+            s += "Moving mode not valid, only 0 and 1 allowed here.\n"
+            valid = False
+        return {"valid": valid, "reason": s}
+
     def status(self):
-        return "Nothing yet"
+        s=""
+        s += self.printTable()
+        s += self.printEnables()
+        s += self.check()["reason"]
+        s += "----------------------\n" 
+        for i in ["movingMode","movingTime","velocity","acceleration","EnergyOffset"]:
+            s += "%s = %g\n" % (i, self.DP.read_attribute(i).value)
+        return s
 
     def state(self):
         """In the PBR setup of SAMBA if the combined axis is in DISABLE state, it doesn't mean that the mono is not MOVING.
         On the other hand if the combined state is MOVING the other axis may be in disable. The state machine differs from usual."""
-        s = self.state() 
+        s = self.DP.state() 
         if s == DevState.MOVING:
             return s
         elif s == DevState.OFF:
@@ -585,8 +604,6 @@ class mono1:
             rec_q1=1./self.sample_at()
         else:    
             raise Exception("Monochromator "+self.label+" sample_at() == 0 ?!?")
-        if th<=0.:
-            raise Exception("Monochromator "+self.label+"Cannot compute curvature for theta<=0!")
         return 0.5 * (rec_p1 + rec_q1) / sin(th)
     
     def calculate_curvatureradius(self,theta):
@@ -604,9 +621,14 @@ class mono1:
             if self.emax <> None and energy > self.emax:
                 raise Exception("Requested energy above monochromator limit: %7.2f"%self.emax)
             theta = self.e2theta(energy)
-        #
-        #Write movement code here 
-        #
+            #
+            #Write movement code here
+            self.DP.position = energy
+            if not wait:
+                return
+            while(self.state() == DevState.MOVING):
+                sleep(self.deadtime)
+            #
         except (KeyboardInterrupt,SystemExit), tmp:
             self.stop()
             raise tmp
