@@ -95,7 +95,7 @@ def __m2Z(theta):
         return 33.
     else:
         return base+(Max-base)*(theta**rate/(theta**rate+xhalf**rate)) \
-        + get_ipython().user_ns["dcm"].H - 25.
+        + get_ipython().user_ns["dcm"].H() - 25.
         
 def __m2Roll(theta):
     return -5.
@@ -109,15 +109,15 @@ def __girder(theta):
 #Tables
 def __exafsZ(theta):
     #return 22.298+11.463*theta
-    #return __girder(theta) * 5.6 + get_ipython().shell.user_ns["dcm"].H
+    #return __girder(theta) * 5.6 + get_ipython().shell.user_ns["dcm"].H()
     #Offset -1.17 since 9/2/2016 due to ion chambers realignement. (EF)
-    return 11.2074018292933 * theta + 0.3438106790538 -1.17 + get_ipython().user_ns["dcm"].H
+    return 11.2074018292933 * theta + 0.3438106790538 -1.17 + get_ipython().user_ns["dcm"].H()
     
 def __obxgZ(theta):
     #shell=get_ipython()
     #dcm = shell.user_ns["dcm"]
     #del shell
-    return __girder(theta) * 5.6 + get_ipython().user_ns["dcm"].H
+    return __girder(theta) * 5.6 + get_ipython().user_ns["dcm"].H()
 
 
 #Alias for SEXAFS users
@@ -251,7 +251,7 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
         vgap1.pos(max(0.1,theta-0.4))
         vgap2.pos(theta+2.)
     #The -1 in the following line is an empiric al correction : 30/6/2015
-    vpos2.pos(get_ipython().user_ns["dcm"].H - 25. -1.)
+    vpos2.pos(get_ipython().user_ns["dcm"].H() - 25. -1.)
     print "Primary   vertical slits aperture: vgap1 = %6.4f mm"%(vgap1.pos())
     print "Secondary vertical slits aperture: vgap2 = %6.4f mm"%(vgap2.pos())
     print "Secondary vertical slits position: vpos2 = %6.4f mm"%(vpos2.pos())

@@ -514,6 +514,16 @@ class mono1:
             self.DataViewer.p = float(distance)
             return self.sample_at()
 
+    def d(self):
+        return self.DataViewer.d
+
+    def H(self, H=-10):
+        if H<0:
+            return self.DataViewer.H
+        elif 10 < H < 35:
+            self.DataViewer.H = H
+        return self.DataViewer.H
+    
     def check(self):
         """Test mode and validity of configuration.
         Returns a dictionary: {"valid":bool,"reason":string} """

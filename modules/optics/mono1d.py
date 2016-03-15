@@ -292,8 +292,8 @@ class mono1:
         self.deadtime=deadtime
         self.delay=delay
         self.counter_channel=counter_channel
-        self.H=H
-        self.d=d
+        self.parH = H
+        self.pard = d
         self.emin=emin
         self.emax=emax
         self.motors=[]
@@ -614,6 +614,16 @@ class mono1:
             self.DP.write_attribute("qDistance",distance)
             return self.sample_at()
 
+    def H(self, H=-10):
+        if H<0:
+            return self.parH
+         else:
+             self.parH = H
+         return self.parH
+        
+    def d(self):
+        return self.pard
+
     def status(self):
         return "Nothing yet"
 
@@ -650,25 +660,25 @@ class mono1:
         
     def e2theta(self,energy):
         """Calculate the energy for a given angle"""
-        return arcsin(12398.41857/(2.*self.d*energy))/pi*180.
+        return arcsin(12398.41857/(2.*self.d()*energy))/pi*180.
 
     def theta2e(self,theta):
         """Calculate the angle for a given energy"""
-        return 12398.41857/(2.*self.d*sin(theta/180.*pi))
+        return 12398.41857/(2.*self.d()*sin(theta/180.*pi))
 
     def ts2(self,theta):
         """Calculate ts2 position for a given angle"""
-        return max(35., self.H*0.5/sin(theta/180.*pi))
+        return max(35., self.H()*0.5/sin(theta/180.*pi))
 
     def tz2(self,theta):
         """Calculate tz2 position for a given angle"""
-        return self.H*0.5/cos(theta/180.*pi)
+        return self.H()*0.5/cos(theta/180.*pi)
     
     def calculate_curvature(self,theta, distance=None):
         """The sample distance and source distance are referred to the center of rotation of the first crystal.
         This is not exact, but turns out to be a good approximation. The more accurate code is commented and ready for use."""
 	th=theta/180.*pi
-        #rec_p1=1./(self.sourceDistance+self.H/sin(2.*th))
+        #rec_p1=1./(self.sourceDistance+self.H()/sin(2.*th))
 	if self.sourceDistance<>0.:
 	    rec_p1=1./self.sourceDistance 
 	else:

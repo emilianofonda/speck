@@ -1929,7 +1929,7 @@ class escan_class:
             print "Error when getting motors positions!"
             print tmp
         buffer.append("#dcm is focusing at %6.3f m\n"%(self.dcm.sample_at()))
-        buffer.append("#dcm  2d spacing is %8.6f m\n"%(self.dcm.d*2.))
+        buffer.append("#dcm  2d spacing is %8.6f m\n"%(self.dcm.d()*2.))
         buffer.append("#2d spacing for common crystals [A]: 2d[Si(111)]=6.2712 2d[Si(220)]=3.8403 2d[Si(311)]=3.2749\n")
         try:
             buffer.append("#Machine Current = %g\n"%(self.ms.read_attribute("current").value))
