@@ -153,7 +153,7 @@ __Universal_Syntax_Keywords={"mv":[],"mvr":[],"fw":[],"bw":[],"start":[],"stop":
 "ascan":[],"a2scan":[],"dscan":[],"init":[],"xascan":[],"escan":[1,2],\
 "xdscan":[],"set_mon":[],"where_mon":[],"shopen":[],"shclose":[], "shstate":[], "pos":[],"on":[],"off":[],\
 "lm":[],"lmset":[],"lmunset":[],"domacro":[1],"editmacro":[1],"tscan":[],"timescan":[],"close":[],"open":[],"setroi":[],
-"setuser":[1],"state":[],"status":[],"instrument":[1]}
+"setuser":[1],"state":[],"status":[],"instrument":[1],"ps":[]}
 
 def universal_lineparser(line):
     try:

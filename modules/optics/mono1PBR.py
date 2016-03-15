@@ -61,12 +61,12 @@ class sagittal_bender:
         If you have to increase the value of the bender.pos od DX, 
         you have to type bender.offset(DX) and this function will set 
         a -DX offset on the two motors."""
-        oc1=self.c1.offset()
-        oc2=self.c2.offset()
+        oc1 = self.c1.offset
+        oc2 = self.c2.offset
         if dest<>None:
-            self.c1.offset(oc1-dest)
-            self.c2.offset(oc2-dest)
-        return {"Old offsets":[oc1,oc2],"New offsets":[self.c1.offset(),self.c2.offset()]}
+            self.c1.offset = oc1-dest
+            self.c2.offset = oc2-dest
+        return {"Old offsets":[oc1,oc2],"New offsets":[self.c1.offset, self.c2.offset]}
     
     def stop(self):
         self.c1.stop()
@@ -302,7 +302,7 @@ class mono1:
     def off(self):
         for i in self.motors: i.off()
         return self.state()
-   
+  
     def readTable(self):
         """This function reads the table from the database and prepare the interpolation.
         Coefficients are then written to PowerBrick through the DataViewer
@@ -331,20 +331,21 @@ class mono1:
         if np == 1:
             self.useLocalTable = False
             return
-        #Calculate coefficients and update DataViewer
-        x = self.e2theta(self.LocalTable["Energy"])
-        crv = self.calculate_curvature(x)
-        A11, A10 = numpy.polyfit(crv, self.LocalTable["C1"])
-        A21, A20 = numpy.polyfit(crv, self.LocalTable["C2"])
-        self.DataView.A11 = A11
-        self.DataView.A10 = A10 - self.bender.c1.offset()
-        self.DataView.A11 = A21
-        self.DataView.A10 = A20 - self.bender.c2.offset()
-        self.DataView.Rs2_C5 = 0.
-        self.DataView.Rs2_C4 = 0.
-        self.DataView.Rs2_C3 = 0.
-        self.DataView.Rs2_C2 = 0.
-        self.DataView.Rs2_C1, self.DataView.Rs2_C0 = numpy.polyfit(x, self.LocalTable["RS2"])
+        if self.useLocalTable:
+            #Calculate coefficients and update DataViewer
+            x = self.e2theta(self.LocalTable["Energy"])
+            crv = self.calculate_curvature(x)
+            A11, A10 = numpy.polyfit(crv, self.LocalTable["C1"],1)
+            A21, A20 = numpy.polyfit(crv, self.LocalTable["C2"],1)
+            self.DataViewer.A11 = A11
+            self.DataViewer.A10 = A10 - self.bender.c1.offset
+            self.DataViewer.A21 = A21
+            self.DataViewer.A20 = A20 - self.bender.c2.offset
+            self.DataViewer.Rs2_C5 = 0.
+            self.DataViewer.Rs2_C4 = 0.
+            self.DataViewer.Rs2_C3 = 0.
+            self.DataViewer.Rs2_C2 = 0.
+            self.DataViewer.Rs2_C1, self.DataViewer.Rs2_C0 = numpy.polyfit(x, self.LocalTable["RS2"],1)
         return
 
     def writeTable(self, fileName=""):
@@ -457,6 +458,7 @@ class mono1:
         cols= ["Energy",] + cols
         for i in cols:
             s += "%-15s\t"%i
+        s += "\n"
         for i in range(self.LocalTable['Points']):
             for j in cols:
                 out ="%-15.5f\t" % (self.LocalTable[j][i])
@@ -474,10 +476,12 @@ class mono1:
     def restoreDefaultValues(self):
         """Use the DefaultValues stored as a property in DataViewer to reset the coeffs of equations.
         Values are written in the property SPECK_DefaultValues of DataViewer."""
+        if self.state() == DevState.MOVING:
+                raise Exception("mono1PBR.restoreDefaultValues: Cannot write attributes while in moving state!")
         DefVal = self.DataViewer.get_property("SPECK_DefaultValues")['SPECK_DefaultValues']
         for i in DefVal:
             s = i.split("=")
-            self.DataViewer.write_attribute(i[0].strip(),float(i[1]))
+            self.DataViewer.write_attribute(s[0].strip(),float(s[1]))
         return
 
     def disable_ts2(self):
@@ -503,11 +507,11 @@ class mono1:
 
     def sample_at(self,distance=None):
         if distance==None:
-            return self.DataViewer.q
+            return self.DataViewer.p
         else:
             if self.state()==DevState.MOVING:
                 raise Exception("Trying to write q on dcm while dcm is moving!")
-            self.DataViewer.q = float(distance)
+            self.DataViewer.p = float(distance)
             return self.sample_at()
 
     def check(self):
@@ -524,14 +528,26 @@ class mono1:
                     valide = False
         elif self.DP.movingMode == 0:
             s += "Fast Motion: individual maximum motor speed used.\n"
-            if self.DataView.EnableRz2:
+            if self.DataViewer.EnableRz2:
                 valid = False
                 s += "Can't work with Rz2 enabled!\n" 
         else:
             s += "Moving mode not valid, only 0 and 1 allowed here.\n"
             valid = False
         return {"valid": valid, "reason": s}
-
+    
+    def mode(self, mode=-1):
+        """Accepted moving modes are:
+        0: fast   (for seten or rough positioning)
+        1: linear (for scans)
+        """
+        if self.state() == DevState.MOVING:
+            raise Exception("mono1.PBR: cannot change moving mode while moving!")
+        if mode <0 or mode >1:
+            return self.DP.movingMode
+        self.DP.movingMode = mode
+        return self.DP.movingMode
+    
     def status(self):
         s=""
         s += self.printTable()
@@ -589,7 +605,7 @@ class mono1:
 
     def ts2(self,theta):
         """Calculate ts2 position for a given angle"""
-        return max(35., self.DataVivewer.H*0.5/sin(theta/180.*pi))
+        return max(35., self.DataViewer.H*0.5/sin(theta/180.*pi))
 
     def tz2(self,theta):
         """Calculate tz2 position for a given angle"""
@@ -598,13 +614,13 @@ class mono1:
     def calculate_curvature(self,theta):
         """The sample distance and source distance are referred to the center of rotation of the first crystal.
         This is not exact, but turns out to be a good approximation. The more accurate code is commented and ready for use."""
-        th=theta/180.*pi
-        rec_p1=1./self.DataViewer.q
-        if self.sample_at()<>0.: 
-            rec_q1=1./self.sample_at()
+        th = theta/180.*pi
+        rec_q = 1. / self.DataViewer.q
+        if self.sample_at() <> 0.: 
+            rec_p = 1. / self.sample_at()
         else:    
-            raise Exception("Monochromator "+self.label+" sample_at() == 0 ?!?")
-        return 0.5 * (rec_p1 + rec_q1) / sin(th)
+            raise Exception("Monochromator " + self.label + " sample_at() == 0 ?!?")
+        return 0.5 * (rec_p + rec_q) / sin(th)
     
     def calculate_curvatureradius(self,theta):
         return 1./self.calculate_curvature(theta)
@@ -623,7 +639,7 @@ class mono1:
             theta = self.e2theta(energy)
             #
             #Write movement code here
-            self.DP.position = energy
+            self.DP.Energy = energy
             if not wait:
                 return
             while(self.state() == DevState.MOVING):
@@ -643,7 +659,7 @@ class mono1:
             print "\nUnknown Error"
             print "Positions energy, theta=", self.pos(), self.m_rx1.pos()
             raise tmp
-        return self.pos()
+        return self.DP.Energy
 
     def move(self,energy=None,wait=True):
         """Please use pos instead. Move is obsolete and subject ro removal in next future. """
@@ -663,11 +679,11 @@ class mono1:
         It requires the experimental energy position of the spectral feature as first argument
         and the true energy of the feature as second argument
         calibrate(Energy_I_See,Energy_From_Tables)"""
-        print "Main goniometer offset was: %8.6f"%(self.m_rx1.offset())
-        offset=self.m_rx1.offset()+self.e2theta(true_energy)-self.e2theta(experiment_energy)
+        print "Main goniometer offset was: %8.6f"%(self.m_rx1.offset)
+        offset=self.m_rx1.offset + self.e2theta(true_energy) - self.e2theta(experiment_energy)
         print "New goniometer offset is:   %8.6f"%(offset)
         oe=self.pos()
-        self.m_rx1.offset(offset)
+        self.m_rx1.offset = offset
         return {"Old energy":oe,"New energy":self.pos()}
 
 
@@ -817,10 +833,25 @@ class mono1:
         print "Detuned=",inow/0.2," Position=",p
         return p
     
+    def calculate_rz2(self,energy):
+        """Legacy: retrieves coeffs from DataViewer and computes Rz2 for seten.
+        This code will be removed after correction of mode 0 move of the combined axis:
+        a bug obliges us to move rz2 separately."""
+        polyC = map(lambda x: x.value, self.DataViewer.read_attributes(["Rz2_C5","Rz2_C4","Rz2_C3","Rz2_C2","Rz2_C1","Rz2_C0"]))
+        return numpy.polyval(polyC, self.e2theta(energy))
 
-    def seten(self, energy=None):
+    def calculate_rx2(self,energy):
+        """Legacy: retrieves coeffs from dcm property and computes Rx2 for seten.
+        Code to be completed"""
+        lbl = "SPECK_RX2_Cn"
+        Cn = list(self.DP.get_property(lbl)[lbl])[::-1]
+        if Cn == []:
+            raise Exception("mono1PBR: SPECK_RX2_Cn property is undefined in mono1 Device! Cannot compute Rs2!")
+        return numpy.polyval(array( Cn, "f"), self.e2theta(energy))
+
+    def seten(self, energy=None, Calculate=False):
         if energy == None:
-            return self.pos(energy,Ts2_Moves=True)
+            return self.pos(energy)
         try:
             shell=get_ipython()
             shell.user_ns["mostab"].stop()
@@ -831,19 +862,36 @@ class mono1:
             shell.user_ns["mostab"].pos(5.)
         except Exception, tmp:
             print tmp
-        print "Enabling Ts2 movement...",
+        print "Enabling Ts2, Rs2: ",
         self.enable_ts2()
+        self.enable_rs2()
         print "OK"
+        print "Moving Mode: ",
+        self.DP.movingMode=0
+        print self.DP.movingMode
         try:
             self.m_rx2fine.pos(5)
         except:
             pass
-        #
+        
         #Insert Move code here
+        if Calculate:
+            print "Should move to ",energy, "eV"
+            print "Should move Rz2 to ", self.calculate_rz2(energy)
+            print "Should move Rx2 to ", self.calculate_rx2(energy)
+            print "Should move [C1, C2] to", self.bender.calculate_steps_for_curv(self.calculate_curvature(self.e2theta(energy)))
+        else:
+            move_motor(self, energy, self.m_rx2, self.calculate_rx2(energy))
+            move_motor(self.m_rz2, self.calculate_rz2(energy))
         #
-        print "Disabling Ts2 movement...",
+        
+        print "Disabling Ts2, Rs2: ",
         self.disable_ts2()
+        self.disable_rs2()
         print "OK"
+        print "Moving Mode: ",
+        self.DP.movingMode=1
+        print self.DP.movingMode
         try:
             shell.user_ns["mostab"].start()
         except:

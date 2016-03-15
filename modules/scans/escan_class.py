@@ -660,7 +660,7 @@ class escan_class:
         points=array(self.__fibonacci(dummypoints+2)[-1:1:-1])*(-de)+energy
         print "Performing backlash recovery over: ",points
         for en in points:
-            self.dcm.pos(en,Ts2_Moves=self.Ts2_Moves,Tz2_Moves=not(self.notz2))
+            self.dcm.pos(en)
             sleep(deadtime)
         return
 
@@ -680,7 +680,7 @@ class escan_class:
             #Backlash recovery
             #self.backlash_recovery(self.tuning_points[0][i])
             #
-            self.dcm.pos(self.tuning_points[0][i],Ts2_Moves=self.Ts2_Moves,Tz2_Moves=not(self.notz2))
+            self.dcm.pos(self.tuning_points[0][i])
             print "Tuning point at E=",self.dcm.pos()
             if self.detune==1:
                 self.tuning_points[1][i]=self.dcm.tune()
@@ -1417,7 +1417,7 @@ class escan_class:
             dummy_point = (2 * self.trajectory["energy"][0]) - self.trajectory["energy"][1]
             if self.TUNING: 
                 self.dcm.m_rx2fine.pos(self.lin_interp(dummy_point, self.tuning_points))
-            self.dcm.pos(dummy_point, Ts2_Moves = self.Ts2_Moves, Tz2_Moves = not(self.notz2))
+            self.dcm.pos(dummy_point)
             sleep(1)
             while(pointIndex < len(self.trajectory["energy"])):
                 try:    
@@ -1453,7 +1453,7 @@ class escan_class:
                     #        self.cpt.start(tmeasure)
                     #    else:
                     #        self.cpt.start(10)
-                    actual = self.dcm.pos(en, Ts2_Moves = self.Ts2_Moves, Tz2_Moves = not(self.notz2))
+                    actual = self.dcm.pos(en)
                     if motors_to_wait <>[]:
                         wait_motor(motors_to_wait, verbose=False)
                     actual = self.dcm.pos()
@@ -1906,7 +1906,7 @@ class escan_class:
             if self.TUNING and self.iscan>=1:
 #            if self.TUNING:
                 print "Retuning first point..."
-                self.dcm.pos(self.tuning_points[0][0], Ts2_Moves=self.Ts2_Moves, Tz2_Moves=not(self.notz2))
+                self.dcm.pos(self.tuning_points[0][0])
                 if self.RollCorrection:
                     self.dcm.m_rs2.pos(self.calculate_roll(self.tuning_points[0][0]))
                 if self.detune==1:
