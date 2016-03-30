@@ -2,6 +2,8 @@ import dentist
 import thread
 import tables
 import os
+import numpy
+import time as myTime
 
 cardCT = DeviceProxy("d09-1-c00/ca/cpt.3_old")
 cardAI = DeviceProxy("d09-1-c00/ca/sai.1")
@@ -52,12 +54,14 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1):
 
     #Card XIA
     cardXIA1.nbPixels = NumberOfPoints
-    cardXIA1.streamNbAcqPerFile = 100
+    cardXIA1.streamNbAcqPerFile = 250
     cardXIA1.set_timeout_millis(10000)
-    cardXIA1dataShape = [cardXIA1.streamNbDataPerAcq, NumberOfPoints]
-    cardXIA1roi = map(int, cardXIA.getrois()[1].split(",")[1:])
-    XIANexusPath = os.listdir("/nfs" + cardXIA1.streamTargetPath.replace("\\","/")[1:])
-    
+    cardXIA1dataShape = [NumberOfPoints,cardXIA1.streamNbDataPerAcq ]
+    roiStart, roiEnd = map(int, cardXIA1.getrois()[1].split(",")[1:])
+    XIA1NexusPath = "/nfs" + cardXIA1.streamTargetPath.replace("\\","/")[1:]
+    #MIssing reset Nexus index and cleanup spool
+    cardXIA1.streamresetindex()
+    map(lambda x: os.remove(XIA1NexusPath +os.sep + x), os.listdir(XIA1NexusPath))
     if dcm.state() == DevState.DISABLE:
         dcm.on()
     try:
@@ -104,7 +108,7 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1):
             dcm.pos(e2, wait=False)
             sleep(2)
             XIA1filesList=[]
-            fluo=[]
+            fluoX=[]
             while(dcm.state() == DevState.MOVING):
                 try: 
                     I0 = cardAI.historizedchannel0
@@ -114,20 +118,28 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1):
                     ll = min(len(ene), len(xmu))
                     GnuWin.plot(Gnuplot.Data(ene[:ll],xmu[:ll]))
                     GnuWin2.plot(Gnuplot.Data(ene[:ll],I0[:ll], title="I0"),Gnuplot.Data(ene[:ll],I1[:ll], title="I1"))
-                    tmp = sort(os.listdir(XIA1NexusPath))
+                    tmp = os.listdir(XIA1NexusPath)
+                    tmp.sort()
+                    for i in tuple(tmp):
+                        if not i.startswith(cardXIA1.streamTargetFile):
+                            tmp.remove(i)
                     if len(tmp) > len(XIA1filesList):
+                        #print tmp
                         for name in tmp[len(XIA1filesList):]:
-                            if name.startswith(cardXIA1.streamTargetFile):
-                                XIA1filesList.append(name)
-                                print "New XIA1 file found:", name
-                                f = tables.openFile(XIA1NexusPath + os.sep + name)
-                                fluoSeg=zeros([cardXIA1.streamNbAcqPerFile,cardXIA1.streamNbDataPerAcq],numpy.float32)
-                                for ch in cardXIA1Channels:
-                                    fluoSeg += eval("f.root.entry.scan_data.channel%02i"%ch).read()
-                                f.close()
-                                fluoSeg = sum(fluoSeg[:,cardXIAroi[0]:cardXIAroi[2]],axis=1) / I0[ll-len(fluoSeg):ll]
-                                GnuWin3.plot(Gnuplot.Data(ene[ll-len(fluoSeg):ll],fluoSeg))
-                except:
+                            XIA1filesList.append(name)
+                            print "New XIA1 file found: ", name, " --> Fluo graph update."
+                            f = tables.openFile(XIA1NexusPath + os.sep + name,"r")
+                            fluoSeg=zeros([cardXIA1.streamNbAcqPerFile,cardXIA1.streamNbDataPerAcq],numpy.float32)
+                            for ch in cardXIA1Channels:
+                                fluoSeg += eval("f.root.entry.scan_data.channel%02i"%ch).read()
+                            f.close()
+                            fluoSeg = sum(fluoSeg[:,roiStart:roiEnd],axis=1) 
+                            fluoX += list(fluoSeg)
+                            ll = len(fluoX)
+                            if len(I0) >= ll:
+                                GnuWin3.plot(Gnuplot.Data(ene[:ll], array(fluoX)/I0[:ll]))
+                except Exception, tmp:
+                    print tmp
                     pass
                 sleep(1)
             while(DevState.RUNNING in [cardCT.state(),]):
@@ -171,30 +183,52 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1):
             for i in wa(returns=True, verbose=False):
                 FInfo.write("#" + i + "\n")
             FInfo.close()
-            print "Local Data saved."
-            if NofScans >1:
+            print myTime.asctime(), " : Local Data saved."
+            if NofScans >1: 
                 dcm.DP.velocity = 60
                 dcm.mode(1)
                 dcm.pos(e1-1., wait=False)
             if __Default_Backup_Folder <> "":
                 os.system("cp " + ActualFileNameData +" " +filename2ruche(ActualFileNameData))
                 os.system("cp " + ActualFileNameInfo +" " +filename2ruche(ActualFileNameInfo))
-                XIA1files = map(lambda x: tables.openFile(XIANexusPath +os.sep + x), os.listdir(XIANexusPath))
-                bigMem = numpy.zeros(cardXIA1dataShape, numpy.uint32)
+                XIAt0=time()
+                while(cardXIA1.state() == DevState.RUNNING):
+                    sleep(0.2)
+                    if time() - XIAt0 > 60:
+                        raise Exception("Time Out waiting for XIA card to stop! Waited more than 60s... !")
+                XIA1filesNames = os.listdir(XIA1NexusPath)
+                for i in tuple(XIA1filesNames):
+                    if not i.startswith(cardXIA1.streamTargetFile):
+                        XIA1filesNames.remove(i)
+                XIA1files = map(lambda x: tables.openFile(XIA1NexusPath +os.sep + x), XIA1filesNames)
                 outtaName = filename2ruche(ActualFileNameData)
-                outtaHDF = tables.openFile(outtaName[:outtaName.rfind(".")] + "XIA.hdf","w")
-                outtaHDF.createGroup("/","MCA")
-                for ch in cardXIA1channels:
+                outtaHDF = tables.openFile(outtaName[:outtaName.rfind(".")] + ".hdf","w")
+                outtaHDF.createGroup("/","XIA")
+                outtaHDF.createArray("/XIA", "mcaSum", numpy.zeros(cardXIA1dataShape, numpy.uint32))
+                for ch in cardXIA1Channels:
+                    outtaHDF.createArray("/XIA", "fluo%02i"%ch, numpy.zeros(NumberOfPoints, numpy.uint32))
                     block = 0
                     blockLen = cardXIA1.streamNbAcqPerFile
+                    pointerCh = eval("outtaHDF.root.XIA.fluo%02i"%ch)
                     for XFile in XIA1files:
-                        bigMem[block * blockLen: (block + 1) * blockLen] = eval("XFile.root.entry.scan_data.channel%02i"%ch).read()
+                        __block = eval("XFile.root.entry.scan_data.channel%02i"%ch).read()
+                        outtaHDF.root.XIA.mcaSum[block * blockLen: (block + 1) * blockLen,:] += __block
                         block += 1
-                    outtaHDF.createArray("/MCA", "channel%02i"%ch, bigMem)
-                del bigMem
+                        pointerCh[block * blockLen: (block + 1) * blockLen] = sum(__block[:,roiStart:roiEnd], axis=1)
+                fluoX = sum(outtaHDF.root.XIA.mcaSum[:,roiStart:roiEnd], axis=1) / I0
+                outtaHDF.createGroup("/","Spectra")
+                outtaHDF.createArray("/Spectra", "xmu_sample", xmu)
+                outtaHDF.createArray("/Spectra", "xmu_standard", log(I1/I2))
+                outtaHDF.createArray("/Spectra", "xmu_fluo", fluoX)
+                outtaHDF.createGroup("/","Raw")
+                outtaHDF.createArray("/Raw", "Energy", ene)
+                outtaHDF.createArray("/Raw", "I0", I0)
+                outtaHDF.createArray("/Raw", "I1", I1)
+                outtaHDF.createArray("/Raw", "I2", I2)
                 outtaHDF.close()
                 map(lambda x: x.close(), XIA1files)
-                map(lambda x: os.remove(XIANexusPath +os.sep + x), os.listdir(XIANexusPath))
+                map(lambda x: os.remove(XIA1NexusPath +os.sep + x), os.listdir(XIA1NexusPath))
+                print myTime.asctime(), " : HDF Data saved to backup."
             try:
                 if e1 < e0 <e2:
                     #thread.start_new_thread(dentist.dentist, (ActualFileNameData,), {"e0":e0,})
@@ -202,10 +236,12 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1):
             except Exception, tmp:
                 print tmp
     except Exception, tmp:
-        dcm.stop()
+        #dcm.stop()
         cardCT.stop()
         cardAI.stop()
+        cardXIA1.stop()
         print "Acquisition Halted on Exception!"
+        print tmp
         raise tmp
     return
 
