@@ -816,3 +816,6 @@ instrument("FORNO")
 
 #Enable setMCAconfig and getMCAconfig
 domacro("changePeakingTime")
+
+#Load Energy Continuous Scan
+domacro("ecscan")

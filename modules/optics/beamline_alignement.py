@@ -98,7 +98,8 @@ def __m2Z(theta):
         + get_ipython().user_ns["dcm"].H() - 25.
         
 def __m2Roll(theta):
-    return -5.
+    #return -5.
+    return 0.
 #Girder
 def __girder(theta):
     if theta<=1e-2:

@@ -146,7 +146,14 @@ def instrument(name=None):
 def atkpanel(object):
     try:
         atkpanel_command=os.popen("which atkpanel").readlines()[0].strip()
-        __oname__=object.DP.dev_name()
+        try:
+            __oname__=object.DP.dev_name()
+        except:
+            try:
+                __oname__=object.dev_name()
+            except:
+                print "Cannot ..."
+         
         print "atkpanel ",__oname__
         #os.spawnvp(os.P_NOWAIT,"/usr/Local/DistribTango/soleil-root/tango/bin/atkpanel",[" ",__oname__])
         os.system(atkpanel_command+" "+__oname__+" >& /dev/null &")

@@ -617,9 +617,9 @@ class mono1:
     def H(self, H=-10):
         if H<0:
             return self.parH
-         else:
-             self.parH = H
-         return self.parH
+        else:
+            self.parH = H
+        return self.parH
         
     def d(self):
         return self.pard

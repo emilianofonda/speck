@@ -652,14 +652,22 @@ class escan_class:
                 S.append(S[i]+S[i-1])    
         return S[0:n]
         
-    def backlash_recovery(self,energy,de=None,dummypoints=3,deadtime=0.0):
+    def backlash_recovery(self,energy,de=None,dummypoints=20,deadtime=0.1):
         """Execute a backlash recovery for the monochromator and then set it to e-de:
         de=2, dummypoints=3;  moves to energy-de*2, energy-de*2, energy-de"""
+        #Speed up movement to first point
+        self.dcm.mode(1)
+        self.dcm.velocity(100)
+        #
         if de==None:
             de=max(self.trajectory["energy"][1]-self.trajectory["energy"][0],1.)
-        points=array(self.__fibonacci(dummypoints+2)[-1:1:-1])*(-de)+energy
+        #points=array(self.__fibonacci(dummypoints+2)[-1:1:-1])*(-de)+energy
+        points=numpy.arange(self.trajectory["energy"][0] - de * dummypoints, self.trajectory["energy"][0], de)
         print "Performing backlash recovery over: ",points
-        for en in points:
+        self.dcm.pos(points[0])
+        #Go back to dcm cruise speed
+        self.dcm.velocity(10)
+        for en in points[1:]:
             self.dcm.pos(en)
             sleep(deadtime)
         return
@@ -1883,13 +1891,20 @@ class escan_class:
     def pre_scan(self,handler=None,handlerFull=None, nowait=False):
         """Execute all operations needed before every and each scan."""
         #Backlash recovery
-        if self.iscan>=0 or not(self.TUNING): self.backlash_recovery(self.e1)
+        if self.iscan>=0 or not(self.TUNING): 
+            self.backlash_recovery(self.e1)
         #
         if self.RollCorrection:
             try:
                 self.dcm.m_rs2.pos(self.calculate_roll(self.e1-4))
             except:
                 print "pre_scan: Error while moving dcm.m_rs2 to first point"
+        #Set dcm speed at 10eV/s and mode 1
+        try:
+            self.dcm.mode(1)
+            self.dcm.velocity(10)
+        except:
+            pass
         #Wait for injection if necessary
         if(not(nowait)):
             if(not(checkTDL(self.FE))):
@@ -2014,7 +2029,10 @@ class escan_class:
         #    self.dcm.usetz2(self.previous_dcm_tz2_setting)
         #if(self.BENDER):
         #    self.dcm.usebender(self.__previous_dcm_bender_state)
-        self.EndOfRunAlert()
+        print "Setting speed of monochromator at 100 eV/s for setup...",
+        self.dcm.velocity(100)
+        print "OK"
+        self.EndOfRunAlert()        
         return
     
 
