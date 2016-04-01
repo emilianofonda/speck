@@ -7,15 +7,24 @@ def polySc(x,*args):
     return pylab.polyval(args, x)   
 
 def dentist(filename, e0=20060., \
-pre1  = -300, pre2  = -70, nor1  =  50, nor2  = -1,\
-poly1 =  20., poly2 =  -1, polyN =  -1, kweight = -1):
+pre1  = -300, pre2  = -60, nor1  =  60, nor2  = -1,\
+poly1 =  20., poly2 =  -1, polyN =  -1, kweight = -1, mode="t"):
+    """mode can be t = transmission or f = fluorescence or s = standard
+    """
     baseFilename = filename[:filename.rfind(".")]
     m = pylab.loadtxt(filename).transpose()
     fig1 = pylab.figure(1,figsize=[12,10],facecolor="w")
     fig1.clear()
     m=m[:,pylab.argsort(m[0])]
     ene = m[0]
-    xmu = m[2]
+    if mode == "t" or mode =="":
+        xmu = m[2]
+    elif mode == "f":
+        xmu = m[3]
+    elif mode == "s":
+        xmu = m[4]
+    else:
+        raise Exception("unknown dentist mode.")
     
     if nor2 < 0 :
         nor2 = ene[-1]
@@ -72,7 +81,7 @@ poly1 =  20., poly2 =  -1, polyN =  -1, kweight = -1):
             kweight =1
 
     if polyN < 0:
-        polyN = min(9, numpy.round(chiK[-1]/2.5))
+        polyN = min(9, numpy.round(chiK[-1]/2.))
     
     #bkgPoly = pylab.polyfit(chiK, chi, polyN, w=chiK**kweight)
     bkgPoly = scipy.optimize.curve_fit(polySc,chiK, chi, [1.,]*polyN, sigma=1./chiK**kweight)[0]
@@ -109,11 +118,14 @@ poly1 =  20., poly2 =  -1, polyN =  -1, kweight = -1):
     pylab.legend(loc="best",ncol=2, frameon=False)
     pylab.arrow(ene[ie0],0,0,1.1,ls="dotted",color="red")
     pylab.xlim([e0-70.,e0+120])
+    pylab.ylim([-1.5,1.5])
     pylab.xlabel("Energy (eV)")
 
     pylab.subplot(223)
     pylab.plot(chiK, exafs * chiK**kweight,"b--",label="$k^%i\chi(k)$"%kweight)
-    pylab.plot(chiK, (bkg-pylab.polyval(norPoly,chiE))*chiK**kweight * 0.1, label="${\mu_0}/{10}$")
+    #pylab.plot(chiK, (bkg-pylab.polyval(norPoly,chiE))*chiK**kweight * 0.1 * \
+    #(max(exafs)/(bkg-pylab.polyval(norPoly,chiE))), label="${\mu_0}/{10}$")
+   
     pylab.xlabel("k ($\AA^{-1}$)")
     pylab.ylabel("$k^%i$$\chi$(k)"%kweight)
     
@@ -123,6 +135,7 @@ poly1 =  20., poly2 =  -1, polyN =  -1, kweight = -1):
     pylab.plot(iexafs[0], iexafs[1] * iexafs[0]**kweight, "r-", linewidth=1,label="$Interp(k^%i\chi(k))$"%kweight)
     pylab.xlim([min(chiK),max(chiK)])
     pylab.legend(loc="best",ncol=1, frameon=False)
+    pylab.grid()
     
     pylab.subplot(224)
 
