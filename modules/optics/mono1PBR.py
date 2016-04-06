@@ -133,8 +133,13 @@ class sagittal_bender:
                 self.c1.go(dest1)
                 self.c2.go(dest2)
                 return dest
-            self.c1.go(dest1)
-            self.c2.go(dest2)
+            try:
+                self.c1.go(dest1)
+                self.c2.go(dest2)
+            except:
+                sleep(0.2)
+                self.c1.go(dest1)
+                self.c2.go(dest2)
             t=time()
             while((self.state()<>DevState.MOVING) and (time()-t<self.timeout)):
                 sleep(self.deadtime)
@@ -662,7 +667,11 @@ class mono1:
             theta = self.e2theta(energy)
             #
             #Write movement code here
-            self.DP.Energy = energy
+            try:
+                self.DP.Energy = energy
+            except:
+                sleep(0.2)
+                self.DP.Energy = energy
             if not wait:
                 return
             while(self.state() == DevState.MOVING):

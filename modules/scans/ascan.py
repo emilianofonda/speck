@@ -2,6 +2,7 @@ from time import strftime,gmtime,sleep,localtime,asctime
 from time import time as cputime
 from numpy import round, array, sum, mean, loadtxt, savetxt
 import os
+import pylab
 
 from PyTango import DeviceProxy
 
@@ -191,7 +192,7 @@ def __backup_data():
 
 #def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,name=None,delay=0.,glob=globals(),scaler="ct",comment="",fullmca=False,graph=0, n = 1):
 def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,name=None,delay=0.,delay0=0.,\
-scaler="ct",comment="",fullmca=False,graph=0, n = 1):
+scaler="ct",comment="",fullmca=False,graph=1, n = 1):
     """Scan mot from p1 to p2 with step dp, reads ct for dt seconds. The default timebase is named ct."""
     #glob=globals()
     glob  = get_ipython().user_ns
@@ -342,7 +343,7 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
         #You could use this if persist=1 does not work:
         ml=min(len(x),len(y))
         try:
-            if graph >= 0 :
+            if graph > 0 :
                 xplot(x[:ml],y[:ml],graph=graph)
         except (KeyboardInterrupt,SystemExit), tmp:
             print "Scan finished on user request"

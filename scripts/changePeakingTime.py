@@ -60,3 +60,21 @@ def setMCAconfig(config=-1):
         print "Choice number %i is not allowed." % config
         return getMCAconfig()
     return getMCAconfig()
+
+
+def setMAP():
+    mca1.DP.loadconfigfile("MAP")
+    mca2.DP.loadconfigfile("MAP")
+    while(mca1.state() == DevState.DISABLE or mca2.state() == DevState.DISABLE):
+        sleep(1)
+    ct.reinit()
+    return
+
+def setSTEP():
+    mca1.DP.loadconfigfile("STEP")
+    mca2.DP.loadconfigfile("STEP")
+    while(mca1.state() == DevState.DISABLE or mca2.state() == DevState.DISABLE):
+        sleep(1)
+    ct.reinit()
+    return
+

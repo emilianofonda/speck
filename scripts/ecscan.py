@@ -15,9 +15,9 @@ cardXIA2 = DeviceProxy("tmp/test/xiadxp.test.2")
 cardXIA1Channels = range(1,20) #remember the range stops at N-1: 19
 cardXIA2Channels = range(0,16) #remember the range stops at N-1: 15
 
-cardAI_dark0 = 0.#0038477007482805828
-cardAI_dark1 = 0.#0089698445429353627
-cardAI_dark2 = 0.#0036175041211772164
+cardAI_dark0 = 0.003963
+cardAI_dark1 = 0.009058
+cardAI_dark2 = 0.003761
 cardAI_dark3 = 0.0
 
 def stopscan():
@@ -78,7 +78,7 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=20, e0=-1, mode=""):
 
     cardXIA1.nbPixels = NumberOfPoints
     cardXIA1.streamNbAcqPerFile = 250
-    cardXIA1.set_timeout_millis(10000)
+    cardXIA1.set_timeout_millis(30000)
     cardXIA1dataShape = [NumberOfPoints,cardXIA1.streamNbDataPerAcq ]    
     XIA1NexusPath = "/nfs" + cardXIA1.streamTargetPath.replace("\\","/")[1:]
     #Reset Nexus index and cleanup spool
@@ -88,7 +88,7 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=20, e0=-1, mode=""):
     #Card XIA2
     cardXIA2.nbPixels = NumberOfPoints
     cardXIA2.streamNbAcqPerFile = 250
-    cardXIA2.set_timeout_millis(10000)
+    cardXIA2.set_timeout_millis(30000)
     cardXIA2dataShape = [NumberOfPoints,cardXIA2.streamNbDataPerAcq ]
     XIA2NexusPath = "/nfs" + cardXIA2.streamTargetPath.replace("\\","/")[1:]
     #Reset Nexus index and cleanup spool
@@ -103,9 +103,6 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=20, e0=-1, mode=""):
     try:
         CP = __CPlotter__
         CP.GraceWin = GracePlotter()
-        ##GnuWin = Gnuplot.Gnuplot()
-        #GnuWin2 = Gnuplot.Gnuplot()
-        #GnuWin3 = Gnuplot.Gnuplot()
         for CurrentScan in xrange(NofScans):
             ActualFileNameData = findNextFileName(fileName,"txt")
             ActualFileNameInfo = findNextFileName(fileName,"info")
@@ -134,15 +131,6 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=20, e0=-1, mode=""):
             CP.GraceWin.wins[0].command('with g3\nxaxis ticklabel char size 0.7\n')
             CP.GraceWin.wins[0].command('with g3\nyaxis ticklabel char size 0.7\n')
             CP.GraceWin.wins[0].command('with g3\nyaxis label char size 0.7\nyaxis label "STD"')
-            ##GnuWin('set xlabel "Energy (eV)"')
-            #GnuWin2('set xlabel "Energy (eV)"')
-            #GnuWin3('set xlabel "Energy (eV)"')
-            ##GnuWin('set ylabel "XMU"')
-            #GnuWin2('set ylabel "Currents"')
-            #GnuWin3('set ylabel "Fluo"')
-            ##GnuWin('set style data l')
-            #GnuWin2('set style data l')
-            #GnuWin3('set style data l')
             while(dcm.state() == DevState.MOVING):
                 sleep(0.02)
             while(dcm.state() == DevState.MOVING):
@@ -165,67 +153,13 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=20, e0=-1, mode=""):
             fluoXIA2=[]
             while(dcm.state() == DevState.MOVING):
                 try: 
-                    update_graphs(CP, dcm, cardAI, cardCT, cardXIA1, cardXIA2, roiStart, roiEnd, XIA1NexusPath, XIA2NexusPath, XIA1filesList, XIA2filesList, fluoXIA1, fluoXIA2)
-#                   I0 = cardAI.historizedchannel0 - cardAI_dark0
-#                   I1 = cardAI.historizedchannel1 - cardAI_dark1
-#                   I2 = cardAI.historizedchannel2 - cardAI_dark2
-#                   xmu = log(1.0*I0/I1)
-#                   std = log(1.0*I1/I2)
-#                   ene = dcm.theta2e(cardCT.Theta)
-#                   ll = min(len(ene), len(xmu))
-#                   ##GnuWin.plot(Gnuplot.Data(ene[:ll],xmu[:ll]))
-#                   ##GnuWin2.plot(Gnuplot.Data(ene[:ll],I0[:ll], title="I0"),Gnuplot.Data(ene[:ll],I1[:ll], title="I1"))
-#                   CP.GraceWin.GPlot(ene[:ll],xmu[:ll], gw=0, graph=0, curve=0, legend="",color=1, noredraw=True)
-#                   CP.GraceWin.GPlot(ene[:ll], I0[:ll], gw=0, graph=1, curve=0, legend="", color=2, noredraw=True)
-#                   CP.GraceWin.wins[0].command('with g0\nautoscale\nredraw\n')
-#                   CP.GraceWin.GPlot(ene[:ll], I1[:ll], gw=0, graph=1, curve=1, legend="", color=3, noredraw=True)
-#                   CP.GraceWin.wins[0].command('with g1\nautoscale\nredraw\n')
-#                   CP.GraceWin.GPlot(ene[:ll], std[:ll], gw=0, graph=3, curve=1, legend="", color=1, noredraw=True)
-#                   CP.GraceWin.wins[0].command('with g3\nautoscale\nredraw\n')
-#                   tmp = os.listdir(XIA1NexusPath)
-#                   tmp.sort()
-#                   for i in tuple(tmp):
-#                       if not i.startswith(cardXIA1.streamTargetFile):
-#                           tmp.remove(i)
-#                   tmp2 = os.listdir(XIA2NexusPath)
-#                   tmp2.sort()
-#                   for i in tuple(tmp2):
-#                       if not i.startswith(cardXIA2.streamTargetFile):
-#                           tmp2.remove(i)
-#                   if len(tmp) > len(XIA1filesList):
-#                       #print tmp
-#                       for name in tmp[len(XIA1filesList):]:
-#                           XIA1filesList.append(name)
-#                           #print "New XIA1 file found: ", name, " --> Fluo graph update."
-#                           f = tables.openFile(XIA1NexusPath + os.sep + name,"r")
-#                           fluoSeg=zeros([cardXIA1.streamNbAcqPerFile,cardXIA1.streamNbDataPerAcq],numpy.float32)
-#                           for ch in cardXIA1Channels:
-#                               fluoSeg += eval("f.root.entry.scan_data.channel%02i"%ch).read()
-#                           f.close()
-#                           fluoSeg = sum(fluoSeg[:,roiStart:roiEnd],axis=1) 
-#                           fluoXIA1 += list(fluoSeg)
-#                       for name in tmp2[len(XIA2filesList):]:
-#                           XIA2filesList.append(name)
-#                           #print "New XIA2 file found: ", name, " --> Fluo graph update."
-#                           f = tables.openFile(XIA2NexusPath + os.sep + name,"r")
-#                           fluoSeg=zeros([cardXIA2.streamNbAcqPerFile,cardXIA2.streamNbDataPerAcq],numpy.float32)
-#                           for ch in cardXIA2Channels:
-#                               fluoSeg += eval("f.root.entry.scan_data.channel%02i"%ch).read()
-#                           f.close()
-#                           fluoSeg = sum(fluoSeg[:,roiStart:roiEnd],axis=1) 
-#                           fluoXIA2 += list(fluoSeg)
-#                       ll = min(len(fluoXIA1),len(fluoXIA2))
-#                       if len(I0) >= ll:
-#                           CP.GraceWin.GPlot(ene[:ll],(array(fluoXIA1,"f")[:ll] + array(fluoXIA2,"f")[:ll])/I0[:ll],\
-#                           gw=0, graph=2, curve=0, legend="", color=1, noredraw=False)
-#                           
-#                           CP.GraceWin.wins[0].command('with g2\nautoscale\nredraw\n')
-#                           #GnuWin3.plot(Gnuplot.Data(ene[:ll],\
-#                           #(array(fluoXIA1,"f")[:ll] + array(fluoXIA1,"f")[:ll])/I0[:ll]))
+                    update_graphs(CP, dcm, cardAI, cardCT, cardXIA1, cardXIA2,\
+                    roiStart, roiEnd, XIA1NexusPath, XIA2NexusPath, XIA1filesList, XIA2filesList,\
+                    fluoXIA1, fluoXIA2)
                 except Exception, tmp:
                     print tmp
                     pass
-                sleep(1)
+                sleep(4)
             while(DevState.RUNNING in [cardCT.state(),]):
                 sleep(0.1)
             timeAtStop = asctime()
@@ -258,7 +192,7 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=20, e0=-1, mode=""):
             myTime.sleep(3)
             try:
                 update_graphs(CP, dcm, cardAI, cardCT, cardXIA1, cardXIA2, roiStart, roiEnd, XIA1NexusPath, XIA2NexusPath, XIA1filesList, XIA2filesList, fluoXIA1, fluoXIA2)
-                #GnuWin.plot(Gnuplot.Data(ene[:ll],xmu[:ll]))
+                print "Graph Final Update OK"
             except KeyboardInterrupt, tmp:
                 raise tmp
             except Exception, tmp:
@@ -387,8 +321,6 @@ XIA1NexusPath, XIA2NexusPath, XIA1filesList, XIA2filesList, fluoXIA1, fluoXIA2):
     std = log(1.0*I1/I2)
     ene = dcm.theta2e(cardCT.Theta)
     ll = min(len(ene), len(xmu))
-    ##GnuWin.plot(Gnuplot.Data(ene[:ll],xmu[:ll]))
-    ##GnuWin2.plot(Gnuplot.Data(ene[:ll],I0[:ll], title="I0"),Gnuplot.Data(ene[:ll],I1[:ll], title="I1"))
     CP.GraceWin.GPlot(ene[:ll],xmu[:ll], gw=0, graph=0, curve=0, legend="",color=1, noredraw=True)
     CP.GraceWin.GPlot(ene[:ll], I0[:ll], gw=0, graph=1, curve=0, legend="", color=2, noredraw=True)
     CP.GraceWin.wins[0].command('with g0\nautoscale\nredraw\n')
@@ -407,12 +339,12 @@ XIA1NexusPath, XIA2NexusPath, XIA1filesList, XIA2filesList, fluoXIA1, fluoXIA2):
         if not i.startswith(cardXIA2.streamTargetFile):
             tmp2.remove(i)
     if len(tmp) > len(XIA1filesList):
-        #print tmp
+        print tmp
         for name in tmp[len(XIA1filesList):]:
             XIA1filesList.append(name)
             #print "New XIA1 file found: ", name, " --> Fluo graph update."
             f = tables.openFile(XIA1NexusPath + os.sep + name,"r")
-            fluoSeg=zeros([cardXIA1.streamNbAcqPerFile,cardXIA1.streamNbDataPerAcq],numpy.float32)
+            fluoSeg=zeros([shape(eval("f.root.entry.scan_data.channel%02i"%cardXIA1Channels[0]))[0],cardXIA1.streamNbDataPerAcq],numpy.float32)
             for ch in cardXIA1Channels:
                 fluoSeg += eval("f.root.entry.scan_data.channel%02i"%ch).read()
             f.close()
@@ -422,7 +354,7 @@ XIA1NexusPath, XIA2NexusPath, XIA1filesList, XIA2filesList, fluoXIA1, fluoXIA2):
             XIA2filesList.append(name)
             #print "New XIA2 file found: ", name, " --> Fluo graph update."
             f = tables.openFile(XIA2NexusPath + os.sep + name,"r")
-            fluoSeg=zeros([cardXIA2.streamNbAcqPerFile,cardXIA2.streamNbDataPerAcq],numpy.float32)
+            fluoSeg=zeros([shape(eval("f.root.entry.scan_data.channel%02i"%cardXIA2Channels[0]))[0],cardXIA2.streamNbDataPerAcq],numpy.float32)
             for ch in cardXIA2Channels:
                 fluoSeg += eval("f.root.entry.scan_data.channel%02i"%ch).read()
             f.close()
@@ -433,7 +365,5 @@ XIA1NexusPath, XIA2NexusPath, XIA1filesList, XIA2filesList, fluoXIA1, fluoXIA2):
             CP.GraceWin.GPlot(ene[:ll],(array(fluoXIA1,"f")[:ll] + array(fluoXIA2,"f")[:ll])/I0[:ll],\
             gw=0, graph=2, curve=0, legend="", color=1, noredraw=False)
             
-            CP.GraceWin.wins[0].command('with g2\nautoscale\nredraw\n')
-            #GnuWin3.plot(Gnuplot.Data(ene[:ll],\
-            #(array(fluoXIA1,"f")[:ll] + array(fluoXIA1,"f")[:ll])/I0[:ll]))
+            CP.GraceWin.wins[0]('with g2\nautoscale\nredraw\n')
     return

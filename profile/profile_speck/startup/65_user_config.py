@@ -8,7 +8,7 @@ print "################################################################"
 
 #To mantain syntax compatibility with this old file:
 
-__IP=get_ipython()	
+__IP=get_ipython()
 ##Usefull constants
 #Values of d below are used everywhere... hopefully.
 __d220=1.92015585
@@ -215,15 +215,19 @@ try:
     ["inputCountRate14",    "icr_34",    "%9d",    "cps"],
     ["inputCountRate15",    "icr_35",    "%9d",    "cps"]
     ]
-    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig1)
-    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",user_readconfig=user_readconfig2)
+#    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig1)
+#    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",user_readconfig=user_readconfig2)
+    mca1=dxmap("tmp/test/xiadxp.test",)
+    mca2=dxmap("tmp/test/xiadxp.test.2",)
     def setroi(ch1, ch2):
-    	"""Set roi an ALL channels between ch1 and ch2. Works on mca1 and mca2"""
-	if mca1 <> None:
-		mca1.setROIs(-1, ch1, ch2)
-	if mca2 <> None:
-		mca2.setROIs(-1, ch1, ch2)
-	return 
+        """Set roi an ALL channels between ch1 and ch2. Works on mca1 and mca2"""
+        if mca1 <> None:
+            mca1.DP.set_timeout_millis(30000)
+            mca1.setROIs(-1, ch1, ch2)
+        if mca2 <> None:
+            mca2.DP.set_timeout_millis(30000)
+        mca2.setROIs(-1, ch1, ch2)
+        return 
 except Exception, tmp:
     print "Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.1"
     print "Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.2"
@@ -687,7 +691,7 @@ def shopen(level=1):
                     sleep(1)
         print ""
         __allshutters[i].open()
-	print __allshutters[i].label," ",__allshutters[i].state()
+    print __allshutters[i].label," ",__allshutters[i].state()
     if level >= 1:
         try:
             sleep(0.2)
@@ -707,8 +711,8 @@ def shclose(level=1):
     except:
         pass
     for i in range(len(__allshutters)-1,level-1,-1):
-    	__allshutters[i].close()
-	print __allshutters[i].label," ",__allshutters[i].state()
+        __allshutters[i].close()
+    print __allshutters[i].label," ",__allshutters[i].state()
     return __allshutters[level].state()
 
 def shstate():
