@@ -62,7 +62,7 @@ try:
     dcm = mono1(monoName="dt/test_device/cs9_dcm", DataViewer="DT/TEST_DEVICE/DATAVIEWER",\
     rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, tz1=tz1, bender=bender,\
     counter_label="d09-1-c00/ca/cpt.1", counter_channel=0,\
-    delay=0., emin=4750.,emax=43000.)
+    delay=0.5, emin=4750.,emax=43000.)
     dcm.deadtime = 0.01
     dcm.timeout = 0.0
     

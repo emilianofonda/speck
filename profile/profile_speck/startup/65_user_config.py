@@ -619,6 +619,8 @@ try:
     from pseudo_valve import pseudo_valve
     #print "Fast shutter is sh_fast"
     sh_fast=pseudo_valve(label="d09-1-c00/ca/dio_0.1",channel="G",delay=0.1,deadtime=0.,timeout=0,reverse=True)
+    fc = sh_fast.close
+    fo = sh_fast.open
 except Exception, tmp:
     print tmp
     print "No fast shutter defined!"

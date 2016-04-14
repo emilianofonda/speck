@@ -344,7 +344,13 @@ class mono1:
         if np == 1:
             self.useLocalTable = False
             return
-        self.sample_at(pp)
+        if tmp_p <> pp:
+            for i in xrange(5):
+                try:
+                    self.sample_at(pp)
+                    break
+                except:
+                    sleep(0.2)
         if self.useLocalTable:
             #Calculate coefficients and update DataViewer
             x = self.e2theta(self.LocalTable["Energy"])
@@ -536,7 +542,8 @@ class mono1:
             return self.DataViewer.p
         else:
             if self.state()==DevState.MOVING:
-                raise Exception("Trying to write q on dcm while dcm is moving!")
+                pass
+                #raise Exception("Trying to write q on dcm while dcm is moving!")
             self.DataViewer.p = float(distance)
             return self.sample_at()
 
@@ -578,7 +585,11 @@ class mono1:
         1: linear (for scans)
         """
         if self.state() == DevState.MOVING:
-            raise Exception("mono1.PBR: cannot change moving mode while moving!")
+            t0 = time()
+            while(time()-t0 <2 and self.state() == DevState.MOVING):
+                sleep(0.2)
+            if self.state() == DevState.MOVING:
+                raise Exception("mono1.PBR: cannot change moving mode while moving!")
         if mode <0 or mode >1:
             return self.DP.movingMode
         self.DP.movingMode = mode
@@ -589,7 +600,11 @@ class mono1:
         if velocity == None:
             return self.DP.velocity
         if self.state() == DevState.MOVING:
-            raise Exception("mono1.PBR: cannot change speed while moving!")
+            t0 = time()
+            while(time()-t0 <2 and self.state() == DevState.MOVING):
+                sleep(0.2)
+            if self.state() == DevState.MOVING:
+                raise Exception("mono1.PBR: cannot change velocity while moving!")
         self.DP.velocity = velocity
         sleep(self.deadtime*5)
         return self.DP.velocity
@@ -600,6 +615,7 @@ class mono1:
         s += self.printEnables()
         s += self.check()["reason"]
         s += "----------------------\n" 
+        s += "Focusing at %4.2fm\n" % self.sample_at()
         for i in ["movingMode","movingTime","velocity","acceleration","EnergyOffset"]:
             s += "%s = %g\n" % (i, self.DP.read_attribute(i).value)
         return s
@@ -615,12 +631,14 @@ class mono1:
         return s
 
     def stop(self):
+        pass
+        print "DCM will not stop. Wait end of movement."
         self.DP.stop()
-        for i in self.motors:
-            try:
-                i.stop()
-            except:
-                print i.label," is not responding!\n"
+        #for i in self.motors:
+        #    try:
+        #        i.stop()
+        #    except:
+        #        print i.label," is not responding!\n"
         return
         
     def e2theta(self,energy):
@@ -667,11 +685,15 @@ class mono1:
             theta = self.e2theta(energy)
             #
             #Write movement code here
-            try:
-                self.DP.Energy = energy
-            except:
-                sleep(0.2)
-                self.DP.Energy = energy
+            for i in xrange(5):
+                try:
+                    self.DP.Energy = energy
+                    break
+                except (KeyboardInterrupt,SystemExit), tmp:
+                    self.stop()
+                    raise tmp
+                except:
+                    sleep(1)
             if not wait:
                 return
             while(self.state() == DevState.MOVING):

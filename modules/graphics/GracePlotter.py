@@ -6,19 +6,28 @@ from numpy import mod, arange
 
 def xplot(x,y=None,curve=-1,graph=0,color=-1):
     """If a grace object exists plots on it"""
-    if y==None:
+    if y == None:
         x, y = arange(len(x)), x
     if not("GracePlotter_x" in globals()):
         try:
+            print "Opening New Grace Window"
             __IP.user_ns["GracePlotter_x"]=GracePlotter()
         except:
             #ipy=globals()["get_ipython"]()
             #ipy.ex("GracePlotter_x=GracePlotter()")
             exec "GracePlotter_x=GracePlotter()" in globals()
     #GracePlotter_x.GPlot(x,y,gw=0,curve=curve,graph=graph,color=color)
-    if graph>len(GracePlotter_x.wins)+1:graph=len(GracePlotter_x.wins)+1
-    GracePlotter_x.GPlot(x,y,gw=graph,curve=curve,graph=0,color=color)
-    xauto(graph)
+    if graph > len(GracePlotter_x.wins) + 1: 
+        graph = len(GracePlotter_x.wins) + 1
+    try:
+        GracePlotter_x.GPlot(x, y, gw=graph, curve=curve, graph=0, color=color)
+        xauto(graph)
+    except:
+        try:
+            GracePlotter_x.GPlot(x, y, gw=graph, curve=curve, graph=0, color=color)
+            xauto(graph)
+        except Exception, tmp:
+            raise tmp
     return
 
 def xtitle(curve=0,graph=0):
@@ -92,15 +101,13 @@ class GracePlotter:
             pipe_string+='g%i.s%i legend "%s"\n'%(graph,curve,legend)
         pipe_string+="g%i.s%i LINE COLOR %i\n"%(graph,curve,color)
         pipe_string+="g%i.s%i LINE LINEWIDTH 2\n"%(graph,curve) #,width)
-        if gw==None:
+        if gw==None or self.wins == []:
             if self.wins==[]:
                 self.wins.append(grace_np.GraceProcess())
-                gw=0
-        elif gw>=len(self.wins):
+                gw = 0
+        elif gw >= len(self.wins):
             self.wins.append(grace_np.GraceProcess())
-            gw=len(self.wins)-1
-        #elif gw>len(self.wins):
-        #    raise Exception("GracePlotter","Requested window index is larger than window list.")
+            gw = len(self.wins) - 1
         try:
             if noredraw:
                 self.wins[gw].command(pipe_string)

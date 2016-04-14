@@ -7,13 +7,14 @@ def polySc(x,*args):
     return pylab.polyval(args, x)   
 
 def dentist(filename, e0=20060., \
-pre1  = -300, pre2  = -60, nor1  =  60, nor2  = -1,\
-poly1 =  20., poly2 =  -1, polyN =  -1, kweight = -1, mode="t"):
+pre1  = -300, pre2  = -40, nor1  =  45, nor2  = -1,\
+poly1 =  15., poly2 =  -1, polyN =  -1, kweight = -1, rmax=6,\
+mode="t", figN=1, out=False):
     """mode can be t = transmission or f = fluorescence or s = standard
     """
     baseFilename = filename[:filename.rfind(".")]
     m = pylab.loadtxt(filename).transpose()
-    fig1 = pylab.figure(1,figsize=[12,10],facecolor="w")
+    fig1 = pylab.figure(figN,figsize=[12,10],facecolor="w")
     fig1.clear()
     m=m[:,pylab.argsort(m[0])]
     ene = m[0]
@@ -27,9 +28,9 @@ poly1 =  20., poly2 =  -1, polyN =  -1, kweight = -1, mode="t"):
         raise Exception("unknown dentist mode.")
     
     if nor2 < 0 :
-        nor2 = ene[-1]
+        nor2 = min(ene[-1] - e0, nor1+300)
     if poly2 <0 :
-        poly2 = ene[-1]
+        poly2 = ene[-1] - e0
     
     if poly2 < poly1:
         poly2 = poly1 +10
@@ -39,25 +40,34 @@ poly1 =  20., poly2 =  -1, polyN =  -1, kweight = -1, mode="t"):
         pre2 = pre1 + 10
    
     ie0 = ene.searchsorted(e0)
-    ipre1 = ene.searchsorted(e0+pre1)
-    ipre2 = max(ipre1+10, ene.searchsorted(e0+pre2))
+    if ene[0] > e0-pre2:
+        ipre1 = 0
+        ipre2 = 30
+    else:
+        ipre1 = ene.searchsorted(e0+pre1)
+        ipre2 = max(ipre1+10, ene.searchsorted(e0+pre2))
+        
     inor1 = min(ene.searchsorted(e0+nor1), len(ene)-10)
     inor2 = min(ene.searchsorted(e0+nor2), len(ene)-1)
     ipoly1 = min(ene.searchsorted(e0+poly1), len(ene)-10)
     ipoly2 = min(ene.searchsorted(e0+poly2), len(ene)-1)
     if inor2 - inor1 < 5: inor1 = inor2 -30 
     
+    ider1 = max(0, ene.searchsorted(e0 - 80))
+    ider2 = min(len(ene), ene.searchsorted(e0 + 140))
+    
     InterpENE = numpy.array(list(numpy.arange(ene[1],ene[ipre2],2)) + list (ene[ipre2:inor1]) + list(numpy.arange(ene[inor1],ene[-2],1)) )
     InterpXMU = scipy.interpolate.interp1d(ene,xmu, bounds_error=False)(InterpENE)
        
-    numpy.savetxt(baseFilename+".xmu", numpy.transpose(numpy.array([InterpENE,InterpXMU])))
+    if out:
+        numpy.savetxt(baseFilename+".xmu", numpy.transpose(numpy.array([InterpENE,InterpXMU])))
     preEdge = pylab.polyfit(ene[ipre1:ipre2],xmu[ipre1:ipre2],1)
     
     if ene[inor2] - ene[inor1] > 1000:
         norDeg = 3
-    elif 200 <= ene[inor2] - ene[inor1] <=1000:
+    elif 500 <= ene[inor2] - ene[inor1] <=1000:
         norDeg = 2
-    elif 75 <= ene[inor2] - ene[inor1] <200:
+    elif 75 <= ene[inor2] - ene[inor1] <500:
         norDeg = 1
     else:
         norDeg = 0
@@ -89,7 +99,8 @@ poly1 =  20., poly2 =  -1, polyN =  -1, kweight = -1, mode="t"):
     exafs = (chi - bkg) / Step
 
     mOut = pylab.array([chiK, exafs],"f")
-    pylab.savetxt(baseFilename+".chik", pylab.transpose(mOut))
+    if out:
+        pylab.savetxt(baseFilename+".chik", pylab.transpose(mOut))
     pylab.subplot(221)
     pylab.title(filename)
     pylab.grid()
@@ -104,9 +115,9 @@ poly1 =  20., poly2 =  -1, polyN =  -1, kweight = -1, mode="t"):
     pylab.title(filename)
     pylab.grid()
     xmuNOR = (xmu-pylab.polyval(preEdge,ene))/(pylab.polyval(norPoly,ene)-pylab.polyval(preEdge,ene))
-    derNOR = pylab.diff(xmuNOR[ipre2:inor1])/pylab.diff(ene[ipre2:inor1])
+    derNOR = pylab.diff(xmuNOR[ider1:ider2])/pylab.diff(ene[ider1:ider2])
     derNOR = derNOR / max(derNOR)
-    derENE = ene[ipre2:inor1-1] + pylab.diff(ene[ipre2:inor1])*0.5
+    derENE = ene[ider1:ider2-1] + pylab.diff(ene[ider1:ider2])*0.5
     iMaxDer = derNOR.argmax()
     pylab.plot(ene, xmuNOR,"b-",label="$ \mu $")
     pylab.plot(derENE, derNOR - 0.5,"g-",label="$\delta \mu /\delta E$")
@@ -118,7 +129,7 @@ poly1 =  20., poly2 =  -1, polyN =  -1, kweight = -1, mode="t"):
     pylab.legend(loc="best",ncol=2, frameon=False)
     pylab.arrow(ene[ie0],0,0,1.1,ls="dotted",color="red")
     pylab.xlim([e0-70.,e0+120])
-    pylab.ylim([-1.5,1.5])
+    pylab.ylim([min(derNOR - 0.7),max(1.5,max(0.25 + xmuNOR[ipre2:inor1]))])
     pylab.xlabel("Energy (eV)")
 
     pylab.subplot(223)
@@ -144,10 +155,11 @@ poly1 =  20., poly2 =  -1, polyN =  -1, kweight = -1, mode="t"):
     pylab.plot(mft[0][:ps0],mft[1][:ps0],"r-",mft[0][:ps0],mft[3][:ps0],"b-",mft[0][:ps0],-mft[3][:ps0],"b-")
     pylab.xlabel("$R(\AA)$")
     pylab.ylabel("$FT[k^%i\chi(k)]$"%kweight)
-    pylab.xlim([0,6])
+    pylab.xlim([0,min(rmax,10)])
     pylab.grid()
     pylab.draw()
-    pylab.savetxt(baseFilename+".chir", pylab.transpose(mft))
+    if out:
+        pylab.savetxt(baseFilename+".chir", pylab.transpose(mft))
     return
     #return mOut
     

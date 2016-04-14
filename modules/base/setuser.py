@@ -57,6 +57,7 @@ def setuser(name=None):
             pass
         try:
             os.makedirs(filename2ruche(""))
+            os.symlink(filename2ruche(""),"./ruche")
         except:
             print "CANNOT MAKE RUCHE FOLDER: "+filename2ruche("")
     return
