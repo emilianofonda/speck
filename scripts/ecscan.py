@@ -314,7 +314,7 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False)
             FInfo = file(ActualFileNameInfo,"w")
             FInfo.write("#TimeAtStart = %s\n" % (timeAtStart))
             FInfo.write("#TimeAtStop  = %s\n" % (timeAtStop))
-            FInfo.write("#Scan from %g to %g at velocity= %g eV/s\n" % (e1, e2, dcm.DP.velocity))
+            FInfo.write("#Scan from %g to %g at velocity= %g eV/s\n" % (e1, e2, velocity))
             FInfo.write("#Counter Card Config\n")
             for i in cardCTsavedAttributes:
                 FInfo.write("#%s = %g\n" % (i,cardCT.read_attribute(i).value))

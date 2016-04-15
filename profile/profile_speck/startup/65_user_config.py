@@ -439,6 +439,7 @@ __tmp={
 "pi5_1"        :["d09-1-c05/vi/pi.1","pressure"],
 "pi6_1"        :["d09-1-c06/vi/pi.1","pressure"],
 "pi6_2"        :["d09-1-c06/vi/pi.2","pressure"],
+"tc1"	       :["d09-1-cx1/ex/tc.1","temperature"],
 #"T_dcm"        :["d09-1-c03/op/bath.1","temperature"],
 #"cryo4temp1" :["d09-1-cx1/ex/cryo4.1-ctrl","temperature1"],
 #"cryo4temp2" :["d09-1-cx1/ex/cryo4.1-ctrl","temperature2"],
