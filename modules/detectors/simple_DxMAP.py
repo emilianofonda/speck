@@ -200,7 +200,7 @@ class dxmap:
         except:
             roi=[]
             for i in xrange(len(self.channels)):
-                fmtS = "%i, " * len(args[1:]) + "%i"
+                fmtS = "%i; " * len(args[1:]) + "%i"
                 roi.append(fmtS % ((i,) + args[1:]))
             #print roi
             self.DP.setroisfromlist(roi)
@@ -221,7 +221,7 @@ class dxmap:
         except:
            
             for i in self.DP.getrois():
-                Ch = i.split(",")
+                Ch = i.split(";")
                 gottenROIS[ "channel%02i" % int(Ch[0]) ] = map(int, Ch[1:])
         return gottenROIS
         

@@ -82,7 +82,7 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False)
 
     #Card XIA1
     #Rois are defined only on one channel of XIA1 and used for XIA2
-    roiStart, roiEnd = map(int, cardXIA1.getrois()[1].split(",")[1:])
+    roiStart, roiEnd = map(int, cardXIA1.getrois()[1].split(";")[1:])
     
     cardXIA1.nbpixels = NumberOfPoints
     cardXIA1.streamNbAcqPerFile = 250
@@ -202,11 +202,11 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False)
                 print "cardAI of ecscan failed to stop!"
             cardAI.stop()
             theta = cardCT.Theta
-            I0 = array(cardAI.historizedchannel0,"f") - cardAI_dark0
-            I1 = array(cardAI.historizedchannel1,"f") - cardAI_dark1
-            I2 = array(cardAI.historizedchannel2,"f") - cardAI_dark2
+            I0 = numpy.nan_to_num(array(cardAI.historizedchannel0,"f") - cardAI_dark0)
+            I1 = numpy.nan_to_num(array(cardAI.historizedchannel1,"f") - cardAI_dark1)
+            I2 = numpy.nan_to_num(array(cardAI.historizedchannel2,"f") - cardAI_dark2)
             xmu = numpy.nan_to_num(log(I0/I1))
-            ene = dcm.theta2e(theta)
+            ene = numpy.nan_to_num(dcm.theta2e(theta))
             #
             if NofScans >= 1: 
                 print myTime.asctime(), " : sending dcm back to starting point."

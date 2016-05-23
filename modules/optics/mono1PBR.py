@@ -631,8 +631,7 @@ class mono1:
         return s
 
     def stop(self):
-        pass
-        print "DCM will not stop. Wait end of movement."
+        #print "DCM will not stop. Wait end of movement."
         self.DP.stop()
         #for i in self.motors:
         #    try:
