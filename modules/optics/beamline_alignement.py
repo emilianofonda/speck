@@ -104,15 +104,15 @@ def __m2Z(theta):
     if theta<=1e-2:
         return 33.
     else:
-        return -0.0426 * theta ** 2 -0.0694* theta + 1.007 + get_ipython().user_ns["dcm"].H()
+        return -0.0307 * theta ** 2 + 0.0276 * theta + 0.942 + get_ipython().user_ns["dcm"].H()
 
 def __m2Roll(theta):
     #return -5.
     return 0.
 #Girder
 def __girder(theta):
-    if theta<=1e-2:
-        return 0.
+    if theta<=1e-1:
+        return 0.517
     else:
         return -0.16033+2.0212*theta
 
@@ -263,5 +263,10 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
         else:
             print "Front End did not open? Check Front End and interlocks please..."
     #print "Now: \n1)find beam by scanning po3\n2)tune dcm (if using dcm)\n3)scan po3 again\n4)if necessary tune dcm again.\n"
+    if theta < 0.1:
+        print ""
+        print "po1 set. If you want to set po1 precisely at 0 for alignement, do it manually."
+        print "If necessary, check po1 position with Iref after SetAngle 0."
+        print ""
     return mir1_pitch.pos()
 
