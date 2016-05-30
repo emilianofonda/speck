@@ -2,6 +2,8 @@
 #The following functions have been derived from the calibration made on 27/1/2010 and that of 11/9/2007.
 #If something change, just modify the following equations. Theta is the pitch of the first mirror.
 
+#Last modified on 30/5/2016
+
 from PyTango import DevState, DeviceProxy
 from time import sleep
 from spec_syntax import mv, wait_motor
@@ -86,17 +88,24 @@ def __m2bender(theta,hgap=25.):
 #        return cible
 #        return 98905.4 * theta - 6395.4
         
+#def __m2Z(theta):
+#    base=24.6
+#    Max=24.9
+#    rate=-78.759
+#    xhalf=2.
+#    if theta<=1e-2:
+#        return 33.
+#    else:
+#        return base+(Max-base)*(theta**rate/(theta**rate+xhalf**rate)) \
+#        + get_ipython().user_ns["dcm"].H() - 25. +1.
+        
 def __m2Z(theta):
-    base=24.6
-    Max=24.9
-    rate=-78.759
-    xhalf=2.
+    """Aligned on 27/5/2016"""
     if theta<=1e-2:
         return 33.
     else:
-        return base+(Max-base)*(theta**rate/(theta**rate+xhalf**rate)) \
-        + get_ipython().user_ns["dcm"].H() - 25.
-        
+        return -0.0426 * theta ** 2 -0.0694* theta + 1.007 + get_ipython().user_ns["dcm"].H()
+
 def __m2Roll(theta):
     #return -5.
     return 0.
@@ -109,10 +118,9 @@ def __girder(theta):
 
 #Tables
 def __exafsZ(theta):
-    #return 22.298+11.463*theta
-    #return __girder(theta) * 5.6 + get_ipython().shell.user_ns["dcm"].H()
-    #Offset -1.17 since 9/2/2016 due to ion chambers realignement. (EF)
-    return 11.2074018292933 * theta + 0.3438106790538 -1.17 + get_ipython().user_ns["dcm"].H()
+    """Aligned on 27/5/2016"""
+    return 11.055 * theta + 2.813 + get_ipython().user_ns["dcm"].H()
+    #return 11.2074018292933 * theta + 0.3438106790538 -0.17 + get_ipython().user_ns["dcm"].H()
     
 def __obxgZ(theta):
     #shell=get_ipython()
@@ -196,21 +204,6 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
         mir1_c, __m1bender(theta,hgap), mir2_c, mir2_c_target )
         mv(mir1_roll, __m1Roll(theta), mir2_roll, __m2Roll(theta))
         mv(mir1_z, __m1Z(theta), mir2_z, __m2Z(theta))
-        #mir1_c.go(__m1bender(theta,hgap))
-        #mir2_c.go(__m2bender(theta,hgap))
-        #po1.go(__girder(theta))
-        #po2.go(__obxgZ(theta))
-        #po3.go(__exafsZ(theta))
-        #po4.go(__exafsZ(theta))
-        #po5.go(__exafsZ(theta))
-        #mir1_pitch.pos(theta)
-        #mir2_pitch.pos(__m2theta(theta))
-        #mir1_roll.pos(__m1Roll(theta))
-        #mir2_roll.pos(__m2Roll(theta))
-        #mir1_z.pos(__m1Z(theta))
-        #mir2_z.pos(__m2Z(theta))
-        #
-        #wait_motor([mir1_c,mir2_c,po1,po2,po3,po4,po5])
     except Exception, tmp:
         if tpp_aknowledge()<>0:
             print "TPP_security active... tring to continue..."
@@ -218,7 +211,6 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
             tpp_aknowledge(0)
             sleep(2.)
             mir1_c.go(__m1bender(theta,hgap))
-            #mir2_c.go(__m2bender(theta,hgap))
             mir2_c.go(mir2_c_target)
             mir1_pitch.pos(theta)
             mir1_roll.pos(__m1Roll(theta))

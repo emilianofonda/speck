@@ -283,7 +283,7 @@ class mono1:
         if list(self.DP.get_property("SPECK_UseLocalTable")["SPECK_UseLocalTable"]) ==[]:
             self.DP.put_property({"SPECK_UseLocalTable": False})
         if list(self.DP.get_property("SPECK_LocalTable")["SPECK_LocalTable"]) == []:
-            self.DP.put_property({"SPECK_LocalTable": [0,"Energy","C1","C2","RS2"]})
+            self.DP.put_property({"SPECK_LocalTable": [0,"Energy","C1","C2","RS2","RZ2"]})
             self.DP.put_property({"SPECK_UseLocalTable": False})
         if list(self.DP.get_property("SPECK_LocalTable_p")["SPECK_LocalTable_p"]) == []:
             self.DP.put_property({"SPECK_LocalTable_p": [13.95,]})
@@ -318,6 +318,8 @@ class mono1:
         """This function reads the table from the database and prepare the interpolation.
         Coefficients are then written to PowerBrick through the DataViewer
         ADVANCED FEATURE: this function is for the code internal use only. """
+        Pars = ["Energy","C1","C2","RS2","RZ2"]
+        noPars = len(Pars)
         lt = list(self.DP.get_property("SPECK_LocalTable")["SPECK_LocalTable"])
         ult = list(self.DP.get_property("SPECK_UseLocalTable")["SPECK_UseLocalTable"])
         tmp_p = self.sample_at()
@@ -334,11 +336,11 @@ class mono1:
         self.LocalTable = {"Points":int(lt[0])}
         if self.LocalTable["Points"] == 0:
             self.useLocalTable = False
-            for i in ["Energy","C1","C2","RS2"]:
+            for i in Pars:
                 self.LocalTable[i] = array([],"f")
             self.useLocalTable = False
             return
-        for i in range(4): 
+        for i in xrange(noPars): 
             self.LocalTable[lt[i * (np + 1) + 1]] = array(lt[i * (np+1) + 2:(np+1) * (i+1) + 1],"f")
         #print self.LocalTable
         if np == 1:
@@ -366,6 +368,11 @@ class mono1:
             self.DataViewer.Rs2_C3 = 0.
             self.DataViewer.Rs2_C2 = 0.
             self.DataViewer.Rs2_C1, self.DataViewer.Rs2_C0 = numpy.polyfit(x, self.LocalTable["RS2"],1)
+            self.DataViewer.Rz2_C5 = 0.
+            self.DataViewer.Rz2_C4 = 0.
+            self.DataViewer.Rz2_C3 = 0.
+            self.DataViewer.Rz2_C2 = 0.
+            self.DataViewer.Rz2_C1, self.DataViewer.Rz2_C0 = numpy.polyfit(x, self.LocalTable["RZ2"],1)
         self.sample_at(tmp_p)
         return
 
@@ -377,7 +384,7 @@ class mono1:
             print "Cannot Write Table to database for less than 2 points"
             return
         outList =[self.LocalTable["Points"],]
-        for i in ["Energy","C1","C2","RS2"]:
+        for i in ["Energy","C1","C2","RS2","RZ2"]:
             outList += [i,] + list(self.LocalTable[i])
         self.DP.put_property({"SPECK_LocalTable": outList})
         self.DP.put_property({"SPECK_LocalTable_p": self.sample_at()})
@@ -432,7 +439,7 @@ class mono1:
         to remove the old table values.
         A value in energy closer than xtol is replaced"""
         pointValue = {"Energy": self.pos(), "C1": self.bender.c1.pos(),\
-        "C2": self.bender.c2.pos(),"RS2": self.m_rs2.pos(),}
+        "C2": self.bender.c2.pos(),"RS2": self.m_rs2.pos(),"RZ2": self.m_rz2.pos(),}
         idx = self.LocalTable["Energy"].searchsorted(pointValue["Energy"])
         if numpy.any(abs(self.LocalTable["Energy"] - pointValue["Energy"]) < xtol ):
             #Replace Value
@@ -442,11 +449,11 @@ class mono1:
             if (abs(self.LocalTable["Energy"][idx] - pointValue["Energy"]) > xtol):
                 idx = max(idx-1, 0)
             print idx
-            for i in ["Energy","C1","C2","RS2"]:
+            for i in ["Energy","C1","C2","RS2","RZ2"]:
                 self.LocalTable[i][idx] = pointValue[i]
         else:
             self.LocalTable["Points"] += 1
-            for i in ["Energy","C1","C2","RS2"]:
+            for i in ["Energy","C1","C2","RS2","RZ2"]:
                 self.LocalTable[i] = array(list(self.LocalTable[i][:idx]) + [pointValue[i],]\
                 + list(self.LocalTable[i][idx:]),"f")
         #Update database if possible
@@ -463,7 +470,7 @@ class mono1:
         return
         
     def clearLocalTable(self):
-        self.DP.put_property({"SPECK_LocalTable":[0,"Energy","C1","C2","RS2"]})
+        self.DP.put_property({"SPECK_LocalTable":[0,"Energy","C1","C2","RS2","RZ2"]})
         self.DP.put_property({"SPECK_UseLocalTable":False})
         self.readTable()
         self.unsetLocalTable()
