@@ -923,9 +923,16 @@ class mono1:
             shell.user_ns["mostab"].pos(5.)
         except Exception, tmp:
             print tmp
-        print "Enabling Ts2, Rs2: ",
+        print "Turning on motors: Tz2, Ts2, Rs2, Rz2"
+        self.m_tz2.on()
+        self.m_ts2.on()
+        self.m_rs2.on()
+        self.m_rz2.on()
+        print "Enabling: Tz2, Ts2, Rs2, Rz2: ",
+        self.enable_tz2()
         self.enable_ts2()
         self.enable_rs2()
+        self.enable_rz2()
         print "OK"
         print "Moving Mode: ",
         self.DP.movingMode=0
@@ -937,27 +944,32 @@ class mono1:
         
         #Insert Move code here
         if Calculate:
-            if useLocalTable:
-                restoreTable = True
-            else:
-                restoreTable = False
-            self.unsetLocalTable()
+            #if useLocalTable:
+            #    restoreTable = True
+            #else:
+            #    restoreTable = False
+            #self.unsetLocalTable()
             print "Should move to ",energy, "eV"
             print "Should move Rz2 to ", self.calculate_rz2(energy)
             print "Should move Rx2 to ", self.calculate_rx2(energy)
             print "Should move [C1, C2] to", self.bender.calculate_steps_for_curv(self.calculate_curvature(self.e2theta(energy)))
-            if restoreTable:
-                self.setLocalTable()
+            #if restoreTable:
+            #    self.setLocalTable()
         else:
             self.on()
             move_motor(self, energy, self.m_rx2, self.calculate_rx2(energy))
-            self.m_rz2.on()
-            move_motor(self.m_rz2, self.calculate_rz2(energy))
         #
         
-        print "Disabling Ts2, Rs2: ",
+        print "Disabling: Tz2, Ts2, Rs2, Rz2: ",
+        self.disable_tz2()
         self.disable_ts2()
         self.disable_rs2()
+        self.disable_rz2()
+        print "Turning on motors: Tz2, Ts2, Rs2, Rz2"
+        self.m_tz2.off()
+        self.m_ts2.off()
+        self.m_rs2.off()
+        self.m_rz2.off()
         print "OK"
         print "Moving Mode: ",
         self.DP.movingMode=1

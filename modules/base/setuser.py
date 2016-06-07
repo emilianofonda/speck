@@ -1,11 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/ipython
 import os,sys,string,time
 from ascan import filename2ruche
+from IPython.core import ipapi
 
 #dn = os.path.dirname(os.path.realpath(__file__))
 #dn=dn[:dn.rfind(os.sep)]
 
 __Default_Data_Folder = os.getenv("SPECK_DATA_FOLDER")
+IPy = ipapi.get()
 
 def setuser(name=None):
     try:
@@ -29,6 +31,8 @@ def setuser(name=None):
                 #os.system("screen -X log off")
                 #os.system("screen -X logfile %s" % (os.getcwd() + os.sep + "speckle.log"))
                 #os.system("screen -X log on")
+                IPy.magic("logstop")
+                IPy.magic("logstart -ort logBook.txt")
             except:
                 pass
         else:
@@ -52,6 +56,8 @@ def setuser(name=None):
             #os.system("screen -X log off")
             #os.system("screen -X logfile %s" % (os.getcwd() + os.sep + "speckle.log"))
             #os.system("screen -X log on")
+            IPy.magic("logstop")
+            IPy.magic("logstart -ort logBook.txt")
         except Exception, tmp:
             print tmp
             pass
