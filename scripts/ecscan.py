@@ -7,6 +7,7 @@ import time as myTime
 from time import sleep
 from spec_syntax import wait_motor
 from GracePlotter import GracePlotter
+from spec_syntax import dark as ctDark
 
 cardCT = DeviceProxy("d09-1-c00/ca/cpt.3_old")
 cardAI = DeviceProxy("d09-1-c00/ca/sai.1")
@@ -15,10 +16,10 @@ cardXIA2 = DeviceProxy("tmp/test/xiadxp.test.2")
 cardXIA1Channels = range(1,20) #remember the range stops at N-1: 19
 cardXIA2Channels = range(0,16) #remember the range stops at N-1: 15
 
-cardAI_dark0 = 0.003963 + 0.00129081 - 0.0018
-cardAI_dark1 = 0.009058 - 0.000125568 + 0.00175
-cardAI_dark2 = 0.003761 - 0.0011597975
-cardAI_dark3 = 0.0
+#cardAI_dark0 = -0.0021
+#cardAI_dark1 = 0.009058 - 0.000125568 + 0.00275
+#cardAI_dark2 = 0.003761 - 0.0011597975
+#cardAI_dark3 = 0.0
 
 def stopscan(shutter=False):
     try:
@@ -73,12 +74,17 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False)
     cardCT.set_timeout_millis(30000)
 
     #Card AI
+    if cardAI.configurationId <> 3:
+        cardAI.configurationId = 3
+        sleep(5)
     cardAI.integrationTime = dt * 1000 -1.
     cardAI.nexusFileGeneration = False
     cardAI.nexusNbAcqPerFile = NumberOfPoints
     cardAI.dataBufferNumber = NumberOfPoints
     cardAI.statHistoryBufferDepth = NumberOfPoints
     cardAI.set_timeout_millis(30000)
+    cardAI_dark0,cardAI_dark1,cardAI_dark2,cardAI_dark3 =\
+    map(float, cardAI.get_property(["SPECK_DARK"])["SPECK_DARK"])
 
     #Card XIA1
     #Rois are defined only on one channel of XIA1 and used for XIA2
@@ -352,6 +358,10 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False)
 
 def update_graphs(CP, dcm, cardAI, cardCT, cardXIA1, cardXIA2, roiStart, roiEnd,\
 XIA1NexusPath, XIA2NexusPath, XIA1filesList, XIA2filesList, fluoXIA1, fluoXIA2):
+    
+    cardAI_dark0,cardAI_dark1,cardAI_dark2,cardAI_dark3 =\
+    map(float, cardAI.get_property(["SPECK_DARK"])["SPECK_DARK"])
+ 
     LastPoint = cardAI.dataCounter
     I0 = cardAI.historizedchannel0[:LastPoint] - cardAI_dark0
     I1 = cardAI.historizedchannel1[:LastPoint] - cardAI_dark1
@@ -408,3 +418,61 @@ XIA1NexusPath, XIA2NexusPath, XIA1filesList, XIA2filesList, fluoXIA1, fluoXIA2):
             
             CP.GraceWin.wins[0]('with g2\nautoscale\nredraw\n')
     return
+
+
+def dark(dt=10.):
+    #Configure cards
+    NumberOfPoints = 1000
+    #Card CT
+    cardCT.totalNbPoint = NumberOfPoints
+    cardCT.nexusNbAcqPerFile = NumberOfPoints
+    cardCT.integrationTime = dt / float(NumberOfPoints)
+    cardCT.bufferDepth = 1
+    cardCT.continuousAcquisition = False
+    cardCT.nexusFileGeneration = False
+    cardCT.set_timeout_millis(30000)
+
+    #Card AI
+    if cardAI.configurationId <> 3:
+        cardAI.configurationId = 3
+        sleep(5)
+    cardAI.integrationTime = dt -1.
+    cardAI.nexusFileGeneration = False
+    cardAI.nexusNbAcqPerFile = NumberOfPoints
+    cardAI.dataBufferNumber = NumberOfPoints
+    cardAI.statHistoryBufferDepth = NumberOfPoints
+    cardAI.set_timeout_millis(30000)
+
+    shell=get_ipython()
+    shclose=shell.user_ns["shclose"]
+    shopen=shell.user_ns["shopen"]
+    shstate=shell.user_ns["shstate"]
+    ct=shell.user_ns["ct"]
+    if dt == 0:
+        ct.clearDark()
+    else:
+        previous = shstate()
+        shclose(1)
+        sleep(1)
+        ct.count(dt)
+        ct.writeDark()
+        cardAI.start()
+        sleep(1)
+        cardCT.start()
+        while(cardCT.state() == DevState.RUNNING):
+            sleep(0.1)
+        cardAI.stop()
+        darkAI0 = numpy.average(cardAI.historizedchannel0)
+        darkAI1 = numpy.average(cardAI.historizedchannel1)
+        darkAI2 = numpy.average(cardAI.historizedchannel2)
+        darkAI3 = numpy.average(cardAI.historizedchannel3)
+        cardAI.put_property({"SPECK_DARK":[darkAI0,darkAI1,darkAI2,darkAI3]})
+        print "Dark values:"
+        print "I_0(AnalogInput) = %6.5fV" % darkAI0
+        print "I_1(AnalogInput) = %6.5fV" % darkAI1
+        print "I_2(AnalogInput) = %6.5fV" % darkAI2
+        shopen(previous)
+    print ct.readDark()
+    return
+
+
