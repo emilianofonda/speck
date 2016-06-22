@@ -8,6 +8,15 @@ from time import sleep
 from spec_syntax import wait_motor
 from GracePlotter import GracePlotter
 from spec_syntax import dark as ctDark
+from wait_functions import checkTDL, wait_injection
+
+try:
+    import Tkinter
+    NoTk=False
+except:
+    print "Warning from escan: Tkinter not installed."
+    NoTk=True
+
 
 cardCT = DeviceProxy("d09-1-c00/ca/cpt.3_old")
 cardAI = DeviceProxy("d09-1-c00/ca/sai.1")
@@ -42,10 +51,12 @@ class CPlotter:
 
 __CPlotter__ = CPlotter()
 
-def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False):
+def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True):
     """Start from e1 (eV) to e2 (eV) and count over dt (s) per point.
     velocity: Allowed velocity doesn't exceed 40eV/s.
-    The backup folder MUST be defined for the code to run."""
+    The backup folder MUST be defined for the code to run.
+    Global variables: FE and obxg must exist and should point to Front End and Shutter
+    """
     TotalScanTime = myTime.time()
     NofScans = n
     cardCTsavedAttributes = ["totalNbPoint","integrationTime","continuousAcquisition","bufferDepth"]
@@ -118,6 +129,9 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False)
         CP = __CPlotter__
         CP.GraceWin = GracePlotter()
         for CurrentScan in xrange(NofScans):
+            if beamCheck and not(checkTDL(FE)):
+                wait_injection(FE,[obxg,])
+                sleep(10.)
             ActualFileNameData = findNextFileName(fileName,"txt")
             ActualFileNameInfo = ActualFileNameData[:ActualFileNameData.rfind(".")] + ".info"
             f=file(ActualFileNameData,"w")
@@ -354,6 +368,7 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False)
         print "Halt"
         raise
     print "Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime) 
+    AlarmBeep()
     return
 
 def update_graphs(CP, dcm, cardAI, cardCT, cardXIA1, cardXIA2, roiStart, roiEnd,\
@@ -473,6 +488,39 @@ def dark(dt=10.):
         print "I_2(AnalogInput) = %6.5fV" % darkAI2
         shopen(previous)
     print ct.readDark()
+    return
+
+def cleanup():
+    e1=dcm.pos()-1000.
+    e2=dcm.pos()+2500.
+    dcm.velocity=20
+    print "I will scan from %6.4feV to %6.4feV five times at 20eV/s to cleanup the zone."%(e1,e2)
+    for i in range(5):
+        dcm.pos(e1)
+        dcm.pos(e2)
+    return
+
+
+def AlarmBeep():
+    """Uses Tkinter to alert user that the run is finished... just in case he was sleeping..."""
+    #try:
+    #    pass
+    #    Beep(5,0.1);Beep(5,0.2)
+    #    Beep(5,0.1);Beep(5,0.2)
+    #except:
+    #    print "WARNING: Error alerting for end of scan... \n"
+    #    print "BUT: Ignore this message if escan is working well,\n just report this to your local contact\n"
+    try:
+        a=Tkinter.Tk()
+        for j in range(5):
+            for i in range(3):
+                a.bell()
+                sleep(0.025)
+            sleep(0.35)
+        a.destroy()
+    except:
+        print "WARNING: Error alerting for end of scan... no Tkinter?\n"
+        print "BUT: Ignore this message if escan is working well,\n just report this to your local contact\n"
     return
 
 
