@@ -2080,6 +2080,12 @@ def escan(filename="",form="",n=1,nowait=False):
         print "Missing data filename!"
         return
     es=escan_class(form)
+    try:
+        shell = get_ipython()
+        if "setSTEP" in shell.user_ns.keys():
+            shell.user_ns["setSTEP"]()
+    except:
+        print "setSTEP does not work?"
     es.start(filename,n,nowait=nowait)
     del es
     return 

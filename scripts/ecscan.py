@@ -97,6 +97,11 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
     cardAI_dark0,cardAI_dark1,cardAI_dark2,cardAI_dark3 =\
     map(float, cardAI.get_property(["SPECK_DARK"])["SPECK_DARK"])
 
+    #Set Mapping mode if needed
+    try:
+        setMAP()
+    except:
+        print "The setMAP function does not work!!! Try again and/or check with local contact!!!"
     #Card XIA1
     #Rois are defined only on one channel of XIA1 and used for XIA2
     roiStart, roiEnd = map(int, cardXIA1.getrois()[1].split(";")[1:])
