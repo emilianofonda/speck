@@ -32,7 +32,7 @@ def setuser(name=None):
                 #os.system("screen -X logfile %s" % (os.getcwd() + os.sep + "speckle.log"))
                 #os.system("screen -X log on")
                 IPy.magic("logstop")
-                IPy.magic("logstart -ort logBook.txt global")
+                IPy.magic("logstart -ort %s global"%(os.getcwd() + os.sep + "logBook.txt"))
             except:
                 pass
         else:
@@ -57,7 +57,7 @@ def setuser(name=None):
             #os.system("screen -X logfile %s" % (os.getcwd() + os.sep + "speckle.log"))
             #os.system("screen -X log on")
             IPy.magic("logstop")
-            IPy.magic("logstart -ort logBook.txt global")
+            IPy.magic("logstart -ort %s global"%(os.getcwd() + os.sep + "logBook.txt"))
         except Exception, tmp:
             print tmp
             pass
