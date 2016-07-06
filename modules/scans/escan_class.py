@@ -1,3 +1,4 @@
+#General modules
 import os,sys
 from time import clock,sleep,asctime,time
 import numpy
@@ -6,9 +7,10 @@ import PyTango
 from PyTango import DeviceProxy, DevState
 import exceptions
 #import thread
-
+import IPython
 import Gnuplot
 
+#Specific modules
 from mycurses import *
 from wait_functions import checkTDL, wait_injection
 #from motor_class import wait_motor
@@ -1250,6 +1252,7 @@ class escan_class:
         return
 
     def start(self,filename="",nscans=1,nowait=False):
+        shell = IPython.core.ipapi.get()
         self.filename = filename
         ####Hard coded parameters:####
         _UPDATE_GRAPHICS_EVERY=5
@@ -1354,6 +1357,7 @@ class escan_class:
             dirname = fdir + os.sep + dirname
             fullFile = file(fnameFull,"a")
             shortFile  = file(fname,"a")
+            
             ###################### FULL MCA FILES! #####################################
             self.mca_files={}
             if self.fullmca:
@@ -1396,6 +1400,7 @@ class escan_class:
             shortFile.write("#HEADER\n"+"#"+shortHeader+"\n")
             file_index+=1
             print "Scanning file :",fname
+            shell.logger.log_write("Saving data in: %s\n" % fname, kind='output')
             self.time_spent_for_scan=time()
             #
             #if self.TUNING: 
