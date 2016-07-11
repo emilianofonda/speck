@@ -34,7 +34,7 @@ class dxmap:
             if i[:3]=="roi" and i[5]=="_": self.rois.append(i)
             if i[:14]=="inputCountRate" and int(i[-2:])>=0 and int(i[-2:])<=99:
                 self.icrs.append(i)
-            if i[:15]=="outputCountRate" and int(i[-2:])>=0 and int(i[-2:])<=99:
+            if i[:len("deadTime")]=="deadTime" and int(i[-2:])>=0 and int(i[-2:])<=99:
                 self.ocrs.append(i)
         self.user_readconfig=[]
         for i in self.rois+self.icrs+self.ocrs:
@@ -81,7 +81,7 @@ class dxmap:
             if i[:3]=="roi" and i[5]=="_": self.rois.append(i)
             if i[:14]=="inputCountRate" and int(i[-2:])>=0 and int(i[-2:])<=99:
                 self.icrs.append(i)
-            if i[:15]=="outputCountRate" and int(i[-2:])>=0 and int(i[-2:])<=99:
+            if i[:len("deadTime")]=="deadTime" and int(i[-2:])>=0 and int(i[-2:])<=99:
                 self.ocrs.append(i)
         self.user_readconfig=[]
         for i in self.rois+self.icrs+self.ocrs:

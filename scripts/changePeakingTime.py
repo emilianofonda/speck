@@ -63,7 +63,11 @@ def setMCAconfig(config=-1):
 
 
 def setMAP():
-    if mca1.DP.currentMode <> 'MAPPING' or mca2.DP.currentMode <> 'MAPPING':
+    try:
+        changeMode = mca1.DP.currentMode <> 'MAPPING' or mca2.DP.currentMode <> 'MAPPING'
+    except:
+        changeMode = True
+    if changeMode:
         mca1.DP.loadconfigfile("MAP")
         mca2.DP.loadconfigfile("MAP")
         while(mca1.state() == DevState.DISABLE or mca2.state() == DevState.DISABLE):
@@ -72,7 +76,11 @@ def setMAP():
     return
 
 def setSTEP():
-    if mca1.DP.currentMode <> 'MCA' or mca2.DP.currentMode <> 'MCA':
+    try:
+        changeMode = mca1.DP.currentMode <> 'MCA' or mca2.DP.currentMode <> 'MCA'
+    except:
+        changeMode = True
+    if changeMode:
         mca1.DP.loadconfigfile("STEP")
         mca2.DP.loadconfigfile("STEP")
         while(mca1.state() == DevState.DISABLE or mca2.state() == DevState.DISABLE):
