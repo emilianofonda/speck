@@ -3,7 +3,7 @@ from time import time as cputime
 from numpy import round, array, sum, mean, loadtxt, savetxt
 import os
 import pylab
-
+import IPython
 from PyTango import DeviceProxy
 
 from GetPositions import GetPositions
@@ -12,6 +12,8 @@ try:
     import Gnuplot
 except Exception, tmp:
     print "Cannot import Gnuplot"
+
+
 from mycurses import *
 
 from spec_syntax import mv, wa, whois
@@ -196,6 +198,7 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
     """Scan mot from p1 to p2 with step dp, reads ct for dt seconds. The default timebase is named ct."""
     #glob=globals()
     glob  = get_ipython().user_ns
+    shell = IPython.core.ipapi.get()
     if "setSTEP" in glob.keys():
         glob["setSTEP"]()
     if p1 < p2:
@@ -237,6 +240,7 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
         ###################### FULL MCA FILES! #####################################
         f=file(current_name, "w")
         print "Saving in file: ",current_name
+        shell.logger.log_write("Saving data in: %s\n" % current_name, kind='output') 
         try:
             if "label" in dir(mot):    f.write("#ascan over motor: "+mot.label+"\n")
         except (KeyboardInterrupt,SystemExit), tmp:

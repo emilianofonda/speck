@@ -57,6 +57,7 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
     The backup folder MUST be defined for the code to run.
     Global variables: FE and obxg must exist and should point to Front End and Shutter
     """
+    shell=get_ipython()
     TotalScanTime = myTime.time()
     NofScans = n
     cardCTsavedAttributes = ["totalNbPoint","integrationTime","continuousAcquisition","bufferDepth"]
@@ -138,6 +139,7 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
                 wait_injection(FE,[obxg,])
                 sleep(10.)
             ActualFileNameData = findNextFileName(fileName,"txt")
+            shell.logger.log_write("Saving data in: %s\n" % ActualFileNameData, kind='output')
             ActualFileNameInfo = ActualFileNameData[:ActualFileNameData.rfind(".")] + ".info"
             f=file(ActualFileNameData,"w")
             f.close()
@@ -311,6 +313,7 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
 #Stop feeding the monster. Close HDF
             outtaHDF.close()
             print "HDF closed."
+            shell.logger.log_write("Saving data in: %s\n" % (outtaName[:outtaName.rfind(".")] + ".hdf"), kind='output')
 #Now that data are saved try to plot it for the last time
             try:
                 #thread.start_new_thread(update_graphs, (CP, dcm, cardAI, cardCT, cardXIA1, cardXIA2,\
