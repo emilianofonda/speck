@@ -65,12 +65,22 @@ def setMCAconfig(config=-1):
 def setMAP():
     try:
         changeMode = mca1.DP.currentMode <> 'MAPPING' or mca2.DP.currentMode <> 'MAPPING'
+        rois1 = mca1.DP.getrois()
+        rois2 = mca2.DP.getrois()
     except:
         changeMode = True
     if changeMode:
+        mca1.DP.set_timeout_millis(30000)
+        mca2.DP.set_timeout_millis(30000)
         mca1.DP.loadconfigfile("MAP")
         mca2.DP.loadconfigfile("MAP")
         while(mca1.state() == DevState.DISABLE or mca2.state() == DevState.DISABLE):
+            sleep(1)
+        if rois1 <> mca1.DP.getrois():
+            mca1.DP.setroisfromlist(rois1)
+        if rois2 <> mca2.DP.getrois():
+            mca2.DP.setroisfromlist(rois2)
+        while(mca1.state() in [DevState.DISABLE,DevState.UNKNOWN] or mca2.state() in [DevState.DISABLE,DevState.UNKNOWN]):
             sleep(1)
         ct.reinit()
     return
@@ -78,12 +88,22 @@ def setMAP():
 def setSTEP():
     try:
         changeMode = mca1.DP.currentMode <> 'MCA' or mca2.DP.currentMode <> 'MCA'
+        rois1 = mca1.DP.getrois()
+        rois2 = mca2.DP.getrois()
     except:
         changeMode = True
     if changeMode:
+        mca1.DP.set_timeout_millis(30000)
+        mca2.DP.set_timeout_millis(30000)
         mca1.DP.loadconfigfile("STEP")
         mca2.DP.loadconfigfile("STEP")
         while(mca1.state() == DevState.DISABLE or mca2.state() == DevState.DISABLE):
+            sleep(1)
+        if rois1 <> mca1.DP.getrois():
+            mca1.DP.setroisfromlist(rois1)
+        if rois2 <> mca2.DP.getrois():
+            mca2.DP.setroisfromlist(rois2)
+        while(mca1.state() in [DevState.DISABLE,DevState.UNKNOWN] or mca2.state() in [DevState.DISABLE,DevState.UNKNOWN]):
             sleep(1)
         ct.reinit()
     return
