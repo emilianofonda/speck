@@ -98,7 +98,7 @@ mode="t", figN=1, out=False):
     bkg = pylab.polyval(bkgPoly, chiK)
     exafs = (chi - bkg) / Step
     mOut = pylab.array([chiK, exafs],"f")
-    mOutSG = pylab.array([chiK, xas.SavitzkyGolay(exafs,window=9,order=3)],"f")
+    mOutSG = pylab.array([chiK, xas.SavitzkyGolay(exafs,19,5)],"f")
     if out:
         pylab.savetxt(baseFilename+".chik", pylab.transpose(mOut))
     pylab.subplot(221)
@@ -116,11 +116,14 @@ mode="t", figN=1, out=False):
     pylab.grid()
     xmuNOR = (xmu-pylab.polyval(preEdge,ene))/(pylab.polyval(norPoly,ene)-pylab.polyval(preEdge,ene))
     derNOR = pylab.diff(xmuNOR[ider1:ider2])/pylab.diff(ene[ider1:ider2])
+    derNORsg = xas.SavitzkyGolay(pylab.diff(xmuNOR[ider1:ider2])/pylab.diff(ene[ider1:ider2]),9,5)
     derNOR = derNOR / max(derNOR)
+    derNORsg = derNORsg / max(derNORsg)
     derENE = ene[ider1:ider2-1] + pylab.diff(ene[ider1:ider2])*0.5
-    iMaxDer = derNOR.argmax()
+    iMaxDer = derNORsg.argmax()
     pylab.plot(ene, xmuNOR,"b-",label="$ \mu $")
     pylab.plot(derENE, derNOR - 0.5,"g-",label="$\delta \mu /\delta E$")
+    pylab.plot(derENE, derNORsg - 0.5,"k--",linewidth=2)
     pylab.annotate("%8.2f" % e0, xy=(e0,0.9), xytext=(e0-60,0.9),\
     arrowprops={"width":0.1,"headwidth":5,"frac":0.5,"color":"r","shrink":0.9})
     pylab.annotate("%8.2f" % derENE[iMaxDer], xy=(derENE[iMaxDer],max(derNOR)-0.5), xytext=(derENE[iMaxDer]-60,max(derNOR)-0.5),\
@@ -145,7 +148,7 @@ mode="t", figN=1, out=False):
     mft = xas.ft(iexafs,3,chiK[-1],kw=kweight)
     
     pylab.plot(iexafs[0], iexafs[1] * iexafs[0]**kweight, "r-", linewidth=1,label="$k^%i\chi(k)$"%kweight)
-    pylab.plot(iexafsSG[0], iexafsSG[1] * iexafsSG[0]**kweight, "b-", linewidth=1,label="$Smoothed(k^%i\chi(k))$"%kweight)
+    pylab.plot(iexafsSG[0], iexafsSG[1] * iexafsSG[0]**kweight, "k--", linewidth=2,label="$Smoothed$")
     pylab.xlim([min(chiK),max(chiK)])
     pylab.legend(loc="best",ncol=1, frameon=False)
     pylab.grid()
