@@ -98,7 +98,7 @@ mode="t", figN=1, out=False):
     bkg = pylab.polyval(bkgPoly, chiK)
     exafs = (chi - bkg) / Step
     mOut = pylab.array([chiK, exafs],"f")
-    #mOutSG = pylab.array([chiK, scipy.signal.savgol_filter(exafs,5,3,mode='interp')],"f")
+    mOutSG = pylab.array([chiK, xas.SavitzkyGolay(exafs,window=9,order=3)],"f")
     if out:
         pylab.savetxt(baseFilename+".chik", pylab.transpose(mOut))
     pylab.subplot(221)
@@ -141,11 +141,11 @@ mode="t", figN=1, out=False):
     pylab.ylabel("$k^%i$$\chi$(k)"%kweight)
     
     iexafs = xas.interpolate(mOut,dk=0.04)
-    #iexafsSG = xas.interpolate(mOutSG,dk=0.04)
+    iexafsSG = xas.interpolate(mOutSG,dk=0.04)
     mft = xas.ft(iexafs,3,chiK[-1],kw=kweight)
     
     pylab.plot(iexafs[0], iexafs[1] * iexafs[0]**kweight, "r-", linewidth=1,label="$k^%i\chi(k)$"%kweight)
-    #pylab.plot(iexafsSG[0], iexafsSG[1] * iexafsSG[0]**kweight, "b-", linewidth=1,label="$Smoothed(k^%i\chi(k))$"%kweight)
+    pylab.plot(iexafsSG[0], iexafsSG[1] * iexafsSG[0]**kweight, "b-", linewidth=1,label="$Smoothed(k^%i\chi(k))$"%kweight)
     pylab.xlim([min(chiK),max(chiK)])
     pylab.legend(loc="best",ncol=1, frameon=False)
     pylab.grid()

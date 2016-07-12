@@ -19,7 +19,8 @@ from scipy import optimize
 import numpy as npy
 from numpy import pi,round,array,sqrt,sum,arange,loadtxt,savetxt, cos, sin, shape
 from numpy import fft
-
+import copy
+from math import factorial
 
 #Import Emiliano modules
 import pymucal
@@ -41,6 +42,31 @@ def xmuLoad(filename,k=1,chi=3,k1=-25,k2=45,dk=0.1,interp_order=3):
 
 
 #Math on spectra
+
+def SavitzkyGolay(y, window_size, order, deriv=0, rate=1):
+    """This implementation has been copied from Stack Overflow User Elvio, April 2014"""
+    try:
+        window_size = npy.abs(npy.int(window_size))
+        order = npy.abs(npy.int(order))
+    except ValueError, msg:
+        raise ValueError("window_size and order have to be of type int")
+    if window_size % 2 != 1 or window_size < 1:
+        raise TypeError("window_size size must be a positive odd number")
+    if window_size < order + 2:
+        raise TypeError("window_size is too small for the polynomials order")
+    order_range = range(order+1)
+    half_window = (window_size -1) // 2
+    # precompute coefficients
+    b = npy.mat([[k**i for i in order_range] for k in range(-half_window, half_window+1)])
+    m = npy.linalg.pinv(b).A[deriv] * rate**deriv * factorial(deriv)
+    # pad the signal at the extremes with
+    # values taken from the signal itself
+    firstvals = y[0] - npy.abs( y[1:half_window+1][::-1] - y[0] )
+    lastvals = y[-1] + npy.abs(y[-half_window-1:-1][::-1] - y[-1])
+    y = npy.concatenate((firstvals, y, lastvals))
+    return npy.convolve( m[::-1], y, mode='valid')
+
+
 def linFit(y, components, fractions = [], i1=0, i2=-1):
     """y is the array data
     components are a list of previously homogeneously data of standards, 
@@ -464,10 +490,11 @@ class FEFFcalculation:
         del ll,f,il
         return
 
-    def import_model(self, model, absorber = ["Au", 0., 0., 0., "Au0"], cutoff = 10., site=False):
+#Model structure has changed... modify following code!!!!
+    def import_model(self, model, absorber = [0.,0.,0.], cutoff = 10., site=False):
         """Convert a model list into an ATOMS list, then generate a config.
         Absorbing atom (ipot 0 in FEFF) must be specified as second argument
-        The absorber is specified as a complete entry of the model list. 
+        The absorber is specified by his coordinates [x,y,z]
         Only one absorber accepted.
         if site is True: a different ipot is generated for every different site label."""
         self.config["ATOMS"]=[]
@@ -476,29 +503,35 @@ class FEFFcalculation:
         atom_types_found = []
         atoms_found = []
         distances2 = []
-        center = array(absorber[1:4])
+        center = array(absorber)
         temp_atoms = []
-        for i in model:
-            if sum((array(i[1: 4]) - array(absorber[1: 4])) ** 2 ) <= cutoff_2:
+        #print "center =",center
+        for i in xrange(len(model["atoms"])):
+            dd = sum((array(model["xyz"][i]) - center) ** 2 ) 
+            if dd <= cutoff_2:
                 temp_atoms.append(i)
-                distances2.append(sum((array([i[1], i[2], i[3]])-center)**2))
+                distances2.append(dd)
         for i in npy.argsort(distances2):
             at = temp_atoms[i]
-            if at == absorber:
-               self.config["ATOMS"].append([at[0], 0, at[1]-center[0], at[2]-center[1], at[3]-center[2], at[4]])
-            elif site and [at[0], at[4]] not in atom_types_found:
+            if model["xyz"][at] == absorber:
+               self.config["ATOMS"].append([model["atoms"][at], 0,] + list(array(model["xyz"][at])-center) +[ model["labels"][at],])
+            elif site and [model["atoms"][at], model["labels"][at]] not in atom_types_found:
                ipot += 1
-               atom_types_found.append([at[0], at[4]])
-               self.config["ATOMS"].append([at[0], ipot, at[1]-center[0], at[2]-center[1], at[3]-center[2], at[4]])
-            elif not site and at[0] not in atoms_found:
+               atom_types_found.append( [model["atoms"][at], model["labels"][at]])
+               self.config["ATOMS"].append([model["atoms"][at], ipot,] + list(array(model["xyz"][at])-center) +[ model["labels"][at],])
+            elif not site and model["atoms"][at] not in atoms_found:
                ipot += 1
-               atoms_found.append(at[0])
-               self.config["ATOMS"].append([at[0], ipot, at[1]-center[0], at[2]-center[1], at[3]-center[2], at[4]])
+               atoms_found.append(model["atoms"][at])
+               self.config["ATOMS"].append([model["atoms"][at], ipot,] + list(array(model["xyz"][at])-center) +[ model["labels"][at],])
             else:
                 if site:
-                    self.config["ATOMS"].append([at[0], atom_types_found.index([at[0], at[4]]) + 1, at[1]-center[0], at[2]-center[1], at[3]-center[2], at[4]])
+                    #self.config["ATOMS"].append([model["atoms"][at], atom_types_found.index([model["atoms"][at], model["labels"][at]]) + 1]\
+                    #+(array(model["xyz"][at])-center).tolist() +[model["labels"][at],])
+                    self.config["ATOMS"].append([model["atoms"][at], atoms_found.index([model["atoms"][at],model["labels"][at]]) + 1] +\
+                    (array(model["xyz"][at]) - center).tolist() +[model["labels"][at],])
                 else:
-                    self.config["ATOMS"].append([at[0], atoms_found.index(at[0]) + 1, at[1]-center[0], at[2]-center[1], at[3]-center[2], at[4]])
+                    #print [model["atoms"][at], atoms_found.index(model["atoms"][at]) + 1] + (array(model["xyz"][at]) - center).tolist() +[model["labels"][at],]
+                    self.config["ATOMS"].append([model["atoms"][at], atoms_found.index(model["atoms"][at]) + 1] + (array(model["xyz"][at]) - center).tolist() +[model["labels"][at],])
 
         del temp_atoms, distances2
         self.autoPotentials()
@@ -508,11 +541,11 @@ class FEFFcalculation:
 def computeXAS(model, axis = None, absorber = None, feff_config = None, periodic = True, mode = "EXAFS", all_site=False, cutoff = 8, np=4, tmpdir=None, repeat=1):
     """Calculate the average EXAFS or XANES spectrum over the desired absober in a model.
     
-    The model must be described as a list of list:
-    e.g.  [["Au",0.,0.,0.,"site1"],["O",1.25,1.25,1.25,"site2"]....]
+    The model must be described as a dictionary:
+    e.g.  model = {"atoms":["Au","..",],"xyz":[[0.,0.,0.],[...]],"labels":["Au0","..."]}
     the first is the atom name (standard IUPAC)
     the coordinates (in Angstrom) follow,
-    the site1, site2 labels may be anything, even a repetition of the atomic symbol.
+    the labels may be anything, even a repetition of the atomic symbol.
     
     The model is replicated once in all directions, if the periodic card is set to True;
     but the calculation is performed only on atoms inside the original model box.
@@ -556,27 +589,25 @@ def computeXAS(model, axis = None, absorber = None, feff_config = None, periodic
         iii) run and collect result
     4) Average results and return average + collection of individual signals classed for central atom
     """
-    #Find absorbers in model
-    absorbers_in_model = []
-    for i in model:
-        if i[0] == absorber:
-            absorbers_in_model.append(i)
-    #Make larger model if periodic
+    #Find absorbers in model: store index
+    absorbers_in_model = npy.where(array(model["atoms"]) == absorber)[0]
 
+    #Make larger model if periodic
     if periodic:
-        extended_model = []
+        extended_model = {"atoms":[],"xyz":[],"labels":[]}
         generatrice = []
         celle = [(i, j, k) for i in range(-repeat, repeat+1) for j in range(-repeat, repeat+1) for k in range(-repeat, repeat+1)]
         for i in celle:
             generatrice.append(makeModel.Fractional2Normal(i, axis))
         for shift in generatrice:
-            for atom in model:
-                extended_model.append([atom[0], atom[1] + shift[0], atom[2] + shift[1], atom[3] + shift[2], atom[4]])
+            ashift = array(shift,"f")
+            extended_model["atoms"] += model["atoms"]
+            extended_model["labels"] += model["labels"]
+            extended_model["xyz"] += (array(model["xyz"])+ashift).tolist()
         del generatrice, celle
     else:
-        extended_model = model + []
+        extended_model = copy.deepcopy(model)
     lista_calcoli = []  
-
     calcolo_index = 0
     if tmpdir <> None:
         _feff_dir = tmpdir
@@ -585,8 +616,8 @@ def computeXAS(model, axis = None, absorber = None, feff_config = None, periodic
     for abs_at in absorbers_in_model:
         calcolo_index += 1
         calcolo = FEFFcalculation(folder =  _feff_dir + os.sep + "%04i"%(calcolo_index))
-        calcolo.import_model(extended_model, absorber = abs_at, cutoff = cutoff)
-        calcolo.__absorber = abs_at
+        calcolo.import_model(extended_model, absorber = extended_model["xyz"][abs_at], cutoff = cutoff)
+        calcolo.__absorber = [extended_model["atoms"][abs_at],] + extended_model["xyz"][abs_at] + [extended_model["labels"][abs_at]]
         if mode == "EXAFS":
             calcolo.config["EXAFS"] = 20.
         elif mode == "XANES":
@@ -639,7 +670,7 @@ def computeXASlist(model, absorber="", absorberList = [], feff_config = None, mo
     #Check absorbers
     absorbers_in_model = []
     for i in absorberList:
-        if model[i][0] <> absorber:
+        if model["atoms"][i] <> absorber:
             raise Exception("Absorber is not what expected at site: %i" % i)
 
     lista_calcoli = []  
@@ -650,11 +681,11 @@ def computeXASlist(model, absorber="", absorberList = [], feff_config = None, mo
     else:
         _feff_dir = os.getcwd()
     for iAbsAt in absorberList:
-        absAt = model[iAbsAt]
+        absAt = model["xyz"][iAbsAt]
         calcolo_index += 1
         calcolo = FEFFcalculation(folder =  _feff_dir + os.sep + "%04i"%(calcolo_index))
         calcolo.import_model(model, absorber = absAt, cutoff = cutoff)
-        calcolo.__absorber = absAt
+        calcolo.__absorber = model["atoms"][iAbsAt]
         if mode == "EXAFS":
             calcolo.config["EXAFS"] = 20.
         elif mode == "XANES":
