@@ -783,6 +783,12 @@ class pseudo_counter:
         return
     
     def start(self,dt=1):
+        try:
+            shell = get_ipython()
+            if "setSTEP" in shell.user_ns.keys():
+                shell.user_ns["setSTEP"]()
+        except:
+            print "Impossible to switch to step mode by setSTEP!"
         for i in self.slaves2arm2stop + self.slaves2arm:
             i.start()
         self.wait_armed()

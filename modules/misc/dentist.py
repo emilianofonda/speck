@@ -97,8 +97,8 @@ mode="t", figN=1, out=False):
     bkgPoly = scipy.optimize.curve_fit(polySc,chiK, chi, [1.,]*polyN, sigma=1./chiK**kweight)[0]
     bkg = pylab.polyval(bkgPoly, chiK)
     exafs = (chi - bkg) / Step
-
     mOut = pylab.array([chiK, exafs],"f")
+    #mOutSG = pylab.array([chiK, scipy.signal.savgol_filter(exafs,5,3,mode='interp')],"f")
     if out:
         pylab.savetxt(baseFilename+".chik", pylab.transpose(mOut))
     pylab.subplot(221)
@@ -133,7 +133,7 @@ mode="t", figN=1, out=False):
     pylab.xlabel("Energy (eV)")
 
     pylab.subplot(223)
-    pylab.plot(chiK, exafs * chiK**kweight,"b--",label="$k^%i\chi(k)$"%kweight)
+    #pylab.plot(chiK, exafs * chiK**kweight,"b--",label="$k^%i\chi(k)$"%kweight)
     #pylab.plot(chiK, (bkg-pylab.polyval(norPoly,chiE))*chiK**kweight * 0.1 * \
     #(max(exafs)/(bkg-pylab.polyval(norPoly,chiE))), label="${\mu_0}/{10}$")
    
@@ -141,9 +141,11 @@ mode="t", figN=1, out=False):
     pylab.ylabel("$k^%i$$\chi$(k)"%kweight)
     
     iexafs = xas.interpolate(mOut,dk=0.04)
+    #iexafsSG = xas.interpolate(mOutSG,dk=0.04)
     mft = xas.ft(iexafs,3,chiK[-1],kw=kweight)
     
-    pylab.plot(iexafs[0], iexafs[1] * iexafs[0]**kweight, "r-", linewidth=1,label="$Interp(k^%i\chi(k))$"%kweight)
+    pylab.plot(iexafs[0], iexafs[1] * iexafs[0]**kweight, "r-", linewidth=1,label="$k^%i\chi(k)$"%kweight)
+    #pylab.plot(iexafsSG[0], iexafsSG[1] * iexafsSG[0]**kweight, "b-", linewidth=1,label="$Smoothed(k^%i\chi(k))$"%kweight)
     pylab.xlim([min(chiK),max(chiK)])
     pylab.legend(loc="best",ncol=1, frameon=False)
     pylab.grid()
