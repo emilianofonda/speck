@@ -218,7 +218,8 @@ def SetPositions(filename=""):
         if(failures>0):
             print "WARNING: I got ",failures," failures."
             fmt = "%s\n" * len(failedmotors)
-            raise Exception("SetPositionsFailure failures=%i"%(failures), fmt%(failedmotors))
+            print failedmotors
+            raise Exception("SetPositionsFailure failures=%i"%(failures), fmt%tuple(failedmotors))
     return
 
 

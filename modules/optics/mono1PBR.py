@@ -72,7 +72,13 @@ class sagittal_bender:
         self.c1.stop()
         self.c2.stop()
         return self.state()
-
+    
+    def init(self):
+        self.c1.init()
+        self.c2.init()
+        sleep(0.2)
+        return
+        
     def on(self):
         self.c1.on()
         self.c2.on()
@@ -119,6 +125,8 @@ class sagittal_bender:
     def pos(self,dest=None,wait=True):
         if(dest==None):
             return 0.5*(self.c1.pos()+self.c2.pos())
+        if self.state() == DevState.DISABLE:
+            self.init()
         ss=self.state()
         if(ss in [DevState.DISABLE,DevState.OFF,DevState.UNKNOWN]):
             print "At least one motor is in Off,Unknown or Disable state!!!"
@@ -300,7 +308,9 @@ class mono1:
         return self.label+" at %10.6f"%(self.pos())
     
     def init(self):
-        return self.DP.init()
+        self.DP.init()
+        sleep(0.2)
+        return self.state()
 
     def on(self):
         for i in self.motors: 
@@ -518,30 +528,38 @@ class mono1:
 
     def disable_ts2(self):
         self.DataViewer.EnableTs2 = 0
+        self.init()
         return
     def enable_ts2(self):
         self.DataViewer.EnableTs2 = 1
+        self.init()
         return
 
     def disable_tz2(self):
         self.DataViewer.EnableTz2 = 0
+        self.init()
         return
     def enable_tz2(self):
         self.DataViewer.EnableTz2 = 1
+        self.init()
         return
 
     def enable_rs2(self):
         self.DataViewer.EnableRs2 = 1
+        self.init()
         return
     def disable_rs2(self):
         self.DataViewer.EnableRs2 = 0
+        self.init()
         return
 
     def enable_rz2(self):
         self.DataViewer.EnableRz2 = 1
+        self.init()
         return
     def disable_rz2(self):
         self.DataViewer.EnableRz2 = 0
+        self.init()
         return
 
     def sample_at(self,distance=None):
@@ -552,6 +570,8 @@ class mono1:
                 pass
                 #raise Exception("Trying to write q on dcm while dcm is moving!")
             self.DataViewer.p = float(distance)
+            sleep(0.1)
+            self.init()
             return self.sample_at()
 
     def d(self):
@@ -562,6 +582,7 @@ class mono1:
             return self.DataViewer.H
         elif 10 < H < 35:
             self.DataViewer.H = H
+            self.init()
         return self.DataViewer.H
     
     def check(self):
@@ -600,6 +621,7 @@ class mono1:
         if mode <0 or mode >1:
             return self.DP.movingMode
         self.DP.movingMode = mode
+        self.init()
         return self.DP.movingMode
 
     def velocity(self, velocity=None):
@@ -691,6 +713,12 @@ class mono1:
             theta = self.e2theta(energy)
             #
             #Write movement code here
+            if self.state() == DevState.DISABLE:
+                mm = self.mode()
+                self.mode(0)
+                self.init()
+                self.DP.on()
+                self.mode(mm)
             for i in xrange(5):
                 try:
                     self.DP.Energy = energy
@@ -743,6 +771,8 @@ class mono1:
         offset = self.e2theta(true_energy) - self.e2theta(experiment_energy)
         print "New goniometer position is:   %8.6f"%(self.m_rx1.pos() + offset)
         oe=self.pos()
+        self.m_rx1.init()
+        sleep(0.1)
         self.m_rx1.DefinePosition(self.m_rx1.pos() + offset) 
         sleep(self.deadtime *5)
         return {"Old energy":oe,"New energy":self.pos()}

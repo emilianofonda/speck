@@ -7,7 +7,7 @@ def polySc(x,*args):
     return pylab.polyval(args, x)   
 
 def dentist(filename, e0=20060., \
-pre1  = -300, pre2  = -40, nor1  =  45, nor2  = -1,\
+pre1  = -300, pre2  = -60, nor1  =  45, nor2  = -1,\
 poly1 =  15., poly2 =  -1, polyN =  -1, kweight = -1, rmax=6,\
 mode="t", figN=1, out=False):
     """mode can be t = transmission or f = fluorescence or s = standard
@@ -116,14 +116,14 @@ mode="t", figN=1, out=False):
     pylab.grid()
     xmuNOR = (xmu-pylab.polyval(preEdge,ene))/(pylab.polyval(norPoly,ene)-pylab.polyval(preEdge,ene))
     derNOR = pylab.diff(xmuNOR[ider1:ider2])/pylab.diff(ene[ider1:ider2])
-    derNORsg = xas.SavitzkyGolay(pylab.diff(xmuNOR[ider1:ider2])/pylab.diff(ene[ider1:ider2]),9,5)
+    derNORsg = pylab.diff(xas.SavitzkyGolay(xmuNOR[ider1:ider2],9,5))/pylab.diff(ene[ider1:ider2])
     derNOR = derNOR / max(derNOR)
     derNORsg = derNORsg / max(derNORsg)
     derENE = ene[ider1:ider2-1] + pylab.diff(ene[ider1:ider2])*0.5
     iMaxDer = derNORsg.argmax()
     pylab.plot(ene, xmuNOR,"b-",label="$ \mu $")
     pylab.plot(derENE, derNOR - 0.5,"g-",label="$\delta \mu /\delta E$")
-    pylab.plot(derENE, derNORsg - 0.5,"k--",linewidth=2)
+    #pylab.plot(derENE, derNORsg - 0.5,"k--",linewidth=2)
     pylab.annotate("%8.2f" % e0, xy=(e0,0.9), xytext=(e0-60,0.9),\
     arrowprops={"width":0.1,"headwidth":5,"frac":0.5,"color":"r","shrink":0.9})
     pylab.annotate("%8.2f" % derENE[iMaxDer], xy=(derENE[iMaxDer],max(derNOR)-0.5), xytext=(derENE[iMaxDer]-60,max(derNOR)-0.5),\

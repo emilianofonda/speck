@@ -102,6 +102,8 @@ class moveable:
         if x==None:
             return self.DP.read_attribute(self.att_name).value
         if x==self.pos(): return self.pos()
+        if self.state() == DevState.DISABLE:
+            self.init()
         try:
             self.DP.write_attribute(self.att_name,x)
             if self.moving_state == None:
@@ -171,16 +173,22 @@ class moveable:
 
     def on(self):
         if self.powerup_command<>"": 
+            if self.state() == DevState.DISABLE:
+                self.init()
             self.DP.command_inout(self.powerup_command)
         else:
             print "on is "+RED+"not"+RESET+" a supported command on %s"%(self.label)
+        sleep(0.1)
         return self.state()
         
     def off(self):
         if self.powerdown_command<>"": 
+            if self.state() == DevState.DISABLE:
+                self.init()
             self.DP.command_inout(self.powerdown_command)
         else:
             print "off is " + RED + "not" + RESET + " a supported command on %s" % (self.label)
+        sleep(0.1)
         return self.state()
 
     def __getattr__(self,att):

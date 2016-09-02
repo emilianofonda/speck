@@ -26,6 +26,8 @@ from math import factorial
 import pymucal
 import makeModel
 
+#All energies must be in eV!!!
+
 # File Utilities
 def exafsLoad(filename,k=0,chi=1,**kwargs):
     """load file and interpolate it. 
@@ -34,12 +36,89 @@ def exafsLoad(filename,k=0,chi=1,**kwargs):
     return interpolate(array([xf[k], xf[chi]]), **kwargs)
 
 
-def xmuLoad(filename,k=1,chi=3,k1=-25,k2=45,dk=0.1,interp_order=3):
+def xmuLoad(filename,xcol=0,ycol=3,delta=0.5):
     """load file and interpolate it. 
     keywords arguments are passed to interpolate function (see xas.interpolate)."""
     xf = loadtxt(filename).transpose()
-    return interpolate(array([xf[k], xf[chi]]), k1, k2, dk,interp_order)
+    idx = xf[xcol].argsort()
+    xf = array([i[idx] for i in xf],"f")
+    emin = xf[xcol][1]
+    if int(emin) < xf[xcol][0]:
+        emin = int(emin) + 1
+    else:
+        emin = int(emin)
+    emax = float(emin + int((max(xf[xcol]) - emin) / delta) * delta)
+    emin = float(emin)
+    #print "Energy Min = %6.4f Max = %6.4f " %(emin, emax)
+    return interpolate(array([xf[xcol], xf[ycol]]), emin, emax, delta, interp_order=1)
 
+def mergeFiles(fileNames,xcol=0,ycol=1,delta=0.5):
+    """average files after interpolation on given delta
+    xcol is the x-scale column and ycol is the y data column number."""
+    eMin = -1
+    eMax = -1
+    nOK = 0
+    for cName in fileNames:
+        try:
+            xmu = xmuLoad(cName,xcol,ycol,delta)
+            if eMin == eMax:
+                eMin = xmu[0][0]
+                eMax = xmu[0][-1]
+                xTotal = xmu * 1.
+            else:
+                if xmu[0][0] <> eMin or xmu[0][-1] <> eMax:
+                    xmu = interpolate(xmu,eMin,eMax,delta,interp_order=1)
+                xTotal += xmu
+            nOK += 1
+        except:
+            print "Corrupt file: %s" % cName
+    return  xTotal / nOK
+
+def mergeXASFiles(output="",fileNames=[],delta=0.5):
+    """average files after interpolation on given delta
+    Energy is data column 0.
+    >>> Do not merge files with different energy ranges <<<"""
+    eMin = -1
+    eMax = -1
+    nOK = 0
+    delta = float(delta)
+    for cName in fileNames:
+        try:
+            xmu = loadtxt(cName).transpose()
+            idx = xmu[0].argsort()
+            xmu = array([i[idx] for i in xmu],"f")
+            if eMin < 0:
+                eMin = xmu[0][1]
+                if int(eMin) < xmu[0][0]:
+                    eMin = int(eMin) + 1
+                else:
+                    eMin = int(eMin)
+                eMax = float(eMin + int((xmu[0][-2] - eMin)/ delta) * delta)
+                eMin = float(eMin)
+                xx = npy.arange(eMin, eMax+delta ,delta)
+                xTotal = npy.zeros([len(xmu), len(xx) ])
+                xTotal[0] = xx
+                xTotal[1:] = array([ intp.interp1d(xmu[0], i, 1, bounds_error=False, fill_value=0.)(xTotal[0]) for i in xmu[1:] ])
+            else:
+                if xmu[0][0] > eMin or xmu[0][-1] < eMax:
+                    iNewMin = max(0, xTotal[0].searchsorted(xmu[0][0]))
+                    iNewMax = xTotal[0].searchsorted(xmu[0][-1])
+                    xTotal = xTotal[:,iNewMin:iNewMax]
+                    eMin, eMax = xTotal[0][0], xTotal[0][-1]
+                    print "File %s reduces range to [%6.2f:%6.2f] eV"%(cName, xTotal[0][0], xTotal[0][-1])
+                xTotal[1:] += array([ intp.interp1d(xmu[0], i, 1, bounds_error=False, fill_value=0.)(xTotal[0]) for i in xmu[1:] ])
+            nOK += 1
+        except Exception, tmp:
+            print "Corrupt file: %s" % cName
+    xTotal[1:] = xTotal[1:] / nOK
+    if output == "":
+        return  xTotal
+    else:
+        savetxt(output,xTotal.transpose())
+    return
+
+def makeFileList(folder=".", prefix="", extension=".txt"):
+    return npy.sort([i for i in os.listdir(folder) if i.startswith(prefix) and i.endswith(extension)])
 
 #Math on spectra
 
@@ -68,7 +147,8 @@ def SavitzkyGolay(y, window_size, order, deriv=0, rate=1):
 
 
 def linFit(y, components, fractions = [], i1=0, i2=-1):
-    """y is the array data
+    """y is the array d
+ata
     components are a list of previously homogeneously data of standards, 
     fractions is the list of their respective fractions,  
     i1, i2 are the limits of the region used for the fit (default is 0 and -1).
@@ -89,14 +169,14 @@ def linFit(y, components, fractions = [], i1=0, i2=-1):
     fractions = abs(fractions) / sum(abs(fractions))
     return abs(fractions), sum(residual(fractions, y[i1:i2], cs)**2)
 
-def interpolate(chi, k1=0., k2=40., dk=0.05, interp_order = 1):
+def interpolate(chi, k1=0., k2=40., dk=0.05, interp_order = 'linear'):
     """Just interpolate! do not ask yourself any question: interpolate!
     before using any of the xas module functions interpolate!"""
     fchi = intp.interp1d(chi[0], chi[1], interp_order, bounds_error=False, fill_value=0.)
     xr = npy.arange(k1, k2 + dk, dk)
     return array([xr, fchi(xr)])
 
-def genericInterpolate(x, y, x1, x2, dx, interp_order = 1):
+def genericInterpolate(x, y, x1, x2, dx, interp_order = 'linear'):
     """return interpolated y data on even grid linspace(x1,x2,dx)"""
     fy = intp.interp1d(x, y, interp_order, bounds_error=False, fill_value=0.)
     xr = npy.arange(x1, x2 + dx, dx)

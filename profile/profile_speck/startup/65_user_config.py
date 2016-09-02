@@ -31,7 +31,7 @@ try:
     ["counter1",    "I0",         "%d",    "cts"],
     ["counter2",    "I1",         "%d",    "cts"],
     ["counter3",    "I2",         "%d",    "cts"],
-    ["counter4",    "XBPM_S",     "%d",    "cts"],
+    ["counter4",    "I3",         "%d",    "cts"],
     ["counter5",    "Empty01",    "%d",    "cts"],
     ["counter6",    "Empty02",    "%d",    "cts"],
     ["counter7",    "Clock",    "%5.2f",    "s"]
@@ -368,6 +368,7 @@ __tmp={
 "I0_gain"    :["d09-1-cx1/ex/amp_iv.1","gain"],
 "I1_gain"    :["d09-1-cx1/ex/amp_iv.2","gain"],
 "I2_gain"    :["d09-1-cx1/ex/amp_iv.3","gain"],
+"I3_gain"    :["d09-1-cx1/ex/amp_iv.4","gain"],
 "mostab_gain1"    :["d09-1-cx1/ex/amp_iv.10","gain"],
 #"mostab_gain2"    :["d09-1-cx1/ex/amp_iv.4","gain"],
 "mostab_gain2"    :["d09-1-cx1/ex/amp_iv.11","gain"],
@@ -826,3 +827,4 @@ domacro("changePeakingTime")
 
 #Load Energy Continuous Scan
 domacro("ecscan")
+domacro("ecscanXP")
