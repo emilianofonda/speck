@@ -539,7 +539,7 @@ for i in __tmp:
 
 
 ###
-### Define aliases below
+### Define \es below
 ###
 
 aliases={
@@ -548,7 +548,8 @@ aliases={
 "sample_rz":"phi",
 "sample_rx":"theta",
 "sample_rx2":"omega",
-"cryo4z":"becher"
+"cryo4z": "becher",
+"cryo4z": "x2",
 }
 
 for i in aliases:

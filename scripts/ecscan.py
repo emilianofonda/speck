@@ -96,16 +96,29 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
     #Set Mapping mode if needed
     try:
         setMAP()
+        sleep(0.1)
     except:
         try:
-            sleep(2)
+            sleep(.1)
             setMAP()
+            sleep(.1)
         except:
             print "The setMAP function does not work!!! Try again and/or check with local contact!!!"
     #Card XIA1
     #Rois are defined only on one channel of XIA1 and used for XIA2
-    roiStart, roiEnd = map(int, cardXIA1.getrois()[1].split(";")[1:])
-    
+    try:
+        roiStart, roiEnd = map(int, cardXIA1.getrois()[1].split(";")[1:])
+    except:
+        print "Please wait...",
+        setSTEP()
+        sleep(.1)
+        setMAP()
+        try:
+            roiStart, roiEnd = map(int, cardXIA1.getrois()[1].split(";")[1:])
+            print " done. OK."
+        except Exception, tmp:
+            print "\nRegion Of Interest has not been defined? use setroi(start,end) command please."
+            raise tmp
     cardXIA1.nbpixels = NumberOfPoints
     cardXIA1.streamNbAcqPerFile = 250
     cardXIA1.set_timeout_millis(30000)

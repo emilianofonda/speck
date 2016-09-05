@@ -484,6 +484,11 @@ class mono1:
         self.DP.put_property({"SPECK_UseLocalTable":False})
         self.readTable()
         self.unsetLocalTable()
+        try:
+            self.restoreDefaultValues()
+        except Exception, tmp:
+            print tmp
+            print "Failed to restore Default Values from SPECK_DefaultValues of Dataviewer Device."
         return
     
     def printTable(self):

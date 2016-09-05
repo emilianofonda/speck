@@ -1,5 +1,5 @@
 #This is a macro that depends on the SAMBA environment defined in speck_config...
-#This code works on global objects like mca1 and mca2, it is strictly... volatile.
+#This code works on global objects like mca1 and mca2, it is strictly... volatile... but essential!!!!
 
 __XIA_files = {
 0:{"PeakingTime":"0.48us",
@@ -72,6 +72,9 @@ def setMAP():
         changeMode = True
         fault = True
     if changeMode:
+        if fault:
+            mca1.init()
+            mca2.init()
         mca1.DP.set_timeout_millis(30000)
         mca2.DP.set_timeout_millis(30000)
         mca1.DP.loadconfigfile("MAP")
@@ -100,6 +103,9 @@ def setSTEP():
         changeMode = True
         fault = True
     if changeMode:
+        if fault:
+            mca1.init()
+            mca2.init()
         mca1.DP.set_timeout_millis(30000)
         mca2.DP.set_timeout_millis(30000)
         mca1.DP.loadconfigfile("STEP")
