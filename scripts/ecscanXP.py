@@ -47,6 +47,9 @@ def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=Fals
     Global variables: FE and obxg must exist and should point to Front End and Shutter
     """
     shell=get_ipython()
+    FE = shell.user_ns["FE"]
+    obxg = shell.user_ns["obxg"]
+
     TotalScanTime = myTime.time()
     NofScans = n
     cardCTsavedAttributes = ["totalNbPoint","integrationTime","continuousAcquisition","bufferDepth"]
@@ -107,10 +110,11 @@ def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=Fals
             #Configure and move mono
             if dcm.state() == DevState.MOVING:
                 wait_motor(dcm)
+            sleep(0.2)
             dcm.DP.velocity = 60
-            myTime.sleep(0.5)
+            myTime.sleep(0.2)
             dcm.mode(1)
-            myTime.sleep(0.5)
+            myTime.sleep(0.2)
             dcm.pos(e1-1., wait=False)
         
             #Print Name:
@@ -130,14 +134,16 @@ def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=Fals
             CP.GraceWin.wins[0].command('with g3\nyaxis ticklabel char size 0.7\n')
             CP.GraceWin.wins[0].command('with g3\nyaxis label char size 0.7\nyaxis label "STD"')
             while(dcm.state() == DevState.MOVING):
-                sleep(0.02)
+                sleep(0.1)
             while(dcm.state() == DevState.MOVING):
-                sleep(0.02)
+                sleep(0.1)
             timeAtStart = asctime()
             cardAI.start()
             sleep(1)
             dcm.mode(1)
+            sleep(0.2)
             dcm.DP.velocity = velocity
+            sleep(0.2)
             dcm.pos(e1)
             sleep(1)
             try:

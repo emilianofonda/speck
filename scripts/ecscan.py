@@ -53,6 +53,8 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
     Global variables: FE and obxg must exist and should point to Front End and Shutter
     """
     shell=get_ipython()
+    FE = shell.user_ns["FE"]
+    obxg = shell.user_ns["obxg"]
     TotalScanTime = myTime.time()
     NofScans = n
     cardCTsavedAttributes = ["totalNbPoint","integrationTime","continuousAcquisition","bufferDepth"]
@@ -109,7 +111,7 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
     try:
         roiStart, roiEnd = map(int, cardXIA1.getrois()[1].split(";")[1:])
     except:
-        print "Please wait...",
+        print "Please wait... I cannot find ROI limits, I check in STEP mode and then I will come back to MAP mode...",
         setSTEP()
         sleep(.1)
         setMAP()
@@ -119,6 +121,7 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
         except Exception, tmp:
             print "\nRegion Of Interest has not been defined? use setroi(start,end) command please."
             raise tmp
+    print "ROI limits are [%4i:%4i]" % (roiStart, roiEnd)
     cardXIA1.nbpixels = NumberOfPoints
     cardXIA1.streamNbAcqPerFile = 250
     cardXIA1.set_timeout_millis(30000)
@@ -158,10 +161,11 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
             #Configure and move mono
             if dcm.state() == DevState.MOVING:
                 wait_motor(dcm)
+            sleep(0.2)
             dcm.DP.velocity = 60
-            myTime.sleep(0.5)
+            myTime.sleep(0.2)
             dcm.mode(1)
-            myTime.sleep(0.5)
+            myTime.sleep(0.2)
             dcm.pos(e1-1., wait=False)
         
             #Print Name:
@@ -181,16 +185,18 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
             CP.GraceWin.wins[0].command('with g3\nyaxis ticklabel char size 0.7\n')
             CP.GraceWin.wins[0].command('with g3\nyaxis label char size 0.7\nyaxis label "STD"')
             while(dcm.state() == DevState.MOVING):
-                sleep(0.02)
+                sleep(0.1)
             while(dcm.state() == DevState.MOVING):
-                sleep(0.02)
+                sleep(0.1)
             timeAtStart = asctime()
             cardAI.start()
             cardXIA1.snap()
             cardXIA2.snap()
             sleep(1)
             dcm.mode(1)
+            sleep(0.2)
             dcm.DP.velocity = velocity
+            sleep(0.2)
             dcm.pos(e1)
             sleep(1)
             try:

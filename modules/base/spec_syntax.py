@@ -365,7 +365,7 @@ def fw(*args):
     try:
         for i in args:
             i.forward()
-        wait_motor(*args)
+        wait_motor(args)
     except Exception, tmp:
         for i in args:
             try:
@@ -381,7 +381,7 @@ def bw(*args):
     try:
         for i in args:
             i.backward()
-        wait_motor(*args)
+        wait_motor(args)
     except Exception, tmp:
         for i in args:
             try:

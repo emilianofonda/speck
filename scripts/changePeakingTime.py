@@ -66,9 +66,15 @@ def setMAP():
     fault = False
     try:
         changeMode = mca1.DP.currentMode <> 'MAPPING' or mca2.DP.currentMode <> 'MAPPING'
+    except:
+        changeMode = True
+        fault = True
+        print RED + "Cannot retrieve current XIA mode. Note: ROIs will not be transferred from STEP to MAP." + RESET
+    try:
         rois1 = mca1.DP.getrois()
         rois2 = mca2.DP.getrois()
     except:
+        print RED + "Cannot retrieve ROIs. Note: ROIs will not be transferred from STEP to MAP." + RESET
         changeMode = True
         fault = True
     if changeMode:
@@ -97,9 +103,15 @@ def setSTEP():
     fault = False
     try:
         changeMode = mca1.DP.currentMode <> 'MCA' or mca2.DP.currentMode <> 'MCA'
+    except:
+        changeMode = True
+        fault = True
+        print RED + "Cannot retrieve current XIA mode. Note: ROIs will not be transferred from STEP to MAP." + RESET
+    try:
         rois1 = mca1.DP.getrois()
         rois2 = mca2.DP.getrois()
     except:
+        print RED + "Cannot retrieve ROIs. Note: ROIs will not be transferred from STEP to MAP." + RESET
         changeMode = True
         fault = True
     if changeMode:
