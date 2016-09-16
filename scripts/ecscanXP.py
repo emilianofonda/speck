@@ -80,7 +80,7 @@ def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=Fals
     #Card AI
     if cardAI.configurationId <> 3:
         cardAI.configurationId = 3
-        sleep(5)
+        myTime.sleep(5)
     cardAI.integrationTime = dt * 1000 -2.
     cardAI.nexusFileGeneration = False
     cardAI.nexusNbAcqPerFile = NumberOfPoints
@@ -93,7 +93,12 @@ def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=Fals
     #DCM Setup
     if dcm.state() == DevState.DISABLE:
         dcm.DP.on()
-
+    for i in range(5):
+        try:
+            dcm.mode(1)
+            break
+        except:
+            myTime.sleep(1)
     #Start graphic windows    
     try:
         CP = __CPlotter__
@@ -101,7 +106,7 @@ def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=Fals
         for CurrentScan in xrange(NofScans):
             if beamCheck and not(checkTDL(FE)):
                 wait_injection(FE,[obxg,])
-                sleep(10.)
+                myTime.sleep(10.)
             ActualFileNameData = findNextFileName(fileName,"txt")
             shell.logger.log_write("Saving data in: %s\n" % ActualFileNameData, kind='output')
             ActualFileNameInfo = ActualFileNameData[:ActualFileNameData.rfind(".")] + ".info"
@@ -110,11 +115,11 @@ def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=Fals
             #Configure and move mono
             if dcm.state() == DevState.MOVING:
                 wait_motor(dcm)
-            sleep(0.2)
+            myTime.sleep(0.2)
             dcm.DP.velocity = 60
             myTime.sleep(0.2)
-            dcm.mode(1)
-            myTime.sleep(0.2)
+            #dcm.mode(1)
+            #myTime.sleep(0.2)
             dcm.pos(e1-1., wait=False)
         
             #Print Name:
@@ -134,18 +139,18 @@ def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=Fals
             CP.GraceWin.wins[0].command('with g3\nyaxis ticklabel char size 0.7\n')
             CP.GraceWin.wins[0].command('with g3\nyaxis label char size 0.7\nyaxis label "STD"')
             while(dcm.state() == DevState.MOVING):
-                sleep(0.1)
+                myTime.sleep(0.1)
             while(dcm.state() == DevState.MOVING):
-                sleep(0.1)
+                myTime.sleep(0.1)
             timeAtStart = asctime()
             cardAI.start()
-            sleep(1)
-            dcm.mode(1)
-            sleep(0.2)
+            myTime.sleep(1)
+            #dcm.mode(1)
+            #myTime.sleep(0.2)
             dcm.DP.velocity = velocity
-            sleep(0.2)
+            myTime.sleep(0.5)
             dcm.pos(e1)
-            sleep(1)
+            myTime.sleep(1)
             try:
                 pass
                 if shutter:
@@ -157,7 +162,7 @@ def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=Fals
                 pass
             dcm.pos(e2, wait=False)
             cardCT.start()
-            sleep(2)
+            myTime.sleep(2)
             while(dcm.state() == DevState.MOVING):
                 try: 
                     #thread.start_new_thread(update_graphsXP, (CP, dcm, cardAI, cardCT, cardXIA1, cardXIA2,\
@@ -170,7 +175,7 @@ def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=Fals
                 except Exception, tmp:
                     print tmp
                     pass
-                sleep(4)
+                myTime.sleep(4)
             try:
                 if shutter:
                     sh_fast.close()
@@ -179,11 +184,11 @@ def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=Fals
             except:
                 pass
             while(DevState.RUNNING in [cardCT.state(),]):
-                sleep(0.1)
+                myTime.sleep(0.1)
             timeAtStop = asctime()
             timeout0 = time()
             while(DevState.RUNNING in [cardAI.state(),] and time()-timeout0 < 3):
-                sleep(0.1)
+                myTime.sleep(0.1)
             if time()-timeout0 > 3:
                 print "cardAI of ecscan failed to stop!"
             cardAI.stop()
@@ -198,7 +203,8 @@ def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=Fals
             if NofScans >= 1: 
                 print myTime.asctime(), " : sending dcm back to starting point."
                 dcm.DP.velocity = 60
-                dcm.mode(1)
+                myTime.sleep(0.2)
+                #dcm.mode(1)
                 dcm.pos(e1-1., wait=False)
             #
             print myTime.asctime(), " : Saving Data..."
@@ -330,7 +336,7 @@ def dark(dt=10.):
     #Card AI
     if cardAI.configurationId <> 3:
         cardAI.configurationId = 3
-        sleep(5)
+        myTime.sleep(5)
     cardAI.integrationTime = dt -1.
     cardAI.nexusFileGeneration = False
     cardAI.nexusNbAcqPerFile = NumberOfPoints
@@ -348,14 +354,14 @@ def dark(dt=10.):
     else:
         previous = shstate()
         shclose(1)
-        sleep(1)
+        myTime.sleep(1)
         ct.count(dt)
         ct.writeDark()
         cardAI.start()
-        sleep(1)
+        myTime.sleep(1)
         cardCT.start()
         while(cardCT.state() == DevState.RUNNING):
-            sleep(0.1)
+            myTime.sleep(0.1)
         cardAI.stop()
         darkAI0 = numpy.average(cardAI.historizedchannel0)
         darkAI1 = numpy.average(cardAI.historizedchannel1)
@@ -396,8 +402,8 @@ def AlarmBeep():
         for j in range(5):
             for i in range(3):
                 a.bell()
-                sleep(0.025)
-            sleep(0.35)
+                myTime.sleep(0.025)
+            myTime.sleep(0.35)
         a.destroy()
     except:
         print "WARNING: Error alerting for end of scan... no Tkinter?\n"
