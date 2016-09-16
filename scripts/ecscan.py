@@ -85,7 +85,7 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
     #Card AI
     if cardAI.configurationId <> 3:
         cardAI.configurationId = 3
-        sleep(5)
+        myTime.sleep(5)
     cardAI.integrationTime = dt * 1000 -2.
     cardAI.nexusFileGeneration = False
     cardAI.nexusNbAcqPerFile = NumberOfPoints
@@ -98,12 +98,12 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
     #Set Mapping mode if needed
     try:
         setMAP()
-        sleep(0.1)
+        myTime.sleep(1)
     except:
         try:
-            sleep(.1)
+            myTime.sleep(1)
             setMAP()
-            sleep(.1)
+            myTime.sleep(1)
         except:
             print "The setMAP function does not work!!! Try again and/or check with local contact!!!"
     #Card XIA1
@@ -113,7 +113,7 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
     except:
         print "Please wait... I cannot find ROI limits, I check in STEP mode and then I will come back to MAP mode...",
         setSTEP()
-        sleep(.1)
+        myTime.sleep(1)
         setMAP()
         try:
             roiStart, roiEnd = map(int, cardXIA1.getrois()[1].split(";")[1:])
@@ -144,7 +144,12 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
     #DCM Setup
     if dcm.state() == DevState.DISABLE:
         dcm.DP.on()
-
+    for i in range(5):
+        try:
+            dcm.mode(1)
+            break
+        except:
+            myTime.sleep(1)
     #Start graphic windows    
     try:
         CP = __CPlotter__
@@ -152,7 +157,7 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
         for CurrentScan in xrange(NofScans):
             if beamCheck and not(checkTDL(FE)):
                 wait_injection(FE,[obxg,])
-                sleep(10.)
+                myTime.sleep(10.)
             ActualFileNameData = findNextFileName(fileName,"txt")
             shell.logger.log_write("Saving data in: %s\n" % ActualFileNameData, kind='output')
             ActualFileNameInfo = ActualFileNameData[:ActualFileNameData.rfind(".")] + ".info"
@@ -161,10 +166,10 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
             #Configure and move mono
             if dcm.state() == DevState.MOVING:
                 wait_motor(dcm)
-            sleep(0.2)
-            dcm.DP.velocity = 60
             myTime.sleep(0.2)
-            dcm.mode(1)
+            dcm.DP.velocity = 60
+            #myTime.sleep(0.2)
+            #dcm.mode(1)
             myTime.sleep(0.2)
             dcm.pos(e1-1., wait=False)
         
@@ -192,11 +197,11 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
             cardAI.start()
             cardXIA1.snap()
             cardXIA2.snap()
-            sleep(1)
-            dcm.mode(1)
-            sleep(0.2)
+            myTime.sleep(1)
+            #dcm.mode(1)
+            #sleep(0.2)
             dcm.DP.velocity = velocity
-            sleep(0.2)
+            myTime.sleep(0.5)
             dcm.pos(e1)
             sleep(1)
             try:
@@ -210,7 +215,7 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
                 pass
             dcm.pos(e2, wait=False)
             cardCT.start()
-            sleep(2)
+            myTime.sleep(2)
             XIA1filesList=[]
             XIA2filesList=[]
             fluoXIA1=[]
@@ -229,7 +234,7 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
                 except Exception, tmp:
                     print tmp
                     pass
-                sleep(4)
+                myTime.sleep(4)
             try:
                 if shutter:
                     sh_fast.close()
@@ -238,11 +243,11 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
             except:
                 pass
             while(DevState.RUNNING in [cardCT.state(),]):
-                sleep(0.1)
+                myTime.sleep(0.1)
             timeAtStop = asctime()
             timeout0 = time()
             while(DevState.RUNNING in [cardAI.state(),] and time()-timeout0 < 3):
-                sleep(0.1)
+                myTime.sleep(0.1)
             if time()-timeout0 > 3:
                 print "cardAI of ecscan failed to stop!"
             cardAI.stop()
@@ -258,13 +263,13 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
             if NofScans >= 1: 
                 print myTime.asctime(), " : sending dcm back to starting point."
                 dcm.DP.velocity = 60
-                dcm.mode(1)
+                #dcm.mode(1)
                 dcm.pos(e1-1., wait=False)
             #
             print myTime.asctime(), " : Saving Data..."
             XIAt0=time()
             while(cardXIA1.state() == DevState.RUNNING or cardXIA2.state() == DevState.RUNNING):
-                sleep(0.2)
+                myTime.sleep(0.2)
                 if time() - XIAt0 > 60:
                     raise Exception("Time Out waiting for XIA cards to stop! Waited more than 60s... !")
             #Additional time to wait for last file to appear in spool
@@ -504,7 +509,7 @@ def dark(dt=10.):
     #Card AI
     if cardAI.configurationId <> 3:
         cardAI.configurationId = 3
-        sleep(5)
+        myTime.sleep(5)
     cardAI.integrationTime = dt -1.
     cardAI.nexusFileGeneration = False
     cardAI.nexusNbAcqPerFile = NumberOfPoints
@@ -522,14 +527,14 @@ def dark(dt=10.):
     else:
         previous = shstate()
         shclose(1)
-        sleep(1)
+        myTime.sleep(1)
         ct.count(dt)
         ct.writeDark()
         cardAI.start()
-        sleep(1)
+        myTime.sleep(1)
         cardCT.start()
         while(cardCT.state() == DevState.RUNNING):
-            sleep(0.1)
+            myTime.sleep(0.1)
         cardAI.stop()
         darkAI0 = numpy.average(cardAI.historizedchannel0)
         darkAI1 = numpy.average(cardAI.historizedchannel1)
@@ -569,8 +574,8 @@ def AlarmBeep():
         for j in range(5):
             for i in range(3):
                 a.bell()
-                sleep(0.025)
-            sleep(0.35)
+                myTime.sleep(0.025)
+            mytime.sleep(0.35)
         a.destroy()
     except:
         print "WARNING: Error alerting for end of scan... no Tkinter?\n"

@@ -78,6 +78,8 @@ def mergeXASFiles(output="",fileNames=[],delta=0.5):
     """average files after interpolation on given delta
     Energy is data column 0.
     >>> Do not merge files with different energy ranges <<<"""
+    if fileNames == []:
+        return "Empy File List!"
     eMin = -1
     eMax = -1
     nOK = 0
@@ -117,8 +119,11 @@ def mergeXASFiles(output="",fileNames=[],delta=0.5):
         savetxt(output,xTotal.transpose())
     return
 
-def makeFileList(folder=".", prefix="", extension=".txt"):
-    return npy.sort([i for i in os.listdir(folder) if i.startswith(prefix) and i.endswith(extension)])
+def makeFileList(folder=".", prefix="", extension=".txt",exclude=[]):
+    ll = npy.sort([i for i in os.listdir(folder) if i.startswith(prefix) and i.endswith(extension) and len(i) == len(prefix) + 5 + len(extension)])
+    return [ll[i] for i in range(len(ll)) if i+1 not in exclude]
+    
+        
 
 #Math on spectra
 
