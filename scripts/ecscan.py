@@ -20,8 +20,8 @@ except:
 
 cardCT = DeviceProxy("d09-1-c00/ca/cpt.3_old")
 cardAI = DeviceProxy("d09-1-c00/ca/sai.1")
-cardXIA1 = DeviceProxy("tmp/test/xiadxp.test")
-cardXIA2 = DeviceProxy("tmp/test/xiadxp.test.2")
+cardXIA1 = DeviceProxy("d09-1-cx1/dt/dtc-mca_xmap.1")
+cardXIA2 = DeviceProxy("d09-1-cx1/dt/dtc-mca_xmap.2")
 cardXIA1Channels = range(1,20) #remember the range stops at N-1: 19
 cardXIA2Channels = range(0,16) #remember the range stops at N-1: 15
 
@@ -31,12 +31,23 @@ def stopscan(shutter=False):
             sh_fast.close()
     except:
         pass
+    print "Wait... Stopping Devices...",
+    sys.stdout.flush()
     cardAI.stop()
     cardCT.stop()
     cardXIA1.stop()
     cardXIA2.stop()
     dcm.stop()
+    myTime.sleep(3)
+    #cardXIA1.init()
+    #cardXIA2.init()
+    #myTime.sleep(2)
+    while(cardXIA1.state() == DevState.RUNNING or cardXIA2.state() == DevState.RUNNING):
+        myTime.sleep(2)
+    setMAP()
     wait_motor(dcm)
+    print "OK"
+    sys.stdout.flush()
     return
 
 class CPlotter:
@@ -47,6 +58,24 @@ class CPlotter:
 __CPlotter__ = CPlotter()
 
 def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True):
+    try:
+        ecscanActor(fileName,e1,e2,n,dt,velocity, e0, mode,shutter, beamCheck)
+    except KeyboardInterrupt:
+        shell.logger.log_write("ecscan halted on user request: Ctrl-C\n", kind='output')
+        print "Halting on user request."
+        sys.stdout.flush()
+        stopscan(shutter)
+        print "ecscan halted. OK."
+        print "Raising KeyboardInterrupt as requested."
+        sys.stdout.flush()
+        raise KeyboardInterrupt
+    except Exception, tmp:
+        shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp, kind='output')
+        stopscan(shutter)
+        raise tmp
+    return 
+
+def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True):
     """Start from e1 (eV) to e2 (eV) and count over dt (s) per point.
     velocity: Allowed velocity doesn't exceed 40eV/s.
     The backup folder MUST be defined for the code to run.
@@ -167,12 +196,12 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
             if dcm.state() == DevState.MOVING:
                 wait_motor(dcm)
             myTime.sleep(0.2)
-            dcm.DP.velocity = 60
+            #dcm.DP.velocity = 60
             #myTime.sleep(0.2)
-            #dcm.mode(1)
+            dcm.mode(0)
             myTime.sleep(0.2)
             dcm.pos(e1-1., wait=False)
-        
+            
             #Print Name:
             print "Measuring : %s\n"%ActualFileNameData
             #Start Measurement
@@ -190,16 +219,16 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
             CP.GraceWin.wins[0].command('with g3\nyaxis ticklabel char size 0.7\n')
             CP.GraceWin.wins[0].command('with g3\nyaxis label char size 0.7\nyaxis label "STD"')
             while(dcm.state() == DevState.MOVING):
-                sleep(0.1)
+                sleep(0.5)
             while(dcm.state() == DevState.MOVING):
-                sleep(0.1)
+                sleep(0.5)
             timeAtStart = asctime()
             cardAI.start()
             cardXIA1.snap()
             cardXIA2.snap()
             myTime.sleep(1)
-            #dcm.mode(1)
-            #sleep(0.2)
+            dcm.mode(1)
+            sleep(0.2)
             dcm.DP.velocity = velocity
             myTime.sleep(0.5)
             dcm.pos(e1)
@@ -262,8 +291,13 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
             #
             if NofScans >= 1: 
                 print myTime.asctime(), " : sending dcm back to starting point."
-                dcm.DP.velocity = 60
-                #dcm.mode(1)
+                #dcm.DP.velocity = 60
+                try:
+                    dcm.state()
+                except:
+                    myTime.sleep(1)
+                dcm.mode(0)
+                myTime.sleep(1)
                 dcm.pos(e1-1., wait=False)
             #
             print myTime.asctime(), " : Saving Data..."
@@ -410,6 +444,7 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
             os.system("cp " + ActualFileNameData +" " +filename2ruche(ActualFileNameData))
             os.system("cp " + ActualFileNameInfo +" " +filename2ruche(ActualFileNameInfo))            
             print myTime.asctime(), " : Data saved to backup."
+            shell.logger.log_write("Data saved in %s at %s\n" % (ActualFileNameData, myTime.asctime()), kind='output')
             try:
                 if e1 < e0 <e2:
                     #thread.start_new_thread(dentist.dentist, (ActualFileNameData,), {"e0":e0,})
@@ -421,11 +456,13 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
                 raise
             except Exception, tmp:
                 print tmp
-    except:
-        print "Acquisition Halted on Exception: wait for dcm to stop."
-        stopscan(shutter)
-        print "Halt"
-        raise
+    except Exception, tmp:
+        #print "Acquisition Halted on Exception: wait for dcm to stop."
+        #stopscan(shutter)
+        #print "Halt"
+        #shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp, kind='output')
+        raise tmp
+    shell.logger.log_write("Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime), kind='output')
     print "Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime) 
     AlarmBeep()
     return
@@ -485,11 +522,10 @@ XIA1NexusPath, XIA2NexusPath, XIA1filesList, XIA2filesList, fluoXIA1, fluoXIA2):
             fluoSeg = sum(fluoSeg[:,roiStart:roiEnd],axis=1) 
             fluoXIA2 += list(fluoSeg)
         ll = min(len(fluoXIA1),len(fluoXIA2))
-        if len(I0) >= ll:
+        if len(I0) >= ll and ll > 2:
             pass
             CP.GraceWin.GPlot(ene[:ll],numpy.nan_to_num((array(fluoXIA1,"f")[:ll] + array(fluoXIA2,"f")[:ll])/I0[:ll]),\
             gw=0, graph=2, curve=0, legend="", color=1, noredraw=False)
-            
             CP.GraceWin.wins[0]('with g2\nautoscale\nredraw\n')
     return
 

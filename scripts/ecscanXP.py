@@ -21,7 +21,7 @@ except:
 cardCT = DeviceProxy("d09-1-c00/ca/cpt.3_old")
 cardAI = DeviceProxy("d09-1-c00/ca/sai.1")
 
-def stopscan(shutter=False):
+def stopscanXP(shutter=False):
     try:
         if shutter:
             sh_fast.close()
@@ -37,10 +37,22 @@ class CPlotter:
     def h_init__(self):
         return
 
-
 __CPlotter__ = CPlotter()
 
 def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True):
+    try:
+        ecscanXPActor(fileName,e1,e2,n,dt,velocity, e0, mode,shutter,beamCheck)
+    except KeyboardInterrupt:
+        print "Halting on user request...",
+        stopscan(shutter)
+        print "OK"
+        raise KeyboardInterrupt
+    except Exception, tmp:
+        stopscan(shutter)
+        raise tmp
+    return 
+
+def ecscanXPActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True):
     """Start from e1 (eV) to e2 (eV) and count over dt (s) per point.
     velocity: Allowed velocity doesn't exceed 40eV/s.
     The backup folder MUST be defined for the code to run.
@@ -152,11 +164,10 @@ def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=Fals
             dcm.pos(e1)
             myTime.sleep(1)
             try:
-                pass
                 if shutter:
                     sh_fast.open()
             except KeyboardInterrupt:
-                stopscan(shutter)
+                #stopscanXP(shutter)
                 raise
             except:
                 pass
@@ -273,6 +284,7 @@ def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=Fals
             os.system("cp " + ActualFileNameData +" " +filename2ruche(ActualFileNameData))
             os.system("cp " + ActualFileNameInfo +" " +filename2ruche(ActualFileNameInfo))            
             print myTime.asctime(), " : Data saved to backup."
+            shell.logger.log_write("Data saved in %s at %s\n" % (ActualFileNameData, myTime.asctime()), kind='output')
             try:
                 if e1 < e0 <e2:
                     #thread.start_new_thread(dentist.dentist, (ActualFileNameData,), {"e0":e0,})
@@ -284,11 +296,13 @@ def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=Fals
                 raise
             except Exception, tmp:
                 print tmp
-    except:
+    except Exception, tmp:
         print "Acquisition Halted on Exception: wait for dcm to stop."
-        stopscan(shutter)
+        stopscanXP(shutter)
         print "Halt"
-        raise
+        shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp, kind='output')
+        raise tmp
+    shell.logger.log_write("Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime), kind='output')
     print "Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime) 
     AlarmBeep()
     return

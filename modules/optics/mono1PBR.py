@@ -309,7 +309,7 @@ class mono1:
     
     def init(self):
         self.DP.init()
-        sleep(0.2)
+        sleep(0.1)
         return self.state()
 
     def on(self):
@@ -617,16 +617,18 @@ class mono1:
         0: fast   (for seten or rough positioning)
         1: linear (for scans)
         """
+        if mode <0 or mode >1:
+            return self.DP.movingMode
         if self.state() == DevState.MOVING:
             t0 = time()
             while(time()-t0 <2 and self.state() == DevState.MOVING):
-                sleep(0.2)
+                sleep(0.1)
             if self.state() == DevState.MOVING:
                 raise Exception("mono1.PBR: cannot change moving mode while moving!")
-        if mode <0 or mode >1:
-            return self.DP.movingMode
         self.DP.movingMode = mode
-        self.init()
+        sleep(0.1)
+        #self.init()
+        #sleep(0.1)
         return self.DP.movingMode
 
     def velocity(self, velocity=None):
@@ -636,11 +638,11 @@ class mono1:
         if self.state() == DevState.MOVING:
             t0 = time()
             while(time()-t0 <2 and self.state() == DevState.MOVING):
-                sleep(0.2)
+                sleep(0.1)
             if self.state() == DevState.MOVING:
                 raise Exception("mono1.PBR: cannot change velocity while moving!")
         self.DP.velocity = velocity
-        sleep(self.deadtime*5)
+        sleep(0.1)
         return self.DP.velocity
     
     def status(self):
@@ -665,14 +667,9 @@ class mono1:
         return s
 
     def stop(self):
-        #print "DCM will not stop. Wait end of movement."
         self.DP.stop()
-        #for i in self.motors:
-        #    try:
-        #        i.stop()
-        #    except:
-        #        print i.label," is not responding!\n"
-        return
+        sleep(0.1)
+        return self.state()
         
     def e2theta(self,energy):
         """Calculate the energy for a given angle"""
@@ -721,9 +718,12 @@ class mono1:
             if self.state() == DevState.DISABLE:
                 mm = self.mode()
                 self.mode(0)
-                self.init()
+                #self.init()
+                sleep(0.1)
                 self.DP.on()
+                sleep(0.1)
                 self.mode(mm)
+                sleep(0.1)
             for i in xrange(5):
                 try:
                     self.DP.Energy = energy
@@ -963,14 +963,14 @@ class mono1:
         self.m_ts2.on()
         self.m_rs2.on()
         self.m_rz2.on()
-        print "Enabling: Tz2, Ts2, Rs2, Rz2: ",
+        print "Enabling: Tz2, Ts2 // Disabling Rz2, Rs2 ",
         self.enable_tz2()
         self.enable_ts2()
-        self.enable_rs2()
-        self.enable_rz2()
+        self.disable_rs2()
+        self.disable_rz2()
         print "OK"
         print "Moving Mode: ",
-        self.DP.movingMode=0
+        self.mode(0)
         print self.DP.movingMode
         try:
             self.m_rx2fine.pos(5)
@@ -992,23 +992,18 @@ class mono1:
             #    self.setLocalTable()
         else:
             self.on()
+            sleep(0.1)
             move_motor(self, energy, self.m_rx2, self.calculate_rx2(energy))
         #
         
-        print "Disabling: Tz2, Ts2, Rs2, Rz2: ",
-        self.disable_tz2()
+        print "Disabling: Ts2",
         self.disable_ts2()
-        self.disable_rs2()
-        self.disable_rz2()
-        print "Turning on motors: Tz2, Ts2, Rs2, Rz2"
-        self.m_tz2.off()
+        print "Turning  off: Ts2"
         self.m_ts2.off()
-        self.m_rs2.off()
-        self.m_rz2.off()
         print "OK"
         print "Moving Mode: ",
-        self.DP.movingMode=1
-        print self.DP.movingMode
+        self.mode(1)
+        print self.mode()
         try:
             shell.user_ns["mostab"].start()
         except:

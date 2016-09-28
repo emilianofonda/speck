@@ -14,15 +14,15 @@ except Exception, tmp:
 #End of legacy
                         
 __tmp={
-"rx2"      :["d09-1-c03/op/mono1-mt_rx.2","position"],
-"tz1"      :["d09-1-c03/op/mono1-mt_tz.1","position"],
-"rz2"      :["d09-1-c03/op/Axis1_Rz2","position"],
-"ts2"      :["d09-1-c03/op/Axis2_TS2","position"],
-"tz2"      :["d09-1-c03/op/Axis3_TZ2","position"],
-"rx1"      :["d09-1-c03/op/Axis4_RX1","position"],
-"bender_c1":["d09-1-c03/op/Axis5_C1","position"],
-"bender_c2":["d09-1-c03/op/Axis6_C2","position"],
-"rs2"      :["d09-1-c03/op/Axis8_RS2","position"],
+"rx2"      :["d09-1-c03/op/mono1-mt_rx.2","position","deadtime=0.05"],
+"tz1"      :["d09-1-c03/op/mono1-mt_tz.1","position","deadtime=0.05"],
+"rz2"      :["d09-1-c03/op/Axis1_Rz2","position","deadtime=0.05"],
+"ts2"      :["d09-1-c03/op/Axis2_TS2","position","deadtime=0.05"],
+"tz2"      :["d09-1-c03/op/Axis3_TZ2","position","deadtime=0.05"],
+"rx1"      :["d09-1-c03/op/Axis4_RX1","position","deadtime=0.05"],
+"bender_c1":["d09-1-c03/op/Axis5_C1","position","deadtime=0.05"],
+"bender_c2":["d09-1-c03/op/Axis6_C2","position","deadtime=0.05"],
+"rs2"      :["d09-1-c03/op/Axis8_RS2","position","deadtime=0.05"],
 }
 
 for i in __tmp:

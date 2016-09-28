@@ -217,8 +217,10 @@ try:
     ]
 #    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig1)
 #    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",user_readconfig=user_readconfig2)
-    mca1=dxmap("tmp/test/xiadxp.test",)
-    mca2=dxmap("tmp/test/xiadxp.test.2",)
+    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",)
+    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",)
+#    mca1=dxmap("tmp/test/xiadxp.test",)
+#    mca2=dxmap("tmp/test/xiadxp.test.2",)
     def setroi(ch1, ch2):
         """Set roi an ALL channels between ch1 and ch2. Works on mca1 and mca2"""
         if mca1 <> None:

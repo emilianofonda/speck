@@ -191,38 +191,38 @@ class dxmap:
 
     def setROIs(self,*args):
         """the command is self.setROIs(selectedChannel,ROI1min,ROI1max,ROI2min,ROI2max... et cetera...) """
-        try:
-            ##att=self.DP.read_attribute("selectedChannelForSetRois")
-            self.DP.write_attribute("selectedChannelForSetRois",args[0])
-            self.DP.command_inout("SetROIs",args[1:])
-            #sleep(2)
-            self.reinit()
-        except:
-            roi=[]
-            for i in xrange(len(self.channels)):
-                fmtS = "%i; " * len(args[1:]) + "%i"
-                roi.append(fmtS % ((i,) + args[1:]))
-            #print roi
-            self.DP.setroisfromlist(roi)
+        #try:
+        #    ##att=self.DP.read_attribute("selectedChannelForSetRois")
+        #    #self.DP.write_attribute("selectedChannelForSetRois",args[0])
+        #    #self.DP.command_inout("SetROIs",args[1:])
+        #    #sleep(2)
+        #    #self.reinit()
+        #    pass
+        #except:
+        roi=[]
+        for i in xrange(len(self.channels)):
+            fmtS = "%i; " * len(args[1:]) + "%i"
+            roi.append(fmtS % ((i,) + args[1:]))
+        #print roi
+        self.DP.setroisfromlist(roi)
         return
         
     def getROIs(self,channel=-1):
         gottenROIS={}
-        try:
-            self.DP.write_attribute("selectedChannelForSetRois",0)
-            if channel==-1:
-                for i in range(len(self.rois)):
-                    self.DP.write_attribute("selectedChannelForSetRois",i)
-                    gottenROIS["channel%02i"%i]=self.DP.roisStartsEnds
-            elif channel in range(len(self.rois)):
-                gottenROISi["channel%02i"%channel]=self.DP.roisStartsEnds
-            else:
-                raise Exception("dxmap","roi limits requested for wrong channel","channel="+str(channel))
-        except:
-           
-            for i in self.DP.getrois():
-                Ch = i.split(";")
-                gottenROIS[ "channel%02i" % int(Ch[0]) ] = map(int, Ch[1:])
+        #try:
+        #    self.DP.write_attribute("selectedChannelForSetRois",0)
+        #    if channel==-1:
+        #        for i in range(len(self.rois)):
+        #            self.DP.write_attribute("selectedChannelForSetRois",i)
+        #            gottenROIS["channel%02i"%i]=self.DP.roisStartsEnds
+        #    elif channel in range(len(self.rois)):
+        #        gottenROISi["channel%02i"%channel]=self.DP.roisStartsEnds
+        #    else:
+        #        raise Exception("dxmap","roi limits requested for wrong channel","channel="+str(channel))
+        #except:
+        for i in self.DP.getrois():
+            Ch = i.split(";")
+            gottenROIS[ "channel%02i" % int(Ch[0]) ] = map(int, Ch[1:])
         return gottenROIS
         
         

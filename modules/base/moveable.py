@@ -104,6 +104,7 @@ class moveable:
         if x==self.pos(): return self.pos()
         if self.state() == DevState.DISABLE:
             self.init()
+            sleep(self.deadtime * 5)
         try:
             self.DP.write_attribute(self.att_name,x)
             if self.moving_state == None:
