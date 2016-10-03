@@ -159,7 +159,9 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     #Reset Nexus index and cleanup spool
     cardXIA1.streamresetindex()
     map(lambda x: x.startswith(cardXIA1.streamTargetFile) and os.remove(XIA1NexusPath +os.sep + x), os.listdir(XIA1NexusPath))
-
+    NumberOfXIAFiles = int(cardXIA1.nbpixels / cardXIA1.streamNbAcqPerFile) 
+    if numpy.mod(cardXIA1.nbpixels, cardXIA1.streamNbAcqPerFile):
+        NumberOfXIAFiles += 1
     #Card XIA2
     cardXIA2.nbpixels = NumberOfPoints
     cardXIA2.streamNbAcqPerFile = 250
@@ -184,6 +186,9 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
         CP = __CPlotter__
         CP.GraceWin = GracePlotter()
         for CurrentScan in xrange(NofScans):
+            #Calculate name of last data buffer file to wait (XIA)
+            LastXIA1FileName = "%s_%06i.nxs" % (cardXIA1.streamTargetFile, NumberOfXIAFiles * (CurrentScan+1))
+            LastXIA2FileName = "%s_%06i.nxs" % (cardXIA2.streamTargetFile, NumberOfXIAFiles * (CurrentScan+1))
             if beamCheck and not(checkTDL(FE)):
                 wait_injection(FE,[obxg,])
                 myTime.sleep(10.)
@@ -301,13 +306,20 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 dcm.pos(e1-1., wait=False)
             #
             print myTime.asctime(), " : Saving Data..."
+
+#Wait for XIA files to be saved in spool
             XIAt0=time()
-            while(cardXIA1.state() == DevState.RUNNING or cardXIA2.state() == DevState.RUNNING):
+            while(cardXIA1.state() == DevState.RUNNING or cardXIA2.state() == DevState.RUNNING\
+                or (LastXIA1FileName not in os.listdir(XIA1NexusPath)) or (LastXIA2FileName not in os.listdir(XIA2NexusPath))):
                 myTime.sleep(0.2)
-                if time() - XIAt0 > 60:
+                if time() - XIAt0 > 60 * 10:
                     raise Exception("Time Out waiting for XIA cards to stop! Waited more than 60s... !")
-            #Additional time to wait for last file to appear in spool
-            myTime.sleep(3)
+            XIAtEnd = myTime.time()-XIAt0
+            print "XIA needed additional %3.1f seconds to provide all data files."%(XIAtEnd)
+            shell.logger.log_write("XIA needed additional %3.1f seconds to provide all data files."%(XIAtEnd) + ".hdf", kind='output')
+
+#Additional time to wait (?)
+            myTime.sleep(0.2)
             
 #XIA1 prepare
             XIA1filesNames = os.listdir(XIA1NexusPath)
@@ -317,6 +329,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                     XIA1filesNames.remove(i)
             #print XIA1filesNames
             XIA1files = map(lambda x: tables.openFile(XIA1NexusPath +os.sep + x, "r"), XIA1filesNames)
+
 #XIA2 prepare
             XIA2filesNames = os.listdir(XIA2NexusPath)
             XIA2filesNames.sort()
@@ -461,6 +474,10 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
         #stopscan(shutter)
         #print "Halt"
         #shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp, kind='output')
+        try:
+            outtaHDF.close()
+        except:
+            pass
         raise tmp
     shell.logger.log_write("Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime), kind='output')
     print "Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime) 
@@ -611,9 +628,13 @@ def AlarmBeep():
             for i in range(3):
                 a.bell()
                 myTime.sleep(0.025)
-            mytime.sleep(0.35)
+            myTime.sleep(0.35)
         a.destroy()
     except:
+        try:
+            a.destroy()
+        except:
+            pass
         print "WARNING: Error alerting for end of scan... no Tkinter?\n"
         print "BUT: Ignore this message if escan is working well,\n just report this to your local contact\n"
     return
