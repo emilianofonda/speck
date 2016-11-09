@@ -1,6 +1,10 @@
 #This is a macro that depends on the SAMBA environment defined in speck_config...
 #This code works on global objects like mca1 and mca2, it is strictly... volatile... but essential!!!!
 
+
+### This part is obsolete and was needed to switch between configurations of EXAFS hutch detector
+### Left here for keeping a trace of code
+
 __XIA_files = {
 0:{"PeakingTime":"0.48us",
 "mca1": '\\\\deviceservers\\configFiles\\XIA-XMAP\\Canberra36\\Canberra36_pcih_048_EF4.ini',
@@ -62,6 +66,66 @@ def setMCAconfig(config=-1):
     return getMCAconfig()
 
 
+###Code below is used for EXAFS hutch continuous scans
+
+def setMODE(mode="",config="",mca=[]):
+    fault = False
+    if mca == []:
+        return
+    changeMode = False
+    try:
+        for i in mca:
+            if i.DP.currentMode <> mode:
+                changeMode = True
+    except:
+        changeMode = True
+        fault = True
+        print RED + "Cannot retrieve current XIA mode. Note: ROIs will not be transferred from STEP to MAP." + RESET
+    try:
+        rois = []
+        for i in mca:
+            rois.append(i.DP.getrois())
+    except:
+        #print RED + "Cannot retrieve ROIs. Note: ROIs will not be transferred from STEP to MAP." + RESET
+        changeMode = True
+        fault = True
+    if changeMode:
+        if fault:
+            for i in mca:
+                i.init()
+        for i in mca:
+            i.DP.set_timeout_millis(30000)
+        for i in mca:
+            i.DP.loadconfigfile(config)
+        sleep(0.25)
+        notReady = True
+        while(notReady):
+            for i in mca:
+                notReady =  False
+                if i.state() in [DevState.UNKNOWN, DevState.DISABLE, DevState.OFF]:
+                    notReady = True
+                    break
+            sleep(1)
+        if fault:
+            rois = []
+            for i in mca:
+                rois.append(i.DP.getrois())
+        sleep(0.25)
+        for i in range(len(mca)):
+            if rois[i] <> mca[i].DP.getrois():
+                mca[i].DP.setroisfromlist(rois[i])
+        notReady = True
+        while(notReady):
+            for i in mca:
+                notReady =  False
+                if i.state() in [DevState.UNKNOWN, DevState.DISABLE, DevState.OFF]:
+                    notReady = True
+                    break
+            sleep(1)
+        ct.reinit()
+    return
+
+
 def setMAP():
     fault = False
     try:
@@ -69,12 +133,12 @@ def setMAP():
     except:
         changeMode = True
         fault = True
-        print RED + "Cannot retrieve current XIA mode. Note: ROIs will not be transferred from STEP to MAP." + RESET
+        #print RED + "Cannot retrieve current XIA mode. Note: ROIs will not be transferred from STEP to MAP." + RESET
     try:
         rois1 = mca1.DP.getrois()
         rois2 = mca2.DP.getrois()
     except:
-        print RED + "Cannot retrieve ROIs. Note: ROIs will not be transferred from STEP to MAP." + RESET
+        #print RED + "Cannot retrieve ROIs. Note: ROIs will not be transferred from STEP to MAP." + RESET
         changeMode = True
         fault = True
     if changeMode:
@@ -85,11 +149,13 @@ def setMAP():
         mca2.DP.set_timeout_millis(30000)
         mca1.DP.loadconfigfile("MAP")
         mca2.DP.loadconfigfile("MAP")
+        sleep(0.25)
         while(mca1.state() == DevState.DISABLE or mca2.state() == DevState.DISABLE):
             sleep(1)
         if fault:
             rois1 = mca1.DP.getrois()
             rois2 = mca2.DP.getrois()
+        sleep(0.25)
         if rois1 <> mca1.DP.getrois():
             mca1.DP.setroisfromlist(rois1)
         if rois2 <> mca2.DP.getrois():
@@ -106,12 +172,12 @@ def setSTEP():
     except:
         changeMode = True
         fault = True
-        print RED + "Cannot retrieve current XIA mode. Note: ROIs will not be transferred from STEP to MAP." + RESET
+        #print RED + "Cannot retrieve current XIA mode. Note: ROIs will not be transferred from STEP to MAP." + RESET
     try:
         rois1 = mca1.DP.getrois()
         rois2 = mca2.DP.getrois()
     except:
-        print RED + "Cannot retrieve ROIs. Note: ROIs will not be transferred from STEP to MAP." + RESET
+        #print RED + "Cannot retrieve ROIs. Note: ROIs will not be transferred from STEP to MAP." + RESET
         changeMode = True
         fault = True
     if changeMode:
@@ -122,11 +188,13 @@ def setSTEP():
         mca2.DP.set_timeout_millis(30000)
         mca1.DP.loadconfigfile("STEP")
         mca2.DP.loadconfigfile("STEP")
+        sleep(0.25)
         while(mca1.state() == DevState.DISABLE or mca2.state() == DevState.DISABLE):
             sleep(1)
         if fault:
             rois1 = mca1.DP.getrois()
             rois2 = mca2.DP.getrois()
+        sleep(0.25)
         if rois1 <> mca1.DP.getrois():
             mca1.DP.setroisfromlist(rois1)
         if rois2 <> mca2.DP.getrois():

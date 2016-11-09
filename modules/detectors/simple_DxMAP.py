@@ -44,16 +44,11 @@ class dxmap:
         return
 
     def init(self):
-        try:
-            self.DP.set_timeout_millis(int(self.timeout*1000))
-            self.DP.command_inout("Init")
-        except:
-            try:
-                self.DP.command_inout("Init")
-            except:
-                pass
-            sleep(10)
-            self.DP.set_timeout_millis(int(self.timeout*1000))
+        self.DP.set_timeout_millis(int(self.timeout*1000))
+        sleep(1)
+        self.DP.command_inout("Init")
+        while(self.state() in [DevState.UNKNOWN, DevState.DISABLE]):
+            sleep(1)
         return
 
     def reinit(self):
@@ -190,7 +185,8 @@ class dxmap:
         return
 
     def setROIs(self,*args):
-        """the command is self.setROIs(selectedChannel,ROI1min,ROI1max,ROI2min,ROI2max... et cetera...) """
+        """the command is self.setROIs(selectedChannel,ROI1min,ROI1max,ROI2min,ROI2max... et cetera...)
+        The selected channel is currently unused, but it has to be specified."""
         #try:
         #    ##att=self.DP.read_attribute("selectedChannelForSetRois")
         #    #self.DP.write_attribute("selectedChannelForSetRois",args[0])

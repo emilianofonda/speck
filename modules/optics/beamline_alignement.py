@@ -100,11 +100,12 @@ def __m2bender(theta,hgap=25.):
 #        + get_ipython().user_ns["dcm"].H() - 25. +1.
         
 def __m2Z(theta):
-    """Aligned on 27/5/2016"""
+    """Aligned on 8/11/2016"""
     if theta<=1e-2:
         return 33.
     else:
-        return -0.0307 * theta ** 2 + 0.0276 * theta + 0.942 + get_ipython().user_ns["dcm"].H()
+        return -0.0307 * theta ** 2 + 0.0276 * theta - 2.717  + get_ipython().user_ns["dcm"].H()
+        #return -0.0307 * theta ** 2 + 0.0276 * theta + 0.942 + get_ipython().user_ns["dcm"].H() #26/6/2016
 
 def __m2Roll(theta):
     #return -5.
@@ -118,9 +119,10 @@ def __girder(theta):
 
 #Tables
 def __exafsZ(theta):
-    """Aligned on 27/5/2016"""
-    return 11.055 * theta + 2.813 + get_ipython().user_ns["dcm"].H()
-    #return 11.2074018292933 * theta + 0.3438106790538 -0.17 + get_ipython().user_ns["dcm"].H()
+    """EXAFS table quota"""
+    #return 11.055 * theta -0.2 + get_ipython().user_ns["dcm"].H()    #   8/11/2016
+    #return 11.055 * theta + 2.813 + get_ipython().user_ns["dcm"].H()   #  27/5/2016
+    return 11.2074018292933 * theta + 0.3438106790538 -0.17 + get_ipython().user_ns["dcm"].H()
     
 def __obxgZ(theta):
     #shell=get_ipython()
@@ -243,8 +245,8 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
     else:
         vgap1.pos(max(0.1,theta-0.4))
         vgap2.pos(theta+2.)
-    #The -1 in the following line is an empiric al correction : 30/6/2015
-    vpos2.pos(get_ipython().user_ns["dcm"].H() - 25. )
+    #Moved down of 1mm on 8/11/2016
+    vpos2.pos(get_ipython().user_ns["dcm"].H() - 25. -1 )
     print "Primary   vertical slits aperture: vgap1 = %6.4f mm"%(vgap1.pos())
     print "Secondary vertical slits aperture: vgap2 = %6.4f mm"%(vgap2.pos())
     print "Secondary vertical slits position: vpos2 = %6.4f mm"%(vpos2.pos())

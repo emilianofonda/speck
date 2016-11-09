@@ -228,7 +228,7 @@ try:
             mca1.setROIs(-1, ch1, ch2)
         if mca2 <> None:
             mca2.DP.set_timeout_millis(30000)
-        mca2.setROIs(-1, ch1, ch2)
+            mca2.setROIs(-1, ch1, ch2)
         return 
 except Exception, tmp:
     print "Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.1"
@@ -698,7 +698,7 @@ def shopen(level=1):
                     sleep(1)
         print ""
         __allshutters[i].open()
-    print __allshutters[i].label," ",__allshutters[i].state()
+        print __allshutters[i].label," ",__allshutters[i].state()
     if level >= 1:
         try:
             sleep(0.2)

@@ -297,7 +297,10 @@ class mono1:
             self.DP.put_property({"SPECK_LocalTable_p": [13.95,]})
             self.DP.put_property({"SPECK_UseLocalTable": False})
         print "\nmono1PBR: Reading LocalTable from database...",
-        self.readTable()
+        if self.state() not in [DevState.MOVING, DevState.RUNNING]:
+            self.readTable(write2controller = True)
+        else:
+            self.readTable(write2controller = False)
         print "OK"
         return
         
@@ -324,7 +327,7 @@ class mono1:
             i.off()
         return self.state()
   
-    def readTable(self):
+    def readTable(self, write2controller = True):
         """This function reads the table from the database and prepare the interpolation.
         Coefficients are then written to PowerBrick through the DataViewer
         ADVANCED FEATURE: this function is for the code internal use only. """
@@ -356,34 +359,35 @@ class mono1:
         if np == 1:
             self.useLocalTable = False
             return
-        if tmp_p <> pp:
-            for i in xrange(5):
-                try:
-                    self.sample_at(pp)
-                    break
-                except:
-                    sleep(0.2)
-        if self.useLocalTable:
-            #Calculate coefficients and update DataViewer
-            x = self.e2theta(self.LocalTable["Energy"])
-            crv = self.calculate_curvature(x)
-            A11, A10 = numpy.polyfit(crv, self.LocalTable["C1"],1)
-            A21, A20 = numpy.polyfit(crv, self.LocalTable["C2"],1)
-            self.DataViewer.A11 = A11
-            self.DataViewer.A10 = A10 - self.bender.c1.offset
-            self.DataViewer.A21 = A21
-            self.DataViewer.A20 = A20 - self.bender.c2.offset
-            self.DataViewer.Rs2_C5 = 0.
-            self.DataViewer.Rs2_C4 = 0.
-            self.DataViewer.Rs2_C3 = 0.
-            self.DataViewer.Rs2_C2 = 0.
-            self.DataViewer.Rs2_C1, self.DataViewer.Rs2_C0 = numpy.polyfit(x, self.LocalTable["RS2"],1)
-            self.DataViewer.Rz2_C5 = 0.
-            self.DataViewer.Rz2_C4 = 0.
-            self.DataViewer.Rz2_C3 = 0.
-            self.DataViewer.Rz2_C2 = 0.
-            self.DataViewer.Rz2_C1, self.DataViewer.Rz2_C0 = numpy.polyfit(x, self.LocalTable["RZ2"],1)
-        self.sample_at(tmp_p)
+        if write2controller:
+             if tmp_p <> pp:
+                 for i in xrange(5):
+                     try:
+                         self.sample_at(pp)
+                         break
+                     except:
+                         sleep(0.2)
+             if self.useLocalTable:
+                 #Calculate coefficients and update DataViewer
+                 x = self.e2theta(self.LocalTable["Energy"])
+                 crv = self.calculate_curvature(x)
+                 A11, A10 = numpy.polyfit(crv, self.LocalTable["C1"],1)
+                 A21, A20 = numpy.polyfit(crv, self.LocalTable["C2"],1)
+                 self.DataViewer.A11 = A11
+                 self.DataViewer.A10 = A10 - self.bender.c1.offset
+                 self.DataViewer.A21 = A21
+                 self.DataViewer.A20 = A20 - self.bender.c2.offset
+                 self.DataViewer.Rs2_C5 = 0.
+                 self.DataViewer.Rs2_C4 = 0.
+                 self.DataViewer.Rs2_C3 = 0.
+                 self.DataViewer.Rs2_C2 = 0.
+                 self.DataViewer.Rs2_C1, self.DataViewer.Rs2_C0 = numpy.polyfit(x, self.LocalTable["RS2"],1)
+                 self.DataViewer.Rz2_C5 = 0.
+                 self.DataViewer.Rz2_C4 = 0.
+                 self.DataViewer.Rz2_C3 = 0.
+                 self.DataViewer.Rz2_C2 = 0.
+                 self.DataViewer.Rz2_C1, self.DataViewer.Rz2_C0 = numpy.polyfit(x, self.LocalTable["RZ2"],1)
+             self.sample_at(tmp_p)
         return
 
     def writeTable(self, fileName=""):

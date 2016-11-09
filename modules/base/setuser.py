@@ -62,9 +62,9 @@ def setuser(name=None):
             #Start logging in speckle session
             try:
                 pass
-                os.system("screen -X log off")
-                os.system("screen -X logfile %s" % (os.getcwd() + os.sep + "logScreen.txt"))
-                os.system("screen -X log on")
+                #os.system("screen -X log off")
+                #os.system("screen -X logfile %s" % (os.getcwd() + os.sep + "logScreen.txt"))
+                #os.system("screen -X log on")
                 IPy.magic("logstop")
                 IPy.magic("logstart -ort %s global"%(os.getcwd() + os.sep + "logBook.txt"))
             except:
@@ -74,7 +74,7 @@ def setuser(name=None):
             return
     else:
         try:
-            os.system("screen -X log off")
+            #os.system("screen -X log off")
             IPy.magic("logstop")
         except:
             pass
@@ -92,8 +92,8 @@ def setuser(name=None):
         cfgfile.close()
         try:
             pass
-            os.system("screen -X logfile %s" % (os.getcwd() + os.sep + "logScreen.log"))
-            os.system("screen -X log on")
+            #os.system("screen -X logfile %s" % (os.getcwd() + os.sep + "logScreen.log"))
+            #os.system("screen -X log on")
             IPy.magic("logstart -ort %s global"%(os.getcwd() + os.sep + "logBook.txt"))
         except Exception, tmp:
             print tmp
