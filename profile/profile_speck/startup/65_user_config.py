@@ -667,9 +667,6 @@ except Exception, tmp:
 try:
     #in the right order...
     __allshutters=[FE, obxg, obx]
-    #FEopen=FE.open
-    #shclose=obxg.close
-    #sexclose=obx.close
 except Exception, tmp:
     print tmp
     print "Check state of shutters... something wrong in script..."
@@ -684,7 +681,7 @@ def shopen(level=1):
             wait_injection()
         if "beamLineOccInterlock" in __allshutters[i].DP.get_attribute_list() and __allshutters[i].DP.beamlineoccinterlock:
                 print "Front End is beam line locked: calling wait_injection()"
-                wait_injection()
+                wait_injection(FE,__allshutters[:level+1])
                 #raise Exception("Front End locked, verify PSS or try again later.")
         if "beamLinePSSInterlock" in __allshutters[i].DP.get_attribute_list() and __allshutters[i].DP.beamlinepssinterlock:
                 print "Front End is beam line locked: calling wait_injection()"

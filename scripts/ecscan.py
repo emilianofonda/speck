@@ -389,7 +389,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                     pointerDt[block * blockLen: (block + 1) * blockLen] = __blockDT
                     block += 1
 #Write Single MCA to Disk
-                pCmca = bCmca
+                pCmca[:] = bCmca
             print "XIA1: OK"
 #XIA2 read / write NOTA: these channels names are shifted of +20 in output
             Breaked=False
@@ -426,11 +426,11 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                     pointerDt[block * blockLen: (block + 1) * blockLen] = __blockDT
                     block += 1
 #Write Single MCA to Disk
-                pCmca = bCmca
+                pCmca[:] = bCmca
             print "XIA2: OK"
 #Finalize derived quantities
             fluoX = numpy.nan_to_num(array( sum(mcaSum[:,roiStart:roiEnd], axis=1), "f") / I0)
-            outtaHDF.root.XIA.mcaSum = mcaSum
+            outtaHDF.root.XIA.mcaSum[:] = mcaSum
             del mcaSum
             xmuS = numpy.nan_to_num(log(I1/I2))
             outtaHDF.createGroup("/","Spectra")

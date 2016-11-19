@@ -9,6 +9,7 @@ from spec_syntax import wait_motor
 from GracePlotter import GracePlotter
 from spec_syntax import dark as ctDark
 from wait_functions import checkTDL, wait_injection
+import mycurses
 
 try:
     import Tkinter
@@ -252,16 +253,32 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="f",shutter=
                 raise
             except:
                 pass
-            while(DevState.RUNNING in [cardCT.state(),]):
-                myTime.sleep(0.1)
+            timeout0 = time()
+            while(DevState.RUNNING in [cardCT.state(), cardAI.state(),] and time()-timeout0 < 6.):
+                myTime.sleep(0.2)
+            if time()-timeout0 > 6:
+                if cardCT.state() == DevState.RUNNING:
+                    shell.logger.log_write("cardCT of ecscan failed to stop!", kind='output')
+                    print "cardCT of ecscan failed to stop!"
+                    cardCT.stop()
+                if cardAI.state() == DevState.RUNNING:
+                    shell.logger.log_write("cardAI of ecscan failed to stop!", kind='output')
+                    print "cardAI of ecscan failed to stop!"
+                    cardAI.stop()
             timeAtStop = asctime()
             timeout0 = time()
-            while(DevState.RUNNING in [cardAI.state(),] and time()-timeout0 < 3):
-                myTime.sleep(0.1)
-            if time()-timeout0 > 3:
-                print "cardAI of ecscan failed to stop!"
-            cardAI.stop()
             theta = cardCT.Theta
+            
+            #Begin of new block: test for I0 data, sometimes nan are returned .... why?
+            I0 = array(cardAI.historizedchannel0,"f")
+            if numpy.nan in I0:
+                shell.logger.log_write(mycurses.RED+mycurses.BOLD + ActualFileNameData + ": file is corrupt." + mycurses.RESET, kind='output')
+                print mycurses.RED+mycurses.BOLD + ActualFileNameData +": file is corrupt." + mycurses.RESET
+                CorruptData = True
+            else:
+                CorruptData = False
+            # End of new block
+            
             I0 = numpy.nan_to_num(array(cardAI.historizedchannel0,"f") - cardAI_dark0)
             I1 = numpy.nan_to_num(array(cardAI.historizedchannel1,"f") - cardAI_dark1)
             xmu = numpy.nan_to_num(I1/I0)
@@ -284,8 +301,8 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="f",shutter=
             XIAt0=time()
             while(cardXIA1.state() == DevState.RUNNING or (LastXIA1FileName not in os.listdir(XIA1NexusPath))):
                 myTime.sleep(0.2)
-                if time() - XIAt0 > 60 * 10:
-                    raise Exception("Time Out waiting for XIA cards to stop! Waited more than 60s... !")
+                if time() - XIAt0 > 1200:
+                    raise Exception("Time Out waiting for XIA cards to stop! Waited more than 20minutes... !")
             XIAtEnd = myTime.time()-XIAt0
             print "XIA needed additional %3.1f seconds to provide all data files."%(XIAtEnd)
             shell.logger.log_write("XIA needed additional %3.1f seconds to provide all data files."%(XIAtEnd) + ".hdf", kind='output')
@@ -341,6 +358,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="f",shutter=
 #DT line comment out if required
                         __blockDT = eval("XFile.root.entry.scan_data.deadtime%02i"%ch).read()
                     except:
+                        print "Error reading XIA card. Break now!"
                         Breaked = True
                         break
                     actualBlockLen = shape(__block)[0]
@@ -352,11 +370,11 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="f",shutter=
                     pointerDt[block * blockLen: (block + 1) * blockLen] = __blockDT
                     block += 1
 #Write Single MCA to Disk
-                pCmca = bCmca
+                pCmca[:] = bCmca
             print "XIA1: OK"
 #Finalize derived quantities
             fluoX = numpy.nan_to_num(array( sum(mcaSum[:,roiStart:roiEnd], axis=1), "f") / I0)
-            outtaHDF.root.XIA.mcaSum = mcaSum
+            outtaHDF.root.XIA.mcaSum[:] = mcaSum
             del mcaSum
             outtaHDF.createGroup("/","Spectra")
             outtaHDF.createArray("/Spectra", "xmuTEY", xmu)

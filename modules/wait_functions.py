@@ -84,10 +84,13 @@ def wait_until(dts,deadtime=1.):
 
 
 
-def wait_injection(TDL=FE,ol=[obxg,],vs=[],pi=[],maxpressure=1e-5,deadtime=1):
+def wait_injection(TDL=None,ol=[],vs=[],pi=[],maxpressure=1e-5,deadtime=1):
     #Empiric method for waiting injection. To be improved
+    if TDL == None:
+        TDL = get_ipython().user_ns["FE"]
+    if ol == []:
+        ol = [get_ipython().user_ns["obxg"],] 
     try:
-        get_ipython().user_ns["mostab"].stop()
         print "Stop on mostab... OK"
     except:
         pass
@@ -138,9 +141,11 @@ def wait_injection(TDL=FE,ol=[obxg,],vs=[],pi=[],maxpressure=1e-5,deadtime=1):
     while(not(TDL.state() in [DevState.CLOSE,DevState.OPEN])):
         wtime.sleep(1)
     TDL.open()
-    for i in ol: i.open()
+    for i in ol:
+        i.open()
     l=[TDL.state(),]
-    for i in ol: l.append(i.state())
+    for i in ol: 
+        l.append(i.state())
     #print "Delaying 5' for beamline warm-up..."
     sys.stdout.flush()
     wtime.sleep(3.)
