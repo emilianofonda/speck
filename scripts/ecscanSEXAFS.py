@@ -271,7 +271,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="f",shutter=
             
             #Begin of new block: test for I0 data, sometimes nan are returned .... why?
             I0 = array(cardAI.historizedchannel0,"f")
-            if numpy.nan in I0:
+            if all(I0 <> numpy.nan_to_num(I0)):
                 shell.logger.log_write(mycurses.RED+mycurses.BOLD + ActualFileNameData + ": file is corrupt." + mycurses.RESET, kind='output')
                 print mycurses.RED+mycurses.BOLD + ActualFileNameData +": file is corrupt." + mycurses.RESET
                 CorruptData = True
@@ -279,7 +279,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="f",shutter=
                 CorruptData = False
             # End of new block
             
-            I0 = numpy.nan_to_num(array(cardAI.historizedchannel0,"f") - cardAI_dark0)
+            I0 = numpy.nan_to_num(I0) - cardAI_dark0)
             I1 = numpy.nan_to_num(array(cardAI.historizedchannel1,"f") - cardAI_dark1)
             xmu = numpy.nan_to_num(I1/I0)
             ene = numpy.nan_to_num(dcm.theta2e(theta))
@@ -298,7 +298,11 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="f",shutter=
             print myTime.asctime(), " : Saving Data..."
 
 #Wait for XIA files to be saved in spool
-            XIAt0=time()
+            XIAt0=myTime.time()
+            ttt = myTime.asctime()
+            sOut = "XIA waiting for last file since: %s" % ttt
+            print sOut
+            shell.logger.log_write(sOut, kind='output')
             while(cardXIA1.state() == DevState.RUNNING or (LastXIA1FileName not in os.listdir(XIA1NexusPath))):
                 myTime.sleep(0.2)
                 if time() - XIAt0 > 1200:

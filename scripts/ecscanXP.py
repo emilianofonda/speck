@@ -204,7 +204,18 @@ def ecscanXPActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter
                 print "cardAI of ecscan failed to stop!"
             cardAI.stop()
             theta = cardCT.Theta
-            I0 = numpy.nan_to_num(array(cardAI.historizedchannel0,"f") - cardAI_dark0)
+
+            #Begin of new block: test for I0 data, sometimes nan are returned .... why?
+            I0 = array(cardAI.historizedchannel0,"f")
+            if all(I0 <> numpy.nan_to_num(I0)):
+                shell.logger.log_write(mycurses.RED+mycurses.BOLD + ActualFileNameData + ": file is corrupt." + mycurses.RESET, kind='output')
+                print mycurses.RED+mycurses.BOLD + ActualFileNameData +": file is corrupt." + mycurses.RESET
+                CorruptData = True
+            else:
+                CorruptData = False
+            # End of new block
+            
+            I0 = numpy.nan_to_num(I0) - cardAI_dark0)
             I1 = numpy.nan_to_num(array(cardAI.historizedchannel1,"f") - cardAI_dark1)
             I2 = numpy.nan_to_num(array(cardAI.historizedchannel2,"f") - cardAI_dark2)
             I3 = numpy.nan_to_num(array(cardAI.historizedchannel3,"f") - cardAI_dark3)
