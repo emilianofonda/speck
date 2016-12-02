@@ -198,7 +198,8 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
     """Scan mot from p1 to p2 with step dp, reads ct for dt seconds. The default timebase is named ct."""
     #glob=globals()
     glob  = get_ipython().user_ns
-    shell = IPython.core.ipapi.get()
+    #shell = IPython.core.ipapi.get()
+    shell = IPython.core.getipython.get_ipython()
     if "setSTEP" in glob.keys():
         glob["setSTEP"]()
     if p1 < p2:

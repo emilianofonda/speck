@@ -1252,7 +1252,8 @@ class escan_class:
         return
 
     def start(self,filename="",nscans=1,nowait=False):
-        shell = IPython.core.ipapi.get()
+        #shell = IPython.core.ipapi.get()
+        shell = IPython.core.getipython.get_ipython()
         self.filename = filename
         ####Hard coded parameters:####
         _UPDATE_GRAPHICS_EVERY=5

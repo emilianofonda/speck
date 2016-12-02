@@ -27,14 +27,16 @@ def quickplot3():
 
 try:
     def quickstart2(prefix="",folder="",save=True,wait=True,timeout=6.):
-        shell = IPython.core.ipapi.get()
+        #shell = IPython.core.ipapi.get()
+        shell = IPython.core.getipython.get_ipython()
         q2_cam = shell.user_ns["q2_cam"]
         q2_delta = shell.user_ns["q2_delta"]
         return quickstart(prefix,folder,"tmp/qexafs-v1/QEXAFS_MANAGER_MONO2","storage/recorder/datarecorder.1",q2_cam,q2_delta,save,wait,timeout)
 #        return quickstart(prefix,folder,"d09-1-cx1/dt/qexafs_manager_mono2","storage/recorder/datarecorder.1",q2_cam,q2_delta,save,wait,timeout)
         
     def quickstart3(prefix="",folder="",save=True,wait=True,timeout=6.):
-        shell = IPython.core.ipapi.get()
+        #shell = IPython.core.ipapi.get()
+        shell = IPython.core.getipython.get_ipython()
         q3_cam = shell.user_ns["q3_cam"]
         q3_delta = shell.user_ns["q3_delta"]
         return quickstart(prefix,folder,"tmp/qexafs-v1/QEXAFS_MANAGER_MONO3","storage/recorder/datarecorder.1",q3_cam,q3_delta,save,wait,timeout)

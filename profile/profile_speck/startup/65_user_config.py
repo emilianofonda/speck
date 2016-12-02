@@ -774,11 +774,11 @@ except Exception, tmp:
     print "videograbber d09-1-cx1/dt/vg2-basler-analyzer error!"
 
 
-try:
-    domacro("LoadMeshScan.py")
-    print 'mesh(motor, debut, fin, n, motor2, debut2, fin2, n2, dt=1.0, timeBases=["d09-1-c00/ca/cpt.1"], delay=0.0)'
-except Exception, tmp:
-    print tmp
+#try:
+#    domacro("LoadMeshScan.py")
+#    print 'mesh(motor, debut, fin, n, motor2, debut2, fin2, n2, dt=1.0, timeBases=["d09-1-c00/ca/cpt.1"], delay=0.0)'
+#except Exception, tmp:
+#    print tmp
 
 #try:
 #    import diffscan as diffscan_class

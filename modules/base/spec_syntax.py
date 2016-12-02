@@ -1,7 +1,8 @@
 #Spec like commands created on 3/12/2007
 
 #Imports section
-from IPython.core.ipapi import get as get_ipython
+#from IPython.core.ipapi import get as get_ipython
+from IPython.core.getipython import get_ipython
 from numpy import log, sin, cos, tan, exp, sum
 import numpy
 import exceptions

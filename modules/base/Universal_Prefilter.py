@@ -15,7 +15,8 @@ from time import asctime,time
 from distutils.version import StrictVersion
 
 import IPython
-from IPython.core.ipapi import get as get_ipython
+#from IPython.core.ipapi import get as get_ipython
+from IPython.core.getipython import get_ipython
 
 ipy_version = StrictVersion(IPython.__version__)
 ipy_zeroten = StrictVersion('0.10')

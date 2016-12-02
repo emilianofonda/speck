@@ -1,13 +1,15 @@
 #!/usr/bin/ipython
 import os,sys,string,time
 from ascan import filename2ruche
-from IPython.core import ipapi
+#from IPython.core import ipapi
+from IPython.core import getipython
 
 #dn = os.path.dirname(os.path.realpath(__file__))
 #dn=dn[:dn.rfind(os.sep)]
 
 __Default_Data_Folder = os.getenv("SPECK_DATA_FOLDER")
-IPy = ipapi.get()
+#IPy = ipapi.get()
+IPy = ipapi.get_ipython()
 
 def backup():
     print "\n"*3
