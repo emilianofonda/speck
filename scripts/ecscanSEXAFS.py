@@ -279,7 +279,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="f",shutter=
                 CorruptData = False
             # End of new block
             
-            I0 = numpy.nan_to_num(I0) - cardAI_dark0)
+            I0 = numpy.nan_to_num((I0) - cardAI_dark0)
             I1 = numpy.nan_to_num(array(cardAI.historizedchannel1,"f") - cardAI_dark1)
             xmu = numpy.nan_to_num(I1/I0)
             ene = numpy.nan_to_num(dcm.theta2e(theta))

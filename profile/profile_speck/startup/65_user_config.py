@@ -225,10 +225,10 @@ try:
         """Set roi an ALL channels between ch1 and ch2. Works on mca1 and mca2"""
         if mca1 <> None:
             mca1.DP.set_timeout_millis(30000)
-            mca1.setROIs(-1, ch1, ch2)
+            mca1.setROIs(ch1, ch2)
         if mca2 <> None:
             mca2.DP.set_timeout_millis(30000)
-            mca2.setROIs(-1, ch1, ch2)
+            mca2.setROIs(ch1, ch2)
         return 
 except Exception, tmp:
     print "Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.1"
@@ -695,11 +695,13 @@ def shopen(level=1):
                     sleep(1)
         print ""
         __allshutters[i].open()
+        try:
+            __allshutters[i].DP.automaticMode = True
+        except:
+            pass
         print __allshutters[i].label," ",__allshutters[i].state()
     if level >= 1:
         try:
-            sleep(0.2)
-            mostab.start()
             sleep(0.2)
             mostab.start()
             print "mostab: start executed"

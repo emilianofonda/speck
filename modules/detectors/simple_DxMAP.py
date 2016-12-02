@@ -1,6 +1,7 @@
 import PyTango
 from PyTango import DevState, DeviceProxy,DevFailed
 from time import sleep
+import time
 
 class dxmap:
     def __init__(self,label="",channels=None,user_readconfig=[],timeout=10.,deadtime=0.):
@@ -185,8 +186,7 @@ class dxmap:
         return
 
     def setROIs(self,*args):
-        """the command is self.setROIs(selectedChannel,ROI1min,ROI1max,ROI2min,ROI2max... et cetera...)
-        The selected channel is currently unused, but it has to be specified."""
+        """the command is self.setROIs(ROImin,ROImax"""
         #try:
         #    ##att=self.DP.read_attribute("selectedChannelForSetRois")
         #    #self.DP.write_attribute("selectedChannelForSetRois",args[0])
@@ -195,12 +195,15 @@ class dxmap:
         #    #self.reinit()
         #    pass
         #except:
-        roi=[]
-        for i in xrange(len(self.channels)):
-            fmtS = "%i; " * len(args[1:]) + "%i"
-            roi.append(fmtS % ((i,) + args[1:]))
+        #roi=[]
+        #print time.asctime()
+        #for i in xrange(len(self.channels)):
+        #    fmtS = "%i; " * len(args[1:]) + "%i"
+        #    roi.append(fmtS % ((i,) + args[1:]))
         #print roi
-        self.DP.setroisfromlist(roi)
+        #print time.asctime()
+        self.DP.setroisfromlist(["-1;%i;%i" % (args[0],args[1]),])
+        #print time.asctime()
         return
         
     def getROIs(self,channel=-1):

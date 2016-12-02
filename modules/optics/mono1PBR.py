@@ -666,7 +666,7 @@ class mono1:
         s = self.DP.state() 
         if s in [DevState.MOVING, DevState.STANDBY, DevState.OFF]:
             return s
-        elif s == DevState.DISABLE and self.m_rx1.state() in [DevState.DISABLE,DevState.STANDBY, DevState.OFF]:
+        elif s == DevState.DISABLE and (self.m_rx1.state() in [DevState.DISABLE, DevState.STANDBY, DevState.OFF]):
             return self.m_rx1.state()
         return s
 

@@ -201,9 +201,9 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             if dcm.state() == DevState.MOVING:
                 wait_motor(dcm)
             myTime.sleep(0.2)
-            #dcm.DP.velocity = 60
+            dcm.DP.velocity = 60
             #myTime.sleep(0.2)
-            dcm.mode(0)
+            #dcm.mode(0)
             myTime.sleep(0.2)
             dcm.pos(e1-1., wait=False)
             
@@ -297,7 +297,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 CorruptData = False
             # End of new block
             
-            I0 = numpy.nan_to_num(I0) - cardAI_dark0)
+            I0 = numpy.nan_to_num((I0) - cardAI_dark0)
             I1 = numpy.nan_to_num(array(cardAI.historizedchannel1,"f") - cardAI_dark1)
             I2 = numpy.nan_to_num(array(cardAI.historizedchannel2,"f") - cardAI_dark2)
             I3 = numpy.nan_to_num(array(cardAI.historizedchannel3,"f") - cardAI_dark3)
@@ -307,12 +307,12 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             #
             if NofScans >= 1: 
                 print myTime.asctime(), " : sending dcm back to starting point."
-                #dcm.DP.velocity = 60
                 try:
                     dcm.state()
                 except:
                     myTime.sleep(1)
-                dcm.mode(0)
+                dcm.DP.velocity = 60
+                #dcm.mode(0)
                 myTime.sleep(1)
                 dcm.pos(e1-1., wait=False)
             #
@@ -323,8 +323,12 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             while(cardXIA1.state() == DevState.RUNNING or cardXIA2.state() == DevState.RUNNING\
                 or (LastXIA1FileName not in os.listdir(XIA1NexusPath)) or (LastXIA2FileName not in os.listdir(XIA2NexusPath))):
                 myTime.sleep(0.2)
-                if time() - XIAt0 > 60 * 10:
-                    raise Exception("Time Out waiting for XIA cards to stop! Waited more than 60s... !")
+                if time() - XIAt0 > 1200.:
+                    print XIA1NexusPath
+                    print os.listdir(XIA1NexusPath)
+                    print XIA2NexusPath
+                    print os.listdir(XIA2NexusPath)
+                    raise Exception("Time Out waiting for XIA cards to stop! Waited more than 1200s... !")
             XIAtEnd = myTime.time()-XIAt0
             print "XIA needed additional %3.1f seconds to provide all data files."%(XIAtEnd)
             shell.logger.log_write("XIA needed additional %3.1f seconds to provide all data files."%(XIAtEnd) + ".hdf", kind='output')
