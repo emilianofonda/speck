@@ -2,7 +2,7 @@
 import exceptions
 import os
 import grace_np
-from numpy import mod, arange
+from numpy import mod, arange, nan_to_num
 
 def xplot(x,y=None,curve=-1,graph=0,color=-1):
     """If a grace object exists plots on it"""
@@ -90,12 +90,13 @@ class GracePlotter:
                 self.curves.append(curve)
                 if color<0: color=curve+1
         l=min(len(x),len(y))
+        px, py = nan_to_num(x), nan_to_num(y)
         color=1+mod(abs(color)-1,16)
         if color>=5: color+=1
         if color>=7: color+=1
         pipe_string="kill g%i.s%i"%(graph,curve)+"\n"+"with g%i\n"%(graph)
         for i in range(l):
-            pipe_string+='g%i.s%i point %g,%g\n'%(graph,curve,x[i],y[i])
+            pipe_string+='g%i.s%i point %g,%g\n'%(graph,curve, px[i], py[i])
         #pipe_string+="autoscale\n"
         if legend<>None:
             pipe_string+='g%i.s%i legend "%s"\n'%(graph,curve,legend)

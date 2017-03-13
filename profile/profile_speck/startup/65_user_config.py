@@ -830,3 +830,9 @@ domacro("changePeakingTime")
 #Load Energy Continuous Scan
 domacro("ecscan")
 domacro("ecscanXP")
+domacro("averageThis")
+
+try:
+    domacro("usermacro.py")
+except:
+    print "File not found: myMacro.py"

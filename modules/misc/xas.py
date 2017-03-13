@@ -74,10 +74,11 @@ def mergeFiles(fileNames,xcol=0,ycol=1,delta=0.5):
             print "Corrupt file: %s" % cName
     return  xTotal / nOK
 
-def mergeXASFiles(output="",fileNames=[],delta=0.5):
+def mergeXASFiles(output="",fileNames=[],delta=0.5, checkColumn=-1):
     """average files after interpolation on given delta
     Energy is data column 0.
-    >>> Do not merge files with different energy ranges <<<"""
+    >>> Do not merge files with different energy ranges <<<
+    if checkColumn > 0 that colum is checked for > 0 or the file is labeled corrupt"""
     if fileNames == []:
         return "Empy File List!"
     eMin = -1
@@ -87,6 +88,9 @@ def mergeXASFiles(output="",fileNames=[],delta=0.5):
     for cName in fileNames:
         try:
             xmu = loadtxt(cName).transpose()
+            if checkColumn > 0:
+                if any(array(xmu[checkColumn])<=0):
+                    raise Exception("Corrupt file")
             idx = xmu[0].argsort()
             xmu = array([i[idx] for i in xmu],"f")
             if eMin < 0:

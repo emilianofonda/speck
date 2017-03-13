@@ -44,11 +44,11 @@ def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=Fals
         ecscanXPActor(fileName,e1,e2,n,dt,velocity, e0, mode,shutter,beamCheck)
     except KeyboardInterrupt:
         print "Halting on user request...",
-        stopscan(shutter)
+        stopscanXP(shutter)
         print "OK"
         raise KeyboardInterrupt
     except Exception, tmp:
-        stopscan(shutter)
+        stopscanXP(shutter)
         raise tmp
     return 
 
@@ -179,7 +179,6 @@ def ecscanXPActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter
                     #thread.start_new_thread(update_graphsXP, (CP, dcm, cardAI, cardCT, cardXIA1, cardXIA2,\
                     #roiStart, roiEnd, XIA1NexusPath, XIA2NexusPath, XIA1filesList, XIA2filesList,\
                     #fluoXIA1, fluoXIA2))
-
                     update_graphsXP(CP, dcm, cardAI, cardCT)
                 except KeyboardInterrupt:
                     raise

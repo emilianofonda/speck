@@ -88,17 +88,21 @@ class dxmap:
         return
 
     def __repr__(self):
-        repr=self.label+"\n"
-        gotten=self.getROIs(-1)
-        ii=1
-        kk = gotten.keys()
-        kk.sort()
-        for i in kk:
-            repr+="%s"%i+":"
-            for j in range(len(gotten[i]))[::2]:
-                repr+="[%i:%i] "%(gotten[i][j],gotten[i][j+1])
-            if not(ii%4): repr+="\n"
-            ii+=1
+        repr =  "Device name = %s\n" % self.label
+        repr += "ROI         = [%i, %i]\n" % tuple(self.getROIs())
+        repr += "Config File = %s\n"%self.DP.currentConfigFile
+        repr += "Mode        = %s\n"%self.DP.currentMode
+        repr += "State       = %s\n"%self.DP.state()
+        #gotten=self.getROIs(-1)
+        #ii=1
+        #kk = gotten.keys()
+        #kk.sort()
+        #for i in kk:
+        #    repr+="%s"%i+":"
+        #    for j in range(len(gotten[i]))[::2]:
+        #        repr+="[%i:%i] "%(gotten[i][j],gotten[i][j+1])
+        #    if not(ii%4): repr+="\n"
+        #    ii+=1
         return repr
                     
     def __call__(self,x=None):
@@ -186,7 +190,7 @@ class dxmap:
         return
 
     def setROIs(self,*args):
-        """the command is self.setROIs(ROImin,ROImax"""
+        """the command is self.setROIs(ROImin,ROImax)"""
         #try:
         #    ##att=self.DP.read_attribute("selectedChannelForSetRois")
         #    #self.DP.write_attribute("selectedChannelForSetRois",args[0])
@@ -203,6 +207,7 @@ class dxmap:
         #print roi
         #print time.asctime()
         self.DP.setroisfromlist(["-1;%i;%i" % (args[0],args[1]),])
+        self.DP.put_property({"SPECK_roi":[args[0],args[1]]})
         #print time.asctime()
         return
         
@@ -219,9 +224,17 @@ class dxmap:
         #    else:
         #        raise Exception("dxmap","roi limits requested for wrong channel","channel="+str(channel))
         #except:
-        for i in self.DP.getrois():
-            Ch = i.split(";")
-            gottenROIS[ "channel%02i" % int(Ch[0]) ] = map(int, Ch[1:])
+        try:
+            gottenROIS = map(int, self.DP.get_property(["SPECK_roi"])["SPECK_roi"])
+        except:
+            print "Cannot get ROI from SPECK property. Loading from device...",
+            for i in self.DP.getrois():
+                Ch = i.split(";")
+                gottenROIS[ "channel%02i" % int(Ch[0]) ] = map(int, Ch[1:])
+            print "set SPECK property from last gotten values..."
+            self.DP.put_property({"SPECK_roi":[int(Ch[1]), int(Ch[2])]})
+            gottenROIS = [int(Ch[1]), int(Ch[2])]
+            print "OK"
         return gottenROIS
         
         

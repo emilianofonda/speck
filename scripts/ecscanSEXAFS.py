@@ -149,7 +149,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="f",shutter=
             raise tmp
     print "ROI limits are [%4i:%4i]" % (roiStart, roiEnd)
     cardXIA1.nbpixels = NumberOfPoints
-    cardXIA1.streamNbAcqPerFile = 500
+    cardXIA1.streamNbAcqPerFile = 250
     cardXIA1.set_timeout_millis(30000)
     cardXIA1dataShape = (NumberOfPoints,cardXIA1.streamNbDataPerAcq )    
     XIA1NexusPath = "/nfs" + cardXIA1.streamTargetPath.replace("\\","/")[1:]

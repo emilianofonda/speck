@@ -123,7 +123,7 @@ def __exafsZ(theta):
     """EXAFS table quota"""
     #return 11.055 * theta -0.2 + get_ipython().user_ns["dcm"].H()    #   8/11/2016
     #return 11.055 * theta + 2.813 + get_ipython().user_ns["dcm"].H()   #  27/5/2016
-    return 11.2074018292933 * theta + 0.3438106790538 -0.17 + get_ipython().user_ns["dcm"].H()
+    return 11.2074018292933 * theta + 0.3438106790538 -0.17 + get_ipython().user_ns["dcm"].H() - 1.
     
 def __obxgZ(theta):
     #shell=get_ipython()
@@ -241,10 +241,10 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
             vgap1.pos(0.4)
             vgap2.pos(2.)
         else:    
-            vgap1.pos(max(0.1,theta-0.4))
+            vgap1.pos(min(max(0.1,theta-0.4),6.))
             vgap2.pos(theta+2.)
     else:
-        vgap1.pos(max(0.1,theta-0.4))
+        vgap1.pos(min(max(0.1,theta-0.4),6.))
         vgap2.pos(theta+2.)
     #Moved down of 1mm on 8/11/2016
     vpos2.pos(get_ipython().user_ns["dcm"].H() - 25. -1 )

@@ -659,7 +659,7 @@ class escan_class:
         de=2, dummypoints=3;  moves to energy-de*2, energy-de*2, energy-de"""
         #Speed up movement to first point
         self.dcm.mode(1)
-        self.dcm.velocity(100)
+        self.dcm.velocity(60)
         #
         if de==None:
             de=max(self.trajectory["energy"][1]-self.trajectory["energy"][0],1.)
@@ -668,6 +668,7 @@ class escan_class:
         print "Performing backlash recovery over: ",points
         self.dcm.pos(points[0])
         #Go back to dcm cruise speed
+        sleep(1)
         self.dcm.velocity(10)
         for en in points[1:]:
             self.dcm.pos(en)
@@ -2035,8 +2036,9 @@ class escan_class:
         #    self.dcm.usetz2(self.previous_dcm_tz2_setting)
         #if(self.BENDER):
         #    self.dcm.usebender(self.__previous_dcm_bender_state)
-        print "Setting speed of monochromator at 100 eV/s for setup...",
-        self.dcm.velocity(100)
+        print "Setting speed of monochromator at 60 eV/s for setup...",
+        sleep(1)
+        self.dcm.velocity(60)
         print "OK"
         self.EndOfRunAlert()        
         return
