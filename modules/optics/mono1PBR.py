@@ -641,7 +641,7 @@ class mono1:
             return self.DP.velocity
         if self.state() == DevState.MOVING:
             t0 = time()
-            while(time()-t0 <2 and self.state() == DevState.MOVING):
+            while(time()-t0 <30 and self.state() == DevState.MOVING):
                 sleep(0.1)
             if self.state() == DevState.MOVING:
                 raise Exception("mono1.PBR: cannot change velocity while moving!")

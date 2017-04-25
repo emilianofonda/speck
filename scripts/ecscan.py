@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import dentist
 import thread
 import tables
@@ -40,6 +41,7 @@ def stopscan(shutter=False):
     cardXIA2.stop()
     dcm.stop()
     myTime.sleep(3)
+    dcm.velocity(60)
     #cardXIA1.init()
     #cardXIA2.init()
     #myTime.sleep(2)
@@ -47,7 +49,7 @@ def stopscan(shutter=False):
         myTime.sleep(2)
     setMAP()
     wait_motor(dcm)
-    print "OK"
+    print "Scan Stopped: OK"
     sys.stdout.flush()
     return
 
@@ -60,7 +62,8 @@ __CPlotter__ = CPlotter()
 
 def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True):
     try:
-        ecscanActor(fileName,e1,e2,n,dt,velocity, e0, mode,shutter, beamCheck)
+        for i in range(n):
+	  ecscanActor(fileName,e1,e2,1,dt,velocity, e0, mode,shutter, beamCheck)
     except KeyboardInterrupt:
         shell.logger.log_write("ecscan halted on user request: Ctrl-C\n", kind='output')
         print "Halting on user request."
@@ -72,9 +75,11 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
         raise KeyboardInterrupt
     except Exception, tmp:
         shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp, kind='output')
+        print tmp
         stopscan(shutter)
-        raise
+        #raise
     return 
+
 
 def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True):
     """Start from e1 (eV) to e2 (eV) and count over dt (s) per point.
@@ -179,12 +184,13 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     #DCM Setup
     if dcm.state() == DevState.DISABLE:
         dcm.DP.on()
+        sleep(1)
     for i in range(5):
         try:
             dcm.mode(1)
-            break
+            #break
         except:
-            myTime.sleep(1)
+            myTime.sleep(3)
     #Start graphic windows    
     try:
         CP = __CPlotter__
@@ -204,11 +210,11 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             #Configure and move mono
             if dcm.state() == DevState.MOVING:
                 wait_motor(dcm)
-            myTime.sleep(0.2)
-            dcm.DP.velocity = 60
+            myTime.sleep(1)
+            dcm.velocity(60)
             #myTime.sleep(0.2)
             #dcm.mode(0)
-            myTime.sleep(0.2)
+            #myTime.sleep(1)
             dcm.pos(e1-1., wait=False)
             
             #Print Name:
@@ -238,7 +244,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             myTime.sleep(1)
             dcm.mode(1)
             sleep(0.2)
-            dcm.DP.velocity = velocity
+            dcm.velocity(velocity)
             myTime.sleep(0.5)
             dcm.pos(e1)
             sleep(1)
@@ -327,7 +333,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                         dcm.state()
                     except:
                         myTime.sleep(1)
-                    dcm.DP.velocity = 60
+                    dcm.velocity(60)
                     #dcm.mode(0)
                     myTime.sleep(1)
                     dcm.pos(e1-1., wait=False)
@@ -338,18 +344,17 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 XIAt0=time()
                 while(cardXIA1.state() == DevState.RUNNING or cardXIA2.state() == DevState.RUNNING\
                     or (LastXIA1FileName not in os.listdir(XIA1NexusPath)) or (LastXIA2FileName not in os.listdir(XIA2NexusPath))):
-                    myTime.sleep(0.2)
-                    if time() - XIAt0 > 180.:
+                    myTime.sleep(1)
+                    if myTime.time() - XIAt0 > 180.:
                         print XIA1NexusPath
                         print os.listdir(XIA1NexusPath)
                         print XIA2NexusPath
                         print os.listdir(XIA2NexusPath)
-                        print "Time Out waiting for XIA cards to stop! Waited more than 120s... !"
+                        print "Time Out waiting for XIA cards to stop! Waited more than 180s... !"
                         cardXIA1.stop()
                         cardXIA2.stop()
                         setSTEP()
-                        break
-                        #raise Exception("Time Out waiting for XIA cards to stop! Waited more than 120s... !")
+                        raise Exception("Time Out waiting for XIA cards to stop! Waited more than 180s... !")
                 XIAtEnd = myTime.time()-XIAt0
                 print "XIA needed additional %3.1f seconds to provide all data files."%(XIAtEnd)
                 shell.logger.log_write("XIA needed additional %3.1f seconds to provide all data files."%(XIAtEnd) + ".hdf", kind='output')
@@ -428,14 +433,15 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                     pCmca[:] = bCmca
                 print "XIA1: OK"
     #XIA2 read / write NOTA: these channels names are shifted of +20 in output
+                bCmca = numpy.zeros(cardXIA2dataShape,numpy.uint32)
                 Breaked=False
                 for ch in cardXIA2Channels:
                     if Breaked:
                         break
                     outtaHDF.createArray("/XIA", "fluo%02i" % (ch+20), numpy.zeros(NumberOfPoints, numpy.uint32))
     #Single Channel MCA CArray creation
-                    outtaHDF.createCArray(outtaHDF.root.XIA, "mca%02i"%(ch+20), title="Mca%02i"%ch,\
-                    shape=cardXIA1dataShape, atom = tables.UInt32Atom(), filters=HDFfilters)
+                    outtaHDF.createCArray(outtaHDF.root.XIA, "mca%02i"%(ch+20), title="Mca%02i"%(ch+20),\
+                    shape=cardXIA2dataShape, atom = tables.UInt32Atom(), filters=HDFfilters)
     #Get pointer to a Channel MCA on disk
                     pCmca = outtaHDF.getNode("/XIA/mca%02i"%(ch+20))
     #DT line comment out if required
@@ -452,6 +458,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                             __blockDT = eval("XFile.root.entry.scan_data.deadtime%02i"%ch).read()
                         except:
                             Breaked = True
+                            print "Break at channel #%i of XIA2"%ch
                             break
                         actualBlockLen = shape(__block)[0]
     #Feed RAM buffers with MCA values
@@ -462,7 +469,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                         pointerDt[block * blockLen: (block + 1) * blockLen] = __blockDT
                         block += 1
     #Write Single MCA to Disk
-                pCmca[:] = bCmca
+                    pCmca[:] = bCmca
                 print "XIA2: OK"
     #Finalize derived quantities
                 fluoX = numpy.nan_to_num(array( sum(mcaSum[:,roiStart:roiEnd], axis=1), "f") / I0)
@@ -500,12 +507,12 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     #Clean up the mess in the spool
     #XIA1 close and wipe
                 map(lambda x: x.close(), XIA1files)
-                map(lambda x: x.startswith(cardXIA1.streamTargetFile)\
-                and os.remove(XIA1NexusPath +os.sep + x), os.listdir(XIA1NexusPath))
+                #map(lambda x: x.startswith(cardXIA1.streamTargetFile)\
+                #and os.remove(XIA1NexusPath +os.sep + x), os.listdir(XIA1NexusPath))
     #XIA2 close and wipe
                 map(lambda x: x.close(), XIA2files)
-                map(lambda x: x.startswith(cardXIA2.streamTargetFile)\
-                and os.remove(XIA2NexusPath +os.sep + x), os.listdir(XIA2NexusPath))
+                #map(lambda x: x.startswith(cardXIA2.streamTargetFile)\
+                #and os.remove(XIA2NexusPath +os.sep + x), os.listdir(XIA2NexusPath))
     #Local data saving
                 dataBlock = array([ene,theta,xmu,fluoX,xmuS,\
                 I0,I1,I2,I3],"f")
@@ -729,6 +736,93 @@ def AlarmBeep():
             pass
         print "WARNING: Error alerting for end of scan... no Tkinter?\n"
         print "BUT: Ignore this message if escan is working well,\n just report this to your local contact\n"
+    return
+
+
+def configureCardsForECSCAN(TotalTime, dt):
+    """Prepare cards for continuous scan.
+    Presently unused, for tests pursposes onl
+    Presently unused, for tests pursposes only"""
+    shell=get_ipython()
+    cardCTsavedAttributes = ["totalNbPoint","integrationTime","continuousAcquisition","bufferDepth"]
+    cardAIsavedAttributes = ["configurationId","frequency","integrationTime","dataBufferNumber"]
+    
+    #Configure cards
+    NumberOfPoints = int(TotalTime / dt)
+
+    #Card CT
+    cardCT.totalNbPoint = NumberOfPoints
+    cardCT.nexusNbAcqPerFile = NumberOfPoints
+    cardCT.integrationTime = dt
+    cardCT.bufferDepth = 1
+    cardCT.continuousAcquisition = False
+    cardCT.nexusFileGeneration = False
+    cardCT.set_timeout_millis(30000)
+
+    #Card AI
+    if cardAI.configurationId <> 3:
+        cardAI.configurationId = 3
+        myTime.sleep(5)
+    cardAI.integrationTime = dt * 1000 -2.
+    cardAI.nexusFileGeneration = False
+    cardAI.nexusNbAcqPerFile = NumberOfPoints
+    cardAI.dataBufferNumber = NumberOfPoints
+    cardAI.statHistoryBufferDepth = NumberOfPoints
+    cardAI.set_timeout_millis(30000)
+    cardAI_dark0,cardAI_dark1,cardAI_dark2,cardAI_dark3 =\
+    map(float, cardAI.get_property(["SPECK_DARK"])["SPECK_DARK"])
+
+    #Set Mapping mode if needed
+    try:
+        setMAP()
+        myTime.sleep(1)
+    except:
+        try:
+            myTime.sleep(1)
+            setMAP()
+            myTime.sleep(1)
+        except:
+            print "The setMAP function does not work!!! Try again and/or check with local contact!!!"
+    #Card XIA1
+    #Rois are defined only on one channel of XIA1 and used for XIA2
+    try:
+        #roiStart, roiEnd = map(int, cardXIA1.getrois()[1].split(";")[1:])
+        #following code lines refer implicitely to an environment object!!!!!!!!!! mca1
+        #full code must be rewritten using this code object instead of direct card access via bare DeviceProxy
+        roiStart, roiEnd = mca1.getROIs()
+    except:
+        print "Please wait... I cannot find ROI limits, checking configuration...",
+        setSTEP()
+        myTime.sleep(1)
+        setMAP()
+        try:
+            roiStart, roiEnd = map(int, cardXIA1.getrois()[1].split(";")[1:])
+            print " done. OK."
+        except Exception, tmp:
+            print "\nRegion Of Interest has not been defined? use setroi(start,end) command please."
+            raise tmp
+    print "ROI limits are [%4i:%4i]" % (roiStart, roiEnd)
+    cardXIA1.nbpixels = NumberOfPoints
+    cardXIA1.streamNbAcqPerFile = 250
+    cardXIA1.set_timeout_millis(30000)
+    cardXIA1dataShape = (NumberOfPoints,cardXIA1.streamNbDataPerAcq )    
+    XIA1NexusPath = "/nfs" + cardXIA1.streamTargetPath.replace("\\","/")[1:]
+    #Reset Nexus index and cleanup spool
+    cardXIA1.streamresetindex()
+    map(lambda x: x.startswith(cardXIA1.streamTargetFile) and os.remove(XIA1NexusPath +os.sep + x), os.listdir(XIA1NexusPath))
+    NumberOfXIAFiles = int(cardXIA1.nbpixels / cardXIA1.streamNbAcqPerFile) 
+    if numpy.mod(cardXIA1.nbpixels, cardXIA1.streamNbAcqPerFile):
+        NumberOfXIAFiles += 1
+    #Card XIA2
+    cardXIA2.nbpixels = NumberOfPoints
+    cardXIA2.streamNbAcqPerFile = 250
+    cardXIA2.set_timeout_millis(30000)
+    cardXIA2dataShape = [NumberOfPoints,cardXIA2.streamNbDataPerAcq ]
+    XIA2NexusPath = "/nfs" + cardXIA2.streamTargetPath.replace("\\","/")[1:]
+    #Reset Nexus index and cleanup spool
+    cardXIA2.streamresetindex()
+    map(lambda x: x.startswith(cardXIA2.streamTargetFile) and os.remove(XIA2NexusPath +os.sep + x), os.listdir(XIA2NexusPath))
+    #Some data of the configuration must be returned if this function has to be used.
     return
 
 

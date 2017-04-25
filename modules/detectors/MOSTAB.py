@@ -163,6 +163,23 @@ class MOSTAB_serial:
     def version(self):
         return self.InOutS("?VER")[1:]
 
+    
+    def on(self):
+        if self.mode("OSCILLATION"):
+            self.InOutS("OSCIL ON")
+        time.sleep(0.1)
+        print self("?OSCIL")[1]
+        time.sleep(0.2)
+        return
+
+    def off(self):
+        if self.mode("OSCILLATION"):
+            self.InOutS("OSCIL OFF")
+        time.sleep(0.1)
+        print self("?OSCIL")[1]
+        time.sleep(0.2)
+        return
+    
     def start(self):
         if self.mode("OSCILLATION"):
             self.InOutS("OSCIL ON")

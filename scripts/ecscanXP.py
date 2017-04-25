@@ -128,7 +128,7 @@ def ecscanXPActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter
             if dcm.state() == DevState.MOVING:
                 wait_motor(dcm)
             myTime.sleep(0.2)
-            dcm.DP.velocity = 60
+            dcm.velocity(60)
             myTime.sleep(0.2)
             #dcm.mode(1)
             #myTime.sleep(0.2)
@@ -159,7 +159,7 @@ def ecscanXPActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter
             myTime.sleep(1)
             #dcm.mode(1)
             #myTime.sleep(0.2)
-            dcm.DP.velocity = velocity
+            dcm.velocity(velocity)
             myTime.sleep(0.5)
             dcm.pos(e1)
             myTime.sleep(1)
@@ -223,7 +223,7 @@ def ecscanXPActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter
             #
             if NofScans >= 1: 
                 print myTime.asctime(), " : sending dcm back to starting point."
-                dcm.DP.velocity = 60
+                dcm.velocity(60)
                 myTime.sleep(0.2)
                 #dcm.mode(1)
                 dcm.pos(e1-1., wait=False)
