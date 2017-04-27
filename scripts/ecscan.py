@@ -20,7 +20,7 @@ except:
     NoTk=True
 
 
-cardCT = DeviceProxy("d09-1-c00/ca/cpt.3_old")
+cardCT = DeviceProxy("d09-1-c00/ca/cpt.3")
 cardAI = DeviceProxy("d09-1-c00/ca/sai.1")
 cardXIA1 = DeviceProxy("d09-1-cx1/dt/dtc-mca_xmap.1")
 cardXIA2 = DeviceProxy("d09-1-cx1/dt/dtc-mca_xmap.2")
@@ -92,7 +92,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     obxg = shell.user_ns["obxg"]
     TotalScanTime = myTime.time()
     NofScans = n
-    cardCTsavedAttributes = ["totalNbPoint","integrationTime","continuousAcquisition","bufferDepth"]
+    cardCTsavedAttributes = ["totalNbPoint","integrationTime","continuous","bufferDepth"]
     cardAIsavedAttributes = ["configurationId","frequency","integrationTime","dataBufferNumber"]
     if fileName == None: 
         raise Exception("filename and limits must be specified")
@@ -112,8 +112,8 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     cardCT.totalNbPoint = NumberOfPoints
     cardCT.nexusNbAcqPerFile = NumberOfPoints
     cardCT.integrationTime = dt
-    cardCT.bufferDepth = 1
-    cardCT.continuousAcquisition = False
+    cardCT.bufferDepth = int(1./dt)
+    cardCT.continuous = False
     cardCT.nexusFileGeneration = False
     cardCT.set_timeout_millis(30000)
 
@@ -507,12 +507,12 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     #Clean up the mess in the spool
     #XIA1 close and wipe
                 map(lambda x: x.close(), XIA1files)
-                #map(lambda x: x.startswith(cardXIA1.streamTargetFile)\
-                #and os.remove(XIA1NexusPath +os.sep + x), os.listdir(XIA1NexusPath))
+                map(lambda x: x.startswith(cardXIA1.streamTargetFile)\
+                and os.remove(XIA1NexusPath +os.sep + x), os.listdir(XIA1NexusPath))
     #XIA2 close and wipe
                 map(lambda x: x.close(), XIA2files)
-                #map(lambda x: x.startswith(cardXIA2.streamTargetFile)\
-                #and os.remove(XIA2NexusPath +os.sep + x), os.listdir(XIA2NexusPath))
+                map(lambda x: x.startswith(cardXIA2.streamTargetFile)\
+                and os.remove(XIA2NexusPath +os.sep + x), os.listdir(XIA2NexusPath))
     #Local data saving
                 dataBlock = array([ene,theta,xmu,fluoX,xmuS,\
                 I0,I1,I2,I3],"f")
@@ -663,8 +663,8 @@ def dark(dt=10.):
     cardCT.totalNbPoint = NumberOfPoints
     cardCT.nexusNbAcqPerFile = NumberOfPoints
     cardCT.integrationTime = dt / float(NumberOfPoints)
-    cardCT.bufferDepth = 1
-    cardCT.continuousAcquisition = False
+    cardCT.bufferDepth = int(float(NumberOfPoints)/dt)
+    cardCT.continuous = False
     cardCT.nexusFileGeneration = False
     cardCT.set_timeout_millis(30000)
 
@@ -744,7 +744,7 @@ def configureCardsForECSCAN(TotalTime, dt):
     Presently unused, for tests pursposes onl
     Presently unused, for tests pursposes only"""
     shell=get_ipython()
-    cardCTsavedAttributes = ["totalNbPoint","integrationTime","continuousAcquisition","bufferDepth"]
+    cardCTsavedAttributes = ["totalNbPoint","integrationTime","continuous","bufferDepth"]
     cardAIsavedAttributes = ["configurationId","frequency","integrationTime","dataBufferNumber"]
     
     #Configure cards

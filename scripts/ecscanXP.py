@@ -18,7 +18,7 @@ except:
     NoTk=True
 
 
-cardCT = DeviceProxy("d09-1-c00/ca/cpt.3_old")
+cardCT = DeviceProxy("d09-1-c00/ca/cpt.3")
 cardAI = DeviceProxy("d09-1-c00/ca/sai.1")
 
 def stopscanXP(shutter=False):
@@ -31,6 +31,7 @@ def stopscanXP(shutter=False):
     cardCT.stop()
     dcm.stop()
     wait_motor(dcm)
+    dcm.velocity(60)
     return
 
 class CPlotter:
@@ -64,7 +65,7 @@ def ecscanXPActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter
 
     TotalScanTime = myTime.time()
     NofScans = n
-    cardCTsavedAttributes = ["totalNbPoint","integrationTime","continuousAcquisition","bufferDepth"]
+    cardCTsavedAttributes = ["totalNbPoint","integrationTime","continuous","bufferDepth"]
     cardAIsavedAttributes = ["configurationId","frequency","integrationTime","dataBufferNumber"]
     if fileName == None: 
         raise Exception("filename and limits must be specified")
@@ -84,8 +85,8 @@ def ecscanXPActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter
     cardCT.totalNbPoint = NumberOfPoints
     cardCT.nexusNbAcqPerFile = NumberOfPoints
     cardCT.integrationTime = dt
-    cardCT.bufferDepth = 1
-    cardCT.continuousAcquisition = False
+    cardCT.bufferDepth = int(1./dt)
+    cardCT.continuous = False
     cardCT.nexusFileGeneration = False
     cardCT.set_timeout_millis(30000)
 
@@ -352,8 +353,8 @@ def dark(dt=10.):
     cardCT.totalNbPoint = NumberOfPoints
     cardCT.nexusNbAcqPerFile = NumberOfPoints
     cardCT.integrationTime = dt / float(NumberOfPoints)
-    cardCT.bufferDepth = 1
-    cardCT.continuousAcquisition = False
+    cardCT.bufferDepth = int(float(NumberOfPoints)/dt)
+    cardCT.continuous = False
     cardCT.nexusFileGeneration = False
     cardCT.set_timeout_millis(30000)
 

@@ -2,68 +2,36 @@
 #This code works on global objects like mca1 and mca2, it is strictly... volatile... but essential!!!!
 
 
-### This part is obsolete and was needed to switch between configurations of EXAFS hutch detector
-### Left here for keeping a trace of code
+def XIAgetConfigFiles():
+    ll1 = mca1.DP.get_property("ConfigurationFiles")["ConfigurationFiles"]
+    ll2 = mca2.DP.get_property("ConfigurationFiles")["ConfigurationFiles"]
+    return ll1, ll2
 
-__XIA_files = {
-0:{"PeakingTime":"0.48us",
-"mca1": '\\\\deviceservers\\configFiles\\XIA-XMAP\\Canberra36\\Canberra36_pcih_048_EF4.ini',
-"mca2": '\\\\deviceservers\\configFiles\\XIA-XMAP\\Canberra36\\Canberra36_pcib_048_EF4.ini'},
-1:{"PeakingTime":"1.00us",
-"mca1": '\\\\deviceservers\\configFiles\\XIA-XMAP\\Canberra36\\Canberra36_pcih_100_EF4.ini',
-"mca2": '\\\\deviceservers\\configFiles\\XIA-XMAP\\Canberra36\\Canberra36_pcib_100_EF4.ini'},
-2:{"PeakingTime":"2.00us",
-"mca1": '\\\\deviceservers\\configFiles\\XIA-XMAP\\Canberra36\\Canberra36_pcih_200_EF4.ini',
-"mca2": '\\\\deviceservers\\configFiles\\XIA-XMAP\\Canberra36\\Canberra36_pcib_200_EF4.ini'},
-3:{"PeakingTime":"6.00us",
-"mca1": '\\\\deviceservers\\configFiles\\XIA-XMAP\\Canberra36\\Canberra36_pcih_600_EF4.ini',
-"mca2": '\\\\deviceservers\\configFiles\\XIA-XMAP\\Canberra36\\Canberra36_pcib_600_EF4.ini'},
-}
-
-
-def getMCAconfig():
-    for i in sort(__XIA_files.keys()):
-        print "Config (%i)  --> Peaking Time %s" % (i, __XIA_files[i]["PeakingTime"])
-        print "                 mca1 --> %s" % ( __XIA_files[i]["mca1"])
-        print "                 mca2 --> %s" % ( __XIA_files[i]["mca2"])
-    cfg1 = mca1.DP.get_property("ConfigFile")["ConfigFile"][0]
-    cfg2 = mca2.DP.get_property("ConfigFile")["ConfigFile"][0]
-    print "Current config files are:"
-    print "mca1 --> ", cfg1
-    print "mca2 --> ", cfg2
+def XIAviewConfigFiles():
+    ll1, ll2 = XIAgetConfigFiles()
+    print "\nmca1:"
+    for i in ll1:
+        i3 = i.split(";")
+        print "Label = %6s Mode = %8s\n    File = %s"%tuple(i3)
+    print "\nmca2:"
+    for i in ll2:
+        i3 = i.split(";")
+        print "Label = %6s Mode = %8s\n    File = %s"%tuple(i3)
     return
 
+def XIAgetConfigNumber():
+    cfg1 = int(mca1.DP.get_property("SPECK_ConfigurationFileNumber")["SPECK_ConfigurationFileNumber"][0])
+    cfg2 = int(mca2.DP.get_property("SPECK_ConfigurationFileNumber")["SPECK_ConfigurationFileNumber"][0])
+    #print "Current config numbers are:"
+    #print "mca1 --> ", cfg1
+    #print "mca2 --> ", cfg2
+    return cfg1, cfg2
 
-def setMCAconfig(config=-1):
-    if config == -1:
-        return getMCAconfig()
-    elif config in __XIA_files.keys():
-        mca1.DP.put_property({"ConfigFile":[__XIA_files[config]["mca1"]]})
-        mca2.DP.put_property({"ConfigFile":[__XIA_files[config]["mca2"]]})
-        print "Please wait, it may take long time...",
-        sys.stdout.flush()
-        try:
-            mca1.DP.init()
-        except Exception, tmp:
-            print tmp
-        sleep(3)
-        while(mca1.state() not in [DevState.STANDBY, DevState.FAULT]):
-            sleep(0.25)
-        print "OK 1/2... ",
-        sys.stdout.flush()
-        try:
-            mca2.DP.init()
-        except Exception, tmp:
-            print tmp
-        sleep(3)
-        while(mca2.state() not in [DevState.STANDBY, DevState.FAULT]):
-            sleep(0.25)
-        print "OK 2/2"
-        sys.stdout.flush()
-    else:
-        print "Choice number %i is not allowed." % config
-        return getMCAconfig()
-    return getMCAconfig()
+
+def XIAsetConfigNumber(config):
+    mca1.DP.put_property({"SPECK_ConfigurationFileNumber":config})
+    mca2.DP.put_property({"SPECK_ConfigurationFileNumber":config})
+    return XIAgetConfigNumber()
 
 
 ###Code below is used for EXAFS hutch continuous scans
@@ -80,7 +48,7 @@ def setMODE(mode="",config="",mca=[]):
     except:
         changeMode = True
         fault = True
-        print RED + "Cannot retrieve current XIA mode. Note: ROIs will not be transferred from STEP to MAP." + RESET
+        #print RED + "Cannot retrieve current XIA mode. Note: ROIs will not be transferred from STEP to MAP." + RESET
     try:
         rois = []
         for i in mca:
@@ -128,6 +96,8 @@ def setMODE(mode="",config="",mca=[]):
 
 def setMAP(recursive = 0):
     "Only one unique ROI is supported"
+    cfgNumbers = XIAgetConfigNumber()
+    config1, config2 = "MAP%i"%cfgNumbers[0], "MAP%i"%cfgNumbers[1]
     fault = False
     changeMode = False
     if mca1.state() == DevState.FAULT:
@@ -143,7 +113,8 @@ def setMAP(recursive = 0):
         while(mca1.state() in [DevState.DISABLE,DevState.UNKNOWN] or mca2.state() in [DevState.DISABLE,DevState.UNKNOWN]):
             sleep(1)
     try:
-        changeMode = mca1.DP.currentMode <> 'MAPPING' or mca2.DP.currentMode <> 'MAPPING'
+        changeMode = mca1.DP.currentMode <> 'MAPPING' or mca2.DP.currentMode <> 'MAPPING'\
+        or config1 <> mca1.DP.currentAlias or config2 <> mca1.DP.currentAlias 
     except:
         changeMode = True
         fault = True
@@ -170,8 +141,8 @@ def setMAP(recursive = 0):
         mca1.DP.set_timeout_millis(60000)
         mca2.DP.set_timeout_millis(60000)
         sleep(0.25)
-        mca1.DP.loadconfigfile("MAP")
-        mca2.DP.loadconfigfile("MAP")
+        mca1.DP.loadconfigfile("MAP1")
+        mca2.DP.loadconfigfile("MAP1")
         sleep(0.25)
         while(mca1.state() == DevState.DISABLE or mca2.state() == DevState.DISABLE):
             sleep(1)
@@ -205,22 +176,27 @@ def setMAP(recursive = 0):
     return
 
 def setSTEP(recursive = 0):
+    cfgNumbers = XIAgetConfigNumber()
+    config1, config2 = "STEP%i"%cfgNumbers[0], "STEP%i"%cfgNumbers[1]
     fault = False
     changeMode = False
     if mca1.state() == DevState.FAULT:
         changeMode = True
         fault = True
         mca1.init()
+        sleep(1)
     if mca2.state() == DevState.FAULT:
         changeMode = True
         fault = True
         mca2.init()
+        sleep(1)
     if changeMode:
         sleep(0.25)
         while(mca1.state() in [DevState.DISABLE,DevState.UNKNOWN] or mca2.state() in [DevState.DISABLE,DevState.UNKNOWN]):
             sleep(1)
     try:
-        changeMode = mca1.DP.currentMode <> 'MCA' or mca2.DP.currentMode <> 'MCA'
+        changeMode = mca1.DP.currentMode <> 'MCA' or mca2.DP.currentMode <> 'MCA'\
+        or config1 <> mca1.DP.currentAlias or config2 <> mca1.DP.currentAlias 
     except:
         changeMode = True
         fault = True
@@ -247,8 +223,8 @@ def setSTEP(recursive = 0):
         mca1.DP.set_timeout_millis(60000)
         mca2.DP.set_timeout_millis(60000)
         sleep(0.25)
-        mca1.DP.loadconfigfile("STEP")
-        mca2.DP.loadconfigfile("STEP")
+        mca1.DP.loadconfigfile(config1)
+        mca2.DP.loadconfigfile(config2)
         sleep(0.25)
         while(mca1.state() == DevState.DISABLE or mca2.state() == DevState.DISABLE):
             sleep(1)
