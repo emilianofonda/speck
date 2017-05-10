@@ -581,10 +581,12 @@ class escan_class:
         #print "Extimated Scan Time: please, consider only the moving time in fast mode."
         print "Following values are calculated for ONE scan."
         print "---------------------------------------------"
-        print "Extimated Moving time (minutes):",MovingTime/60.
-        print "IntegrationTime (minutes)",IntegrationTime/60.
-        print "Extimated Total (minutes):",(MovingTime+IntegrationTime)/60.
-        print "Number of points:",self.scanNumberOfPoints
+        print "Extimated Moving time (minutes)    :",MovingTime/60.
+        print "Integration Time (minutes)         :",IntegrationTime/60.
+        #print "Extimated Settling Time (minutes)  :", self.SettlingTime*self.scanNumberOfPoints/60.
+        #print "Extimated Total (minutes)          :",(MovingTime+IntegrationTime + self.SettlingTime*self.scanNumberOfPoints)/60.
+        print "Extimated Total (minutes)          :",(MovingTime+IntegrationTime)/60.
+        print "Number of points                   :",self.scanNumberOfPoints
         print "Tuning could take 2 minutes if enabled"
         print "---------------------------------------------"
         ##############################################################
