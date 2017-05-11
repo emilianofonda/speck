@@ -160,12 +160,14 @@ def setMAP(recursive = 0):
         sleep(0.25)
         ct.reinit()
         sleep(0.25)
-    if rois1 <> mca1.getROIs():
-        #mca1.DP.setroisfromlist(rois1)
-        mca1.setROIs(roi1, roi2)
-    if rois2 <> mca2.getROIs():
-        mca2.setROIs(roi1, roi2)
-        #mca2.DP.setroisfromlist(rois2)
+    #if rois1 <> mca1.getROIs():
+    #    #mca1.DP.setroisfromlist(rois1)
+    #    mca1.setROIs(roi1, roi2)
+    #if rois2 <> mca2.getROIs():
+    #    mca2.setROIs(roi1, roi2)
+    #    #mca2.DP.setroisfromlist(rois2)
+    mca1.setROIs(roi1, roi2)
+    mca2.setROIs(roi1, roi2)
     while(mca1.state() in [DevState.DISABLE,DevState.UNKNOWN] or mca2.state() in [DevState.DISABLE,DevState.UNKNOWN]):
         sleep(1)
     if mca1.state() == DevState.FAULT or mca2.state() == DevState.FAULT and recursive <=3:
@@ -234,12 +236,15 @@ def setSTEP(recursive = 0):
             roi1,roi2 = rois1
         sleep(0.25)
         ct.reinit()
-    if rois1 <> mca1.getROIs():
-        #mca1.DP.setroisfromlist(rois1)
-        mca1.setROIs(roi1, roi2)
-    if rois2 <> mca2.getROIs():
-        mca2.setROIs(roi1, roi2)
-        #mca2.DP.setroisfromlist(rois2)
+    #if rois1 <> mca1.getROIs():
+    #    #mca1.DP.setroisfromlist(rois1)
+    #    mca1.setROIs(roi1, roi2)
+    #if rois2 <> mca2.getROIs():
+    #    mca2.setROIs(roi1, roi2)
+    #    #mca2.DP.setroisfromlist(rois2)
+    #2 lines below replace lines above for tests
+    mca1.setROIs(roi1, roi2)
+    mca2.setROIs(roi1, roi2)
     while(mca1.state() in [DevState.DISABLE,DevState.UNKNOWN] or mca2.state() in [DevState.DISABLE,DevState.UNKNOWN]):
         sleep(1)
     if mca1.state() == DevState.FAULT or mca2.state() == DevState.FAULT and recursive <=3:
