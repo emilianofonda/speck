@@ -120,17 +120,16 @@ def setMAP(recursive = 0):
         fault = True
         print RED + "Fault: mode" + RESET
         #print RED + "Cannot retrieve current XIA mode. Note: ROIs will not be transferred from STEP to MAP." + RESET
-    try:
-        rois1 = mca1.getROIs()
-        rois2 = mca2.getROIs()
-        roi1,roi2 = rois1
-        #print roi1, roi2
-    except:
-        print RED + "Fault: rois" + RESET
-        #print RED + "Cannot retrieve ROIs. Note: ROIs will not be transferred from STEP to MAP." + RESET
-        changeMode = True
-        fault = True
     if changeMode:
+        try:
+            rois1 = mca1.getROIs()
+            rois2 = mca2.getROIs()
+            roi1,roi2 = rois1
+            #print roi1, roi2
+        except:
+            print RED + "Fault: rois" + RESET
+            #print RED + "Cannot retrieve ROIs. Note: ROIs will not be transferred from STEP to MAP." + RESET
+            fault = True
         print "Setting MAP mode"
         if fault:
             mca1.init()
@@ -141,33 +140,20 @@ def setMAP(recursive = 0):
         mca1.DP.set_timeout_millis(60000)
         mca2.DP.set_timeout_millis(60000)
         sleep(0.25)
-        mca1.DP.loadconfigfile("MAP1")
-        mca2.DP.loadconfigfile("MAP1")
+        mca1.DP.loadconfigfile(config1)
+        mca2.DP.loadconfigfile(config2)
         sleep(0.25)
-        while(mca1.state() == DevState.DISABLE or mca2.state() == DevState.DISABLE):
+        while(mca1.state() in [DevState.DISABLE,DevState.UNKNOWN] or mca2.state() in [DevState.DISABLE,DevState.UNKNOWN]):
             sleep(1)
         if fault:
             rois1 = mca1.getROIs()
             rois2 = mca2.getROIs()
             roi1,roi2 = rois1
         sleep(0.25)
-        if rois1 <> mca1.getROIs():
-            #mca1.DP.setroisfromlist(rois1)
-            mca1.setROIs(roi1, roi2)
-        if rois2 <> mca2.getROIs():
-            mca2.setROIs(roi1, roi2)
-            #mca2.DP.setroisfromlist(rois2)
-        sleep(0.25)
+        mca1.setROIs(roi1, roi2)
+        mca2.setROIs(roi1, roi2)
+        sleep(1)
         ct.reinit()
-        sleep(0.25)
-    #if rois1 <> mca1.getROIs():
-    #    #mca1.DP.setroisfromlist(rois1)
-    #    mca1.setROIs(roi1, roi2)
-    #if rois2 <> mca2.getROIs():
-    #    mca2.setROIs(roi1, roi2)
-    #    #mca2.DP.setroisfromlist(rois2)
-    mca1.setROIs(roi1, roi2)
-    mca2.setROIs(roi1, roi2)
     while(mca1.state() in [DevState.DISABLE,DevState.UNKNOWN] or mca2.state() in [DevState.DISABLE,DevState.UNKNOWN]):
         sleep(1)
     if mca1.state() == DevState.FAULT or mca2.state() == DevState.FAULT and recursive <=3:
@@ -178,6 +164,77 @@ def setMAP(recursive = 0):
     return
 
 def setSTEP(recursive = 0):
+    "Only one unique ROI is supported"
+    cfgNumbers = XIAgetConfigNumber()
+    config1, config2 = "STEP%i"%cfgNumbers[0], "STEP%i"%cfgNumbers[1]
+    fault = False
+    changeMode = False
+    if mca1.state() == DevState.FAULT:
+        changeMode = True
+        fault = True
+        mca1.init()
+    if mca2.state() == DevState.FAULT:
+        changeMode = True
+        fault = True
+        mca2.init()
+    if changeMode:
+        sleep(0.25)
+        while(mca1.state() in [DevState.DISABLE,DevState.UNKNOWN] or mca2.state() in [DevState.DISABLE,DevState.UNKNOWN]):
+            sleep(1)
+    try:
+        changeMode = mca1.DP.currentMode <> 'MCA' or mca2.DP.currentMode <> 'MCA'\
+        or config1 <> mca1.DP.currentAlias or config2 <> mca1.DP.currentAlias 
+    except KeyboardInterrupt, tmp:
+        raise tmp
+    except:
+        changeMode = True
+        fault = True
+        print RED + "Fault: mode" + RESET
+        #print RED + "Cannot retrieve current XIA mode. Note: ROIs will not be transferred from STEP to MAP." + RESET
+    if changeMode:
+        try:
+            rois1 = mca1.getROIs()
+            rois2 = mca2.getROIs()
+            roi1,roi2 = rois1
+            #print roi1, roi2
+        except:
+            print RED + "Fault: rois" + RESET
+            #print RED + "Cannot retrieve ROIs. Note: ROIs will not be transferred from STEP to MAP." + RESET
+            fault = True
+        print "Setting STEP mode"
+        if fault:
+            mca1.init()
+            mca2.init()
+            sleep(1)
+            while(mca1.state() == DevState.DISABLE or mca2.state() == DevState.DISABLE):
+                sleep(1)
+        mca1.DP.set_timeout_millis(60000)
+        mca2.DP.set_timeout_millis(60000)
+        sleep(0.25)
+        mca1.DP.loadconfigfile(config1)
+        mca2.DP.loadconfigfile(config2)
+        sleep(0.25)
+        while(mca1.state() in [DevState.DISABLE,DevState.UNKNOWN] or mca2.state() in [DevState.DISABLE,DevState.UNKNOWN]):
+            sleep(1)
+        if fault:
+            rois1 = mca1.getROIs()
+            rois2 = mca2.getROIs()
+            roi1,roi2 = rois1
+        sleep(0.25)
+        mca1.setROIs(roi1, roi2)
+        mca2.setROIs(roi1, roi2)
+        sleep(1)
+        ct.reinit()
+    while(mca1.state() in [DevState.DISABLE,DevState.UNKNOWN] or mca2.state() in [DevState.DISABLE,DevState.UNKNOWN]):
+        sleep(1)
+    if mca1.state() == DevState.FAULT or mca2.state() == DevState.FAULT and recursive <=3:
+        setMAP(recursive = recursive + 1)
+    else:
+        #print "DxMap Ready for service."
+        pass
+    return
+
+def setSTEP_old(recursive = 0):
     cfgNumbers = XIAgetConfigNumber()
     config1, config2 = "STEP%i"%cfgNumbers[0], "STEP%i"%cfgNumbers[1]
     fault = False
@@ -199,6 +256,8 @@ def setSTEP(recursive = 0):
     try:
         changeMode = mca1.DP.currentMode <> 'MCA' or mca2.DP.currentMode <> 'MCA'\
         or config1 <> mca1.DP.currentAlias or config2 <> mca1.DP.currentAlias 
+    except KeyboardInterrupt, tmp:
+        raise tmp
     except:
         changeMode = True
         fault = True
@@ -234,8 +293,6 @@ def setSTEP(recursive = 0):
             rois1 = mca1.getROIs()
             rois2 = mca2.getROIs()
             roi1,roi2 = rois1
-        sleep(0.25)
-        ct.reinit()
     #if rois1 <> mca1.getROIs():
     #    #mca1.DP.setroisfromlist(rois1)
     #    mca1.setROIs(roi1, roi2)
@@ -245,6 +302,7 @@ def setSTEP(recursive = 0):
     #2 lines below replace lines above for tests
     mca1.setROIs(roi1, roi2)
     mca2.setROIs(roi1, roi2)
+    sleep(0.25)
     while(mca1.state() in [DevState.DISABLE,DevState.UNKNOWN] or mca2.state() in [DevState.DISABLE,DevState.UNKNOWN]):
         sleep(1)
     if mca1.state() == DevState.FAULT or mca2.state() == DevState.FAULT and recursive <=3:
@@ -252,4 +310,6 @@ def setSTEP(recursive = 0):
     else:
         pass
         #print "DxMap Ready for service."
+    sleep(0.25)
+    ct.reinit()
     return

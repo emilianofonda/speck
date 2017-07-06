@@ -191,7 +191,7 @@ def genericInterpolate(x, y, x1, x2, dx, interp_order = 'linear'):
     xr = npy.arange(x1, x2 + dx, dx)
     return fy(xr)
 
-def ft(chi,k1,k2,kw=1,tau=2,np=1024,kaiser=True):
+def ft(chi,k1,k2,kw=1,tau=2,np=1,kaiser=True):
     """Usable on exafs data for forward fourier transform. The chi is an array of the 
     kind array([k,exafs]) where k and exafs should be arrays as well. tau is the tau of the kaiser window.
     k1 and k2 are the limits of the window. When kaiser is not used a box window is used instead.
@@ -210,8 +210,8 @@ def ft(chi,k1,k2,kw=1,tau=2,np=1024,kaiser=True):
         win = npy.ones(len(chi[0]))
         win[(chi[0] < k1) + (chi[0] > k2)] = 0.
     #ftout = npy.fft.fft(array(chi[1]) * array(chi[0])**kw * win, len(chi[1]))
-    ftout = npy.fft.fft(array(chi[1]) * array(chi[0])**kw * win )
-    return [npy.fft.fftfreq(len(chi[1]), d=dk/pi), npy.imag(ftout), npy.real(ftout), sqrt(npy.imag(ftout)**2 + npy.real(ftout) **2)]
+    ftout = npy.fft.fft(array(chi[1]) * array(chi[0])**kw * win , n = len(chi[1])*np)
+    return array([npy.fft.fftfreq(len(chi[1])*np, d=dk/pi), npy.imag(ftout), npy.real(ftout), sqrt(npy.imag(ftout)**2 + npy.real(ftout) **2)])
 
 def kshift(chi,de=0,**kwargs):
     a=1. * chi

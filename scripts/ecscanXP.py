@@ -94,6 +94,7 @@ def ecscanXPActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter
     if cardAI.configurationId <> 3:
         cardAI.configurationId = 3
         myTime.sleep(5)
+    cardAI.frequency = 20000
     cardAI.integrationTime = dt * 1000 -2.
     cardAI.nexusFileGeneration = False
     cardAI.nexusNbAcqPerFile = NumberOfPoints

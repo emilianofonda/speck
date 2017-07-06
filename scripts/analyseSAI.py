@@ -3,9 +3,9 @@ import tables
 
 sai = DeviceProxy("d09-1-c00/ca/sai.1")
 
-def make_fft(buffer, sampling,integration_time):
+def make_fft(buffer, sampling, it=1):
     """sampling in Hz, integration time in seconds"""
-    it = integration_time *1000.
+    #it = integration_time *1000.
     f = fft.fftfreq(len(buffer),1./sampling)
     ft = fft.fft(buffer)
     ft_module = sqrt(ft.imag **2 + ft.real **2)
