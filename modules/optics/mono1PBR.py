@@ -535,6 +535,20 @@ class mono1:
             self.DataViewer.write_attribute(s[0].strip(),float(s[1]))
         return
 
+    def storeDefaultValues(self):
+        """Overwrite the DefaultValues stored as a property in DataViewer to reset the coeffs of equations.
+        Values are written in the property SPECK_DefaultValues of DataViewer.
+        Missing: autocreate the property."""
+        if self.state() == DevState.MOVING:
+                raise Exception("mono1PBR.restoreDefaultValues: Cannot write attributes while in moving state!")
+        DefVal = self.DataViewer.get_property("SPECK_DefaultValues")['SPECK_DefaultValues']
+        NewDefVal = []
+        for i in DefVal:
+            s = i.split("=")
+            NewDefVal.append(s[0].strip() + " = " + str(self.DataViewer.read_attribute(s[0].strip()).value))
+        self.DataViewer.put_property({"SPECK_DefaultValues": NewDefVal})
+        return
+
     def disable_ts2(self):
         self.DataViewer.EnableTs2 = 0
         self.init()
