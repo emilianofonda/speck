@@ -209,7 +209,6 @@ def ft(chi,k1,k2,kw=1,tau=2,np=1,kaiser=True):
     else:
         win = npy.ones(len(chi[0]))
         win[(chi[0] < k1) + (chi[0] > k2)] = 0.
-    #ftout = npy.fft.fft(array(chi[1]) * array(chi[0])**kw * win, len(chi[1]))
     ftout = npy.fft.fft(array(chi[1]) * array(chi[0])**kw * win , n = len(chi[1])*np)
     return array([npy.fft.fftfreq(len(chi[1])*np, d=dk/pi), npy.imag(ftout), npy.real(ftout), sqrt(npy.imag(ftout)**2 + npy.real(ftout) **2)])
 

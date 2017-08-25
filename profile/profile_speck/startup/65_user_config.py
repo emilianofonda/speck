@@ -792,16 +792,14 @@ except Exception, tmp:
 #    print tmp
 
 
-print "Instruments: default is"+RED+" EXAFS"+RESET+". Type "+RED+"SEXAFS"+RESET+" to use the second experimental hutch."
-
-def SEXAFS():
-    return instrument("SEXAFS")
+#print "Instruments: default is"+RED+" EXAFS"+RESET+". Type "+RED+"SEXAFS"+RESET+" to use the second experimental hutch."
 
 
 ####
 #### Define here below lists of moveables for a quick view with "wm"
 ####
 
+instrument("VortexME4")
 
 #slits=[vgap1,vpos1,hgap1,hpos1,vgap2,vpos2,vgap4,vpos4,hgap4,hpos4,vgap5,vpos5,hgap5,hpos5,vgap6,vpos6,hgap6,hpos6]
 #sample=[x, z, phi, theta]
@@ -836,4 +834,4 @@ domacro("resetFEMTO")
 try:
     domacro("usermacro.py")
 except:
-    print "File not found: myMacro.py"
+    print "File not found: usermacro.py"

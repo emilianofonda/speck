@@ -242,7 +242,7 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
             vgap2.pos(2.)
         else:    
             vgap1.pos(min(max(0.1,theta-0.4),6.))
-            vgap2.pos(theta+2.)
+            vgap2.pos(theta)
     else:
         vgap1.pos(min(max(0.1,theta-0.4),6.))
         vgap2.pos(theta+2.)
