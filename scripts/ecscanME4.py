@@ -165,7 +165,10 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     print "ROI limits are [%4i:%4i]" % (roiStart, roiEnd)
     cardXiaDataShape = []
     XIANexusPath = []
+    cardXIAChannels = []
+    __Nch = 0
     for xia in cardXIA:
+        cardXIAChannels.append(range(__Nch,__Nch + len(xia.channels)))
         xia.nbpixels = NumberOfPoints
         xia.streamNbAcqPerFile = 250
         xia.set_timeout_millis(30000)
@@ -296,8 +299,6 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 cardAI.stop()
                 theta = cardCT.Theta
 
-################################################### END of Modification here
-
                 #Begin of new block: test for I0 data, sometimes nan are returned .... why?
                 I0 = array(cardAI.historizedchannel0,"f")
                 if all(I0 <> numpy.nan_to_num(I0)):
@@ -331,17 +332,16 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
 
     #Wait for XIA files to be saved in spool
                 XIAt0=time()
-                while(cardXIA1.state() == DevState.RUNNING or cardXIA2.state() == DevState.RUNNING\
-                    or (LastXIA1FileName not in os.listdir(XIA1NexusPath)) or (LastXIA2FileName not in os.listdir(XIA2NexusPath))):
+                while(DevState.RUNNING in [i.state() for i in cardXIA])\
+                    or True in [i[0] not in os.listdir(i[1]) for i in zip(LastXIAFileName, XIANexusPath)])):
                     myTime.sleep(1)
                     if myTime.time() - XIAt0 > 180.:
-                        print XIA1NexusPath
-                        print os.listdir(XIA1NexusPath)
-                        print XIA2NexusPath
-                        print os.listdir(XIA2NexusPath)
+                        for i in XIANexusPath:
+                            print i
+                            print os.listdir(i)
                         print "Time Out waiting for XIA cards to stop! Waited more than 180s... !"
-                        cardXIA1.stop()
-                        cardXIA2.stop()
+                        for i in cardXIA:
+                            i.stop()
                         setSTEP()
                         raise Exception("Time Out waiting for XIA cards to stop! Waited more than 180s... !")
                 XIAtEnd = myTime.time()-XIAt0
@@ -354,112 +354,69 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 DataSavingTime = myTime.time()
     #Define filter to be used for writing big data into the HDF file
                 HDFfilters = tables.Filters(complevel = 1, complib='zlib')
-    #XIA1 prepare
-                XIA1filesNames = os.listdir(XIA1NexusPath)
-                XIA1filesNames.sort()
-                for i in tuple(XIA1filesNames):
-                    if not i.startswith(cardXIA1.streamTargetFile):
-                        XIA1filesNames.remove(i)
-                #print XIA1filesNames
-                XIA1files = map(lambda x: tables.openFile(XIA1NexusPath +os.sep + x, "r"), XIA1filesNames)
-    
-    #XIA2 prepare
-                XIA2filesNames = os.listdir(XIA2NexusPath)
-                XIA2filesNames.sort()
-                for i in tuple(XIA2filesNames):
-                    if not i.startswith(cardXIA2.streamTargetFile):
-                        XIA2filesNames.remove(i)
-                #print XIA2filesNames
-                XIA2files = map(lambda(x): tables.openFile(XIA2NexusPath +os.sep + x, "r"), XIA2filesNames)
-    #Common
+    #XIA prepare
+                XIAfilesNames=[]
+                for i in zip(cardXIA,XIANexusPath):
+                    XIAfilesNames.append([j for j in os.listdir(i[1]) if j.startswith(i[0].streamTargetFile)])
+                XIAfilesNames = [i.sort() for i in XIAfilesNames]                  
+                
+                XIAfiles=[]
+                for path in zip(XIANexusPath,XIAfilesNAmes):
+                    XIAfiles.append([tables.openFile(path[0] +os.sep + x, "r") for x in path[1]])
+        #Common
                 outtaName = filename2ruche(ActualFileNameData)
                 outtaHDF = tables.openFile(outtaName[:outtaName.rfind(".")] + ".hdf","w")
                 outtaHDF.createGroup("/","XIA")
     #Superpose all XIA matrices and make one to avoid exploding the TeraByte/week limits and keep on a USB stick (actually, this changes with compression)
-                outtaHDF.createCArray(outtaHDF.root.XIA, "mcaSum", title="McaSum", shape=cardXIA1dataShape, atom = tables.UInt32Atom(), filters=HDFfilters)
-                mcaSum = numpy.zeros(cardXIA1dataShape,numpy.uint32)
+                outtaHDF.createCArray(outtaHDF.root.XIA, "mcaSum", title="McaSum", shape=cardXIAdataShape, atom = tables.UInt32Atom(), filters=HDFfilters)
+                mcaSum = numpy.zeros(cardXIAdataShape,numpy.uint32)
                 #outtaHDF.createArray("/XIA", "mcaSum", numpy.zeros(cardXIA1dataShape, numpy.uint32))
     
     #XIA1 read / write
     
     #Declare a RAM buffer for a single MCA
-                bCmca = numpy.zeros(cardXIA1dataShape,numpy.uint32)
+                bCmca = numpy.zeros(cardXIAdataShape,numpy.uint32)
                 Breaked=False
-                for ch in cardXIA1Channels:
-                    if Breaked:
-                        break
+                for xiaN in range(len(cardXIA)):
+                    outChannels = iter(cardXIAChannels[xiaN])                    
+                    for ch in range(len(xia.channels)):
+                        if Breaked:
+                            break
+                        outCh = outChannels.next()
     #Single Channel MCA CArray creation
-                    outtaHDF.createCArray(outtaHDF.root.XIA, "mca%02i"%ch, title="Mca%02i"%ch,\
-                    shape=cardXIA1dataShape, atom = tables.UInt32Atom(), filters=HDFfilters)
+                        outtaHDF.createCArray(outtaHDF.root.XIA, "mca%02i"%outCh, title="Mca%02i"%outCh,\
+                        shape=cardXIAdataShape, atom = tables.UInt32Atom(), filters=HDFfilters)
     #Get pointer to a Channel MCA on disk
-                    pCmca = outtaHDF.getNode("/XIA/mca%02i"%ch)
+                        pCmca = outtaHDF.getNode("/XIA/mca%02i"%outCh)
     #Fluo Channel ROI values                
-                    outtaHDF.createArray("/XIA", "fluo%02i"%ch, numpy.zeros(NumberOfPoints, numpy.uint32))
+                        outtaHDF.createArray("/XIA", "fluo%02i"%outCh, numpy.zeros(NumberOfPoints, numpy.uint32))
     #DT line comment out if required
-                    outtaHDF.createArray("/XIA", "deadtime%02i"%ch, numpy.zeros(NumberOfPoints, numpy.float32))
-                    block = 0
-                    blockLen = cardXIA1.streamNbAcqPerFile
-                    pointerCh = eval("outtaHDF.root.XIA.fluo%02i"%ch)
+                        outtaHDF.createArray("/XIA", "deadtime%02i"%outCh, numpy.zeros(NumberOfPoints, numpy.float32))
+                        block = 0
+                        blockLen = cardXIA[xiaN].streamNbAcqPerFile
+                        pointerCh = eval("outtaHDF.root.XIA.fluo%02i"%outCh)
     #DT line comment out if required
-                    pointerDt = eval("outtaHDF.root.XIA.deadtime%02i"%ch)
-                    for XFile in XIA1files:
-                        try:
-                            __block = eval("XFile.root.entry.scan_data.channel%02i"%ch).read()
+                        pointerDt = eval("outtaHDF.root.XIA.deadtime%02i"%outCh)
+                        for XFile in XIAfiles[xiaN]:
+                            try:
+                                __block = eval("XFile.root.entry.scan_data.channel%02i"%ch).read()
     #DT line comment out if required
-                            __blockDT = eval("XFile.root.entry.scan_data.deadtime%02i"%ch).read()
-                        except:
-                            Breaked = True
-                            break
-                        actualBlockLen = shape(__block)[0]
+                                __blockDT = eval("XFile.root.entry.scan_data.deadtime%02i"%ch).read()
+                            except:
+                                Breaked = True
+                                break
+                            actualBlockLen = shape(__block)[0]
     #Feed RAM buffers with MCA values
-                        bCmca[block * blockLen: (block * blockLen) + actualBlockLen,:] = __block
-                        mcaSum[block * blockLen: (block * blockLen) + actualBlockLen,:] += __block
-                        pointerCh[block * blockLen: (block + 1) * blockLen] = sum(__block[:,roiStart:roiEnd], axis=1)
+                            bCmca[block * blockLen: (block * blockLen) + actualBlockLen,:] = __block
+                            mcaSum[block * blockLen: (block * blockLen) + actualBlockLen,:] += __block
+                            pointerCh[block * blockLen: (block + 1) * blockLen] = sum(__block[:,roiStart:roiEnd], axis=1)
     #DT line comment out if required
-                        pointerDt[block * blockLen: (block + 1) * blockLen] = __blockDT
-                        block += 1
+                            pointerDt[block * blockLen: (block + 1) * blockLen] = __blockDT
+                            block += 1
     #Write Single MCA to Disk
-                    pCmca[:] = bCmca
-                print "XIA1: OK"
-    #XIA2 read / write NOTA: these channels names are shifted of +20 in output
-                bCmca = numpy.zeros(cardXIA2dataShape,numpy.uint32)
-                Breaked=False
-                for ch in cardXIA2Channels:
-                    if Breaked:
-                        break
-                    outtaHDF.createArray("/XIA", "fluo%02i" % (ch+20), numpy.zeros(NumberOfPoints, numpy.uint32))
-    #Single Channel MCA CArray creation
-                    outtaHDF.createCArray(outtaHDF.root.XIA, "mca%02i"%(ch+20), title="Mca%02i"%(ch+20),\
-                    shape=cardXIA2dataShape, atom = tables.UInt32Atom(), filters=HDFfilters)
-    #Get pointer to a Channel MCA on disk
-                    pCmca = outtaHDF.getNode("/XIA/mca%02i"%(ch+20))
-    #DT line comment out if required
-                    outtaHDF.createArray("/XIA", "deadtime%02i" % (ch+20), numpy.zeros(NumberOfPoints, numpy.float32))
-                    block = 0
-                    blockLen = cardXIA2.streamNbAcqPerFile
-                    pointerCh = eval("outtaHDF.root.XIA.fluo%02i" % (ch+20))
-    #DT line comment out if required
-                    pointerDt = eval("outtaHDF.root.XIA.deadtime%02i"%(ch+20))
-                    for XFile in XIA2files:
-                        try:
-                            __block = eval("XFile.root.entry.scan_data.channel%02i"%ch).read()
-    #DT line comment out if required
-                            __blockDT = eval("XFile.root.entry.scan_data.deadtime%02i"%ch).read()
-                        except:
-                            Breaked = True
-                            print "Break at channel #%i of XIA2"%ch
-                            break
-                        actualBlockLen = shape(__block)[0]
-    #Feed RAM buffers with MCA values
-                        bCmca[block * blockLen: (block * blockLen) + actualBlockLen,:] = __block
-                        mcaSum[block * blockLen: (block * blockLen) + actualBlockLen,:] += __block
-                        pointerCh[block * blockLen: (block + 1) * blockLen] = sum(__block[:,roiStart:roiEnd], axis=1)
-    #DT line comment out if required
-                        pointerDt[block * blockLen: (block + 1) * blockLen] = __blockDT
-                        block += 1
-    #Write Single MCA to Disk
-                    pCmca[:] = bCmca
-                print "XIA2: OK"
+                        pCmca[:] = bCmca
+                    print "XIA%i: OK"%xiaN
+
     #Finalize derived quantities
                 fluoX = numpy.nan_to_num(array( sum(mcaSum[:,roiStart:roiEnd], axis=1), "f") / I0)
                 outtaHDF.root.XIA.mcaSum[:] = mcaSum
@@ -482,11 +439,8 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 shell.logger.log_write("Saving data in: %s\n" % (outtaName[:outtaName.rfind(".")] + ".hdf"), kind='output')
     #Now that data are saved try to plot it for the last time
                 try:
-                    #thread.start_new_thread(update_graphs, (CP, dcm, cardAI, cardCT, cardXIA1, cardXIA2,\
-                    #roiStart, roiEnd, XIA1NexusPath, XIA2NexusPath, XIA1filesList, XIA2filesList,\
-                    #fluoXIA1, fluoXIA2))
-                    update_graphs(CP, dcm, cardAI, cardCT, cardXIA1, cardXIA2, roiStart, roiEnd,\
-                    XIA1NexusPath, XIA2NexusPath, XIA1filesList, XIA2filesList, fluoXIA1, fluoXIA2)
+                    update_graphs(CP, dcm, cardAI, cardCT, cardXIA, roiStart, roiEnd,\
+                    XIANexusPath, XIAfilesList, fluoXIA)
                     print "Graph Final Update OK"
                     pass
                 except KeyboardInterrupt:
@@ -494,14 +448,15 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 except:
                     pass
     #Clean up the mess in the spool
-    #XIA1 close and wipe
-                map(lambda x: x.close(), XIA1files)
-                map(lambda x: x.startswith(cardXIA1.streamTargetFile)\
-                and os.remove(XIA1NexusPath +os.sep + x), os.listdir(XIA1NexusPath))
-    #XIA2 close and wipe
-                map(lambda x: x.close(), XIA2files)
-                map(lambda x: x.startswith(cardXIA2.streamTargetFile)\
-                and os.remove(XIA2NexusPath +os.sep + x), os.listdir(XIA2NexusPath))
+    #XIA close and wipe
+                for i in XIAfiles:
+                    for j in i:
+                        j.close()
+                for i in zip(cardXIA,XIANexusPath):
+                    for j in os.listdir(i[1]):
+                        if j.startswith(i[0].streamTargetFile):
+                            os.remove(i[1] + os.sep + j)
+
     #Local data saving
                 dataBlock = array([ene,theta,xmu,fluoX,xmuS,\
                 I0,I1,I2,I3],"f")
@@ -532,19 +487,14 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                     FInfo.write("#%s = %g\n" % (i, cardAI.read_attribute(i).value))
     
                 #XIA cards
-                FInfo.write("#DxMap 1 Card Config\n")
-                FInfo.write("Config File: %s\n" %(cardXIA1.currentConfigFile))
-                FInfo.write("Mode : %s\n" %(cardXIA1.currentMode))
-                FInfo.write("ROI : \n")
-                for i in cardXIA1.getrois():
-                    FInfo.write("%s\n" % i)
+                for xia in cardXIA:
+                    FInfo.write("#DxMap Card Config: %s\n"%xia.label)
+                    FInfo.write("Config File: %s\n" %(xia.DP.currentConfigFile))
+                    FInfo.write("Mode : %s\n" %(xia.DP.currentMode))
+                    FInfo.write("ROI(s) : \n")
+                    for i in xia.DP.getrois():
+                        FInfo.write("%s\n" % i)
     
-                FInfo.write("#DxMap 2 Card Config\n")
-                FInfo.write("Config File: %s\n" %(cardXIA2.currentConfigFile))
-                FInfo.write("Mode : %s\n" %(cardXIA2.currentMode))
-                FInfo.write("ROI : \n")
-                for i in cardXIA2.getrois():
-                    FInfo.write("%s\n" % i)
                 #Where All Info follow
                 for i in wa(returns=True, verbose=False):
                     FInfo.write("#" + i + "\n")
@@ -582,8 +532,8 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     AlarmBeep()
     return
     
-def update_graphs(CP, dcm, cardAI, cardCT, cardXIA1, cardXIA2, roiStart, roiEnd,\
-XIA1NexusPath, XIA2NexusPath, XIA1filesList, XIA2filesList, fluoXIA1, fluoXIA2):
+def update_graphs(CP, dcm, cardAI, cardCT, cardXIA, roiStart, roiEnd,\
+XIANexusPath, XIAfilesList, fluoXIA):
     
     cardAI_dark0,cardAI_dark1,cardAI_dark2,cardAI_dark3 =\
     map(float, cardAI.get_property(["SPECK_DARK"])["SPECK_DARK"])
@@ -603,42 +553,27 @@ XIA1NexusPath, XIA2NexusPath, XIA1filesList, XIA2filesList, fluoXIA1, fluoXIA2):
     CP.GraceWin.wins[0].command('with g1\nautoscale\nredraw\n')
     CP.GraceWin.GPlot(ene[:ll], std[:ll], gw=0, graph=3, curve=1, legend="", color=1, noredraw=True)
     CP.GraceWin.wins[0].command('with g3\nautoscale\nredraw\n')
-    tmp = os.listdir(XIA1NexusPath)
-    tmp.sort()
-    for i in tuple(tmp):
-        if not i.startswith(cardXIA1.streamTargetFile):
-            tmp.remove(i)
-    tmp2 = os.listdir(XIA2NexusPath)
-    tmp2.sort()
-    for i in tuple(tmp2):
-        if not i.startswith(cardXIA2.streamTargetFile):
-            tmp2.remove(i)
-    if len(tmp) > len(XIA1filesList):
-        #print tmp
-        #print tmp2
-        for name in tmp[len(XIA1filesList):]:
-            XIA1filesList.append(name)
-            #print "New XIA1 file found: ", name, " --> Fluo graph update."
-            f = tables.openFile(XIA1NexusPath + os.sep + name,"r")
-            fluoSeg=zeros([shape(eval("f.root.entry.scan_data.channel%02i"%cardXIA1Channels[0]))[0],cardXIA1.streamNbDataPerAcq],numpy.float32)
-            for ch in cardXIA1Channels:
-                fluoSeg += eval("f.root.entry.scan_data.channel%02i"%ch).read()
-            f.close()
-            fluoSeg = sum(fluoSeg[:,roiStart:roiEnd],axis=1) 
-            fluoXIA1 += list(fluoSeg)
-        for name in tmp2[len(XIA2filesList):]:
-            XIA2filesList.append(name)
-            #print "New XIA2 file found: ", name, " --> Fluo graph update."
-            f = tables.openFile(XIA2NexusPath + os.sep + name,"r")
-            fluoSeg=zeros([shape(eval("f.root.entry.scan_data.channel%02i"%cardXIA2Channels[0]))[0],cardXIA2.streamNbDataPerAcq],numpy.float32)
-            for ch in cardXIA2Channels:
-                fluoSeg += eval("f.root.entry.scan_data.channel%02i"%ch).read()
-            f.close()
-            fluoSeg = sum(fluoSeg[:,roiStart:roiEnd],axis=1) 
-            fluoXIA2 += list(fluoSeg)
-        ll = min(len(fluoXIA1),len(fluoXIA2))
+    tmp = []
+    for xia in zip(cardXIA, XIANexusPath):
+        __tmp = os.listdir(xia[1])
+        __tmp.sort()
+        for i in tuple(tmp):
+            if not i.startswith(xia[0].streamTargetFile):
+                __tmp.remove(i)
+        tmp.append(__tmp)
+    if len(tmp[0]) > len(XIAfilesList[0]):
+        for xiaN in range(len(cardXIA)):
+            for name in tmp[len(XIAfilesList[xiaN])]:
+                XIAfilesList[xiaN].append(name)
+                f = tables.openFile(XIANexusPath[xiaN] + os.sep + name,"r")
+                fluoSeg=zeros([shape(eval("f.root.entry.scan_data.channel%02i"%cardXIAChannels[xiaN][0]))[0],cardXIA[xiaN].streamNbDataPerAcq],numpy.float32)
+                for ch in range(len(cardXIAChannels[xiaN])):
+                    fluoSeg += eval("f.root.entry.scan_data.channel%02i"%ch).read()
+                f.close()
+                fluoSeg = sum(fluoSeg[:,roiStart:roiEnd],axis=1) 
+                fluoXIA[xiaN] += list(fluoSeg)
+        ll = min(len(i) for i in fluoXIA)
         if len(I0) >= ll and ll > 2:
-            pass
             CP.GraceWin.GPlot(ene[:ll],numpy.nan_to_num((array(fluoXIA1,"f")[:ll] + array(fluoXIA2,"f")[:ll])/I0[:ll]),\
             gw=0, graph=2, curve=0, legend="", color=1, noredraw=False)
             CP.GraceWin.wins[0]('with g2\nautoscale\nredraw\n')
@@ -727,91 +662,5 @@ def AlarmBeep():
         print "BUT: Ignore this message if escan is working well,\n just report this to your local contact\n"
     return
 
-
-def configureCardsForECSCAN(TotalTime, dt):
-    """Prepare cards for continuous scan.
-    Presently unused, for tests pursposes onl
-    Presently unused, for tests pursposes only"""
-    shell=get_ipython()
-    cardCTsavedAttributes = ["totalNbPoint","integrationTime","continuous","bufferDepth"]
-    cardAIsavedAttributes = ["configurationId","frequency","integrationTime","dataBufferNumber"]
-    
-    #Configure cards
-    NumberOfPoints = int(TotalTime / dt)
-
-    #Card CT
-    cardCT.totalNbPoint = NumberOfPoints
-    cardCT.nexusNbAcqPerFile = NumberOfPoints
-    cardCT.integrationTime = dt
-    cardCT.bufferDepth = 1
-    cardCT.continuousAcquisition = False
-    cardCT.nexusFileGeneration = False
-    cardCT.set_timeout_millis(30000)
-
-    #Card AI
-    if cardAI.configurationId <> 3:
-        cardAI.configurationId = 3
-        myTime.sleep(5)
-    cardAI.integrationTime = dt * 1000 -2.
-    cardAI.nexusFileGeneration = False
-    cardAI.nexusNbAcqPerFile = NumberOfPoints
-    cardAI.dataBufferNumber = NumberOfPoints
-    cardAI.statHistoryBufferDepth = NumberOfPoints
-    cardAI.set_timeout_millis(30000)
-    cardAI_dark0,cardAI_dark1,cardAI_dark2,cardAI_dark3 =\
-    map(float, cardAI.get_property(["SPECK_DARK"])["SPECK_DARK"])
-
-    #Set Mapping mode if needed
-    try:
-        setMAP()
-        myTime.sleep(1)
-    except:
-        try:
-            myTime.sleep(1)
-            setMAP()
-            myTime.sleep(1)
-        except:
-            print "The setMAP function does not work!!! Try again and/or check with local contact!!!"
-    #Card XIA1
-    #Rois are defined only on one channel of XIA1 and used for XIA2
-    try:
-        #roiStart, roiEnd = map(int, cardXIA1.getrois()[1].split(";")[1:])
-        #following code lines refer implicitely to an environment object!!!!!!!!!! mca1
-        #full code must be rewritten using this code object instead of direct card access via bare DeviceProxy
-        roiStart, roiEnd = mca1.getROIs()
-    except:
-        print "Please wait... I cannot find ROI limits, checking configuration...",
-        setSTEP()
-        myTime.sleep(1)
-        setMAP()
-        try:
-            roiStart, roiEnd = map(int, cardXIA1.getrois()[1].split(";")[1:])
-            print " done. OK."
-        except Exception, tmp:
-            print "\nRegion Of Interest has not been defined? use setroi(start,end) command please."
-            raise tmp
-    print "ROI limits are [%4i:%4i]" % (roiStart, roiEnd)
-    cardXIA1.nbpixels = NumberOfPoints
-    cardXIA1.streamNbAcqPerFile = 250
-    cardXIA1.set_timeout_millis(30000)
-    cardXIA1dataShape = (NumberOfPoints,cardXIA1.streamNbDataPerAcq )    
-    XIA1NexusPath = "/nfs" + cardXIA1.streamTargetPath.replace("\\","/")[1:]
-    #Reset Nexus index and cleanup spool
-    cardXIA1.streamresetindex()
-    map(lambda x: x.startswith(cardXIA1.streamTargetFile) and os.remove(XIA1NexusPath +os.sep + x), os.listdir(XIA1NexusPath))
-    NumberOfXIAFiles = int(cardXIA1.nbpixels / cardXIA1.streamNbAcqPerFile) 
-    if numpy.mod(cardXIA1.nbpixels, cardXIA1.streamNbAcqPerFile):
-        NumberOfXIAFiles += 1
-    #Card XIA2
-    cardXIA2.nbpixels = NumberOfPoints
-    cardXIA2.streamNbAcqPerFile = 250
-    cardXIA2.set_timeout_millis(30000)
-    cardXIA2dataShape = [NumberOfPoints,cardXIA2.streamNbDataPerAcq ]
-    XIA2NexusPath = "/nfs" + cardXIA2.streamTargetPath.replace("\\","/")[1:]
-    #Reset Nexus index and cleanup spool
-    cardXIA2.streamresetindex()
-    map(lambda x: x.startswith(cardXIA2.streamTargetFile) and os.remove(XIA2NexusPath +os.sep + x), os.listdir(XIA2NexusPath))
-    #Some data of the configuration must be returned if this function has to be used.
-    return
 
 
