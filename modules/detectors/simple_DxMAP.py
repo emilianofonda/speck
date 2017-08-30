@@ -23,7 +23,7 @@ class dxmap:
                     failure=True
                     pass
         if failure: print self.label+": Failed setting one or more user_readconfig!"
-        self.rois,self.ocrs,self.icrs=[],[],[]
+        self.rois,self.ocrs,self.icrs,self.dts=[],[],[],[]
         self.channels=[]
         self.channels_labels=[]
         self.deadtime=deadtime
@@ -35,10 +35,12 @@ class dxmap:
             if i[:3]=="roi" and i[5]=="_": self.rois.append(i)
             if i[:14]=="inputCountRate" and int(i[-2:])>=0 and int(i[-2:])<=99:
                 self.icrs.append(i)
-            if i[:len("deadTime")]=="deadTime" and int(i[-2:])>=0 and int(i[-2:])<=99:
+            if i[:len("outputCountRate")]=="outputCountRate" and int(i[-2:])>=0 and int(i[-2:])<=99:
                 self.ocrs.append(i)
+            if i[:len("deadTime")]=="deadTime" and int(i[-2:])>=0 and int(i[-2:])<=99:
+                self.dts.append(i)
         self.user_readconfig=[]
-        for i in self.rois+self.icrs+self.ocrs:
+        for i in self.rois+self.icrs+self.ocrs+self.dts:
             self.user_readconfig.append(self.DP.get_attribute_config(i))
         for i in self.channels:
             self.channels_labels.append(self.DP.get_attribute_config(i).label)
@@ -67,7 +69,7 @@ class dxmap:
                 break
             except:
                 print self.label+": Failed setting user_readconfig! Trial no: %i"%prova
-        self.rois,self.ocrs,self.icrs=[],[],[]
+        self.rois,self.ocrs,self.icrs,self.dts=[],[],[],[]
         self.channels=[]
         self.channels_labels=[]
         self.DP.set_timeout_millis(int(self.timeout*1000))
@@ -77,10 +79,12 @@ class dxmap:
             if i[:3]=="roi" and i[5]=="_": self.rois.append(i)
             if i[:14]=="inputCountRate" and int(i[-2:])>=0 and int(i[-2:])<=99:
                 self.icrs.append(i)
+            if i[:len("outputCountRate")]=="outputCountRate" and int(i[-2:])>=0 and int(i[-2:])<=99:
+                self.ocrs.append(i)
             if i[:len("deadTime")]=="deadTime" and int(i[-2:])>=0 and int(i[-2:])<=99:
                 self.ocrs.append(i)
         self.user_readconfig=[]
-        for i in self.rois+self.icrs+self.ocrs:
+        for i in self.rois+self.icrs+self.ocrs+self.dts:
             self.user_readconfig.append(self.DP.get_attribute_config(i))
         for i in self.channels:
             self.channels_labels.append(self.DP.get_attribute_config(i).label)
@@ -166,20 +170,20 @@ class dxmap:
 
     def read(self):
         try:
-            out=self.DP.read_attributes(self.rois+self.icrs+self.ocrs)
+            out=self.DP.read_attributes(self.rois+self.icrs+self.ocrs+self.dts)
             out=map(lambda x: x.value, out)
             if None in out:
                 print "MCA modified... reinit required...",
                 self.reinit()
                 print "OK"
-                out=self.DP.read_attributes(self.rois+self.icrs+self.ocrs)
+                out=self.DP.read_attributes(self.rois+self.icrs+self.ocrs+self.dts)
                 out=map(lambda x: x.value, out)
         except DevFailed, tmp:
             if tmp.args[0].reason=='API_AttrNotFound':
                 print "MCA modified... reinit required...",
                 self.reinit()
                 print "OK"
-                out=self.DP.read_attributes(self.rois+self.icrs+self.ocrs)
+                out=self.DP.read_attributes(self.rois+self.icrs+self.ocrs+self.dts)
                 out=map(lambda x: x.value, out)
             else:
                 raise tmp

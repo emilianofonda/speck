@@ -826,7 +826,7 @@ instrument("FORNO")
 domacro("changePeakingTime")
 
 #Load Energy Continuous Scan
-domacro("ecscan")
+domacro("ecscanME4")
 domacro("ecscanXP")
 domacro("averageThis")
 domacro("resetFEMTO")

@@ -697,10 +697,10 @@ class pseudo_counter:
             s+="\n"
             for j in range(l):
                 if i+j<ltmp:
-                    plainS += "%03i " % (i + j) + "% -10s" % self.user_readconfig[i+j].label + ":"\
-                    + "%9s" % (self.user_readconfig[i+j].format % (tmp[i+j]))+" % -6s " % self.user_readconfig[i+j].unit + " "
-                    s += BOLD + "%03i " % (i + j) + RED + "% -10s" % self.user_readconfig[i+j].label + ":" + RESET\
-                    + "%9s" % (self.user_readconfig[i+j].format % (tmp[i+j]))+" % -6s " % self.user_readconfig[i+j].unit + " "
+                    plainS += "%03i " % (i + j) + "% -20s" % self.user_readconfig[i+j].label + ":"\
+                    + "%9s" % (self.user_readconfig[i+j].format % (tmp[i+j]))+" % -8s " % self.user_readconfig[i+j].unit + " "
+                    s += BOLD + "%03i " % (i + j) + RED + "% -20s" % self.user_readconfig[i+j].label + ":" + RESET\
+                    + "%9s" % (self.user_readconfig[i+j].format % (tmp[i+j]))+" % -8s " % self.user_readconfig[i+j].unit + " "
         print s
         print "User Defined Post Calculations:"
         nchan = ltmp
