@@ -663,6 +663,7 @@ class escan_class:
         de=2, dummypoints=3;  moves to energy-de*2, energy-de*2, energy-de"""
         #Speed up movement to first point
         self.dcm.mode(1)
+        sleep(0.25)
         self.dcm.velocity(60)
         #
         if de==None:
@@ -672,8 +673,14 @@ class escan_class:
         print "Performing backlash recovery over: ",points
         self.dcm.pos(points[0])
         #Go back to dcm cruise speed
-        sleep(1)
-        self.dcm.velocity(10)
+        sleep(0.25)
+        try:
+            self.dcm.velocity(10)
+        except:
+            sleep(3)
+            self.dcm.velocity(10)
+        except KeyboardInterrupt:
+            raise
         for en in points[1:]:
             self.dcm.pos(en)
             sleep(deadtime)

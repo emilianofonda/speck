@@ -23,6 +23,7 @@ except:
 # Ths whois function maybe used too to name the xia cards by their speck names.
 # This version has been written for the replacement of the Canberra 36 pixels with the 
 # Vortex ME4 detctor, but it is intended to be a scalable version for any number of xia cards/devices
+# The object mostab is called too with the name "mostab".
 
 cardCT = DeviceProxy("d09-1-c00/ca/cpt.3")
 cardAI = DeviceProxy("d09-1-c00/ca/sai.1")
@@ -495,7 +496,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                     FInfo.write("#%s = %g\n" % (i,cardCT.read_attribute(i).value))
                 FInfo.write("#Analog  Card Config\n")
                 #Report in file Info dark currents applied
-                FInfo.write("Dark_I0= %9.8f\nDark_I1= %9.8f\nDark_I2= %9.8f\nDark_I3= %9.8f\n"\
+                FInfo.write("#Dark_I0= %9.8f\nDark_I1= %9.8f\nDark_I2= %9.8f\nDark_I3= %9.8f\n"\
                 %(cardAI_dark0,cardAI_dark1,cardAI_dark2,cardAI_dark3,))
                 #
                 for i in cardAIsavedAttributes:
@@ -504,12 +505,20 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 #XIA cards
                 for xia in cardXIA:
                     FInfo.write("#DxMap Card Config: %s\n"%xia.label)
-                    FInfo.write("Config File: %s\n" %(xia.DP.currentConfigFile))
-                    FInfo.write("Mode : %s\n" %(xia.DP.currentMode))
-                    FInfo.write("ROI(s) : \n")
+                    FInfo.write("#Config File: %s\n" %(xia.DP.currentConfigFile))
+                    FInfo.write("#Mode : %s\n" %(xia.DP.currentMode))
+                    FInfo.write("#ROI(s) : \n")
                     for i in xia.DP.getrois():
-                        FInfo.write("%s\n" % i)
-    
+                        FInfo.write("#%s\n" % i)
+                #MOSTAB Config follows:
+                try:
+                    FInfo.write("#MOSTAB Status:\n")
+                    for __mostabStatusBit in tuple(["#%s\n"%i for i in mostab.status().split("\n")]):
+                        FInfo.write("#%s" % __mostabStatusBit)
+                except:
+                    print mostab.status()
+                    print "Error reporting MOSTAB status."
+                
                 #Where All Info follow
                 for i in wa(returns=True, verbose=False):
                     FInfo.write("#" + i + "\n")
@@ -571,17 +580,16 @@ XIANexusPath, XIAfilesList, fluoXIA, cardXIAChannels):
     for xia in zip(cardXIA, XIANexusPath):
         __tmp = os.listdir(xia[1])
         __tmp.sort()
-        for i in __tmp:
-            if not i.startswith(xia[0].DP.streamTargetFile):
+        for i in list(__tmp):
+            #if not str(i).startswith(xia[0].DP.streamTargetFile) or str(i).startswith("."):
+            if not str(i).startswith(xia[0].DP.streamTargetFile):
                 __tmp.remove(i)
         tmp.append(__tmp)
-    #print tmp[0]
-    #print XIAfilesList[0]
     if len(tmp[0]) > len(XIAfilesList[0]):
         for xiaN in range(len(cardXIA)):
             for name in tmp[xiaN][len(XIAfilesList[xiaN]):]:
                 XIAfilesList[xiaN].append(name)
-                f = tables.openFile(XIANexusPath[xiaN] + os.sep + name,"r")
+                f = tables.openFile(XIANexusPath[xiaN] + os.sep + name, "r")
                 fluoSeg=zeros([shape(eval("f.root.entry.scan_data.channel%02i"%cardXIAChannels[xiaN][0]))[0],cardXIA[xiaN].DP.streamNbDataPerAcq],numpy.float32)
                 for ch in range(len(cardXIAChannels[xiaN])):
                     fluoSeg += eval("f.root.entry.scan_data.channel%02i"%ch).read()
