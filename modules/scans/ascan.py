@@ -327,6 +327,7 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
                 w.plot(Gnuplot.Data(x,y))
         except (KeyboardInterrupt,SystemExit), tmp:
             print "Scan finished on user request"
+            cpt.stop()
             f.close()
             __backup_data()
             raise tmp

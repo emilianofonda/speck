@@ -830,6 +830,7 @@ domacro("ecscanME4")
 domacro("ecscanXP")
 domacro("averageThis")
 domacro("resetFEMTO")
+domacro("fftI0")
 
 try:
     domacro("usermacro.py")

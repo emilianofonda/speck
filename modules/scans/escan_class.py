@@ -676,11 +676,11 @@ class escan_class:
         sleep(0.25)
         try:
             self.dcm.velocity(10)
+        except KeyboardInterrupt:
+            raise
         except:
             sleep(3)
             self.dcm.velocity(10)
-        except KeyboardInterrupt:
-            raise
         for en in points[1:]:
             self.dcm.pos(en)
             sleep(deadtime)

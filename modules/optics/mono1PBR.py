@@ -12,6 +12,7 @@ from motor_class import *
 from counter_class import counter
 import moveable
 from spec_syntax import move_motor
+import mycurses
 
 class sagittal_bender:
     def __init__(self,bender1_name="",bender2_name="",DataViewer="",deadtime=0.01,timeout=.0):
@@ -721,8 +722,9 @@ class mono1:
 
     def pos(self, energy=None, wait=True):
         """Move the mono at the desired energy, it uses current couplings and mode."""
+        t0 = time()
         try:
-            if(energy==None):
+            if(energy == None):
                 ps=self.m_rx1.pos()
                 if ps==0.: return 9.99e12
                 return self.theta2e(ps)
@@ -730,32 +732,49 @@ class mono1:
                 raise Exception("Requested energy below monochromator limit: %7.2f"%self.emin)
             if self.emax <> None and energy > self.emax:
                 raise Exception("Requested energy above monochromator limit: %7.2f"%self.emax)
-            theta = self.e2theta(energy)
             #
             #Write movement code here
             if self.state() == DevState.DISABLE:
+                print "DCM in DISABLE state! Workaround ... ",
                 mm = self.mode()
                 self.mode(0)
-                #self.init()
                 sleep(0.1)
                 self.DP.on()
                 sleep(0.1)
                 self.mode(mm)
                 sleep(0.1)
+                print "OK!"
             for i in xrange(5):
                 try:
+                    St = self.state()
                     self.DP.Energy = energy
                     break
                 except (KeyboardInterrupt,SystemExit), tmp:
                     self.stop()
                     raise tmp
-                except:
-                    sleep(1)
+                except Exception, tmp:
+                    print mycurses.BLUE + "Caught moving at %4.2feV in state %s" % (energy, St) + mycurses.RESET
+                    #print tmp
+                    sleep(self.deadtime)
             if not wait:
                 return
-            while(self.state() == DevState.MOVING):
+            #sleep(self.deadtime)
+            tt = time()
+            while(self.state() <> DevState.MOVING and time()-tt < self.timeout):
                 sleep(self.deadtime)
+            St = self.state()
+            while(St in [DevState.MOVING,DevState.RUNNING,DevState.UNKNOWN]):
+                sleep(self.deadtime)
+                St = self.state()
+            #Workaround
+            sleep(self.delay)
+            St = self.state()
+            while(St in [DevState.MOVING,DevState.RUNNING,DevState.UNKNOWN]):
+                sleep(self.deadtime)
+                St = self.state()
+                print mycurses.RED + "Catched: MOVING after Arrival!" + mycurses.RESET
             #
+            #print self.state()
         except (KeyboardInterrupt,SystemExit), tmp:
             self.stop()
             raise tmp
@@ -770,6 +789,7 @@ class mono1:
             print "\nUnknown Error"
             print "Positions energy, theta=", self.pos(), self.m_rx1.pos()
             raise tmp
+        #print "Time Elapsed=%4.2fs"%(time()- t0)
         return self.DP.Energy
 
     def move(self,energy=None,wait=True):

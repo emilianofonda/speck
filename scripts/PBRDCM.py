@@ -47,7 +47,7 @@ try:
     bender = sagittal_bender(bender1_name = "d09-1-c03/op/Axis5_C1", bender2_name = "d09-1-c03/op/Axis6_C2",\
     DataViewer = "d09-1-c03/op/DATAVIEWER")
     bender.timeout=0
-    bender.deadtime=0.01
+    bender.deadtime=0.1
 
     #When you want to set no bender
     #bender=None
@@ -62,9 +62,9 @@ try:
     dcm = mono1(monoName="d09-1-c03/op/ENERGY", DataViewer="d09-1-c03/op/DATAVIEWER",\
     rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, tz1=tz1, bender=bender,\
     counter_label="d09-1-c00/ca/cpt.1", counter_channel=0,\
-    delay=0.5, emin=4750.,emax=43000.)
-    dcm.deadtime = 0.01
-    dcm.timeout = 0.0
+    delay=0.4, emin=4750.,emax=43000.)
+    dcm.deadtime = 0.05
+    dcm.timeout = 3.0
     
     #Aliases for dcm operation
     energy=dcm
