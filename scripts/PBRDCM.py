@@ -63,7 +63,7 @@ try:
     rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, tz1=tz1, bender=bender,\
     counter_label="d09-1-c00/ca/cpt.1", counter_channel=0,\
     delay=0.4, emin=4750.,emax=43000.)
-    dcm.deadtime = 0.05
+    dcm.deadtime = 0.1
     dcm.timeout = 3.0
     
     #Aliases for dcm operation

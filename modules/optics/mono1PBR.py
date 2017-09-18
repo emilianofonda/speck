@@ -766,13 +766,13 @@ class mono1:
             while(St in [DevState.MOVING,DevState.RUNNING,DevState.UNKNOWN]):
                 sleep(self.deadtime)
                 St = self.state()
-            sleep(self.delay)
             #Workaround
-            #St = self.state()
-            #while(St in [DevState.MOVING,DevState.RUNNING,DevState.UNKNOWN]):
-            #    sleep(self.deadtime)
-            #    St = self.state()
-            #    print mycurses.RED + "Catched: MOVING after Arrival!" + mycurses.RESET
+            sleep(self.delay)
+            St = self.state()
+            while(St in [DevState.MOVING,DevState.RUNNING,DevState.UNKNOWN]):
+                sleep(self.deadtime)
+                St = self.state()
+                print mycurses.RED + "Catched: MOVING after Arrival!" + mycurses.RESET
             #
             #print self.state()
         except (KeyboardInterrupt,SystemExit), tmp:
