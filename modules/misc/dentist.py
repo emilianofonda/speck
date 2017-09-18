@@ -152,7 +152,8 @@ mode="t", figN=1, out=False):
     mft = xas.ft(iexafs,3,chiK[-1],kw=kweight,np=10)
     
     pylab.plot(iexafs[0], iexafs[1] * iexafs[0]**kweight, "r-", linewidth=1,label="$k^%i\chi(k)$"%kweight)
-    pylab.plot(iexafsSG[0], iexafsSG[1] * iexafsSG[0]**kweight, "k--", linewidth=2,label="$Smoothed$")
+    if len(iexafsSG[0])/iexafsSG[0][-1]>50:
+        pylab.plot(iexafsSG[0], iexafsSG[1] * iexafsSG[0]**kweight, "k--", linewidth=2,label="$Smoothed$")
     pylab.xlim([min(chiK),max(chiK)])
     pylab.legend(loc="best",ncol=1, frameon=False)
     pylab.grid()
