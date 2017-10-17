@@ -5,6 +5,7 @@ import os
 #import pylab
 import glob
 import Gnuplot
+from string import lower
 
 #print sys.argv
 
@@ -16,7 +17,10 @@ if "-fout" in sys.argv:
         if j.startswith("-"):
             break
         else:
-            fout.append(int(j))
+            try:
+                fout.append(int(j))
+            except:
+                break
 #print fout
 
 
@@ -33,6 +37,8 @@ for infile in infiles:
         print "Raw data from: %s" % (infile)
         if infile.endswith("_raw.txt"):
             outfile = infile[:-8] + "_cor.dat"
+        elif infile.endswith(".dat"):
+            outfile =  infile[:-4] + "_cor.dat"
         elif infile.endswith(".txt"):
             outfile =  infile[:-4] + "_cor.dat"
         else:
@@ -78,11 +84,11 @@ for infile in infiles:
             icrs=[]
             ocrs=[]
             for i in range(len(header)):
-                if header[i].startswith("roi_"):
+                if header[i].startswith("roi") or lower(header[i]).startswith("roi"):
                     rois.append(i)
-                if header[i].startswith("icr_"):
+                if header[i].startswith("icr_") or lower(header[i]).startswith("inputcountrate"):
                     icrs.append(i)
-                if header[i].startswith("ocr_"):
+                if header[i].startswith("ocr_") or lower(header[i]).startswith("outputcountrate"):
                     ocrs.append(i)
             #print len(rois)
             #print rois
