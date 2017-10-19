@@ -64,11 +64,11 @@ except:
     print "Defaulting to cpt... ct=cpt... pysamba survival kit... is XIA dead?"
     ct=cpt
 
-def setSTEP(mode="MCA", config="STEP"):
-    return setMODE(mode, config, mca=[__IP.user_ns["mca1"],])
+#def setSTEP(mode="MCA", config="STEP"):
+#    return setMODE(mode, config, mca=[__IP.user_ns["mca1"],])
 
-def setMAP(mode="MAPPING", config="MAP"):
-    return setMODE(mode, config, mca=[__IP.user_ns["mca1"],])
+#def setMAP(mode="MAPPING", config="MAP"):
+#    return setMODE(mode, config, mca=[__IP.user_ns["mca1"],])
 
 ##--------------------------------------------------------------------------------------
 ##Define motors here

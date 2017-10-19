@@ -4,11 +4,20 @@ from time import sleep
 import time
 
 class dxmap:
-    def __init__(self,label="",channels=None,user_readconfig=[],timeout=10.,deadtime=0.):
+    def __init__(self,label="",channels=None,user_readconfig=[],timeout=10.,deadtime=0., FTPclient="",FTPserver="",spoolMountPoint=""):
         self.init_user_readconfig=user_readconfig
         self.label=label
         self.DP=DeviceProxy(label)
         failure=False
+        if FTPclient <> "":
+            self.FTPclient = DeviceProxy(FTPclient)
+        else:
+            self.FTPclient = None
+        if FTPserver <> "":
+            self.FTPserver = DeviceProxy(FTPserver)
+        else:
+            self.FTPserver = None
+        self.spoolMountPoint=spoolMountPoint
         if self.init_user_readconfig<>[]:
             for i in self.init_user_readconfig:
                 #ac=self.DP.get_attribute_config_ex([i[0],])[0]
@@ -119,8 +128,24 @@ class dxmap:
     def status(self):
         return self.DP.status()
         
+    def startFTP(self):
+        if self.FTPclient:
+            if self.FTPserver and self.FTPserver.state() <> DevState.RUNNING:
+                raise Exception("FTP server %s is not running. Starting client is useless. Please start it and retry.")%self.FTPserver.name
+            return self.FTPclient.start()
+        else:
+            raise Exception("%s: You should define an FTP client first."%self.DP.name)
+
+    def stopFTP(self):
+        if self.FTPclient:
+            return self.FTPclient.stop()
+        else:
+            raise Exception("%s: You should define an FTP client first."%self.DP.name)
+
     def start(self,dt=1):
         if self.state()<>DevState.RUNNING:
+            if self.FTPclient and self.DP.currentMODE=="MAPPING" and self.FTPclient.state()<>DevState.RUNNING:
+                self.FTPclient.start()
             try:
                 self.DP.command_inout("Snap")
             except:
@@ -140,6 +165,8 @@ class dxmap:
                 self.DP.command_inout("Stop")
             except DevFailed:
                 self.DP.command_inout("Abort")
+        if self.FTPclient and self.DP.currentMODE=="MAPPING" and self.FTPclient.state() == DevState.RUNNING:
+            self.FTPclient.stop()
         return self.state()
     
     def read_mca(self, channels=None):

@@ -217,10 +217,10 @@ try:
     ]
 #    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig1)
 #    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",user_readconfig=user_readconfig2)
-    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",)
-    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",)
-#    mca1=dxmap("tmp/test/xiadxp.test",)
-#    mca2=dxmap("tmp/test/xiadxp.test.2",)
+    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",FTPclient="d09-1-c00/ca/ftpclientxia.1",FTPserver="d09-1-c00/ca/ftpserverxia.1",spoolMountPoint="/nfs/srv5/spool1/xia1")
+    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",FTPclient="d09-1-c00/ca/ftpclientxia.2",FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/nfs/srv5/spool1/xia2")
+#    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",)
+#    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",)
     def setroi(ch1, ch2):
         """Set roi an ALL channels between ch1 and ch2. Works on mca1 and mca2"""
         if mca1 <> None:
@@ -826,7 +826,8 @@ instrument("FORNO")
 domacro("changePeakingTime")
 
 #Load Energy Continuous Scan
-domacro("ecscanME4")
+#domacro("ecscanME4")
+domacro("ecscanFTP")
 domacro("ecscanXP")
 domacro("averageThis")
 domacro("resetFEMTO")

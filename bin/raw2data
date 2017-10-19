@@ -1,4 +1,4 @@
-#!/usr/Local/PyTangoRoot/bin/python
+#!/usr/bin/env python
 import numpy as npy
 import sys
 import os
