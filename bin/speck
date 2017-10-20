@@ -53,11 +53,11 @@ os.putenv("VERSION","%3.2f"%Version)
 if Version<0.11:
     print "Fallback mode (namely beamline old ipython)"
     #os.system("EDITOR=gedit VERSION=%s ipython -i --pylab  --profile=speck --autocall 2 --colors LightBG -ipythondir %s"\
-    os.system("EDITOR=gedit VERSION=%s ipythonscreen -i --pylab  --profile=speck --autocall 2 --colors LightBG -ipythondir %s"\
+    os.system("EDITOR=gedit VERSION=%s ipython -i --pylab  --profile=speck --autocall 2 --colors LightBG -ipythondir %s"\
     %(Version,dn+os.sep+"oldstyle_profile")\
     +string.join(args))
 else:
     #os.system("EDITOR=gedit VERSION=%s ipython -i --no-banner --pylab  --profile=speck --autocall 2 --colors LightBG --gui=gtk --ipython-dir %s/profile"%(Version,dn)\
-    os.system("EDITOR=gedit VERSION=%s ipythonscreen -i --no-banner --pylab  --profile=speck --autocall 2 --colors LightBG --gui=gtk --ipython-dir %s/profile"%(Version,dn)\
+    os.system("EDITOR=gedit VERSION=%s ipython -i --no-banner --pylab  --profile=speck --autocall 2 --colors LightBG --gui=gtk --ipython-dir %s/profile"%(Version,dn)\
 +string.join(args))
 
