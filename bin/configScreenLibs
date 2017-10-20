@@ -1,0 +1,5 @@
+#/usr/bin/env bash
+printf -v N "%04i" $(ls -1 $HOME/.screenrc*|wc -l)
+cp ~/.screenrc ~/.screenrc.$N
+LD_LIBRARY_PATH=$(env|grep ^LD_LIBRARY_PATH|cut -f 2 --delimiter=\=)
+echo setenv LD_LIBRARY_PATH $LD_LIBRARY_PATH| cat >~/.screenrc
