@@ -345,7 +345,7 @@ __tmp={
 "fluo_s"    :["d09-1-cx1/dt/dtc_ge.1-mt_ts.1","position"],
 "fluo_z"    :["d09-1-cx1/dt/dtc_ge.1-mt_tz.1","position"],
 "raman_x"    :["d09-1-cx1/ex/raman-tx.1","position"],
-"z2"    :["d09-1-cx1/ex/raman-tz.1","position"],
+#"z2"    :["d09-1-cx1/ex/raman-tz.1","position"],
 "thetaBoral"    :["d09-1-cx1/ex/pfi.1-mt_rs.1","position"],
 "sx"        :["d09-1-cx2/ex/sex-mt_tx.1","position"],
 "sy"        :["d09-1-cx2/ex/sex-mt_ty.1","position"],

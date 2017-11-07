@@ -299,9 +299,15 @@ class mono1:
             self.DP.put_property({"SPECK_UseLocalTable": False})
         print "\nmono1PBR: Reading LocalTable from database...",
         if self.state() not in [DevState.MOVING, DevState.RUNNING]:
-            self.readTable(write2controller = True)
+            try:
+                self.readTable(write2controller = True)
+            except:
+                print mycurses.RED+"Cannot load Local Table or Invalid Table, please reload it by using the readTable or readTableFile methods"+mycurses.RESET
         else:
-            self.readTable(write2controller = False)
+            try:
+                self.readTable(write2controller = False)
+            except:
+                print mycurses.RED+"Cannot load Local Table or Invalid Table, please reload it by using the readTable or readTableFile methods"+mycurses.RESET
         print "OK"
         return
         

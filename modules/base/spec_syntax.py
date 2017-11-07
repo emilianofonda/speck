@@ -190,7 +190,7 @@ def wait_motor(motor, deadtime=0.025, timeout=-0.05, delay=None, verbose=True):
         if len(motor_list) == 1:
             return motor_list[0].pos()
         else:
-            return map(lambda x: x.pos(), motor_list)
+            return [x.pos() for x in  motor_list]
     except (KeyboardInterrupt,SystemExit), tmp:
         for i in motor_list:
             i.stop()
