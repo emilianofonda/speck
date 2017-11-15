@@ -19,6 +19,9 @@ except:
     print "Warning from escan: Tkinter not installed."
     NoTk=True
 
+print mycurses.RED+"Using FTP version of ecscan"+mycurses.RESET
+
+
 # WARNING This script version uses the global object ct from speck to import XIA cards.
 # Ths whois function maybe used too to name the xia cards by their speck names.
 # This version has been written for the replacement of the Canberra 36 pixels with the 
@@ -169,6 +172,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     cardXIAChannels = []
     __Nch = 0
     for xia in cardXIA:
+        print "Setting XIA card:",xia.label
         cardXIAChannels.append(range(__Nch,__Nch + len(xia.channels)))
         xia.DP.nbpixels = NumberOfPoints
         xia.DP.streamNbAcqPerFile = 250
@@ -176,6 +180,16 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
         cardXiaDataShape.append([ NumberOfPoints,xia.DP.streamNbDataPerAcq ])
         if xia.FTPclient:
             XIANexusPath.append(xia.spoolMountPoint)
+            if xia.FTPclient.state() <> DevState.STANDBY:
+                if xia.FTPclient.state() == DevState.FAULT:
+                    xia.FTPclient.init()
+                    sleep(3)
+                else:
+                    xia.FTPclient.stop()
+                    sleep(1)
+            xia.FTPclient.DeleteRemainingFiles()
+            sleep(1)
+            xia.FTPclient.start()
         else:
             XIANexusPath.append("/nfs" + xia.DP.streamTargetPath.replace("\\","/")[1:])
         #print XIANexusPath
