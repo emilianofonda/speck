@@ -403,7 +403,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                             break
                         outCh = outChannels.next()
     #Single Channel MCA CArray creation
-                        outtaHDF.createCArray(outtaHDF.root.XIA, "mca%02i"%outCh, title="Mca%02i"%outCh,\
+                        outtaHDF.createCArray(outtaHDF.root.XIA, "mca%02i"%outCh, title="mca%02i"%outCh,\
                         shape=cardXiaDataShape[0], atom = tables.UInt32Atom(), filters=HDFfilters)
     #Get pointer to a Channel MCA on disk
                         pCmca = outtaHDF.getNode("/XIA/mca%02i"%outCh)
@@ -440,13 +440,14 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     #Feed RAM buffers with MCA values
                             bCmca[block * blockLen: (block * blockLen) + actualBlockLen,:] = __block
                             mcaSum[block * blockLen: (block * blockLen) + actualBlockLen,:] += __block
-                            pointerCh[block * blockLen: (block + 1) * blockLen] = sum(__block[:,roiStart:roiEnd], axis=1)
+                            #pointerCh[block * blockLen: (block + 1) * blockLen] = sum(__block[:,roiStart:roiEnd], axis=1)
+                            pointerCh[block * blockLen: (block * blockLen) + actualBlockLen] = sum(__block[:,roiStart:roiEnd], axis=1)
     #ICR line comment out if required
-                            pointerIcr[block * blockLen: (block + 1) * blockLen] = __blockIcr
+                            pointerIcr[block * blockLen: (block * blockLen) + actualBlockLen] = __blockIcr
     #OCR line comment out if required
-                            pointerOcr[block * blockLen: (block + 1) * blockLen] = __blockOcr
+                            pointerOcr[block * blockLen: (block * blockLen) + actualBlockLen] = __blockOcr
     #DT line comment out if required
-                            pointerDt[block * blockLen: (block + 1) * blockLen] = __blockDT
+                            pointerDt[block * blockLen: (block * blockLen) + actualBlockLen] = __blockDT
                             block += 1
     #Write Single MCA to Disk
                         pCmca[:] = bCmca
@@ -486,10 +487,17 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     #XIA close and wipe
                 for i in XIAfiles:
                     for j in i:
-                        j.close()
+                        for ret in xrange(3):
+                            try:
+                                j.close()
+                                break
+                            except:
+                                sleep(1)
+                                pass
                 for i in zip(cardXIA,XIANexusPath):
                     for j in os.listdir(i[1]):
                         if j.startswith(i[0].DP.streamTargetFile):
+                            pass
                             os.remove(i[1] + os.sep + j)
 
     #Local data saving

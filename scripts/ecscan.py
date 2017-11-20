@@ -425,9 +425,10 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     #Feed RAM buffers with MCA values
                         bCmca[block * blockLen: (block * blockLen) + actualBlockLen,:] = __block
                         mcaSum[block * blockLen: (block * blockLen) + actualBlockLen,:] += __block
-                        pointerCh[block * blockLen: (block + 1) * blockLen] = sum(__block[:,roiStart:roiEnd], axis=1)
+                        #pointerCh[block * blockLen: (block + 1) * blockLen] = sum(__block[:,roiStart:roiEnd], axis=1)
+                        pointerCh[block * blockLen: (block * blockLen) + actualBlockLen] = sum(__block[:,roiStart:roiEnd], axis=1)
     #DT line comment out if required
-                        pointerDt[block * blockLen: (block + 1) * blockLen] = __blockDT
+                        pointerDt[block * blockLen: (block * blockLen) + actualBlockLen] = __blockDT
                         block += 1
     #Write Single MCA to Disk
                     pCmca[:] = bCmca
