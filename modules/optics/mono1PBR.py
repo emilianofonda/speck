@@ -490,17 +490,49 @@ class mono1:
             print "OK"
         return
         
-    def clearLocalTable(self):
+    def clearLocalTable(self,e1=-1,e2=-1):
+        pointValue = {"Energy": self.pos(), "C1": self.bender.c1.pos(),\
+        "C2": self.bender.c2.pos(),"RS2": self.m_rs2.pos(),"RZ2": self.m_rz2.pos(),}
+        
         self.DP.put_property({"SPECK_LocalTable":[0,"Energy","C1","C2","RS2","RZ2"]})
-        self.DP.put_property({"SPECK_UseLocalTable":False})
+        
+        self.LocalTable["Points"] = 2
+
+        if e1>0 and e2>0:
+            pe1 = e1
+            pe2 = e2
+        else:
+            pe1 = self.pos()
+            pe2 = self.pos()+1000.
+
+        self.LocalTable["Energy"] = array([pe1, pe2],"f")
+        
+        for i in ["C1","C2","RS2","RZ2"]:
+            self.LocalTable[i] = array([pointValue[i], pointValue[i]],"f")
+        #Update database
+        print "Syncing table to database...",
+        self.writeTable()
+        print "OK"
+        print "Reading table from database...",
         self.readTable()
-        self.unsetLocalTable()
-        try:
-            self.restoreDefaultValues()
-        except Exception, tmp:
-            print tmp
-            print "Failed to restore Default Values from SPECK_DefaultValues of Dataviewer Device."
+        print "OK"
+        print "Activating table...",
+        self.setLocalTable()
+        print "OK"
         return
+
+
+#   def clearLocalTable(self):
+#       self.DP.put_property({"SPECK_LocalTable":[0,"Energy","C1","C2","RS2","RZ2"]})
+#       self.DP.put_property({"SPECK_UseLocalTable":False})
+#       self.readTable()
+#       self.unsetLocalTable()
+#       try:
+#           self.restoreDefaultValues()
+#       except Exception, tmp:
+#           print tmp
+#           print "Failed to restore Default Values from SPECK_DefaultValues of Dataviewer Device."
+#       return
     
     def printTable(self):
         s = "--------------------------\n"
