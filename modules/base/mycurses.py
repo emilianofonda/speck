@@ -9,3 +9,7 @@ TURQUOISE=	'\x1b[36;01m'
 RESET=		'\x1b[0m'
 BOLD=		'\x1b[01;06m'
 UNDERLINE=	'\x1b[38;01m'
+UPONELINE=  '\033[1A'
+
+#Escape codes in format strings
+UPNLINES=   '\033[%iA'

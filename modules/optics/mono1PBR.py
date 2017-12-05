@@ -651,7 +651,7 @@ class mono1:
             if self.state() == DevState.MOVING:
                 raise Exception("mono1.PBR: cannot change moving mode while moving!")
         self.DP.movingMode = mode
-        sleep(0.1)
+        sleep(0.2)
         #self.init()
         #sleep(0.1)
         return self.DP.movingMode
@@ -663,11 +663,17 @@ class mono1:
         if self.state() == DevState.MOVING:
             t0 = time()
             while(time()-t0 <30 and self.state() == DevState.MOVING):
-                sleep(0.1)
+                sleep(0.2)
             if self.state() == DevState.MOVING:
                 raise Exception("mono1.PBR: cannot change velocity while moving!")
-        self.DP.velocity = velocity
-        sleep(0.1)
+        for i in range(5):
+            try:
+                self.DP.velocity = velocity
+                break
+            except:
+                print "Error setting velocity on ", self.label
+                sleep(0.2)
+        sleep(0.2)
         return self.DP.velocity
     
     def status(self):

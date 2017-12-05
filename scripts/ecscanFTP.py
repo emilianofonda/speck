@@ -181,14 +181,19 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
         if xia.FTPclient:
             XIANexusPath.append(xia.spoolMountPoint)
             if xia.FTPclient.state() <> DevState.STANDBY:
-                if xia.FTPclient.state() == DevState.FAULT:
-                    xia.FTPclient.init()
-                    sleep(3)
-                else:
+                if xia.FTPclient.state() == DevState.RUNNING:
                     xia.FTPclient.stop()
                     sleep(1)
-            xia.FTPclient.DeleteRemainingFiles()
-            sleep(1)
+                else:
+                    xia.FTPclient.init()
+                    sleep(1)
+            for retryFTPdelete in xrange(5):
+                try:
+                    xia.FTPclient.DeleteRemainingFiles()
+                    break
+                except:
+                    xia.FTPclient.init()
+                    sleep(1)
             xia.FTPclient.start()
         else:
             XIANexusPath.append("/nfs" + xia.DP.streamTargetPath.replace("\\","/")[1:])
@@ -336,15 +341,10 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 fluoXP = numpy.nan_to_num(I3/I0)
                 ene = numpy.nan_to_num(dcm.theta2e(theta))
                 #
-                if NofScans >= 1: 
+                if NofScans > 1: 
                     print myTime.asctime(), " : sending dcm back to starting point."
-                    try:
-                        dcm.state()
-                    except:
-                        myTime.sleep(1)
                     dcm.velocity(60)
-                    #dcm.mode(0)
-                    myTime.sleep(1)
+                    myTime.sleep(0.2)
                     dcm.pos(e1-1., wait=False)
                 #
                 print myTime.asctime(), " : Saving Data..."
@@ -363,6 +363,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                             i.stop()
                         setSTEP()
                         raise Exception("Time Out waiting for XIA cards to stop! Waited more than 180s... !")
+                        shell.logger.log_write("Time Out waiting for XIA cards to stop! Waited more than 180s... !", kind='output')
                 XIAtEnd = myTime.time()-XIAt0
                 print "XIA needed additional %3.1f seconds to provide all data files."%(XIAtEnd)
                 shell.logger.log_write("XIA needed additional %3.1f seconds to provide all data files."%(XIAtEnd) + ".hdf", kind='output')

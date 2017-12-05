@@ -833,7 +833,16 @@ domacro("averageThis")
 domacro("resetFEMTO")
 domacro("fftI0")
 
+def resetFluo():
+   domacro("resetFLUO")
+
+try:
+    domacro("ControlSystem")
+except:
+    pass
+    
 try:
     domacro("usermacro.py")
 except:
     print "File not found: usermacro.py"
+
