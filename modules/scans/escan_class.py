@@ -47,7 +47,7 @@ def ReadScanForm(filename):
     #
     keys=["bend","nobend","tun","notun","detune","fluo","sexafs","e0","kscan","settling",\
     "plot","noplot","tey","roi","fast","backup","nobackup","roll","notz2","almostfast",
-    "vortex","fullmca","attribute","pitch"]
+    "fullmca","attribute","pitch"]
     #
     #Define default values:
     #
@@ -239,8 +239,6 @@ def ReadScanForm(filename):
             detectionMode="fluo"
         elif(i.startswith("tey")):
             detectionMode="tey"
-        elif(i.startswith("vortex")):
-            detectionMode="vortex"
         elif (i.startswith("roi")):
             j=((i.replace("="," ")).replace(","," ").split())[1:]
             for __chk in j:
@@ -751,7 +749,7 @@ class escan_class:
         #and in the update_grace_windows (to plot)... that is quite obvious.
         #
         self.GRAPHICS_RESTART_NEEDED=False
-        if not(self.detectionMode in ["absorption","fluo","tey","sexafs","vortex"]):
+        if not(self.detectionMode in ["absorption","fluo","tey","sexafs"]):
             self.detectionMode="absorption"
         #
         
@@ -771,7 +769,7 @@ class escan_class:
         try:
             #if self.detectionMode<>"sexafs":
             if self.detectionMode<>None:       
-                if self.detectionMode in ["fluo","vortex","sexafs"]:
+                if self.detectionMode in ["fluo","sexafs","tey"]:
                     #Start gracewin3: fluo
                     gracewin3=grace_np.GraceProcess()
                     gracewin3("timestamp 0., 0.\ntimestamp char size 0.5\ntimestamp on")
@@ -926,7 +924,7 @@ class escan_class:
                 gracewin1('yaxis label "Sample Fluorescence"')
                 gracewin1('redraw')
                 
-                if self.detectionMode in ["fluo","vortex","sexafs"]:
+                if self.detectionMode in ["fluo","sexafs","tey"]:
                     self.gracewins={"exafs_1":gracewin1,\
                             "exafs_2":gracewin2,\
                             "exafs_3":gracewin3}
@@ -1151,7 +1149,7 @@ class escan_class:
                     print "Graphics cannot be restarted. Scan will continue without..."
                     self.GRAPHICS_RESTART_NEEDED=True
         try:
-            if self.detectionMode in ["absorption","fluo","tey","vortex","sexafs"]:
+            if self.detectionMode in ["absorption","fluo","tey","sexafs"]:
                 #
                 #Window exafs_1
                 #
@@ -1180,7 +1178,7 @@ class escan_class:
                 #Window exafs_3
                 #
                 #For the fluo counts always overwrite the same curve for short
-                if self.detectionMode in ["fluo","vortex","sexafs"]:
+                if self.detectionMode in ["fluo","sexafs","tey"]:
                     for i in range(len(self.auto_fluo_channels)-1):
                         gp(gws["exafs_3"],i,1,en,gd["fluochannels"][i+1],color=1,noredraw=True)
                     gp(gws["exafs_3"],len(self.auto_fluo_channels)-1,1,en,gd["fluochannels"][len(self.auto_fluo_channels)],\
@@ -1523,22 +1521,20 @@ class escan_class:
                         print "No fluorescence channels!!!!!"
                         print tmp
                     #Assertions valid for specific modes
-                    if self.detectionMode in ["absorption","fluo","tey","vortex"]:
+                    if self.detectionMode in ["absorption","fluo"]:
                         if i1 * i0 > 0 :
                             mu = log(abs(i0 / i1))
                         else:
                             mu = 0.
-                    if self.detectionMode == "tey":
+                    elif self.detectionMode == "tey":
                         if i0 <> 0:
                             mu = cnts[3]/i0
                         else:
                             mu = 0.
-                    elif self.detectionMode=="fluo":
+                    if self.detectionMode in ["fluo","tey"]:
                         if i0 <> 0:
-                            #This modification holds when using the XIA card as configured
-                            #for SAMBA...
                             try:
-                                fluopoint[0] = average(fluopoint[2:]) / i0
+                                fluopoint[0] = average(fluopoint[1:]) / i0
                             except Exception, tmp:
                                 fluopoint[0] = 0.
                                 print "Error calculating fluopoint[0]"
@@ -1547,13 +1543,9 @@ class escan_class:
                             fluopoint[0] = 0.
                     elif self.detectionMode == "sexafs":
                         if i0 > 0:
-                            #This modification holds when using the XIA card as configured
-                            #for SAMBA...
                             try:
-                                #The sexafs detector is connected from channel 0 to 7
-                                #on the xia cards
                                 #Fluo
-                                fluopoint[0] = average(fluopoint[1:8]) / i0
+                                fluopoint[0] = average(fluopoint[1:]) / i0
                                 #Tey
                                 mu = cnts[2] / i0
                                 #Reference foil (counters are apparently reversed in this case...)
@@ -1568,17 +1560,6 @@ class escan_class:
                             fluopoint[0] = 0.
                             mu = 0.
                             mus = 0.
-                    elif self.detectionMode=="vortex":
-                        #print "Calculating absorption for vortex"
-                        if i0 <> 0:
-                            fluopoint[0] = fluopoint[1] / i0
-                        else:
-                            fluopoint[0] = 0.
-                        #dt_correction=cnts[47]/cnts[55]
-                        #if dt_correction in [nan,inf]: dt_correction=0.0
-                        dt_correction = 1.
-                        rontecpoint[0] = fluopoint[1]
-                        rontecpoint[1] = dt_correction
                     else:
                         if i0 * i1 <> 0:
                             mu = log(abs(i0/i1))
@@ -1589,7 +1570,7 @@ class escan_class:
                             mus = log(abs(i1 / i2))
                         else:
                             mus = 0.
-                    if self.detectionMode in ["fluo", "vortex"]:
+                    if self.detectionMode in ["fluo" ]:
                         line_buffer += ("%-8.2f\t%8.6f\t%8.6f\t%8.6f\t" % (etheta, theta, fluopoint[0], mus))
                     elif self.detectionMode in ["sexafs",]:
                         line_buffer += ("%-8.2f\t%8.6f\t%8.6f\t%8.6f\t" % (etheta, theta, fluopoint[0], mu))

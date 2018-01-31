@@ -341,11 +341,11 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 fluoXP = numpy.nan_to_num(I3/I0)
                 ene = numpy.nan_to_num(dcm.theta2e(theta))
                 #
-                if NofScans > 1: 
-                    print myTime.asctime(), " : sending dcm back to starting point."
-                    dcm.velocity(60)
-                    myTime.sleep(0.2)
-                    dcm.pos(e1-1., wait=False)
+                #if CurrentScan < NofScans-1: 
+                #    print myTime.asctime(), " : sending dcm back to starting point."
+                #    dcm.velocity(60)
+                #    myTime.sleep(0.2)
+                #    dcm.pos(e1-1., wait=False)
                 #
                 print myTime.asctime(), " : Saving Data..."
 
@@ -569,6 +569,11 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                     raise
                 except Exception, tmp:
                     print tmp
+                if CurrentScan < NofScans-1: 
+                    print myTime.asctime(), " : sending dcm back to starting point."
+                    dcm.velocity(60)
+                    myTime.sleep(0.2)
+                    dcm.pos(e1-1.)
     except Exception, tmp:
         #print "Acquisition Halted on Exception: wait for dcm to stop."
         #stopscan(shutter)
@@ -581,7 +586,8 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     #Finally stop FTPclients
     for xia in cardXIA:
         xia.FTPclient.stop()
-
+    
+    
     #Write END of the Story
     shell.logger.log_write("Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime), kind='output')
     print "Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime) 

@@ -571,15 +571,18 @@ class mono1:
         DefVal = self.DataViewer.get_property("SPECK_DefaultValues")['SPECK_DefaultValues']
         for i in DefVal:
             s = i.split("=")
-            self.DataViewer.write_attribute(s[0].strip(),float(s[1]))
+            try:
+                self.DataViewer.write_attribute(s[0].strip(),float(s[1]))
+            except:
+                print "Value of %s is not writable"%s[0].strip()
         return
 
     def storeDefaultValues(self):
         """Overwrite the DefaultValues stored as a property in DataViewer to reset the coeffs of equations.
         Values are written in the property SPECK_DefaultValues of DataViewer.
         Missing: autocreate the property."""
-        if self.state() == DevState.MOVING:
-                raise Exception("mono1PBR.restoreDefaultValues: Cannot write attributes while in moving state!")
+        #if self.state() == DevState.MOVING:
+        #        raise Exception("mono1PBR.restoreDefaultValues: Cannot write attributes while in moving state!")
         DefVal = self.DataViewer.get_property("SPECK_DefaultValues")['SPECK_DefaultValues']
         NewDefVal = []
         for i in DefVal:

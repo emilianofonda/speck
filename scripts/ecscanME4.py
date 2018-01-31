@@ -317,14 +317,14 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 fluoXP = numpy.nan_to_num(I3/I0)
                 ene = numpy.nan_to_num(dcm.theta2e(theta))
                 #
-                if NofScans >= 1: 
+                try:
+                    dcm.state()
+                except:
+                    myTime.sleep(1)
+                dcm.velocity(60)
+                #dcm.mode(0)
+                if CurrentScan < NofScans-1: 
                     print myTime.asctime(), " : sending dcm back to starting point."
-                    try:
-                        dcm.state()
-                    except:
-                        myTime.sleep(1)
-                    dcm.velocity(60)
-                    #dcm.mode(0)
                     myTime.sleep(1)
                     dcm.pos(e1-1., wait=False)
                 #

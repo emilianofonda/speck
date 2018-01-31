@@ -40,9 +40,9 @@ class CPlotter:
 
 __CPlotter__ = CPlotter()
 
-def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True):
+def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,coolingTime=60):
     try:
-        ecscanXPActor(fileName,e1,e2,n,dt,velocity, e0, mode,shutter,beamCheck)
+        ecscanXPActor(fileName,e1,e2,n,dt,velocity, e0, mode,shutter,beamCheck,coolingTime=coolingTime)
     except KeyboardInterrupt:
         print "Halting on user request...",
         stopscanXP(shutter)
@@ -53,7 +53,7 @@ def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=Fals
         raise tmp
     return 
 
-def ecscanXPActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True):
+def ecscanXPActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,coolingTime=60):
     """Start from e1 (eV) to e2 (eV) and count over dt (s) per point.
     velocity: Allowed velocity doesn't exceed 40eV/s.
     The backup folder MUST be defined for the code to run.
@@ -223,11 +223,11 @@ def ecscanXPActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter
             xmu = numpy.nan_to_num(log(I0/I1))
             ene = numpy.nan_to_num(dcm.theta2e(theta))
             #
-            if NofScans > 1: 
-                print myTime.asctime(), " : sending dcm back to starting point."
-                dcm.velocity(60)
-                myTime.sleep(0.2)
-                dcm.pos(e1-1., wait=False)
+            #dcm.velocity(60)
+            #myTime.sleep(0.2)
+            #if CurrentScan < NofScans-1: 
+            #    print myTime.asctime(), " : sending dcm back to starting point."
+            #    dcm.pos(e1-1., wait=False)
             #
             print myTime.asctime(), " : Saving Data..."
 #Common
@@ -307,12 +307,20 @@ def ecscanXPActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter
                 raise
             except Exception, tmp:
                 print tmp
+            dcm.velocity(60)
+            myTime.sleep(0.2)
+            if CurrentScan < NofScans-1: 
+                myTime.sleep(coolingTime)
+                print myTime.asctime(), " : sending dcm back to starting point."
+                dcm.pos(e1-1.)
+
     except Exception, tmp:
         print "Acquisition Halted on Exception: wait for dcm to stop."
         stopscanXP(shutter)
         print "Halt"
         shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp, kind='output')
         raise tmp
+        
     shell.logger.log_write("Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime), kind='output')
     print "Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime) 
     AlarmBeep()
