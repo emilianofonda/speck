@@ -180,6 +180,11 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
         cardXiaDataShape.append([ NumberOfPoints,xia.DP.streamNbDataPerAcq ])
         if xia.FTPclient:
             XIANexusPath.append(xia.spoolMountPoint)
+            #Clean Up the mess (if any) in the source disk
+            try:
+                xia.FTPclient.DeleteRemainingFiles()
+            except:
+                print "Failed to delete remaining files from %s" % xia.FTPclient.name
             if xia.FTPclient.state() <> DevState.STANDBY:
                 if xia.FTPclient.state() == DevState.RUNNING:
                     xia.FTPclient.stop()
@@ -345,25 +350,42 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 #    print myTime.asctime(), " : sending dcm back to starting point."
                 #    dcm.velocity(60)
                 #    myTime.sleep(0.2)
+                #    dcm.praise Exception("Time Out waiting for XIA cards to stop! Waited more than 180s... !")
                 #    dcm.pos(e1-1., wait=False)
                 #
                 print myTime.asctime(), " : Saving Data..."
 
     #Wait for XIA files to be saved in spool
                 XIAt0=time()
-                while((DevState.RUNNING in [i.state() for i in cardXIA]) or\
-                (True in [i[0] not in os.listdir(i[1]) for i in zip(LastXIAFileName, XIANexusPath)])):
+                while(DevState.RUNNING in [i.state() for i in cardXIA]):
                     myTime.sleep(1)
-                    if myTime.time() - XIAt0 > 180.:
+                    if myTime.time() - XIAt0 > 30.:
                         for i in XIANexusPath:
                             print i
                             print os.listdir(i)
-                        print "Time Out waiting for XIA cards to stop! Waited more than 180s... !"
+                        print "Time Out waiting for XIA cards to stop! Waited more than 30s... !"
                         for i in cardXIA:
                             i.stop()
                         setSTEP()
-                        raise Exception("Time Out waiting for XIA cards to stop! Waited more than 180s... !")
-                        shell.logger.log_write("Time Out waiting for XIA cards to stop! Waited more than 180s... !", kind='output')
+                        raise Exception("Time Out waiting for XIA cards to stop! Waited more than 30s... !")
+                        shell.logger.log_write("Time Out waiting for XIA cards to stop! Waited more than 30s... !", kind='output')
+                while(True in [i[0] not in os.listdir(i[1]) for i in zip(LastXIAFileName, XIANexusPath)]):
+                    myTime.sleep(1)
+                    if 12. > myTime.time() - XIAt0 > 10.:
+                        for i in XIANexusPath:
+                            ll = os.listdir(i)
+                            ll.sort()
+                            print ll
+                            os.system("cd %s&&ls"%i)
+                        print "Time Out waiting for XIA cards files! Waited more than 10s... ! FileSystem Workaround Applied"
+                        shell.logger.log_write("Time Out waiting for XIA files! Waited more than 10s... ! FileSystem Workaround Applied", kind='output')
+                    if myTime.time() - XIAt0 > 12.:
+                        for i in XIANexusPath:
+                            ll = os.listdir(i).sort()
+                            print ll
+                        print "Time Out waiting for XIA cards files! Waited more than 12s... !"
+                        shell.logger.log_write("Time Out waiting for XIA files! Waited more than 12s... !", kind='output')
+                        break
                 XIAtEnd = myTime.time()-XIAt0
                 print "XIA needed additional %3.1f seconds to provide all data files."%(XIAtEnd)
                 shell.logger.log_write("XIA needed additional %3.1f seconds to provide all data files."%(XIAtEnd) + ".hdf", kind='output')

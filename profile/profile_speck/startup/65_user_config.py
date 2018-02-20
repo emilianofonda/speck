@@ -282,7 +282,7 @@ except Exception, tmp:
 #try:
 #    from I200 import I200_tango as I200
 #    print "I200 unit :",
-#    i200=I200("d09-1-cx1/ca/mca_rontec_rs232_8.5")
+#    i200=I200("d09-1-cx1/ca/moco2.1")
 #    itune=i200.tune
 #    #print i200.currents()
 #    #print i200.status()
@@ -294,7 +294,7 @@ except Exception, tmp:
 try:
     from MOSTAB import MOSTAB_tango as MOSTAB
     print "MOSTAB unit :",
-    mostab=MOSTAB("d09-1-cx1/ca/mca_rontec_rs232_8.5",init_file = __IP.user_ns["__pySamba_root"] + "/config/mostab.cfg")
+    mostab=MOSTAB("d09-1-cx1/ca/moco2.1",init_file = __IP.user_ns["__pySamba_root"] + "/config/mostab.cfg")
     def itune(*args,**kwargs):
         #Multipiled by 4 on 18/11/2015
         opr = 3.56/(0.10 * dcm.pos() * 1e-3 - 0.16) * 0.9 *4
