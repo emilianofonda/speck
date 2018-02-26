@@ -370,21 +370,21 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                         raise Exception("Time Out waiting for XIA cards to stop! Waited more than 30s... !")
                         shell.logger.log_write("Time Out waiting for XIA cards to stop! Waited more than 30s... !", kind='output')
                 while(True in [i[0] not in os.listdir(i[1]) for i in zip(LastXIAFileName, XIANexusPath)]):
-                    myTime.sleep(1)
-                    if 12. > myTime.time() - XIAt0 > 10.:
+                    myTime.sleep(0.25)
+                    if 3. > myTime.time() - XIAt0 > 2.:
                         for i in XIANexusPath:
                             ll = os.listdir(i)
                             ll.sort()
                             print ll
                             os.system("cd %s&&ls"%i)
                         print "Time Out waiting for XIA cards files! Waited more than 10s... ! FileSystem Workaround Applied"
-                        shell.logger.log_write("Time Out waiting for XIA files! Waited more than 10s... ! FileSystem Workaround Applied", kind='output')
-                    if myTime.time() - XIAt0 > 12.:
+                        shell.logger.log_write("Time Out waiting for XIA files! Waited more than 2s... ! FileSystem Workaround Applied", kind='output')
+                    if myTime.time() - XIAt0 > 15.:
                         for i in XIANexusPath:
                             ll = os.listdir(i).sort()
                             print ll
-                        print "Time Out waiting for XIA cards files! Waited more than 12s... !"
-                        shell.logger.log_write("Time Out waiting for XIA files! Waited more than 12s... !", kind='output')
+                        print "Time Out waiting for XIA cards files! Waited more than 3s... !"
+                        shell.logger.log_write("Time Out waiting for XIA files! Waited more than 3s... !", kind='output')
                         break
                 XIAtEnd = myTime.time()-XIAt0
                 print "XIA needed additional %3.1f seconds to provide all data files."%(XIAtEnd)
@@ -586,14 +586,14 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                         if mode.startswith("f"):
                             dentist.dentist(ActualFileNameData, e0 =e0, mode="f")
                         else:
-                            dentist.dentist(ActualFileNameData, e0 =e0, mode="")
+                            dentist.dentist(ActualFileNameData, e0 =e0, mode=mode)
                 except KeyboardInterrupt:
                     raise
                 except Exception, tmp:
                     print tmp
+                dcm.velocity(60)
                 if CurrentScan < NofScans-1: 
                     print myTime.asctime(), " : sending dcm back to starting point."
-                    dcm.velocity(60)
                     myTime.sleep(0.2)
                     dcm.pos(e1-1.)
     except Exception, tmp:
@@ -605,6 +605,16 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             outtaHDF.close()
         except:
             raise tmp
+        try:
+            for __i in XIAfiles:
+                for __j in __i:
+                    try:
+                        __j.close()
+                        myTime.sleep(0.25)
+                    except:
+                        pass
+        except:
+            pass
     #Finally stop FTPclients
     for xia in cardXIA:
         xia.FTPclient.stop()
