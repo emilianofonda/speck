@@ -626,7 +626,7 @@ class pseudo_counter:
     def __init__(self,masters=[],slaves=[],slaves2arm=[],slaves2arm2stop=[],posts=[],deadtime=0.,timeout=1):
         """masters are started and waited (all). slaves are only read. 
         slaves2arm are armed before masters with a start command.
-        slaves2arm2stop are armed with a stop before masters,
+        slaves2arm2stop are armed with a start before masters,
         stopped after masters and then waited to final stop.
         Examples:
         masters are individual counter cards
@@ -644,16 +644,16 @@ class pseudo_counter:
         posts cannot calculate over other posts.
         posts=[{"name":"Delta","formula":"ch[1]-ch[2]","format":"%6.3f","units"}]
         """
-        self.masters=masters
-        self.slaves=slaves
-        self.slaves2arm=slaves2arm
-        self.slaves2arm2stop=slaves2arm2stop
-        self.all=masters+slaves+slaves2arm+slaves2arm2stop
-        self.deadtime=deadtime
-        self.timeout=timeout
-        self.user_readconfig=[]
-        self.mca_units=[]
-        n=0
+        self.masters = masters
+        self.slaves = slaves
+        self.slaves2arm = slaves2arm
+        self.slaves2arm2stop = slaves2arm2stop
+        self.all = masters + slaves + slaves2arm + slaves2arm2stop
+        self.deadtime = deadtime
+        self.timeout = timeout
+        self.user_readconfig = []
+        self.mca_units = []
+        n = 0
         self.clock_channel = -1
         for i in self.all:
             self.user_readconfig+=i.user_readconfig
@@ -858,11 +858,14 @@ class pseudo_counter:
     def wait(self):
         try: 
             t0=time()
-            while(self.masters_state() <> DevState.RUNNING and time() - t0 < self.timeout): pass
-            while(self.masters_state() == DevState.RUNNING): pass
+            while(self.masters_state() <> DevState.RUNNING and time() - t0 < self.timeout):
+                pass
+            while(self.masters_state() == DevState.RUNNING):
+                pass
             for i in self.slaves2arm2stop:
                 __tmp=thread.start_new_thread(i.stop,())
-            while(self.state() == DevState.RUNNING): pass
+            while(self.state() == DevState.RUNNING):
+                pass
             return self.state()
         except (KeyboardInterrupt, SystemExit), tmp:
             self.stop()
