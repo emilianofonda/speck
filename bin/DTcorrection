@@ -1,0 +1,118 @@
+#!/usr/bin/env python
+import numpy as npy
+import sys
+import os
+#import pylab
+import glob
+import Gnuplot
+from string import lower
+
+import numpy as np
+import tables
+
+#fluo channels to skip (name of them)
+fout=[]
+if "-fout" in sys.argv:
+    fout_i = sys.argv.index("-fout")
+    for j in sys.argv[fout_i+1:-1]:
+        if j.startswith("-"):
+            break
+        else:
+            try:
+                fout.append(int(j))
+            except:
+                break
+#print fout
+
+infiles = []
+for i in range(1, len(sys.argv)):
+    infiles += glob.glob(sys.argv[i])
+
+for infile in infiles:
+    if not infile.endswith(".hdf"):
+        infiles.remove(infile)
+
+for infile in infiles:
+    try:
+        print "Raw data from: %s" % (infile)
+        outfile =  infile[:-4] + "_cor.txt"       
+
+        pos={}
+        
+        myfile = tables.openFile(infile,'r')
+
+        nChan = 0
+        for i in dir(myfile.root.XIA):
+            if i.startswith("fluo"):
+                nChan+=1
+        Energy = myfile.root.Raw.Energy[:]
+        I0 = myfile.root.Raw.I0[:]
+        fluoCh = []
+        dtC = []
+        prx = 'myfile.root.XIA.'
+        for i in range(nChan):
+            fluoCh.append(eval(prx +"fluo%02i"%i)[:])
+            dtC.append(100./(100.-eval(prx + "deadtime%02i"%i)[:]))
+
+        #print np.shape(dtC)
+        #print np.shape(fluoCh)
+
+        muf = np.sum(fluoCh, axis=0)/I0
+        muf_cor = np.sum(np.array(fluoCh)*np.array(dtC), axis=0)/I0
+
+        myfile.close()
+        
+        motor = Energy
+
+        if "-show" in sys.argv:
+            if len(infiles) > 1:
+                print "-show is never active for more than one file!"
+            else:
+                wg1=Gnuplot.Gnuplot(persist = 0)
+                wg1("set style data lines; set key bottom right")
+                wg1("set label 99 '%s' at screen 0.2,0.01" % (infile))
+                wg1.plot(Gnuplot.Data(motor, muf, title="mu_fluo",with_="l 1 2"),\
+                Gnuplot.Data(motor, muf_cor, title="mu_Fluo_cor",with_="l 3 2"))
+                #wg1("set title %s" % ('"' + infile + " MUX  "+'"'))
+                nrows = nChan / 4
+                if npy.mod(nChan, 4):
+                    nrows += 1
+                wg2=Gnuplot.Gnuplot(persist = 0)
+                #wg2("set title %s" % ('"' + infile + " ROI/I0 & ROI/I0*ICR/OCR "+'"'))
+                wg2("set size 0.25, %3.2f" % (1./nrows))
+                wg2("set style data lines;set format y ''; set format x ''")
+                wg2("set multi")
+                wg2("set label 99 '%s' at screen 0.2,0.01" % (infile))
+                for i in range(nrows):
+                    j = 0
+                    while(j < 4 and (j + 1) * (i + 1) <= nChan):
+                        wg2("set label 1 %s at graph 0.1, graph 0.9" % ("'" + "ROI_%02i/I0" % (i * 4  + j) + "'") )
+                        wg2("set origin %3.2f,%3.2f" % (j * 0.25, 1.- (i+1) * 1. / nrows))
+                        wg2.plot(Gnuplot.Data(motor, fluoCh[i * 4 + j]/I0, with_="l 1 2"),\
+                        Gnuplot.Data(motor, fluoCh[i * 4 + j] / I0 * dtC[i * 4 + j], with_="l 3 2"))
+                        j += 1
+                    pass
+                wg2("unset multi")
+               
+
+                print "\n"*6 + "Type RETURN when done...\n\n"
+                try:
+                    __tmp=input()
+                except:
+                    pass
+                
+        #pylab.figure()
+        #pylab.plot(motor, muf_cor)
+        #pylab.show()
+        header = "#1)Energy\n#2)muf = Sum(ROI)/I0\n#4)muf_cor = Sum(ROI/OCR*ICR)/I0\n"
+        header += "#HEADER\n#\nEnergy\tmuf\tmuf_cor\n"
+        np.savetxt(outfile,np.array([Energy,muf,muf_cor]).transpose(),header=header)
+        print "\tData saved in %s" % (outfile)
+    except Exception, tmp:
+        print tmp
+        print "Error dealing with file: ",infile
+        print "Skipping."
+        myfile.close()
+        pass
+
+

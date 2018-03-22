@@ -90,7 +90,7 @@ for infile in infiles:
                     icrs.append(i)
                 if header[i].startswith("ocr_") or lower(header[i]).startswith("outputcountrate"):
                     ocrs.append(i)
-            #print len(rois)
+            print "NChannles = ", len(rois)
             #print rois
             #print len(icrs)
             #print icrs
