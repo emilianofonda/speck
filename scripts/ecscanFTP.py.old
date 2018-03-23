@@ -232,6 +232,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 myTime.sleep(10.)
             ActualFileNameData = findNextFileName(fileName,"txt")
             shell.logger.log_write("Saving data in: %s\n" % ActualFileNameData, kind='output')
+            ActualFileNameInfo = ActualFileNameData[:ActualFileNameData.rfind(".")] + ".info"
             f=file(ActualFileNameData,"w")
             f.close()
             #Configure and move mono
@@ -418,15 +419,11 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     #Declare a RAM buffer for a single MCA
                 bCmca = numpy.zeros(cardXiaDataShape[0],numpy.uint32)
                 Breaked=False
-                nChan = 0
-                
                 for xiaN in range(len(cardXIA)):
                     outChannels = iter(cardXIAChannels[xiaN])                    
-                    for ch in range(len(cardXIA[xiaN].channels)):                        
+                    for ch in range(len(cardXIA[xiaN].channels)):
                         if Breaked:
                             break
-                        nChan += 1
-
                         outCh = outChannels.next()
     #Single Channel MCA CArray creation
                         outtaHDF.createCArray(outtaHDF.root.XIA, "mca%02i"%outCh, title="mca%02i"%outCh,\
@@ -480,12 +477,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                     print "XIA%i: OK"%xiaN
 
     #Finalize derived quantities
-                fluoX = zeros(cardXiaDataShape[0],"f")
-                #numpy.nan_to_num(array( sum(mcaSum[:,roiStart:roiEnd], axis=1), "f") / I0)
-                prx = "outtaHDF.root.XIA."
-                for Chan in range(nChan):
-                    fluoX += eval(prx + "fluo%02i"%Chan)[:]*(100./(100.-eval(prx + "deadtime%02i"%Chan)[:]))
-                fluoX = fluoX/I0
+                fluoX = numpy.nan_to_num(array( sum(mcaSum[:,roiStart:roiEnd], axis=1), "f") / I0)
                 outtaHDF.root.XIA.mcaSum[:] = mcaSum
                 del mcaSum
                 xmuS = numpy.nan_to_num(log(I1/I2))
@@ -534,55 +526,56 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     #Local data saving
                 dataBlock = array([ene,theta,xmu,fluoX,xmuS,\
                 I0,I1,I2,I3],"f")
-                header = ""
-                header += "#.txt file columns content is:\n"
-                header += "#1) Energy\n"
-                header += "#2) Angle\n"
-                header += "#3) Transmission\n"
-                header += "#4) Fluorescence\n"
-                header += "#5) Standard\n"
-                header += "#6) I0\n"
-                header += "#7) I1\n"
-                header += "#8) I2\n"
-                header += "#9) I3\n"
-                header += "#TimeAtStart = %s\n" % (timeAtStart))
-                header += "#TimeAtStop  = %s\n" % (timeAtStop))
-                header += "#Scan from %g to %g at velocity= %g eV/s\n" % (e1, e2, velocity))
-                header += "#Counter Card Config\n")
+                numpy.savetxt(ActualFileNameData, transpose(dataBlock))
+                FInfo = file(ActualFileNameInfo,"w")
+                FInfo.write("#.txt file columns content is:\n")
+                FInfo.write("#1) Energy\n")
+                FInfo.write("#2) Angle\n")
+                FInfo.write("#3) Transmission\n")
+                FInfo.write("#4) Fluorescence\n")
+                FInfo.write("#5) Standard\n")
+                FInfo.write("#6) I0\n")
+                FInfo.write("#7) I1\n")
+                FInfo.write("#8) I2\n")
+                FInfo.write("#9) I3\n")
+                FInfo.write("#TimeAtStart = %s\n" % (timeAtStart))
+                FInfo.write("#TimeAtStop  = %s\n" % (timeAtStop))
+                FInfo.write("#Scan from %g to %g at velocity= %g eV/s\n" % (e1, e2, velocity))
+                FInfo.write("#Counter Card Config\n")
                 for i in cardCTsavedAttributes:
-                header += "#%s = %g\n" % (i,cardCT.read_attribute(i).value)
-                header += "#Analog  Card Config\n"
-                #Report  dark currents applied
-                header += "#Dark_I0= %9.8f\nDark_I1= %9.8f\nDark_I2= %9.8f\nDark_I3= %9.8f\n"\
-                %(cardAI_dark0,cardAI_dark1,cardAI_dark2,cardAI_dark3,)
+                    FInfo.write("#%s = %g\n" % (i,cardCT.read_attribute(i).value))
+                FInfo.write("#Analog  Card Config\n")
+                #Report in file Info dark currents applied
+                FInfo.write("#Dark_I0= %9.8f\nDark_I1= %9.8f\nDark_I2= %9.8f\nDark_I3= %9.8f\n"\
+                %(cardAI_dark0,cardAI_dark1,cardAI_dark2,cardAI_dark3,))
                 #
                 for i in cardAIsavedAttributes:
-                    header += "#%s = %g\n" % (i, cardAI.read_attribute(i).value)
+                    FInfo.write("#%s = %g\n" % (i, cardAI.read_attribute(i).value))
     
                 #XIA cards
                 for xia in cardXIA:
-                    header += "#DxMap Card Config: %s\n"%xia.label)
-                    header += "#Config File: %s\n" %(xia.DP.currentConfigFile))
-                    header += "#Mode : %s\n" %(xia.DP.currentMode))
-                    header += "#ROI(s) : \n")
+                    FInfo.write("#DxMap Card Config: %s\n"%xia.label)
+                    FInfo.write("#Config File: %s\n" %(xia.DP.currentConfigFile))
+                    FInfo.write("#Mode : %s\n" %(xia.DP.currentMode))
+                    FInfo.write("#ROI(s) : \n")
                     for i in xia.DP.getrois():
-                        header += "#%s\n" % i
+                        FInfo.write("#%s\n" % i)
                 #MOSTAB Config follows:
                 try:
-                    header += "#MOSTAB Status:\n"
+                    FInfo.write("#MOSTAB Status:\n")
                     for __mostabStatusBit in tuple(["#%s\n"%i for i in mostab.status().split("\n")]):
-                        header += "#%s" % __mostabStatusBit
+                        FInfo.write("#%s" % __mostabStatusBit)
                 except:
                     print mostab.status()
                     print "Error reporting MOSTAB status."
                 
                 #Where All Info follow
                 for i in wa(returns=True, verbose=False):
-                    header += "#" + i + "\n"
-                
-                numpy.savetxt(ActualFileNameData, transpose(dataBlock), header = header)
+                    FInfo.write("#" + i + "\n")
+                FInfo.close()
     
                 os.system("cp " + ActualFileNameData +" " +filename2ruche(ActualFileNameData))
+                os.system("cp " + ActualFileNameInfo +" " +filename2ruche(ActualFileNameInfo))            
                 print myTime.asctime(), " : Data saved to backup."
                 shell.logger.log_write("Data saved in %s at %s\n" % (ActualFileNameData, myTime.asctime()), kind='output')
     #Measure time spent for saving data

@@ -7,6 +7,8 @@ import glob
 import Gnuplot
 from string import lower
 
+from scipy import interpolate as intp
+
 import numpy as np
 import tables
 
@@ -31,6 +33,13 @@ for i in range(1, len(sys.argv)):
 for infile in infiles:
     if not infile.endswith(".hdf"):
         infiles.remove(infile)
+
+First = True
+nFiles = 0
+
+if infiles == []:
+    print "No data files to correct and average. Quitting"
+    raise SystemExit
 
 for infile in infiles:
     try:
@@ -61,8 +70,28 @@ for infile in infiles:
         muf_cor = np.sum(np.array(fluoCh)*np.array(dtC), axis=0)/I0
 
         myfile.close()
-        
+        nFiles += 1
         motor = Energy
+
+        if not First:
+            intpX = intp.interp1d(Energy, muf, 1, bounds_error=False, fill_value=0.)
+            intpXC = intp.interp1d(Energy, muf_cor, 1, bounds_error=False, fill_value=0.)
+            mufA += intpX(Energy0)
+            muf_corA += intpXC(Energy0)
+            if minEnergyMax > max(Energy):
+                minEnergyMax = max(Energy)
+            if maxEnergyMin < min(Energy):
+                maxEnergyMin = min(Energy)
+        else:
+            outfileA = infile[:-8] + "average_cor.txt"
+            Energy0 = npy.array(Energy,"f")
+            maxEnergyMin = min(Energy0)
+            minEnergyMax = max(Energy0)
+            mufA = npy.zeros(len(Energy0))
+            muf_corA = npy.zeros(len(Energy0))
+            mufA += muf
+            muf_corA += muf_corA
+            First = False
 
         if "-show" in sys.argv:
             if len(infiles) > 1:
@@ -115,4 +144,13 @@ for infile in infiles:
         myfile.close()
         pass
 
+mufA = mufA/nFiles
+muf_corA = muf_corA/nFiles
 
+idx0 = np.searchsorted(Energy0,maxEnergyMin)
+idx1 = np.searchsorted(Energy0,minEnergyMax)
+
+header = "#1)Energy\n#2)muf = Sum(ROI)/I0\n#4)muf_cor = Sum(ROI/OCR*ICR)/I0\n"
+header += "#HEADER\n#\nEnergy\tmuf\tmuf_cor\n"
+np.savetxt(outfileA,np.array([Energy0[idx0:idx1],mufA[idx0:idx1],muf_corA[idx0:idx1]]).transpose(),header=header)
+print "Average Corrected file saved in %s." % outfileA
