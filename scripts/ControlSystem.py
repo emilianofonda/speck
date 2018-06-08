@@ -44,7 +44,7 @@ def StartServer(speckInstance, timeOut=10,delay=0,retry=True):
         st = speckInstance.state()
     except:
         if retry:
-            StartServer(speckInstance, timeOut=timeOut, delay=delay,retry=False)a
+            StartServer(speckInstance, timeOut=timeOut, delay=delay,retry=False)
         else:
             raise Exception("StartServer: %s can't start."%label)
     sleep(delay)

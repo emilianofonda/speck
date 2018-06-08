@@ -174,6 +174,8 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     for xia in cardXIA:
         print "Setting XIA card:",xia.label
         cardXIAChannels.append(range(__Nch,__Nch + len(xia.channels)))
+        #Line below should work for non overlapping output channels
+        __Nch = len(xia.channels)
         xia.DP.nbpixels = NumberOfPoints
         xia.DP.streamNbAcqPerFile = 250
         xia.DP.set_timeout_millis(30000)
@@ -369,6 +371,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                         setSTEP()
                         raise Exception("Time Out waiting for XIA cards to stop! Waited more than 30s... !")
                         shell.logger.log_write("Time Out waiting for XIA cards to stop! Waited more than 30s... !", kind='output')
+                XIAt0=time()
                 while(True in [i[0] not in os.listdir(i[1]) for i in zip(LastXIAFileName, XIANexusPath)]):
                     myTime.sleep(0.25)
                     if 3. > myTime.time() - XIAt0 > 2.:
@@ -377,12 +380,12 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                             ll.sort()
                             print ll
                             os.system("cd %s&&ls"%i)
-                        print "Time Out waiting for XIA cards files! Waited more than 10s... ! FileSystem Workaround Applied"
+                        print "Time Out waiting for XIA cards files! Waited more than 2s... ! FileSystem Workaround Applied"
                         shell.logger.log_write("Time Out waiting for XIA files! Waited more than 2s... ! FileSystem Workaround Applied", kind='output')
                     if myTime.time() - XIAt0 > 15.:
                         for i in XIANexusPath:
                             ll = os.listdir(i).sort()
-                            print ll
+                            #print ll
                         print "Time Out waiting for XIA cards files! Waited more than 3s... !"
                         shell.logger.log_write("Time Out waiting for XIA files! Waited more than 3s... !", kind='output')
                         break
@@ -425,6 +428,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                         if Breaked:
                             break
                         outCh = outChannels.next()
+                        #print "outCh = ",outCh
     #Single Channel MCA CArray creation
                         outtaHDF.createCArray(outtaHDF.root.XIA, "mca%02i"%outCh, title="mca%02i"%outCh,\
                         shape=cardXiaDataShape[0], atom = tables.UInt32Atom(), filters=HDFfilters)
@@ -433,30 +437,31 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     #Fluo Channel ROI values                
                         outtaHDF.createArray("/XIA", "fluo%02i"%outCh, numpy.zeros(NumberOfPoints, numpy.uint32))
     #ICR line comment out if required
-                        outtaHDF.createArray("/XIA", "inputCountRate%02i"%outCh, numpy.zeros(NumberOfPoints, numpy.float32))
+    #                    outtaHDF.createArray("/XIA", "inputCountRate%02i"%outCh, numpy.zeros(NumberOfPoints, numpy.float32))
     #OCR line comment out if required
-                        outtaHDF.createArray("/XIA", "outputCountRate%02i"%outCh, numpy.zeros(NumberOfPoints, numpy.float32))
+    #                    outtaHDF.createArray("/XIA", "outputCountRate%02i"%outCh, numpy.zeros(NumberOfPoints, numpy.float32))
     #DT line comment out if required
                         outtaHDF.createArray("/XIA", "deadtime%02i"%outCh, numpy.zeros(NumberOfPoints, numpy.float32))
                         block = 0
                         blockLen = cardXIA[xiaN].DP.streamNbAcqPerFile
                         pointerCh = eval("outtaHDF.root.XIA.fluo%02i"%outCh)
     #ICR line comment out if required
-                        pointerIcr = eval("outtaHDF.root.XIA.inputCountRate%02i"%outCh)
+    #                    pointerIcr = eval("outtaHDF.root.XIA.inputCountRate%02i"%outCh)
     #OCR line comment out if required
-                        pointerOcr = eval("outtaHDF.root.XIA.outputCountRate%02i"%outCh)
+    #                    pointerOcr = eval("outtaHDF.root.XIA.outputCountRate%02i"%outCh)
     #DT line comment out if required
                         pointerDt = eval("outtaHDF.root.XIA.deadtime%02i"%outCh)
                         for XFile in XIAfiles[xiaN]:
                             try:
                                 __block = eval("XFile.root.entry.scan_data.channel%02i"%ch).read()
     #ICR line comment out if required
-                                __blockIcr = eval("XFile.root.entry.scan_data.icr%02i"%ch).read()
+    #                            __blockIcr = eval("XFile.root.entry.scan_data.icr%02i"%ch).read()
     #OCR line comment out if required
-                                __blockOcr = eval("XFile.root.entry.scan_data.ocr%02i"%ch).read()
+    #                            __blockOcr = eval("XFile.root.entry.scan_data.ocr%02i"%ch).read()
     #DT line comment out if required
                                 __blockDT = eval("XFile.root.entry.scan_data.deadtime%02i"%ch).read()
                             except:
+                                print "Cannot read ch = %i in XIA card #%i (first card is card 0)"%(ch,xiaN)
                                 Breaked = True
                                 break
                             actualBlockLen = shape(__block)[0]
@@ -466,9 +471,9 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                             #pointerCh[block * blockLen: (block + 1) * blockLen] = sum(__block[:,roiStart:roiEnd], axis=1)
                             pointerCh[block * blockLen: (block * blockLen) + actualBlockLen] = sum(__block[:,roiStart:roiEnd], axis=1)
     #ICR line comment out if required
-                            pointerIcr[block * blockLen: (block * blockLen) + actualBlockLen] = __blockIcr
+    #                        pointerIcr[block * blockLen: (block * blockLen) + actualBlockLen] = __blockIcr
     #OCR line comment out if required
-                            pointerOcr[block * blockLen: (block * blockLen) + actualBlockLen] = __blockOcr
+    #                        pointerOcr[block * blockLen: (block * blockLen) + actualBlockLen] = __blockOcr
     #DT line comment out if required
                             pointerDt[block * blockLen: (block * blockLen) + actualBlockLen] = __blockDT
                             block += 1
@@ -605,6 +610,22 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             outtaHDF.close()
         except:
             raise tmp
+        try:
+            for __i in XIAfiles:
+                for __j in __i:
+                    try:
+                        __j.close()
+                        myTime.sleep(0.25)
+                    except:
+                        pass
+        except:
+            pass
+        print tmp
+    finally:
+        try:
+            outtaHDF.close()
+        except:
+            pass
         try:
             for __i in XIAfiles:
                 for __j in __i:

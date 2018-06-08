@@ -418,7 +418,7 @@ class MOSTAB_serial:
 #            pass
 #        return self.range()
 #    
-    def tune(self, p1=2, p2=8, np=60, dt=0.1, oprange=1.2, offset = 0., draw=True, tune="center"):
+    def tune(self, p1=2, p2=8, np=100, dt=0.1, oprange=1.2, offset = 0., draw=True, tune="center"):
         """The tuning procedure can move to max intenisty (tune="max")
         or to baricenter (tune="center")
         """
@@ -442,7 +442,7 @@ class MOSTAB_serial:
         elif self.mode() == "OSCILLATION":
             dp = float(self("?AMPLITUDE")[self.echo])
             phi = float(self("?PHASE")[self.echo])
-            ob_xy = self.oscbeam(pt - 3 * dp, pt + 2 * dp, 0.25 * dp, phase = phi, repeat = 10)
+            ob_xy = self.oscbeam(pt - 1.5 * dp, pt + 1.5 * dp, 0.25 * dp, phase = phi, repeat = 10)
             ob_fit = numpy.polyfit(ob_xy[0], ob_xy[1], 1)
             pylab.subplot(1,2,2)
             pylab.plot(ob_xy[0], ob_fit[0] * ob_xy[0] + ob_fit[1], "g--", linewidth=3)

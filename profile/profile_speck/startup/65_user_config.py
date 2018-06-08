@@ -148,7 +148,27 @@ try:
     ["inputCountRate16",    "icr_16",    "%9d",    "cps"],
     ["inputCountRate17",    "icr_17",    "%9d",    "cps"],
     ["inputCountRate18",    "icr_18",    "%9d",    "cps"],
-    ["inputCountRate19",    "icr_19",    "%9d",    "cps"]]
+    ["inputCountRate19",    "icr_19",    "%9d",    "cps"],
+    ["outputCountRate00",   "ocr_00",    "%9d",    "cps"],
+    ["outputCountRate01",   "ocr_01",    "%9d",    "cps"],
+    ["outputCountRate02",   "ocr_02",    "%9d",    "cps"],
+    ["outputCountRate03",   "ocr_03",    "%9d",    "cps"],
+    ["outputCountRate04",   "ocr_04",    "%9d",    "cps"],
+    ["outputCountRate05",   "ocr_05",    "%9d",    "cps"],
+    ["outputCountRate06",   "ocr_06",    "%9d",    "cps"],
+    ["outputCountRate07",   "ocr_07",    "%9d",    "cps"],
+    ["outputCountRate08",   "ocr_08",    "%9d",    "cps"],
+    ["outputCountRate09",   "ocr_09",    "%9d",    "cps"],
+    ["outputCountRate10",   "ocr_10",    "%9d",    "cps"],
+    ["outputCountRate11",   "ocr_11",    "%9d",    "cps"],
+    ["outputCountRate12",   "ocr_12",    "%9d",    "cps"],
+    ["outputCountRate13",   "ocr_13",    "%9d",    "cps"],
+    ["outputCountRate14",   "ocr_14",    "%9d",    "cps"],
+    ["outputCountRate15",   "ocr_15",    "%9d",    "cps"],
+    ["outputCountRate16",   "ocr_16",    "%9d",    "cps"],
+    ["outputCountRate17",   "ocr_17",    "%9d",    "cps"],
+    ["outputCountRate18",   "ocr_18",    "%9d",    "cps"],
+    ["outputCountRate19",   "ocr_19",    "%9d",    "cps"]]
     user_readconfig2=[
     ["channel00",    "mca_20",    "%9d",    "cts"],
     ["channel01",    "mca_21",    "%9d",    "cts"],
@@ -213,12 +233,29 @@ try:
     ["inputCountRate12",    "icr_32",    "%9d",    "cps"],
     ["inputCountRate13",    "icr_33",    "%9d",    "cps"],
     ["inputCountRate14",    "icr_34",    "%9d",    "cps"],
-    ["inputCountRate15",    "icr_35",    "%9d",    "cps"]
+    ["inputCountRate15",    "icr_35",    "%9d",    "cps"],
+    ["outputCountRate00",   "ocr_20",    "%9d",    "cps"],
+    ["outputCountRate01",   "ocr_21",    "%9d",    "cps"],
+    ["outputCountRate02",   "ocr_22",    "%9d",    "cps"],
+    ["outputCountRate03",   "ocr_23",    "%9d",    "cps"],
+    ["outputCountRate04",   "ocr_24",    "%9d",    "cps"],
+    ["outputCountRate05",   "ocr_25",    "%9d",    "cps"],
+    ["outputCountRate06",   "ocr_26",    "%9d",    "cps"],
+    ["outputCountRate07",   "ocr_27",    "%9d",    "cps"],
+    ["outputCountRate08",   "ocr_28",    "%9d",    "cps"],
+    ["outputCountRate09",   "ocr_29",    "%9d",    "cps"],
+    ["outputCountRate10",   "ocr_30",    "%9d",    "cps"],
+    ["outputCountRate11",   "ocr_31",    "%9d",    "cps"],
+    ["outputCountRate12",   "ocr_32",    "%9d",    "cps"],
+    ["outputCountRate13",   "ocr_33",    "%9d",    "cps"],
+    ["outputCountRate14",   "ocr_34",    "%9d",    "cps"],
+    ["outputCountRate15",   "ocr_35",    "%9d",    "cps"]
+
     ]
 #    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig1)
 #    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",user_readconfig=user_readconfig2)
-    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",FTPclient="d09-1-c00/ca/ftpclientxia.1",FTPserver="d09-1-c00/ca/ftpserverxia.1",spoolMountPoint="/nfs/srv5/spool1/xia1")
-    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",FTPclient="d09-1-c00/ca/ftpclientxia.2",FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/nfs/srv5/spool1/xia2")
+    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig1,FTPclient="d09-1-c00/ca/ftpclientxia.1",FTPserver="d09-1-c00/ca/ftpserverxia.1",spoolMountPoint="/nfs/srv5/spool1/xia1")
+    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",user_readconfig=user_readconfig2,FTPclient="d09-1-c00/ca/ftpclientxia.2",FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/nfs/srv5/spool1/xia2")
 #    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",)
 #    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",)
     def setroi(ch1, ch2):
@@ -248,6 +285,7 @@ try:
     #"units":"%","format":"%6.4f"},
     ]
     ct = pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[], posts= ctPosts)
+    #ct = pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,],slaves=[], posts= ctPosts)
 except Exception, tmp:
     print "Failure defining ct "
     print "Defaulting to cpt... ct=cpt... "
@@ -392,7 +430,9 @@ __tmp={
 "vgap5" :["d09-1-c06/ex/fent_v.2-mt_gap","position"],
 "hpos5" :["d09-1-c06/ex/fent_h.2-mt_pos","position"],
 "hgap5" :["d09-1-c06/ex/fent_h.2-mt_gap","position"],
-"cryo4z" :["d09-1-cx1/ex/option1-mt_tz.1","position"],
+"cryoz" :["d09-1-cx1/ex/konti-mt_tz.1","position"],
+"cryophi" :["d09-1-cx1/ex/konti-mt_rz.1","position"],
+#"cryo4z" :["d09-1-cx1/ex/option1-mt_tz.1","position"],
 #"cryo4set" :["d09-1-cx1/ex/cryo4.1-ctrl","temperatureSetPoint"],
 #"keith_I0"      :["d09-1-cx1/ex/amp_iv.7","gain"],
 #"keith_I1"      :["d09-1-cx1/ex/amp_iv.8","gain"],
@@ -799,7 +839,7 @@ except Exception, tmp:
 #### Define here below lists of moveables for a quick view with "wm"
 ####
 
-instrument("VortexME4")
+#instrument("VortexME4")
 
 #slits=[vgap1,vpos1,hgap1,hpos1,vgap2,vpos2,vgap4,vpos4,hgap4,hpos4,vgap5,vpos5,hgap5,hpos5,vgap6,vpos6,hgap6,hpos6]
 #sample=[x, z, phi, theta]

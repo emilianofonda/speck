@@ -47,7 +47,7 @@ def ReadScanForm(filename):
     #
     keys=["bend","nobend","tun","notun","detune","fluo","sexafs","e0","kscan","settling",\
     "plot","noplot","tey","roi","fast","backup","nobackup","roll","notz2","almostfast",
-    "fullmca","attribute","pitch"]
+    "fullmca","attribute","pitch","velocity"]
     #
     #Define default values:
     #
@@ -113,6 +113,7 @@ def ReadScanForm(filename):
     kscan=False
     kgrid=[]
     roi=default_roi
+    velocity=10
     scanMode=default_scanMode
     backup=default_backup
     notz2=False
@@ -201,6 +202,16 @@ def ReadScanForm(filename):
                     e0=float(j[1])
                 except:
                     exceptions.SyntaxError("E0 value is not understandable",i)
+        elif(i.startswith("velocity")):
+            j=i.replace("="," ")
+            j=j.split()
+            if(len(j)==1):
+                velocity=10
+            else:
+                try:
+                    velocity=float(j[1])
+                except:
+                    exceptions.SyntaxError("velocity value is not understandable",i)
         elif(i.startswith("roll")):
             j=i.replace("="," ")
             j=i.replace(","," ")
@@ -356,7 +367,7 @@ def ReadScanForm(filename):
     "detune":detune,"detectionMode":detectionMode,"e0":e0,"kgrid":kgrid,"kscan":kscan,"SettlingTime":SettlingTime,\
     "plotSetting":plotSetting,"roi":roi,"scanMode":scanMode,"backup":backup,\
     "ServoRollParameters":ServoRollParameters,"ServoPitchParameters":ServoPitchParameters,\
-    "notz2":notz2,"notz2_auto_limit":notz2_auto_limit,"fullmca":fullmca,"attributes":attributes}
+    "notz2":notz2,"notz2_auto_limit":notz2_auto_limit,"fullmca":fullmca,"attributes":attributes,"velocity":velocity}
 
 
 
@@ -442,6 +453,7 @@ class escan_class:
         self.backup=thisform["backup"]
         bend = thisform["usebender"]
         tuning = thisform["tuning"]
+        self.velocity = thisform["velocity"]
         degree = thisform["degree"]
         self.grid = thisform["res"]
         self.TUNING = tuning
@@ -581,9 +593,9 @@ class escan_class:
         print "---------------------------------------------"
         print "Extimated Moving time (minutes)    :",MovingTime/60.
         print "Integration Time (minutes)         :",IntegrationTime/60.
-        #print "Extimated Settling Time (minutes)  :", self.SettlingTime*self.scanNumberOfPoints/60.
-        #print "Extimated Total (minutes)          :",(MovingTime+IntegrationTime + self.SettlingTime*self.scanNumberOfPoints)/60.
-        print "Extimated Total (minutes)          :",(MovingTime+IntegrationTime)/60.
+        print "Extimated Settling Time (minutes)  :", self.SettlingTime*self.scanNumberOfPoints/60.
+        print "Extimated Total (minutes)          :",(MovingTime+IntegrationTime + self.SettlingTime*self.scanNumberOfPoints)/60.
+        #print "Extimated Total (minutes)          :",(MovingTime+IntegrationTime)/60.
         print "Number of points                   :",self.scanNumberOfPoints
         print "Tuning could take 2 minutes if enabled"
         print "---------------------------------------------"
@@ -656,10 +668,11 @@ class escan_class:
                 S.append(S[i]+S[i-1])    
         return S[0:n]
         
-    def backlash_recovery(self,energy,de=None,dummypoints=20,deadtime=0.1):
+    def backlash_recovery(self,energy,de=None,dummypoints=5,deadtime=1):
         """Execute a backlash recovery for the monochromator and then set it to e-de:
         de=2, dummypoints=3;  moves to energy-de*2, energy-de*2, energy-de"""
         #Speed up movement to first point
+        #self.dcm.mode(0)
         self.dcm.mode(1)
         sleep(0.25)
         self.dcm.velocity(60)
@@ -668,20 +681,20 @@ class escan_class:
             de=max(self.trajectory["energy"][1]-self.trajectory["energy"][0],1.)
         #points=array(self.__fibonacci(dummypoints+2)[-1:1:-1])*(-de)+energy
         points=numpy.arange(self.trajectory["energy"][0] - de * dummypoints, self.trajectory["energy"][0], de)
-        print "Performing backlash recovery over: ",points
+        #print "Performing backlash recovery over: ",points
         self.dcm.pos(points[0])
         #Go back to dcm cruise speed
         sleep(0.25)
         try:
-            self.dcm.velocity(10)
+            self.dcm.velocity(self.velocity)
         except KeyboardInterrupt:
             raise
         except:
             sleep(3)
-            self.dcm.velocity(10)
+            self.dcm.velocity(self.velocity)
         for en in points[1:]:
             self.dcm.pos(en)
-            sleep(deadtime)
+            sleep(min(deadtime, self.trajectory["time"][0]))
         return
 
     def scan_tuning(self,n=1):
@@ -1900,8 +1913,9 @@ class escan_class:
                 print "pre_scan: Error while moving dcm.m_rs2 to first point"
         #Set dcm speed at 10eV/s and mode 1
         try:
+            pass
             self.dcm.mode(1)
-            self.dcm.velocity(10)
+            self.dcm.velocity(self.velocity)
         except:
             pass
         #Wait for injection if necessary

@@ -77,7 +77,8 @@ class dxmap:
                         self.DP.set_attribute_config([ac,])
                 break
             except:
-                print self.label+": Failed setting user_readconfig! Trial no: %i"%prova
+                pass
+                #print self.label+": Failed setting user_readconfig! Trial no: %i"%prova
         self.rois,self.ocrs,self.icrs,self.dts=[],[],[],[]
         self.channels=[]
         self.channels_labels=[]
