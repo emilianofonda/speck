@@ -40,7 +40,7 @@ class CPlotter:
 
 __CPlotter__ = CPlotter()
 
-def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,coolingTime=60):
+def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,coolingTime=0):
     try:
         ecscanXPActor(fileName,e1,e2,n,dt,velocity, e0, mode,shutter,beamCheck,coolingTime=coolingTime)
     except KeyboardInterrupt:

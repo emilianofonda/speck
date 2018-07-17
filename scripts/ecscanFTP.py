@@ -386,8 +386,8 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                         for i in XIANexusPath:
                             ll = os.listdir(i).sort()
                             #print ll
-                        print "Time Out waiting for XIA cards files! Waited more than 3s... !"
-                        shell.logger.log_write("Time Out waiting for XIA files! Waited more than 3s... !", kind='output')
+                        print "Time Out waiting for XIA cards files! Waited more than 15s... !"
+                        shell.logger.log_write("Time Out waiting for XIA files! Waited more than 15s... !", kind='output')
                         break
                 XIAtEnd = myTime.time()-XIAt0
                 print "XIA needed additional %3.1f seconds to provide all data files."%(XIAtEnd)
@@ -683,11 +683,16 @@ XIANexusPath, XIAfilesList, fluoXIA, cardXIAChannels):
         for xiaN in range(len(cardXIA)):
             for name in tmp[xiaN][len(XIAfilesList[xiaN]):]:
                 XIAfilesList[xiaN].append(name)
-                f = tables.openFile(XIANexusPath[xiaN] + os.sep + name, "r")
-                fluoSeg=zeros([shape(eval("f.root.entry.scan_data.channel%02i"%cardXIAChannels[xiaN][0]))[0],cardXIA[xiaN].DP.streamNbDataPerAcq],numpy.float32)
-                for ch in range(len(cardXIAChannels[xiaN])):
-                    fluoSeg += eval("f.root.entry.scan_data.channel%02i"%ch).read()
-                f.close()
+                try:
+                    f = tables.openFile(XIANexusPath[xiaN] + os.sep + name, "r")
+                    fluoSeg=zeros([shape(eval("f.root.entry.scan_data.channel%02i"%cardXIAChannels[xiaN][0]))[0],cardXIA[xiaN].DP.streamNbDataPerAcq],numpy.float32)
+                    for ch in range(len(cardXIAChannels[xiaN])):
+                        fluoSeg += eval("f.root.entry.scan_data.channel%02i"%ch).read()
+                finally:
+                    try:
+                        f.close()
+                    except:
+                        pass
                 fluoSeg = sum(fluoSeg[:,roiStart:roiEnd],axis=1) 
                 fluoXIA[xiaN] += list(fluoSeg)
         ll = min([len(i) for i in fluoXIA])

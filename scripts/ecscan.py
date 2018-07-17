@@ -273,9 +273,9 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                         shell.logger.log_write(mycurses.RED+mycurses.BOLD + "XIA Card FAULT." + mycurses.RESET, kind='output')
                         print mycurses.RED+mycurses.BOLD +"XIA Card FAULT" + mycurses.RESET
                         break
-                    update_graphs(CP, dcm, cardAI, cardCT, cardXIA1, cardXIA2,\
-                    roiStart, roiEnd, XIA1NexusPath, XIA2NexusPath, XIA1filesList, XIA2filesList,\
-                    fluoXIA1, fluoXIA2)
+                    #update_graphs(CP, dcm, cardAI, cardCT, cardXIA1, cardXIA2,\
+                    #roiStart, roiEnd, XIA1NexusPath, XIA2NexusPath, XIA1filesList, XIA2filesList,\
+                    #fluoXIA1, fluoXIA2)
                     pass
                 except KeyboardInterrupt:
                     raise
@@ -631,21 +631,31 @@ XIA1NexusPath, XIA2NexusPath, XIA1filesList, XIA2filesList, fluoXIA1, fluoXIA2):
         for name in tmp[len(XIA1filesList):]:
             XIA1filesList.append(name)
             #print "New XIA1 file found: ", name, " --> Fluo graph update."
-            f = tables.openFile(XIA1NexusPath + os.sep + name,"r")
-            fluoSeg=zeros([shape(eval("f.root.entry.scan_data.channel%02i"%cardXIA1Channels[0]))[0],cardXIA1.streamNbDataPerAcq],numpy.float32)
-            for ch in cardXIA1Channels:
-                fluoSeg += eval("f.root.entry.scan_data.channel%02i"%ch).read()
-            f.close()
+            try:
+                f = tables.openFile(XIA1NexusPath + os.sep + name,"r")
+                fluoSeg=zeros([shape(eval("f.root.entry.scan_data.channel%02i"%cardXIA1Channels[0]))[0],cardXIA1.streamNbDataPerAcq],numpy.float32)
+                for ch in cardXIA1Channels:
+                    fluoSeg += eval("f.root.entry.scan_data.channel%02i"%ch).read()
+            finally:
+                try:
+                    f.close()
+                except:
+                    pass
             fluoSeg = sum(fluoSeg[:,roiStart:roiEnd],axis=1) 
             fluoXIA1 += list(fluoSeg)
         for name in tmp2[len(XIA2filesList):]:
             XIA2filesList.append(name)
             #print "New XIA2 file found: ", name, " --> Fluo graph update."
-            f = tables.openFile(XIA2NexusPath + os.sep + name,"r")
-            fluoSeg=zeros([shape(eval("f.root.entry.scan_data.channel%02i"%cardXIA2Channels[0]))[0],cardXIA2.streamNbDataPerAcq],numpy.float32)
-            for ch in cardXIA2Channels:
-                fluoSeg += eval("f.root.entry.scan_data.channel%02i"%ch).read()
-            f.close()
+            try:
+                f = tables.openFile(XIA2NexusPath + os.sep + name,"r")
+                fluoSeg=zeros([shape(eval("f.root.entry.scan_data.channel%02i"%cardXIA2Channels[0]))[0],cardXIA2.streamNbDataPerAcq],numpy.float32)
+                for ch in cardXIA2Channels:
+                    fluoSeg += eval("f.root.entry.scan_data.channel%02i"%ch).read()
+            except:
+                try:
+                    f.close()
+                except:
+                    pass
             fluoSeg = sum(fluoSeg[:,roiStart:roiEnd],axis=1) 
             fluoXIA2 += list(fluoSeg)
         ll = min(len(fluoXIA1),len(fluoXIA2))
