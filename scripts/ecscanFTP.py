@@ -16,7 +16,7 @@ try:
     import Tkinter
     NoTk=False
 except:
-    print "Warning from escan: Tkinter not installed."
+    print "Warning from ecscan: Tkinter not installed."
     NoTk=True
 
 print mycurses.RED+"Using FTP version of ecscan"+mycurses.RESET
@@ -70,10 +70,10 @@ class CPlotter:
 
 __CPlotter__ = CPlotter()
 
-def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True):
+def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,backlash=100):
     try:
         for i in range(n):
-	  ecscanActor(fileName,e1,e2,1,dt,velocity, e0, mode,shutter, beamCheck)
+	  ecscanActor(fileName,e1,e2,1,dt,velocity, e0, mode,shutter, beamCheck,backlash=backlash)
     except KeyboardInterrupt:
         shell.logger.log_write("ecscan halted on user request: Ctrl-C\n", kind='output')
         print "Halting on user request."
@@ -91,7 +91,7 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
     return 
 
 
-def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True):
+def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,backlash=100):
     """Start from e1 (eV) to e2 (eV) and count over dt (s) per point.
     velocity: Allowed velocity doesn't exceed 40eV/s.
     The backup folder MUST be defined for the code to run.
@@ -164,7 +164,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             roiStart, roiEnd = cardXIA[0].getROIs()
             print " done. OK."
         except Exception, tmp:
-            print "\nRegion Of Interest has not been defined? use setroi(start,end) command please."
+            print "\nRegion Of Interest has not been defined? uAnatase_newPellet_phi20_macrose setroi(start,end) command please."
             raise tmp
     print "ROI limits are [%4i:%4i]" % (roiStart, roiEnd)
     cardXiaDataShape = []
@@ -223,7 +223,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
         except:
             myTime.sleep(3)
     #Start graphic windows    
-    try:
+    try:Anatase_newPellet_phi20_macro
         CP = __CPlotter__
         CP.GraceWin = GracePlotter()
         for CurrentScan in xrange(NofScans):
@@ -242,7 +242,8 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 wait_motor(dcm)
             myTime.sleep(1)
             dcm.velocity(60)
-            dcm.pos(e1-1., wait=False)
+            if dcm.pos()>e1:
+                dcm.pos(e1-backlash, wait=False)
             
             #Print Name:
             print "Measuring : %s\n"%ActualFileNameData
@@ -290,6 +291,8 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             myTime.sleep(2)
             XIAfilesList=[[],]*len(cardXIA)
             fluoXIA=[[],]*len(cardXIA)
+            actualRunningStart = myTime.time()
+            #while((myTime.time() - actualRunningStart) < (TotalTime -30.) and dcm.state() == DevState.MOVING):
             while(dcm.state() == DevState.MOVING):
                 try:
                     if DevState.FAULT in [xia.state() for xia in cardXIA]:
@@ -303,7 +306,8 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                     raise
                 except Exception, tmp:
                     print tmp
-                myTime.sleep(4)
+                #myTime.sleep(10)
+                myTime.sleep(5)
             try:
                 if shutter:
                     sh_fast.close()
@@ -348,12 +352,11 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 fluoXP = numpy.nan_to_num(I3/I0)
                 ene = numpy.nan_to_num(dcm.theta2e(theta))
                 #
-                #if CurrentScan < NofScans-1: 
-                #    print myTime.asctime(), " : sending dcm back to starting point."
-                #    dcm.velocity(60)
-                #    myTime.sleep(0.2)
-                #    dcm.praise Exception("Time Out waiting for XIA cards to stop! Waited more than 180s... !")
-                #    dcm.pos(e1-1., wait=False)
+                if CurrentScan < NofScans-1: 
+                    print myTime.asctime(), " : sending dcm back to starting point."
+                    dcm.velocity(60)
+                    myTime.sleep(0.2)
+                    dcm.pos(e1-backlash, wait=False)
                 #
                 print myTime.asctime(), " : Saving Data..."
 
@@ -374,24 +377,24 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 XIAt0=time()
                 while(True in [i[0] not in os.listdir(i[1]) for i in zip(LastXIAFileName, XIANexusPath)]):
                     myTime.sleep(0.25)
-                    if 3. > myTime.time() - XIAt0 > 2.:
+                    if 6. > myTime.time() - XIAt0 > 3.:
                         for i in XIANexusPath:
-                            ll = os.listdir(i)
-                            ll.sort()
-                            print ll
+                            #ll = os.listdir(i)
+                            #ll.sort()
+                            #print ll
                             os.system("cd %s&&ls"%i)
                         print "Time Out waiting for XIA cards files! Waited more than 2s... ! FileSystem Workaround Applied"
                         shell.logger.log_write("Time Out waiting for XIA files! Waited more than 2s... ! FileSystem Workaround Applied", kind='output')
                     if myTime.time() - XIAt0 > 15.:
-                        for i in XIANexusPath:
-                            ll = os.listdir(i).sort()
+                        #for i in XIANexusPath:
+                            #ll = os.listdir(i).sort()
                             #print ll
                         print "Time Out waiting for XIA cards files! Waited more than 15s... !"
                         shell.logger.log_write("Time Out waiting for XIA files! Waited more than 15s... !", kind='output')
                         break
                 XIAtEnd = myTime.time()-XIAt0
-                print "XIA needed additional %3.1f seconds to provide all data files."%(XIAtEnd)
-                shell.logger.log_write("XIA needed additional %3.1f seconds to provide all data files."%(XIAtEnd) + ".hdf", kind='output')
+                print "XIA needed additional %3.1f seconds to provide data files."%(XIAtEnd)
+                shell.logger.log_write("XIA needed additional %3.1f seconds to provide data files."%(XIAtEnd) + ".hdf", kind='output')
     
     #Additional time to wait (?)
                 myTime.sleep(0.2)
@@ -437,27 +440,27 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     #Fluo Channel ROI values                
                         outtaHDF.createArray("/XIA", "fluo%02i"%outCh, numpy.zeros(NumberOfPoints, numpy.uint32))
     #ICR line comment out if required
-    #                    outtaHDF.createArray("/XIA", "inputCountRate%02i"%outCh, numpy.zeros(NumberOfPoints, numpy.float32))
+                        outtaHDF.createArray("/XIA", "inputCountRate%02i"%outCh, numpy.zeros(NumberOfPoints, numpy.float32))
     #OCR line comment out if required
-    #                    outtaHDF.createArray("/XIA", "outputCountRate%02i"%outCh, numpy.zeros(NumberOfPoints, numpy.float32))
+                        outtaHDF.createArray("/XIA", "outputCountRate%02i"%outCh, numpy.zeros(NumberOfPoints, numpy.float32))
     #DT line comment out if required
                         outtaHDF.createArray("/XIA", "deadtime%02i"%outCh, numpy.zeros(NumberOfPoints, numpy.float32))
                         block = 0
                         blockLen = cardXIA[xiaN].DP.streamNbAcqPerFile
                         pointerCh = eval("outtaHDF.root.XIA.fluo%02i"%outCh)
     #ICR line comment out if required
-    #                    pointerIcr = eval("outtaHDF.root.XIA.inputCountRate%02i"%outCh)
+                        pointerIcr = eval("outtaHDF.root.XIA.inputCountRate%02i"%outCh)
     #OCR line comment out if required
-    #                    pointerOcr = eval("outtaHDF.root.XIA.outputCountRate%02i"%outCh)
+                        pointerOcr = eval("outtaHDF.root.XIA.outputCountRate%02i"%outCh)
     #DT line comment out if required
                         pointerDt = eval("outtaHDF.root.XIA.deadtime%02i"%outCh)
                         for XFile in XIAfiles[xiaN]:
                             try:
                                 __block = eval("XFile.root.entry.scan_data.channel%02i"%ch).read()
     #ICR line comment out if required
-    #                            __blockIcr = eval("XFile.root.entry.scan_data.icr%02i"%ch).read()
+                                __blockIcr = eval("XFile.root.entry.scan_data.icr%02i"%ch).read()
     #OCR line comment out if required
-    #                            __blockOcr = eval("XFile.root.entry.scan_data.ocr%02i"%ch).read()
+                                __blockOcr = eval("XFile.root.entry.scan_data.ocr%02i"%ch).read()
     #DT line comment out if required
                                 __blockDT = eval("XFile.root.entry.scan_data.deadtime%02i"%ch).read()
                             except:
@@ -471,15 +474,15 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                             #pointerCh[block * blockLen: (block + 1) * blockLen] = sum(__block[:,roiStart:roiEnd], axis=1)
                             pointerCh[block * blockLen: (block * blockLen) + actualBlockLen] = sum(__block[:,roiStart:roiEnd], axis=1)
     #ICR line comment out if required
-    #                        pointerIcr[block * blockLen: (block * blockLen) + actualBlockLen] = __blockIcr
+                            pointerIcr[block * blockLen: (block * blockLen) + actualBlockLen] = __blockIcr
     #OCR line comment out if required
-    #                        pointerOcr[block * blockLen: (block * blockLen) + actualBlockLen] = __blockOcr
+                            pointerOcr[block * blockLen: (block * blockLen) + actualBlockLen] = __blockOcr
     #DT line comment out if required
                             pointerDt[block * blockLen: (block * blockLen) + actualBlockLen] = __blockDT
                             block += 1
     #Write Single MCA to Disk
                         pCmca[:] = bCmca
-                    print "XIA%i: OK"%xiaN
+                    print "XIA%i: OK"%(xiaN+1)
 
     #Finalize derived quantities
                 fluoX = numpy.nan_to_num(array( sum(mcaSum[:,roiStart:roiEnd], axis=1), "f") / I0)
@@ -596,11 +599,11 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                     raise
                 except Exception, tmp:
                     print tmp
-                dcm.velocity(60)
-                if CurrentScan < NofScans-1: 
-                    print myTime.asctime(), " : sending dcm back to starting point."
-                    myTime.sleep(0.2)
-                    dcm.pos(e1-1.)
+                #dcm.velocity(60)
+                #if CurrentScan < NofScans-1: 
+                #    print myTime.asctime(), " : sending dcm back to starting point."
+                #    myTime.sleep(0.2)
+                #    dcm.pos(e1-1.)
     except Exception, tmp:
         #print "Acquisition Halted on Exception: wait for dcm to stop."
         #stopscan(shutter)

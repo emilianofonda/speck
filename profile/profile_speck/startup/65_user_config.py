@@ -285,7 +285,7 @@ try:
     #"units":"%","format":"%6.4f"},
     ]
     ct = pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[], posts= ctPosts)
-    #ct = pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,],slaves=[], posts= ctPosts)
+    #ct = pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca2,],slaves=[], posts= ctPosts)
 except Exception, tmp:
     print "Failure defining ct "
     print "Defaulting to cpt... ct=cpt... "
