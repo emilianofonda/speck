@@ -46,23 +46,7 @@ class MOSTAB_serial:
         self.init_file = init_file
         return
 
-#    def init(self):
-#        print "Setting hard coded SAMBA setup on MOSTAB (MoCo2) unit...",
-#        self("MODE OSCILLATION")
-#        self("AMPLITUDE 0.025")
-#        self("PHASE 76.15")
-#        self("FREQUENCY 38.4615")
-#        self("TAU 1")
-#        self("SLOPE -0.13")
-#        self("INBEAM SOFT 1")
-#        self("OUTBEAM VOLT NORM UNIP 10 NOAUTO")
-#        self("OPRANGE 0.1 9.9 5")
-#        self("SPEED 2 10")
-#        print "OK."
-#        print self.status()
-#        print self()
-#        return
- 
+
     def init(self):
         if self.init_file <> "":
             try:
@@ -90,30 +74,7 @@ class MOSTAB_serial:
         minp, maxp = self.lm()
         print "MOSTAB at ", self.pos(),"[%4.2f:%4.2f]"%(minp, maxp)," is in state ",self.state(), "the outbeam signal is at %sV/%sV gain mode is %s"\
         %(self("?BEAM")[self.echo].split()[1], max_Vout, gain_mode)
-        #print "I0=%8.6e I1=%8.6e State=%s" % self.currents()
-        #print "mode = %s" % self.pid()["modename"]
-        #_i200_status = self.status()
-        #if _i200_status["PID_state"] == "Servo not running?":
-        #    print "Servo not running?"
-        #else:
-        #    print "DAC_write_0 = %s DAC_write = %s" % (_i200_status["DAC_write_0"], _i200_status["DAC_write"])
         return self.pos()
-
-#   def status(self):
-#       ll=[]
-#       ll.append(self.InOutS("?STATE"))
-#       ll.append(self.InOutS("?MODE"))
-#       ll.append(self.InOutS("?AMPLITUDE"))
-#       ll.append(self.InOutS("?FREQUENCY"))
-#       ll.append(self.InOutS("?PHASE"))
-#       ll.append(self.InOutS("?TAU"))
-#       ll.append(self.InOutS("?INBEAM"))
-#       ll.append(self.InOutS("?OUTBEAM"))
-#       ll.append(self.InOutS("?OPRANGE"))
-#       ll.append(self.InOutS("?PIEZO"))
-#       ll.append(self.InOutS("?SPEED"))
-#       ll.append(self.InOutS("?SLOPE"))
-#       return ll
 
     def state(self):
         ss = self.InOutS("?STATE")[self.echo]
@@ -224,200 +185,13 @@ class MOSTAB_serial:
     def go(self, dest = None):
         return self.pos(dest, wait = False)
 
-#    def period(self, period = None):
-#        if period == None:
-#            per=self.InOutS("PER?")[self.echo]
-#            return float(per.split(" ")[0])
-#        self.InOutS("PER %8.6f" % period)
-#        return self.period()
     
-#    def profile_internal(self, p1=0.5, p2=9.5, np=100, draw=True, verbose = 0):
-#        """Provide (and draw if draw=True) the target function over the interval p1 --> p2
-#        where p1 and p2 are the DAC limits. np is the number of points.
-#        Returned values are: (maximum position, center of mass and [x, y] data).
-#        The deadtime is useful: wrong results are provided over RS232 for deadtime< 2* integration."""
-#        dp=float(p2- p1) / np
-#        x=[]
-#        y=[]
-#        print "Profile..."
-#        ll = self.InOutS("PID:PROF 0",n=2)
-#        if verbose > 0:
-#            print ll
-#        ll = self.InOutS("PID:SERV 0",n=2)
-#        if verbose > 0:
-#            print ll
-#        self.pos(0.1)
-#        ll = self.InOutS("INIT",n=2)
-#        if verbose > 0:
-#            print ll
-#        ll = self.InOutS("CONF:PID:PROF:LIM %i %i" % (int(p1), int(p2)),n=2)
-#        if verbose > 0:
-#            print ll
-#        ll = self.InOutS("CONF:PID:PROF:POINTS %i" % (np),n=2)
-#        if verbose > 0:
-#            print ll
-#        ll = self.InOutS("PID:PROF 1",n=2)
-#        if verbose > 0:
-#            print ll
-#        for i in xrange(np):
-#            time.sleep(self.deadtime)
-#            ll=self.InOutS("FETCH:PROF?", n=2)
-#            if verbose > 1:
-#                print ll
-#            x.append(float(ll[self.echo].split(",")[1]))
-#            cor_value = float(ll[self.echo].split(",")[0])
-#            if cor_value == 1.:
-#                cor_value = 0
-#            y.append(cor_value)
-#        ll = self.InOutS("PID:PROF 0",n=2)
-#        if verbose > 0:
-#            print ll
-#        tmp=[numpy.arange(p1, p2 , dp), numpy.array(y)]
-#        if draw:
-#            plot(tmp[0], tmp[1])
-#            #plot(x,tmp[1])
-#        mp = tmp[0][tmp[1].argmax()]
-#        cmp = sum(tmp[0] * tmp[1]) / sum(tmp[1])
-#        print "maximum position is", mp
-#        print "center of mass   is", cmp
-#        return mp, cmp, tmp
-#
-#    def profile(self, p1=1, p2=9, np=50, draw=True, verbose = 0):
-#        """Provide (and draw if draw=True) the target function over the interval p1 --> p2
-#        where p1 and p2 are the DAC limits. np is the number of points.
-#        Returned values are: (maximum position, center of mass and [x, y] data).
-#        The deadtime is useful: wrong results are provided over RS232 for deadtime< 2* integration."""
-#        mode=self.pid()["mode"]
-#        dt = self.period()*2.
-#        self.pos(p1)
-#        dp = float(p2 - p1) / np
-#        y = []
-#        print "Profile..."
-#        ll = self.InOutS("PID:SERV 0",n=2)
-#        if verbose > 0:
-#            print ll
-#        for p in numpy.arange(p1, p2+dp, dp):
-#            self.pos(p)
-#            time.sleep(dt)
-#            i1, i2 = self.currents()[0:2]
-#            if verbose >2 : 
-#                print "currents --> %g %g" % (i1, i2)
-#            if mode == 0:
-#                y.append(i1)
-#            elif mode == 1:
-#                y.append(i1 + i2)
-#            elif mode == 2:
-#                y.append(i1 - i2)
-#            elif mode == 3:
-#                y.append(i1 / i2)
-#            elif mode == 4:
-#                y.append((i1 - i2) / (i1 + i2 + 1e-14))
-#            tmp=[numpy.arange(p1, p2+dp, dp), numpy.array(y)]
-#        if draw:
-#            plot(tmp[0], tmp[1])
-#        mp = tmp[0][tmp[1].argmax()]
-#        cmp = sum(tmp[0] * tmp[1]) / sum(tmp[1])
-#        print "maximum position is", mp
-#        print "center of mass   is", cmp
-#        return mp, cmp, tmp
-#
-#    def capacitor(self,capacity = None):
-#        if capacity == None:
-#            l=self.InOutS("CONF:CAP?")[1].strip().split(",")
-#            return int(l[0]),l[1]
-#        if capacity in [0,1]:
-#            self.InOutS("CONF:CAP %i"%(capacity))
-#        else:
-#            raise Exception("I200: wrong capacity value specified (must be 0 or 1).")   
-#        return self.capacitor()
-#
-#    def currents(self):
-#        l=self.InOutS("READ:CURR?")
-#        ll=l[-1].split(",")
-#        i1 = float(ll[1].split(" ")[0])
-#        i2 = float(ll[2].split(" ")[0])
-#        overload = int(ll[3].strip())
-#        if overload: 
-#            ST="OVERLOAD"
-#        else:
-#            ST="OK"
-#        return i1,i2,ST
-#
-#    def start_measurement(self):
-#        self.InOutS("INIT")
-#        r=self.range()[0]
-#        if self.currents()[2] == "OVERLOAD": r = r * 10
-#        while(self.currents()[2] == "OVERLOAD" and r <= float(self.capacitor()[1].split()[0]) / 1e-5):
-#            self.range(r)
-#            r = r * 10
-#        return self.currents()[2]
-#
-#    def stop_measurement(self):
-#        self.stop_servo()
-#        return self.InOutS("ABORT",n=2)[1].strip()
-#
-#    def start_servo(self):
-#        self.start_measurement()
-#        return self.InOutS("PID:SERV 1", n=2)[1].strip()
-#
-#    def stop_servo(self):
-#        return self.InOutS("PID:SERV 0", n=2)[1].strip()
-#    
     def mode(self, mode = None):
         if mode == None:
             return self.InOutS("?MODE")[self.echo]
         self.InOutS(mode)
         return self.mode()
-
-#
-#    def pid(self,**kwargs):
-#        """The best way to learn to use this function is to provide no arguments and check output. 
-#        Try to use the output provided to set new parameters with the very same syntax:
-#        use the keywords of the dictionary as function keyword.
-#        e.g.: pid provides {"KP": 1} use pid(KP=0.1) to change the parameter to 0.1
-#        NOTA BENE: case of names matters!"""
-#        modes={0:"I1", 1:"I1 + I2", 2:"I1 - I2", 3:"I1 / I2", 4:"(I1 - I2) / (I1 + I2)"}
-#        if kwargs == {}:
-#            mode = int(self.InOutS("CONF:PID:MOD?", n=2)[self.echo].strip())
-#            #print "mode = " + modes[mode]
-#            rate = int(self.InOutS("CONF:PID:RAT?", n=2)[self.echo].strip())
-#            limits=(self.InOutS("CONF:PID:LIM?", n=2)[self.echo].strip()).split(",")
-#            limits=[float(limits[0][:-1]),float(limits[self.echo][:-1])]
-#            lowCurrent=float(self.InOutS("CONF:PID:I1I2LOW?", n=2)[self.echo].strip())
-#            KP=float(self.InOutS("CONF:PID:KP?", n=2)[self.echo].strip())
-#            KI=float(self.InOutS("CONF:PID:KI?", n=2)[self.echo].strip())
-#            return {"mode": mode, "rate": rate, "limits": limits,"lowCurrent": lowCurrent,"KP": KP,"KI": KI,"modename":modes[mode]}
-#        for i in kwargs:
-#            if i == "mode":
-#                tmp=self.InOutS("CONF:PID:MOD %i" % kwargs[i])
-#            elif i == "rate":
-#                tmp=self.InOutS("CONF:PID:RAT %i" % kwargs[i])
-#            elif i == "lowCurrent":
-#                tmp=self.InOutS("CONF:PID:I1I2LOW %f" % kwargs[i])
-#            elif i == "limits":
-#                tmp=self.InOutS("CONF:PID:LIM %f %f" % tuple(kwargs[i]))
-#            elif i == "KP":
-#                tmp=self.InOutS("CONF:PID:KP %f" % kwargs[i])
-#            elif i == "KI":
-#                tmp=self.InOutS("CONF:PID:KI %f" % kwargs[i])
-#        return self.pid()
-#
-#    def range(self, arg = None):
-#        """If no argument provided: returns range (A) and integration period (s)
-#        If a range is provided, it sets it."""
-#        if arg == None:
-#            t=float(self.InOutS("CONF:GAT:INT:PER?",n=2)[1].split(" ")[0])
-#            r=float(self.InOutS("CONF:GAT:INT:RANG?",n=2)[1].split(" ")[0])
-#            return r,t
-#        else:
-#            self.InOutS("CONF:GAT:INT:RANG %5.2e 1" % (float(arg)))
-#        try:
-#            if self.range()[1] > self.deadtime:
-#                self.deadtime = self.range()[1]*2.
-#        except:
-#            pass
-#        return self.range()
-#    
+    
     def tune(self, p1=2, p2=8, np=100, dt=0.1, oprange=1.2, offset = 0., draw=True, tune="center"):
         """The tuning procedure can move to max intenisty (tune="max")
         or to baricenter (tune="center")

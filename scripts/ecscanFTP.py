@@ -223,7 +223,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
         except:
             myTime.sleep(3)
     #Start graphic windows    
-    try:Anatase_newPellet_phi20_macro
+    try:
         CP = __CPlotter__
         CP.GraceWin = GracePlotter()
         for CurrentScan in xrange(NofScans):
@@ -568,6 +568,16 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                     FInfo.write("#ROI(s) : \n")
                     for i in xia.DP.getrois():
                         FInfo.write("#%s\n" % i)
+
+                #DCM Config follows:
+                try:
+                    FInfo.write("#Monochromator Status:\n")
+                    for __dcmStatusBit in tuple(["#%s\n"%i for i in dcm.status().split("\n")]):
+                        FInfo.write("#%s" % __dcmStatusBit)
+                except:
+                    print dcm.status()
+                    print "Error reporting monochromator status."
+
                 #MOSTAB Config follows:
                 try:
                     FInfo.write("#MOSTAB Status:\n")

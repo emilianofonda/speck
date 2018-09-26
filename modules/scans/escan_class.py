@@ -668,21 +668,47 @@ class escan_class:
                 S.append(S[i]+S[i-1])    
         return S[0:n]
         
-    def backlash_recovery(self,energy,de=None,dummypoints=5,deadtime=1):
-        """Execute a backlash recovery for the monochromator and then set it to e-de:
-        de=2, dummypoints=3;  moves to energy-de*2, energy-de*2, energy-de"""
+#   def backlash_recovery(self,energy,de=None,dummypoints=5,deadtime=1):
+#       """Execute a backlash recovery for the monochromator and then set it to e-de:
+#       de=2, dummypoints=3;  moves to energy-de*2, energy-de*2, energy-de"""
+#       #Speed up movement to first point
+#       #self.dcm.mode(0)
+#       self.dcm.mode(1)
+#       sleep(0.25)
+#       self.dcm.velocity(60)
+#       #
+#       if de==None:
+#           de=max(self.trajectory["energy"][1]-self.trajectory["energy"][0],1.)
+#       #points=array(self.__fibonacci(dummypoints+2)[-1:1:-1])*(-de)+energy
+#       points=numpy.arange(self.trajectory["energy"][0] - de * dummypoints, self.trajectory["energy"][0], de)
+#       #print "Performing backlash recovery over: ",points
+#       self.dcm.pos(points[0])
+#       #Go back to dcm cruise speed
+#       sleep(0.25)
+#       try:
+#           self.dcm.velocity(self.velocity)
+#       except KeyboardInterrupt:
+#           raise
+#       except:
+#           sleep(3)
+#           self.dcm.velocity(self.velocity)
+#       for en in points[1:]:
+#           self.dcm.pos(en)
+#           sleep(min(deadtime, self.trajectory["time"][0]))
+#       return
+
+    def backlash_recovery(self,energy,de=100,dummypoints=0,deadtime=1):
+        """Execute a classic backlash recovery for the monochromator"""
         #Speed up movement to first point
-        #self.dcm.mode(0)
         self.dcm.mode(1)
         sleep(0.25)
         self.dcm.velocity(60)
         #
         if de==None:
             de=max(self.trajectory["energy"][1]-self.trajectory["energy"][0],1.)
-        #points=array(self.__fibonacci(dummypoints+2)[-1:1:-1])*(-de)+energy
-        points=numpy.arange(self.trajectory["energy"][0] - de * dummypoints, self.trajectory["energy"][0], de)
         #print "Performing backlash recovery over: ",points
-        self.dcm.pos(points[0])
+        sleep(0.25)
+        self.dcm.pos(self.trajectory["energy"][0] - de)
         #Go back to dcm cruise speed
         sleep(0.25)
         try:
@@ -690,11 +716,11 @@ class escan_class:
         except KeyboardInterrupt:
             raise
         except:
-            sleep(3)
+            sleep(0.25)
             self.dcm.velocity(self.velocity)
-        for en in points[1:]:
-            self.dcm.pos(en)
-            sleep(min(deadtime, self.trajectory["time"][0]))
+        sleep(0.25)
+        self.dcm.pos(2 * self.trajectory["energy"][0]-self.trajectory["energy"][1])
+        sleep(1)
         return
 
     def scan_tuning(self,n=1):
