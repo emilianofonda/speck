@@ -175,7 +175,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
         print "Setting XIA card:",xia.label
         cardXIAChannels.append(range(__Nch,__Nch + len(xia.channels)))
         #Line below should work for non overlapping output channels
-        __Nch = len(xia.channels)
+        __Nch += len(xia.channels)
         xia.DP.nbpixels = NumberOfPoints
         xia.DP.streamNbAcqPerFile = 250
         xia.DP.set_timeout_millis(30000)
@@ -485,7 +485,12 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                     print "XIA%i: OK"%(xiaN+1)
 
     #Finalize derived quantities
-                fluoX = numpy.nan_to_num(array( sum(mcaSum[:,roiStart:roiEnd], axis=1), "f") / I0)
+                #fluoX = numpy.nan_to_num(array( sum(mcaSum[:,roiStart:roiEnd], axis=1), "f") / I0)
+                fluoX = numpy.nan_to_num(sum(\
+                [eval("outtaHDF.root.XIA.fluo%02i[:]"%nch)/(1.-eval("outtaHDF.root.XIA.deadtime%02i[:]"%nch)*0.01)\
+                for nch in range(cardXIAChannels[-1][-1])]\
+                ,axis=0))
+                #
                 outtaHDF.root.XIA.mcaSum[:] = mcaSum
                 del mcaSum
                 xmuS = numpy.nan_to_num(log(I1/I2))
@@ -698,15 +703,19 @@ XIANexusPath, XIAfilesList, fluoXIA, cardXIAChannels):
                 XIAfilesList[xiaN].append(name)
                 try:
                     f = tables.openFile(XIANexusPath[xiaN] + os.sep + name, "r")
-                    fluoSeg=zeros([shape(eval("f.root.entry.scan_data.channel%02i"%cardXIAChannels[xiaN][0]))[0],cardXIA[xiaN].DP.streamNbDataPerAcq],numpy.float32)
+                    #fluoSeg=zeros([shape(eval("f.root.entry.scan_data.channel%02i"%cardXIAChannels[xiaN][0]))[0],cardXIA[xiaN].DP.streamNbDataPerAcq],numpy.float32)
+                    #for ch in range(len(cardXIAChannels[xiaN])):
+                    #    fluoSeg += eval("f.root.entry.scan_data.channel%02i"%ch).read()
+                    fluoSeg=zeros(len(eval("f.root.entry.scan_data.channel%02i"%cardXIAChannels[xiaN][0])),numpy.float32)
                     for ch in range(len(cardXIAChannels[xiaN])):
-                        fluoSeg += eval("f.root.entry.scan_data.channel%02i"%ch).read()
+                        fluoSeg += sum(eval("f.root.entry.scan_data.channel%02i[:,roiStart:roiEnd]"%ch),axis=1)\
+                        /(1.-eval("f.root.entry.scan_data.deadtime%02i"%ch).read()*0.01)
                 finally:
                     try:
                         f.close()
                     except:
                         pass
-                fluoSeg = sum(fluoSeg[:,roiStart:roiEnd],axis=1) 
+                #fluoSeg = sum(fluoSeg[:,roiStart:roiEnd],axis=1) 
                 fluoXIA[xiaN] += list(fluoSeg)
         ll = min([len(i) for i in fluoXIA])
         if len(I0) >= ll and ll > 2:
