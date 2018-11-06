@@ -96,7 +96,15 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     velocity: Allowed velocity doesn't exceed 40eV/s.
     The backup folder MUST be defined for the code to run.
     Global variables: FE and obxg must exist and should point to Front End and Shutter
+    The filename: the only acceptable characters are [a-Z][0-9] + - . _ @ failing to do so will cause an exception
     """
+    #CheckFilename first
+    if string.whitespace in fileName:
+        raise Exception("ecscan does not accept whitespaces in filenames. Aborting.",fileName)
+    for ch in fileName:
+        if ch not in string.letters+string.digits+"_./\\+-@":
+            raise Exception("ecscan does not accept special characters in filenames. Aborting.",fileName)
+    #
     shell=get_ipython()
     FE = shell.user_ns["FE"]
     obxg = shell.user_ns["obxg"]
@@ -485,7 +493,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                     print "XIA%i: OK"%(xiaN+1)
 
     #Finalize derived quantities
-                #fluoX = numpy.nan_to_num(array( sum(mcaSum[:,roiStart:roiEnd], axis=1), "f") / I0)
+                fluoXraw = numpy.nan_to_num(array( sum(mcaSum[:,roiStart:roiEnd], axis=1), "f") / I0)
                 fluoX = numpy.nan_to_num(sum(\
                 [eval("outtaHDF.root.XIA.fluo%02i[:]"%nch)/(1.-eval("outtaHDF.root.XIA.deadtime%02i[:]"%nch)*0.01)\
                 for nch in range(cardXIAChannels[-1][-1])]\
@@ -537,20 +545,21 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                             os.remove(i[1] + os.sep + j)
 
     #Local data saving
-                dataBlock = array([ene,theta,xmu,fluoX,xmuS,\
+                dataBlock = array([ene,theta,xmu,fluoX,xmuS,fluoXraw,\
                 I0,I1,I2,I3],"f")
                 numpy.savetxt(ActualFileNameData, transpose(dataBlock))
                 FInfo = file(ActualFileNameInfo,"w")
                 FInfo.write("#.txt file columns content is:\n")
-                FInfo.write("#1) Energy\n")
-                FInfo.write("#2) Angle\n")
-                FInfo.write("#3) Transmission\n")
-                FInfo.write("#4) Fluorescence\n")
-                FInfo.write("#5) Standard\n")
-                FInfo.write("#6) I0\n")
-                FInfo.write("#7) I1\n")
-                FInfo.write("#8) I2\n")
-                FInfo.write("#9) I3\n")
+                FInfo.write("# 1) Energy\n")
+                FInfo.write("# 2) Angle\n")
+                FInfo.write("# 3) Transmission\n")
+                FInfo.write("# 4) Fluorescence\n")
+                FInfo.write("# 5) Standard\n")
+                FInfo.write("# 6) RawFluorescence\n")
+                FInfo.write("# 7) I0\n")
+                FInfo.write("# 8) I1\n")
+                FInfo.write("# 9) I2\n")
+                FInfo.write("#10) I3\n")
                 FInfo.write("#TimeAtStart = %s\n" % (timeAtStart))
                 FInfo.write("#TimeAtStop  = %s\n" % (timeAtStop))
                 FInfo.write("#Scan from %g to %g at velocity= %g eV/s\n" % (e1, e2, velocity))
