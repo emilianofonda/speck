@@ -255,7 +255,8 @@ try:
 #    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig1)
 #    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",user_readconfig=user_readconfig2)
     mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig1,FTPclient="d09-1-c00/ca/ftpclientxia.1",FTPserver="d09-1-c00/ca/ftpserverxia.1",spoolMountPoint="/nfs/srv5/spool1/xia1")
-    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",user_readconfig=user_readconfig2,FTPclient="d09-1-c00/ca/ftpclientxia.2",FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/nfs/srv5/spool1/xia2")
+#    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",user_readconfig=user_readconfig2,FTPclient="d09-1-c00/ca/ftpclientxia.2",FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/nfs/srv5/spool1/xia2")
+    mca2 = None
 #    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",)
 #    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",)
     def setroi(ch1, ch2):
@@ -280,11 +281,13 @@ try:
     {"name":"MUX","formula":"log(float(ch[0])/ch[1])","units":"","format":"%9.7f"},
     {"name":"MUS","formula":"log(float(ch[1])/ch[2])","units":"","format":"%9.7f"},
     {"name":"I1Norm","formula":"float(ch[1])/ch[0]","units":"","format":"%9.7e"},
-    {"name":"MUF","formula":"float(sum(ch[7:26] + ch[67:82]))/ch[0]","units":"","format":"%9.7e"},
+    #{"name":"MUF","formula":"float(sum(ch[7:26] + ch[67:82]))/ch[0]","units":"","format":"%9.7e"},
+    {"name":"MUF","formula":"float(sum(ch[7:11]))/ch[0]","units":"","format":"%9.7e"},
     #{"name":"DeadTime","formula":"100.-100.* numpy.average(numpy.array(ch[48:66] + ch[99:114],'f') / numpy.array(ch[28:46] + ch[83:98],'f'))",
     #"units":"%","format":"%6.4f"},
     ]
-    ct = pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[], posts= ctPosts)
+    #ct = pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[], posts= ctPosts)
+    ct = pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,],slaves=[], posts= ctPosts)
     #ct = pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca2,],slaves=[], posts= ctPosts)
 except Exception, tmp:
     print "Failure defining ct "
@@ -332,7 +335,7 @@ except Exception, tmp:
 try:
     from MOSTAB import MOSTAB_tango as MOSTAB
     print "MOSTAB unit :",
-    mostab=MOSTAB("d09-1-cx1/ca/moco2.1",init_file = __IP.user_ns["__pySamba_root"] + "/config/mostab.cfg")
+    mostab=MOSTAB("d09-1-cx1/ca/moco2.1",init_file = __IP.user_ns["__pySamba_root"] + "/config/mostab.cfg", forceOutBeam="OUTBEAM VOLT NORM UNIP 10 NOAUTO")
     def itune(*args,**kwargs):
         #Multipiled by 4 on 18/11/2015
         opr = 3.56/(0.10 * dcm.pos() * 1e-3 - 0.16) * 0.9 *4

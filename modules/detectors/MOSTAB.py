@@ -15,7 +15,8 @@ from tango_serial import tango_serial
 
 class MOSTAB_serial:
 
-    def __init__(self, port=0, baudrate=9600, echo=0, deadtime=0.05, init_file="",scaler="cpt", channel=0):
+    def __init__(self, port=0, baudrate=9600, echo=0, deadtime=0.05, init_file="",scaler="cpt", channel=0,
+        forceOutBeam=""):
         self.SerPort=serial.Serial(0)
         self.SerPort.baudrate=baudrate
         self.SerPort.timeout=1
@@ -44,6 +45,7 @@ class MOSTAB_serial:
             "ALARM":PyTango.DevState.ALARM
             }
         self.init_file = init_file
+        self.forceOutBeam = forceOutBeam
         return
 
 
@@ -196,6 +198,8 @@ class MOSTAB_serial:
         """The tuning procedure can move to max intenisty (tune="max")
         or to baricenter (tune="center")
         """
+        if self.forceOutBeam:
+            self.__call__(self.forceOutBeam)
         self.InOutS("OPRANGE 0. 10. 5.")
         rocca = ascan(self, p1, p2, (p1-p2)/float(np), dt = dt, channel=self.channel, graph=-1, scaler=self.scaler, returndata=True)
         if tune == "max":
@@ -289,7 +293,8 @@ class MOSTAB_serial:
         return ll
 
 class MOSTAB_tango(MOSTAB_serial):
-    def __init__(self, port=None, echo=1, EndOfLine=13, Space=32, deadtime=0.05, EndOfLine_out="\r\n", init_file = "",scaler="cpt",channel=0):
+    def __init__(self, port=None, echo=1, EndOfLine=13, Space=32, deadtime=0.05, EndOfLine_out="\r\n", init_file = "",scaler="cpt",channel=0, 
+    forceOutBeam=""):
         """System is asymmetric: 10 is sent to end command, while 13,10 is received"""
         myEOL={10:"\n",13:"\r"}
         self.serial=tango_serial(port, EndOfLine=[EndOfLine,], space=Space, deadtime=0.1)
@@ -321,6 +326,7 @@ class MOSTAB_tango(MOSTAB_serial):
         #Cleanup pending auto profile if active
         #self.InOutS("PID:PROF 0")
         self.init_file = init_file
+        self.forceOutBeam = forceOutBeam
         return
 
     def open(self):
