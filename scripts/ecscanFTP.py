@@ -3,6 +3,7 @@ import dentist
 import thread
 import tables
 import os
+import string
 import numpy
 import time as myTime
 from time import sleep
@@ -99,8 +100,9 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     The filename: the only acceptable characters are [a-Z][0-9] + - . _ @ failing to do so will cause an exception
     """
     #CheckFilename first
+    fileName = fileName.replace(" ","_")
     if string.whitespace in fileName:
-        raise Exception("ecscan does not accept whitespaces in filenames. Aborting.",fileName)
+        raise Exception("ecscan does not accept tabulations and other special spacings in filenames. Aborting.",fileName)
     for ch in fileName:
         if ch not in string.letters+string.digits+"_./\\+-@":
             raise Exception("ecscan does not accept special characters in filenames. Aborting.",fileName)
@@ -250,11 +252,12 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 wait_motor(dcm)
             myTime.sleep(1)
             dcm.velocity(60)
-            if dcm.pos()>e1:
+            if dcm.pos() > e1 - backlash:
                 dcm.pos(e1-backlash, wait=False)
             
             #Print Name:
             print "Measuring : %s\n"%ActualFileNameData
+
             #Start Measurement
             CP.GraceWin.wins[0].command('ARRANGE(4,1,0.1,0.1,0.25)\nREDRAW\n')
             CP.GraceWin.wins[0].command('with g0\nxaxis ticklabel char size 0.7\n')
@@ -284,7 +287,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             dcm.velocity(velocity)
             myTime.sleep(0.5)
             dcm.pos(e1)
-            sleep(1)
+            sleep(0.2)
             try:
                 pass
                 if shutter:
@@ -497,7 +500,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 fluoX = numpy.nan_to_num(sum(\
                 [eval("outtaHDF.root.XIA.fluo%02i[:]"%nch)/(1.-eval("outtaHDF.root.XIA.deadtime%02i[:]"%nch)*0.01)\
                 for nch in range(cardXIAChannels[-1][-1])]\
-                ,axis=0))
+                ,axis=0)/I0)
                 #
                 outtaHDF.root.XIA.mcaSum[:] = mcaSum
                 del mcaSum
@@ -506,6 +509,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 outtaHDF.createArray("/Spectra", "xmuTransmission", xmu)
                 outtaHDF.createArray("/Spectra", "xmuStandard", xmuS)
                 outtaHDF.createArray("/Spectra", "xmuFluo", fluoX)
+                outtaHDF.createArray("/Spectra", "xmuFluoRaw", fluoXraw)
                 outtaHDF.createArray("/Spectra", "xmuFluoXP", fluoXP)
                 outtaHDF.createGroup("/","Raw")
                 outtaHDF.createArray("/Raw", "Energy", ene)
