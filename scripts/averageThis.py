@@ -22,7 +22,7 @@ def averageThis(forename, name="", delta = 0.4, e0= 0,mode="t", exclude=[]):
         name = forename+"_average.txt"
     if not name.endswith(".txt"):
         name += ".txt"
-    xas.mergeXASFiles(name, fileNames = ll, delta=delta, checkColumn=5)
+    xas.mergeXASFiles(name, fileNames = ll, delta=delta, checkColumn=6)
     try:
         os.system("cp %s ./ruche" % name)
     except:

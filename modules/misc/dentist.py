@@ -9,13 +9,14 @@ def polySc(x,*args):
 def dentist(filename, e0=20060., \
 pre1  = -300, pre2  = -40, nor1  =  45, nor2  = -1,\
 poly1 =  15., poly2 =  -1, polyN =  -1, kweight = -1, rmax=6,\
-mode="t", figN=1, out=False):
+mode="t", figN=1, overlap=False,out=False):
     """mode can be t = transmission or f = fluorescence or s = standard
     """
     baseFilename = filename[:filename.rfind(".")]
     m = pylab.loadtxt(filename).transpose()
     fig1 = pylab.figure(figN,figsize=[12,10],facecolor="w")
-    fig1.clear()
+    if not overlap:
+        fig1.clear()
     m=m[:,pylab.argsort(m[0])]
     ene = m[0]
     if mode == "t" or mode =="":
@@ -26,7 +27,7 @@ mode="t", figN=1, out=False):
         xmu = m[4]
     else:
         raise Exception("unknown dentist mode.")
-    
+
     if nor2 < 0 :
         nor2 = min(ene[-1] - e0, nor1+300)
     if poly2 <0 :
@@ -102,17 +103,26 @@ mode="t", figN=1, out=False):
     if out:
         pylab.savetxt(baseFilename+".chik", pylab.transpose(mOut))
     pylab.subplot(221)
-    pylab.title(filename)
+    if not overlap:
+        pylab.title(filename)
     pylab.grid()
-    pylab.plot(ene,xmu,"b-",label="${\mu}$")
-    pylab.plot(ene,pylab.polyval(norPoly, ene),"k-.",label="$ \mu_{post} $")
-    pylab.plot(chiE,bkg,"r--",label="$\mu_{0}$")
-    pylab.plot(ene,pylab.polyval(preEdge,ene),"g--",label="$ \mu_{pre} $")
-    pylab.legend(loc="best",ncol=2, frameon=False)
+    if not overlap:
+        pylab.plot(ene,xmu,"b-",label="${\mu}$")
+        pylab.plot(ene,pylab.polyval(norPoly, ene),"k-.",label="$ \mu_{post} $")
+        pylab.plot(chiE,bkg,"r--",label="$\mu_{0}$")
+        pylab.plot(ene,pylab.polyval(preEdge,ene),"g--",label="$ \mu_{pre} $")
+    else:
+        pylab.plot(ene,xmu,label="%s"%filename[:-4])
+    if overlap:
+        pylab.legend(loc="best",frameon=False)
+    else:
+        pylab.legend(loc="best",ncol=2, frameon=False)
+
     pylab.xlabel("Energy (eV)")
 
     pylab.subplot(222)
-    pylab.title(filename)
+    if not overlap:
+        pylab.title(filename)
     pylab.grid()
     xmuNOR = (xmu-pylab.polyval(preEdge,ene))/(pylab.polyval(norPoly,ene)-pylab.polyval(preEdge,ene))
     derNOR = pylab.diff(xmuNOR[ider1:ider2])/pylab.diff(ene[ider1:ider2])
@@ -122,16 +132,19 @@ mode="t", figN=1, out=False):
     derNORsg = derNORsg / max(derNORsg)
     derENE = ene[ider1:ider2-1] + pylab.diff(ene[ider1:ider2])*0.5
     iMaxDer = derNORsg.argmax()
-    pylab.plot(ene, xmuNOR,"b-",label="$ \mu $")
-    pylab.plot(derENE, derNOR - 0.5,"g-",label="$\delta \mu /\delta E$")
-    pylab.plot(derENE, derNORsg - 0.5,"k-",linewidth=1)
-    pylab.annotate("%8.2f" % e0, xy=(e0,0.9), xytext=(e0-60,0.9),\
-    arrowprops={"width":0.1,"headwidth":5,"frac":0.5,"color":"r","shrink":0.9})
-    pylab.annotate("%8.2f" % derENE[iMaxDer], xy=(derENE[iMaxDer],max(derNOR)-0.5), xytext=(derENE[iMaxDer]-60,max(derNOR)-0.5),\
-    arrowprops={"width":0.1,"headwidth":5,"frac":0.5,"color":"g","shrink":0.9})
-    #pylab.arrow(derENE[iMaxDer], derNOR[iMaxDer],-20,-0.2, label="%8.2f" % derENE[iMaxDer])
-    pylab.legend(loc="best",ncol=2, frameon=False)
-    pylab.arrow(ene[ie0],0,0,1.1,ls="dotted",color="red")
+    if not overlap:
+        pylab.plot(ene, xmuNOR,"b-",label="$ \mu $")
+        pylab.plot(derENE, derNOR - 0.5,"g-",label="$\delta \mu /\delta E$")
+        pylab.plot(derENE, derNORsg - 0.5,"k-",linewidth=1)
+        pylab.annotate("%8.2f" % e0, xy=(e0,0.9), xytext=(e0-60,0.9),\
+        arrowprops={"width":0.1,"headwidth":5,"frac":0.5,"color":"r","shrink":0.9})
+        pylab.annotate("%8.2f" % derENE[iMaxDer], xy=(derENE[iMaxDer],max(derNOR)-0.5), xytext=(derENE[iMaxDer]-60,max(derNOR)-0.5),\
+        arrowprops={"width":0.1,"headwidth":5,"frac":0.5,"color":"g","shrink":0.9})
+        #pylab.arrow(derENE[iMaxDer], derNOR[iMaxDer],-20,-0.2, label="%8.2f" % derENE[iMaxDer])
+        pylab.legend(loc="best",ncol=2, frameon=False)
+        pylab.arrow(ene[ie0],0,0,1.1,ls="dotted",color="red")
+    else:
+        pylab.plot(ene, xmuNOR,label="%s"%filename[:-4])
     pylab.xlim([e0-70.,e0+120])
     pylab.ylim([min(derNOR - 0.7),max(1.5,max(0.25 + xmuNOR[ipre2:inor1]))])
     pylab.xlabel("Energy (eV)")
@@ -152,18 +165,25 @@ mode="t", figN=1, out=False):
     np = 10
     mft = xas.ft(iexafs,3,chiK[-1],kw=kweight,np=10)
     
-    pylab.plot(iexafs[0], iexafs[1] * iexafs[0]**kweight, "r-", linewidth=1,label="$k^%i\chi(k)$"%kweight)
-    if len(iexafsSG[0])/iexafsSG[0][-1]>50:
-        pylab.plot(iexafsSG[0], iexafsSG[1] * iexafsSG[0]**kweight, "k--", linewidth=2,label="$Smoothed$")
+    if overlap :
+        pylab.plot(iexafs[0], iexafs[1] * iexafs[0]**kweight, linewidth=1,label="%s"%filename[:-4])
+    else:
+        pylab.plot(iexafs[0], iexafs[1] * iexafs[0]**kweight, "b-", linewidth=1,label="$k^%i\chi(k)$"%kweight)
+    #if len(iexafsSG[0])/iexafsSG[0][-1]>50:
+    #    pylab.plot(iexafsSG[0], iexafsSG[1] * iexafsSG[0]**kweight, "k--", linewidth=2,label="$Smoothed$")
     pylab.xlim([min(chiK),max(chiK)])
-    pylab.legend(loc="best",ncol=1, frameon=False)
+    if not overlap:
+        pylab.legend(loc="best",ncol=1, frameon=False)
     pylab.grid()
     
     pylab.subplot(224)
 
     mft = mft[:,:int(len(mft[0])/2)]
     ps0 = int(len(mft[0])/2)
-    pylab.plot(mft[0][:ps0],mft[1][:ps0],"r-",mft[0][:ps0],mft[3][:ps0],"b-",mft[0][:ps0],-mft[3][:ps0],"b-")
+    if not overlap:
+        pylab.plot(mft[0][:ps0],mft[1][:ps0],"r-",mft[0][:ps0],mft[3][:ps0],"b-",mft[0][:ps0],-mft[3][:ps0],"b-")
+    else:
+        pylab.plot(mft[0][:ps0],mft[3][:ps0])
     #print "FFT Number of Points = ", ps0
     pylab.xlabel("$R(\AA)$")
     pylab.ylabel("$FT[k^%i\chi(k)]$"%kweight)
@@ -172,12 +192,20 @@ mode="t", figN=1, out=False):
     pylab.draw()
     if out:
         pylab.savetxt(baseFilename+".chir", pylab.transpose(mft))
-    return 
     #return mOut
-    
-    
-    
-    
-    
-    
-    
+    return
+
+def compare(filename, e0=20060., pre1  = -300, pre2  = -40, nor1  =  45, nor2  = -1,\
+poly1 =  15., poly2 =  -1, polyN =  -1, kweight = -1, rmax=6, mode="t", figN=1):
+    if type(filename) == str:
+        return dentist(filename,e0=e0,pre1=pre1,pre2=pre2,nor1=nor1,nor2=nor2,poly1=poly1,poly2=poly2,polyN=polyN,kweight=kweight,rmax=rmax,\
+mode=mode,figN=figN,overlap=False,out=False)
+    elif type(filename) in [list,tuple,numpy.array]:
+        f=pylab.figure(figN,figsize=[12,10],facecolor="w")
+        f.clear()
+        dentist(filename[0],e0=e0,pre1=pre1,pre2=pre2,nor1=nor1,nor2=nor2,poly1=poly1,poly2=poly2,polyN=polyN,kweight=kweight,rmax=rmax,\
+        mode=mode,figN=figN,overlap=True,out=False)
+        for i in filename[1:]:
+            dentist(i,e0=e0,pre1=pre1,pre2=pre2,nor1=nor1,nor2=nor2,poly1=poly1,poly2=poly2,polyN=polyN,kweight=kweight,rmax=rmax,\
+            mode=mode,figN=figN,overlap=True,out=False)
+    return

@@ -667,6 +667,8 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                         pass
         except:
             pass
+        if dcm.state() <> DevState.MOVING:
+            dcm.velocity(60)
     #Finally stop FTPclients
     for xia in cardXIA:
         xia.FTPclient.stop()
