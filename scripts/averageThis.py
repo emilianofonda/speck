@@ -2,7 +2,7 @@ import xas
 import dentist
 import os
 
-def averageThis(forename, name="", delta = 0.4, e0= 0,mode="t", exclude=[]):
+def averageThis(forename, name="", e0= 0,mode="t", exclude=[]):
     """averageThis is used to average scan text files.
     The series of scans have a common name forename as specified in the ecscan command
     if you want to change the output name, specify it using name="ThisIsTheNewName"
@@ -22,7 +22,8 @@ def averageThis(forename, name="", delta = 0.4, e0= 0,mode="t", exclude=[]):
         name = forename+"_average.txt"
     if not name.endswith(".txt"):
         name += ".txt"
-    xas.mergeXASFiles(name, fileNames = ll, delta=delta, checkColumn=6)
+    #Interpolation suggested linear, slinear, quadratic or cubic
+    xas.averageXASFiles(name, fileNames = ll, checkColumn=6, kind="slinear")
     try:
         os.system("cp %s ./ruche" % name)
     except:

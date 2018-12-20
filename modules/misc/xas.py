@@ -17,7 +17,7 @@ import scipy
 from scipy import interpolate as intp
 from scipy import optimize
 import numpy as npy
-from numpy import pi,round,array,sqrt,sum,arange,loadtxt,savetxt, cos, sin, shape
+from numpy import pi,round,array,sqrt,sum,arange,zeros,loadtxt,savetxt, cos, sin, shape
 from numpy import fft
 import copy
 from math import factorial
@@ -116,6 +116,67 @@ def mergeXASFiles(output="",fileNames=[],delta=0.5, checkColumn=-1):
             nOK += 1
         except Exception, tmp:
             print "Corrupt file: %s" % cName
+    xTotal[1:] = xTotal[1:] / nOK
+    if output == "":
+        return  xTotal
+    else:
+        savetxt(output,xTotal.transpose())
+    return
+
+def averageXASFiles(output="",fileNames=[], checkColumn=-1, kind = "slinear"):
+    """average files after interpolation on energy grid of first file.
+    Energy is data column 0.
+    >>> Do not average files with different energy ranges <<<
+    if checkColumn > 0 that colum is checked for > 0 or the file is labeled corrupt
+    kind = interpolation order"""
+    if fileNames == []:
+        raise Exception("Empy File List!")
+    eMin = -1
+    eMax = -1
+    nOK = 0
+    
+    for cName in fileNames:
+        try:
+            xmu = loadtxt(cName).transpose()
+            if checkColumn > 0:
+                if any(array(xmu[checkColumn])<=0):
+                    raise Exception("Corrupt file")
+            xTotal = zeros(shape(xmu))
+            idx = xmu[0].argsort()
+            xTotal[0] = array(xmu[0][idx],"f")
+            eMin = xTotal[0][0]
+            eMax = xTotal[0][-1]
+            break
+        except Exception, tmp:
+            if cName == fileNames[-1]:
+                raise Exception("No valid files to average!")
+            else:
+                print tmp
+                pass
+
+    for cName in fileNames:
+        try:
+            xmu = loadtxt(cName).transpose()
+            if checkColumn > 0:
+                if any(array(xmu[checkColumn])<=0):
+                    raise Exception("Corrupt file")
+            idx = xmu[0].argsort()
+            xmu = array([i[idx] for i in xmu],"f")
+            if xmu[0][0] > eMin or xmu[0][-1] < eMax:
+                iNewMin = max(0, xTotal[0].searchsorted(xmu[0][0]))
+                iNewMax = xTotal[0].searchsorted(xmu[0][-1])
+                xTotal = xTotal[:,iNewMin:iNewMax]
+                eMin, eMax = xTotal[0][0], xTotal[0][-1]
+                print "File %s reduces range to [%6.2f:%6.2f] eV"%(cName, xTotal[0][0], xTotal[0][-1])
+            try:
+                #xTotal[1:] += array([ intp.interp1d(xmu[0], i, kind = kind, bounds_error=False, fill_value=0., assume_sorted=True)(xTotal[0]) for i in xmu[1:] ])
+                xTotal[1:] += intp.interp1d(xmu[0], xmu[1:], kind = kind, bounds_error=False, fill_value=0., assume_sorted=True)(xTotal[0])
+            except Exception, tmp:
+                print tmp
+            nOK += 1
+        except Exception, tmp:
+            print "Corrupt file: %s" % cName
+            print tmp
     xTotal[1:] = xTotal[1:] / nOK
     if output == "":
         return  xTotal
