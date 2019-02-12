@@ -1031,67 +1031,69 @@ class mono1:
         return numpy.polyval(array( Cn, "f"), self.e2theta(energy))
 
     def seten(self, energy=None, Calculate=False):
-        if energy == None:
-            return self.pos(energy)
-        try:
-            shell=get_ipython()
-            shell.user_ns["mostab"].stop()
-        except Exception, tmp:
-            print tmp
-        try:
-            shell.user_ns["mostab"].lmset(1.,9.)
-            shell.user_ns["mostab"].pos(5.)
-        except Exception, tmp:
-            print tmp
-        print "Turning on motors: Tz2, Ts2, Rs2, Rz2"
-        self.m_tz2.on()
-        self.m_ts2.on()
-        self.m_rs2.on()
-        self.m_rz2.on()
-        print "Enabling: Tz2, Ts2 // Disabling Rz2, Rs2 ",
-        self.enable_tz2()
-        self.enable_ts2()
-        self.disable_rs2()
-        self.disable_rz2()
-        print "OK"
-        print "Moving Mode: ",
-        self.mode(0)
-        print self.DP.movingMode
-        try:
-            self.m_rx2fine.pos(5)
-        except:
-            pass
-        
-        #Insert Move code here
-        if Calculate:
-            #if useLocalTable:
-            #    restoreTable = True
-            #else:
-            #    restoreTable = False
-            #self.unsetLocalTable()
-            print "Should move to ",energy, "eV"
-            print "Should move Rz2 to ", self.calculate_rz2(energy)
-            print "Should move Rx2 to ", self.calculate_rx2(energy)
-            print "Should move [C1, C2] to", self.bender.calculate_steps_for_curv(self.calculate_curvature(self.e2theta(energy)))
-            #if restoreTable:
-            #    self.setLocalTable()
-        else:
-            self.on()
-            sleep(0.1)
-            move_motor(self, energy, self.m_rx2, self.calculate_rx2(energy))
-        #
-        
-        print "Disabling: Ts2",
-        self.disable_ts2()
-        print "Turning  off: Ts2"
-        self.m_ts2.off()
-        print "OK"
-        print "Moving Mode: ",
-        self.mode(1)
-        print self.mode()
-        try:
-            shell.user_ns["mostab"].start()
-        except:
-            pass
-        return self.pos()
+        """ Do not use anymore"""
+        return
+#       if energy == None:
+#           return self.pos(energy)
+#       try:
+#           shell=get_ipython()
+#           shell.user_ns["mostab"].stop()
+#       except Exception, tmp:
+#           print tmp
+#       try:
+#           shell.user_ns["mostab"].lmset(1.,9.)
+#           shell.user_ns["mostab"].pos(5.)
+#       except Exception, tmp:
+#           print tmp
+#       print "Turning on motors: Tz2, Ts2, Rs2, Rz2"
+#       self.m_tz2.on()
+#       self.m_ts2.on()
+#       self.m_rs2.on()
+#       self.m_rz2.on()
+#       print "Enabling: Tz2, Ts2 // Disabling Rz2, Rs2 ",
+#       self.enable_tz2()
+#       self.enable_ts2()
+#       self.disable_rs2()
+#       self.disable_rz2()
+#       print "OK"
+#       print "Moving Mode: ",
+#       self.mode(0)
+#       print self.DP.movingMode
+#       try:
+#           self.m_rx2fine.pos(5)
+#       except:
+#           pass
+#       
+#       #Insert Move code here
+#       if Calculate:
+#           #if useLocalTable:
+#           #    restoreTable = True
+#           #else:
+#           #    restoreTable = False
+#           #self.unsetLocalTable()
+#           print "Should move to ",energy, "eV"
+#           print "Should move Rz2 to ", self.calculate_rz2(energy)
+#           print "Should move Rx2 to ", self.calculate_rx2(energy)
+#           print "Should move [C1, C2] to", self.bender.calculate_steps_for_curv(self.calculate_curvature(self.e2theta(energy)))
+#           #if restoreTable:
+#           #    self.setLocalTable()
+#       else:
+#           self.on()
+#           sleep(0.1)
+#           move_motor(self, energy, self.m_rx2, self.calculate_rx2(energy))
+#       #
+#       
+#       print "Disabling: Ts2",
+#       self.disable_ts2()
+#       print "Turning  off: Ts2"
+#       self.m_ts2.off()
+#       print "OK"
+#       print "Moving Mode: ",
+#       self.mode(1)
+#       print self.mode()
+#       try:
+#           shell.user_ns["mostab"].start()
+#       except:
+#           pass
+#       return self.pos()
 

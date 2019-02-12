@@ -374,29 +374,28 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     #Wait for XIA files to be saved in spool
                 XIAt0=time()
                 while(DevState.RUNNING in [i.state() for i in cardXIA]):
-                    myTime.sleep(1)
+                    myTime.sleep(0.1)
                     if myTime.time() - XIAt0 > 30.:
                         for i in XIANexusPath:
-                            print i
-                            print os.listdir(i)
+                            os.system("cd %s&&ls"%i)
                         print "Time Out waiting for XIA cards to stop! Waited more than 30s... !"
                         for i in cardXIA:
                             i.stop()
                         setSTEP()
                         raise Exception("Time Out waiting for XIA cards to stop! Waited more than 30s... !")
                         shell.logger.log_write("Time Out waiting for XIA cards to stop! Waited more than 30s... !", kind='output')
-                XIAt0=time()
+                #XIAt0=time()
                 while(True in [i[0] not in os.listdir(i[1]) for i in zip(LastXIAFileName, XIANexusPath)]):
                     myTime.sleep(0.25)
-                    if 6. > myTime.time() - XIAt0 > 3.:
+                    if 3. > myTime.time() - XIAt0 > 1.:
                         for i in XIANexusPath:
-                            #ll = os.listdir(i)
-                            #ll.sort()
-                            #print ll
                             os.system("cd %s&&ls"%i)
-                        print "Time Out waiting for XIA cards files! Waited more than 2s... ! FileSystem Workaround Applied"
-                        shell.logger.log_write("Time Out waiting for XIA files! Waited more than 2s... ! FileSystem Workaround Applied", kind='output')
-                    if myTime.time() - XIAt0 > 15.:
+                    elif 15. > myTime.time() - XIAt0 > 3.:
+                        for i in XIANexusPath:
+                            os.system("cd %s&&ls"%i)
+                        print "Time Out waiting for XIA cards files! Waited more than 3s... ! FileSystem Workaround Applied"
+                        shell.logger.log_write("Time Out waiting for XIA files! Waited more than 3s... ! FileSystem Workaround Applied", kind='output')
+                    elif myTime.time() - XIAt0 > 15.:
                         #for i in XIANexusPath:
                             #ll = os.listdir(i).sort()
                             #print ll

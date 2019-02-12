@@ -255,8 +255,8 @@ try:
 #    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig1)
 #    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",user_readconfig=user_readconfig2)
     mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig1,FTPclient="d09-1-c00/ca/ftpclientxia.1",FTPserver="d09-1-c00/ca/ftpserverxia.1",spoolMountPoint="/nfs/srv5/spool1/xia1")
-#    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",user_readconfig=user_readconfig2,FTPclient="d09-1-c00/ca/ftpclientxia.2",FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/nfs/srv5/spool1/xia2")
-    mca2 = None
+    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",user_readconfig=user_readconfig2,FTPclient="d09-1-c00/ca/ftpclientxia.2",FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/nfs/srv5/spool1/xia2")
+     #mca2 = None
 #    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",)
 #    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",)
     def setroi(ch1, ch2):
@@ -286,8 +286,8 @@ try:
     #{"name":"DeadTime","formula":"100.-100.* numpy.average(numpy.array(ch[48:66] + ch[99:114],'f') / numpy.array(ch[28:46] + ch[83:98],'f'))",
     #"units":"%","format":"%6.4f"},
     ]
-    #ct = pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[], posts= ctPosts)
-    ct = pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,],slaves=[], posts= ctPosts)
+    ct = pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[], posts= ctPosts)
+    #ct = pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,],slaves=[], posts= ctPosts)
     #ct = pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca2,],slaves=[], posts= ctPosts)
 except Exception, tmp:
     print "Failure defining ct "
