@@ -254,7 +254,8 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             dcm.velocity(60)
             if dcm.pos() > e1 - backlash:
                 dcm.pos(e1-backlash, wait=False)
-            
+            else:
+                dcm.pos(e1)
             #Print Name:
             print "Measuring : %s\n"%ActualFileNameData
 
@@ -335,12 +336,12 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 sleep(1)
             else:
                 while(DevState.RUNNING in [cardCT.state(),]):
-                    myTime.sleep(0.1)
+                    myTime.sleep(1.)
                 timeAtStop = asctime()
                 timeout0 = time()
                 while(DevState.RUNNING in [cardAI.state(),] and time()-timeout0 < 3):
-                    myTime.sleep(0.1)
-                if time()-timeout0 > 3:
+                    myTime.sleep(1)
+                if time()-timeout0 > 6:
                     print "cardAI of ecscan failed to stop!"
                 cardAI.stop()
                 theta = cardCT.Theta
@@ -374,34 +375,37 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     #Wait for XIA files to be saved in spool
                 XIAt0=time()
                 while(DevState.RUNNING in [i.state() for i in cardXIA]):
-                    myTime.sleep(0.1)
-                    if myTime.time() - XIAt0 > 30.:
-                        for i in XIANexusPath:
-                            os.system("cd %s&&ls"%i)
-                        print "Time Out waiting for XIA cards to stop! Waited more than 30s... !"
+                    myTime.sleep(1)
+                    if myTime.time() - XIAt0 > 60.:
+                        print "Time Out waiting for XIA cards to stop! Waited more than 60s... !"
                         for i in cardXIA:
                             i.stop()
                         setSTEP()
-                        raise Exception("Time Out waiting for XIA cards to stop! Waited more than 30s... !")
-                        shell.logger.log_write("Time Out waiting for XIA cards to stop! Waited more than 30s... !", kind='output')
+                        raise Exception("Time Out waiting for XIA cards to stop! Waited more than 60s... !")
+                        shell.logger.log_write("Time Out waiting for XIA cards to stop! Waited more than 60s... !", kind='output')
                 #XIAt0=time()
+                #for i in XIANexusPath:
+                #    os.system("cd %s&&ls > /dev/null"%i)
                 while(True in [i[0] not in os.listdir(i[1]) for i in zip(LastXIAFileName, XIANexusPath)]):
-                    myTime.sleep(0.25)
-                    if 3. > myTime.time() - XIAt0 > 1.:
-                        for i in XIANexusPath:
-                            os.system("cd %s&&ls"%i)
-                    elif 15. > myTime.time() - XIAt0 > 3.:
-                        for i in XIANexusPath:
-                            os.system("cd %s&&ls"%i)
-                        print "Time Out waiting for XIA cards files! Waited more than 3s... ! FileSystem Workaround Applied"
-                        shell.logger.log_write("Time Out waiting for XIA files! Waited more than 3s... ! FileSystem Workaround Applied", kind='output')
-                    elif myTime.time() - XIAt0 > 15.:
-                        #for i in XIANexusPath:
-                            #ll = os.listdir(i).sort()
-                            #print ll
-                        print "Time Out waiting for XIA cards files! Waited more than 15s... !"
-                        shell.logger.log_write("Time Out waiting for XIA files! Waited more than 15s... !", kind='output')
-                        break
+                    myTime.sleep(1)
+                    #if 3. > myTime.time() - XIAt0 > 1.:
+                    #    for i in XIANexusPath:
+                    #        os.system("cd %s&&ls"%i)
+                    #elif 15. > myTime.time() - XIAt0 > 3.:
+                    #    for i in XIANexusPath:
+                    #        os.system("cd %s&&ls"%i)
+                    #    print "Time Out waiting for XIA cards files! Waited more than 3s... ! FileSystem Workaround Applied"
+                    #    shell.logger.log_write("Time Out waiting for XIA files! Waited more than 3s... ! FileSystem Workaround Applied", kind='output')
+                    #elif myTime.time() - XIAt0 > 15.:
+                    #    #for i in XIANexusPath:
+                    #        #ll = os.listdir(i).sort()
+                    #        #print ll
+                    #    print "Time Out waiting for XIA cards files! Waited more than 15s... !"
+                    #    shell.logger.log_write("Time Out waiting for XIA files! Waited more than 15s... !", kind='output')
+                    #    break
+                    if myTime.time()-XIAt0>300:
+                        print "Waited more than 300s. Exception Raised!"
+                        raise Exception("XIA did not provided files in less than 300s!!!!!! Halt.")
                 XIAtEnd = myTime.time()-XIAt0
                 print "XIA needed additional %3.1f seconds to provide data files."%(XIAtEnd)
                 shell.logger.log_write("XIA needed additional %3.1f seconds to provide data files."%(XIAtEnd) + ".hdf", kind='output')
