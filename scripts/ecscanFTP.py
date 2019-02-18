@@ -74,7 +74,7 @@ __CPlotter__ = CPlotter()
 def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,backlash=100):
     try:
         for i in range(n):
-	  ecscanActor(fileName,e1,e2,1,dt,velocity, e0, mode,shutter, beamCheck,backlash=backlash)
+            ecscanActor(fileName,e1,e2,dt,velocity, e0, mode,shutter, beamCheck,backlash=backlash,CurrentScan=i,NofScans=n)
     except KeyboardInterrupt:
         shell.logger.log_write("ecscan halted on user request: Ctrl-C\n", kind='output')
         print "Halting on user request."
@@ -92,7 +92,7 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
     return 
 
 
-def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,backlash=100):
+def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,backlash=100,CurrentScan=1,NofScans=1):
     """Start from e1 (eV) to e2 (eV) and count over dt (s) per point.
     velocity: Allowed velocity doesn't exceed 40eV/s.
     The backup folder MUST be defined for the code to run.
@@ -111,7 +111,6 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     FE = shell.user_ns["FE"]
     obxg = shell.user_ns["obxg"]
     TotalScanTime = myTime.time()
-    NofScans = n
     cardCTsavedAttributes = ["totalNbPoint","integrationTime","continuous","bufferDepth"]
     cardAIsavedAttributes = ["configurationId","frequency","integrationTime","dataBufferNumber"]
     if fileName == None: 
@@ -236,405 +235,391 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     try:
         CP = __CPlotter__
         CP.GraceWin = GracePlotter()
-        for CurrentScan in xrange(NofScans):
-            #Calculate name of last data buffer file to wait (XIA)
-            LastXIAFileName = ["%s_%06i.nxs" % (xia.DP.streamTargetFile, NumberOfXIAFiles * (CurrentScan+1)) for xia in cardXIA]
-            if beamCheck and not(checkTDL(FE)):
-                wait_injection(FE,[obxg,])
-                myTime.sleep(10.)
-            ActualFileNameData = findNextFileName(fileName,"txt")
-            shell.logger.log_write("Saving data in: %s\n" % ActualFileNameData, kind='output')
-            ActualFileNameInfo = ActualFileNameData[:ActualFileNameData.rfind(".")] + ".info"
-            f=file(ActualFileNameData,"w")
-            f.close()
-            #Configure and move mono
-            if dcm.state() == DevState.MOVING:
-                wait_motor(dcm)
-            myTime.sleep(1)
+        #Calculate name of last data buffer file to wait (XIA)
+        LastXIAFileName = ["%s_%06i.nxs" % (xia.DP.streamTargetFile, NumberOfXIAFiles * (CurrentScan+1)) for xia in cardXIA]
+        if beamCheck and not(checkTDL(FE)):
+            wait_injection(FE,[obxg,])
+            myTime.sleep(10.)
+        ActualFileNameData = findNextFileName(fileName,"txt")
+        shell.logger.log_write("Saving data in: %s\n" % ActualFileNameData, kind='output')
+        ActualFileNameInfo = ActualFileNameData[:ActualFileNameData.rfind(".")] + ".info"
+        f=file(ActualFileNameData,"w")
+        f.close()
+        #Configure and move mono
+        if dcm.state() == DevState.MOVING:
+            wait_motor(dcm)
+        myTime.sleep(1)
+        dcm.velocity(60)
+        if dcm.pos() > e1 - backlash:
+            dcm.pos(e1-backlash, wait=False)
+        #Print Name:
+        print "Measuring : %s\n"%ActualFileNameData
+
+        #Start Measurement
+        CP.GraceWin.wins[0].command('ARRANGE(4,1,0.1,0.1,0.25)\nREDRAW\n')
+        CP.GraceWin.wins[0].command('with g0\nxaxis ticklabel char size 0.7\n')
+        CP.GraceWin.wins[0].command('with g0\nyaxis ticklabel char size 0.7\n')
+        CP.GraceWin.wins[0].command('with g0\nyaxis label char size 0.7\nyaxis label "XMU"')
+        CP.GraceWin.wins[0].command('with g1\nxaxis ticklabel char size 0.7\n')
+        CP.GraceWin.wins[0].command('with g1\nyaxis ticklabel char size 0.7\n')
+        CP.GraceWin.wins[0].command('with g1\nyaxis label char size 0.7\nyaxis label "I0, I1"')
+        CP.GraceWin.wins[0].command('with g2\nxaxis ticklabel char size 0.7\n')
+        CP.GraceWin.wins[0].command('with g2\nyaxis ticklabel char size 0.7\n')
+        CP.GraceWin.wins[0].command('with g2\nyaxis label char size 0.7\nyaxis label "FLUO"')
+        CP.GraceWin.wins[0].command('with g3\nxaxis ticklabel char size 0.7\n')
+        CP.GraceWin.wins[0].command('with g3\nyaxis ticklabel char size 0.7\n')
+        CP.GraceWin.wins[0].command('with g3\nyaxis label char size 0.7\nyaxis label "STD"')
+        timeAtStart = asctime()
+        cardAI.start()
+        for xia in cardXIA:
+            #xia.DP.snap()
+            xia.start()
+        myTime.sleep(1)
+        dcm.mode(1)
+        myTime.sleep(0.5)
+        dcm.velocity(velocity)
+        myTime.sleep(0.5)
+        dcm.pos(e1)
+        myTime.sleep(0.5)
+        try:
+            pass
+            if shutter:
+                sh_fast.open()
+        except KeyboardInterrupt:
+            stopscan(shutter)
+            raise
+        except:
+            pass
+        cardCT.start()
+        dcm.pos(e2, wait=False)
+        myTime.sleep(2)
+        XIAfilesList=[[],]*len(cardXIA)
+        fluoXIA=[[],]*len(cardXIA)
+        actualRunningStart = myTime.time()
+        #while((myTime.time() - actualRunningStart) < (TotalTime -30.) and dcm.state() == DevState.MOVING):
+        while(dcm.state() == DevState.MOVING):
+            try:
+                if DevState.FAULT in [xia.state() for xia in cardXIA]:
+                    shell.logger.log_write(mycurses.RED+mycurses.BOLD + "XIA Card FAULT." + mycurses.RESET, kind='output')
+                    print mycurses.RED+mycurses.BOLD +"XIA Card FAULT" + mycurses.RESET
+                    break
+                update_graphs(CP, dcm, cardAI, cardCT, cardXIA,\
+                roiStart, roiEnd, XIANexusPath, XIAfilesList, fluoXIA, cardXIAChannels)
+                pass
+            except KeyboardInterrupt:
+                raise
+            except Exception, tmp:
+                print tmp
+            #myTime.sleep(10)
+            myTime.sleep(5)
+        try:
+            if shutter:
+                sh_fast.close()
+        except KeyboardInterrupt:
+            raise
+        except:
+            pass
+
+        if CurrentScan < (NofScans-1): 
+            print myTime.asctime(), " : sending dcm back to starting point."
             dcm.velocity(60)
-            if dcm.pos() > e1 - backlash:
-                dcm.pos(e1-backlash, wait=False)
+            myTime.sleep(0.2)
+            dcm.pos(e1-backlash, wait=False)
+        else:
+            print "Scan %i of %i"%(CurrentScan,NofScans)
+            
+        if DevState.FAULT in [xia.state() for xia in cardXIA]:
+            cardCT.stop()
+            cardAI.stop()
+            setSTEP()
+            sleep(1)
+            setMAP()
+            sleep(1)
+        else:
+            while(DevState.RUNNING in [cardCT.state(),]):
+                myTime.sleep(1.)
+            timeAtStop = asctime()
+            timeout0 = time()
+            while(DevState.RUNNING in [cardAI.state(),] and time()-timeout0 < 3):
+                myTime.sleep(1)
+            if time()-timeout0 > 6:
+                print "cardAI of ecscan failed to stop!"
+            cardAI.stop()
+            theta = cardCT.Theta
+            
+            #Begin of new block: test for I0 data, sometimes nan are returned .... why?
+            I0 = array(cardAI.historizedchannel0,"f")
+            if all(I0 <> numpy.nan_to_num(I0)):
+                shell.logger.log_write(mycurses.RED+mycurses.BOLD + ActualFileNameData + ": file is corrupt." + mycurses.RESET, kind='output')
+                print mycurses.RED+mycurses.BOLD + ActualFileNameData +": file is corrupt." + mycurses.RESET
+                CorruptData = True
             else:
-                dcm.pos(e1)
-            #Print Name:
-            print "Measuring : %s\n"%ActualFileNameData
-
-            #Start Measurement
-            CP.GraceWin.wins[0].command('ARRANGE(4,1,0.1,0.1,0.25)\nREDRAW\n')
-            CP.GraceWin.wins[0].command('with g0\nxaxis ticklabel char size 0.7\n')
-            CP.GraceWin.wins[0].command('with g0\nyaxis ticklabel char size 0.7\n')
-            CP.GraceWin.wins[0].command('with g0\nyaxis label char size 0.7\nyaxis label "XMU"')
-            CP.GraceWin.wins[0].command('with g1\nxaxis ticklabel char size 0.7\n')
-            CP.GraceWin.wins[0].command('with g1\nyaxis ticklabel char size 0.7\n')
-            CP.GraceWin.wins[0].command('with g1\nyaxis label char size 0.7\nyaxis label "I0, I1"')
-            CP.GraceWin.wins[0].command('with g2\nxaxis ticklabel char size 0.7\n')
-            CP.GraceWin.wins[0].command('with g2\nyaxis ticklabel char size 0.7\n')
-            CP.GraceWin.wins[0].command('with g2\nyaxis label char size 0.7\nyaxis label "FLUO"')
-            CP.GraceWin.wins[0].command('with g3\nxaxis ticklabel char size 0.7\n')
-            CP.GraceWin.wins[0].command('with g3\nyaxis ticklabel char size 0.7\n')
-            CP.GraceWin.wins[0].command('with g3\nyaxis label char size 0.7\nyaxis label "STD"')
-            while(dcm.state() == DevState.MOVING):
-                sleep(0.5)
-            while(dcm.state() == DevState.MOVING):
-                sleep(0.5)
-            timeAtStart = asctime()
-            cardAI.start()
-            for xia in cardXIA:
-                #xia.DP.snap()
-                xia.start()
-            myTime.sleep(1)
-            dcm.mode(1)
-            sleep(0.2)
-            dcm.velocity(velocity)
-            myTime.sleep(0.5)
-            dcm.pos(e1)
-            sleep(0.2)
-            try:
-                pass
-                if shutter:
-                    sh_fast.open()
-            except KeyboardInterrupt:
-                stopscan(shutter)
-                raise
-            except:
-                pass
-            dcm.pos(e2, wait=False)
-            cardCT.start()
-            myTime.sleep(2)
-            XIAfilesList=[[],]*len(cardXIA)
-            fluoXIA=[[],]*len(cardXIA)
-            actualRunningStart = myTime.time()
-            #while((myTime.time() - actualRunningStart) < (TotalTime -30.) and dcm.state() == DevState.MOVING):
-            while(dcm.state() == DevState.MOVING):
-                try:
-                    if DevState.FAULT in [xia.state() for xia in cardXIA]:
-                        shell.logger.log_write(mycurses.RED+mycurses.BOLD + "XIA Card FAULT." + mycurses.RESET, kind='output')
-                        print mycurses.RED+mycurses.BOLD +"XIA Card FAULT" + mycurses.RESET
-                        break
-                    update_graphs(CP, dcm, cardAI, cardCT, cardXIA,\
-                    roiStart, roiEnd, XIANexusPath, XIAfilesList, fluoXIA, cardXIAChannels)
-                    pass
-                except KeyboardInterrupt:
-                    raise
-                except Exception, tmp:
-                    print tmp
-                #myTime.sleep(10)
-                myTime.sleep(5)
-            try:
-                if shutter:
-                    sh_fast.close()
-            except KeyboardInterrupt:
-                raise
-            except:
-                pass
-            if DevState.FAULT in [xia.state() for xia in cardXIA]:
-                cardCT.stop()
-                cardAI.stop()
-                setSTEP()
-                sleep(1)
-                setMAP()
-                sleep(1)
-            else:
-                while(DevState.RUNNING in [cardCT.state(),]):
-                    myTime.sleep(1.)
-                timeAtStop = asctime()
-                timeout0 = time()
-                while(DevState.RUNNING in [cardAI.state(),] and time()-timeout0 < 3):
-                    myTime.sleep(1)
-                if time()-timeout0 > 6:
-                    print "cardAI of ecscan failed to stop!"
-                cardAI.stop()
-                theta = cardCT.Theta
-
-                #Begin of new block: test for I0 data, sometimes nan are returned .... why?
-                I0 = array(cardAI.historizedchannel0,"f")
-                if all(I0 <> numpy.nan_to_num(I0)):
-                    shell.logger.log_write(mycurses.RED+mycurses.BOLD + ActualFileNameData + ": file is corrupt." + mycurses.RESET, kind='output')
-                    print mycurses.RED+mycurses.BOLD + ActualFileNameData +": file is corrupt." + mycurses.RESET
-                    CorruptData = True
-                else:
-                    CorruptData = False
-                # End of new block
-                
-                I0 = numpy.nan_to_num((I0) - cardAI_dark0)
-                I1 = numpy.nan_to_num(array(cardAI.historizedchannel1,"f") - cardAI_dark1)
-                I2 = numpy.nan_to_num(array(cardAI.historizedchannel2,"f") - cardAI_dark2)
-                I3 = numpy.nan_to_num(array(cardAI.historizedchannel3,"f") - cardAI_dark3)
-                xmu = numpy.nan_to_num(log(I0/I1))
-                fluoXP = numpy.nan_to_num(I3/I0)
-                ene = numpy.nan_to_num(dcm.theta2e(theta))
-                #
-                if CurrentScan < NofScans-1: 
-                    print myTime.asctime(), " : sending dcm back to starting point."
-                    dcm.velocity(60)
-                    myTime.sleep(0.2)
-                    dcm.pos(e1-backlash, wait=False)
-                #
-                print myTime.asctime(), " : Saving Data..."
+                CorruptData = False
+            # End of new block
+            
+            I0 = numpy.nan_to_num((I0) - cardAI_dark0)
+            I1 = numpy.nan_to_num(array(cardAI.historizedchannel1,"f") - cardAI_dark1)
+            I2 = numpy.nan_to_num(array(cardAI.historizedchannel2,"f") - cardAI_dark2)
+            I3 = numpy.nan_to_num(array(cardAI.historizedchannel3,"f") - cardAI_dark3)
+            xmu = numpy.nan_to_num(log(I0/I1))
+            fluoXP = numpy.nan_to_num(I3/I0)
+            ene = numpy.nan_to_num(dcm.theta2e(theta))
+            print myTime.asctime(), " : Saving Data..."
 
     #Wait for XIA files to be saved in spool
-                XIAt0=time()
-                while(DevState.RUNNING in [i.state() for i in cardXIA]):
-                    myTime.sleep(1)
-                    if myTime.time() - XIAt0 > 60.:
-                        print "Time Out waiting for XIA cards to stop! Waited more than 60s... !"
-                        for i in cardXIA:
-                            i.stop()
-                        setSTEP()
-                        raise Exception("Time Out waiting for XIA cards to stop! Waited more than 60s... !")
-                        shell.logger.log_write("Time Out waiting for XIA cards to stop! Waited more than 60s... !", kind='output')
-                #XIAt0=time()
-                #for i in XIANexusPath:
-                #    os.system("cd %s&&ls > /dev/null"%i)
-                while(True in [i[0] not in os.listdir(i[1]) for i in zip(LastXIAFileName, XIANexusPath)]):
-                    myTime.sleep(1)
-                    #if 3. > myTime.time() - XIAt0 > 1.:
-                    #    for i in XIANexusPath:
-                    #        os.system("cd %s&&ls"%i)
-                    #elif 15. > myTime.time() - XIAt0 > 3.:
-                    #    for i in XIANexusPath:
-                    #        os.system("cd %s&&ls"%i)
-                    #    print "Time Out waiting for XIA cards files! Waited more than 3s... ! FileSystem Workaround Applied"
-                    #    shell.logger.log_write("Time Out waiting for XIA files! Waited more than 3s... ! FileSystem Workaround Applied", kind='output')
-                    #elif myTime.time() - XIAt0 > 15.:
-                    #    #for i in XIANexusPath:
-                    #        #ll = os.listdir(i).sort()
-                    #        #print ll
-                    #    print "Time Out waiting for XIA cards files! Waited more than 15s... !"
-                    #    shell.logger.log_write("Time Out waiting for XIA files! Waited more than 15s... !", kind='output')
-                    #    break
-                    if myTime.time()-XIAt0>300:
-                        print "Waited more than 300s. Exception Raised!"
-                        raise Exception("XIA did not provided files in less than 300s!!!!!! Halt.")
-                XIAtEnd = myTime.time()-XIAt0
-                print "XIA needed additional %3.1f seconds to provide data files."%(XIAtEnd)
-                shell.logger.log_write("XIA needed additional %3.1f seconds to provide data files."%(XIAtEnd) + ".hdf", kind='output')
+            XIAt0=time()
+            while(DevState.RUNNING in [i.state() for i in cardXIA]):
+                myTime.sleep(1)
+                if myTime.time() - XIAt0 > 60.:
+                    print "Time Out waiting for XIA cards to stop! Waited more than 60s... !"
+                    for i in cardXIA:
+                        i.stop()
+                    setSTEP()
+                    raise Exception("Time Out waiting for XIA cards to stop! Waited more than 60s... !")
+                    shell.logger.log_write("Time Out waiting for XIA cards to stop! Waited more than 60s... !", kind='output')
+            while(True in [i[0] not in os.listdir(i[1]) for i in zip(LastXIAFileName, XIANexusPath)]):
+                myTime.sleep(1)
+                #if 3. > myTime.time() - XIAt0 > 1.:
+                #    for i in XIANexusPath:
+                #        os.system("cd %s&&ls"%i)
+                #elif 15. > myTime.time() - XIAt0 > 3.:
+                #    for i in XIANexusPath:
+                #        os.system("cd %s&&ls"%i)
+                #    print "Time Out waiting for XIA cards files! Waited more than 3s... ! FileSystem Workaround Applied"
+                #    shell.logger.log_write("Time Out waiting for XIA files! Waited more than 3s... ! FileSystem Workaround Applied", kind='output')
+                #elif myTime.time() - XIAt0 > 15.:
+                #    #for i in XIANexusPath:
+                #        #ll = os.listdir(i).sort()
+                #        #print ll
+                #    print "Time Out waiting for XIA cards files! Waited more than 15s... !"
+                #    shell.logger.log_write("Time Out waiting for XIA files! Waited more than 15s... !", kind='output')
+                #    break
+                if myTime.time()-XIAt0>300:
+                    print "Waited more than 300s. Exception Raised!"
+                    raise Exception("XIA did not provided files in less than 300s!!!!!! Halt.")
+            XIAtEnd = myTime.time()-XIAt0
+            print "XIA needed additional %3.1f seconds to provide data files."%(XIAtEnd)
+            shell.logger.log_write("XIA needed additional %3.1f seconds to provide data files."%(XIAtEnd) + ".hdf", kind='output')
     
     #Additional time to wait (?)
-                myTime.sleep(0.2)
+            myTime.sleep(0.2)
     #Measure time spent for saving data
-                DataSavingTime = myTime.time()
+            DataSavingTime = myTime.time()
     #Define filter to be used for writing big data into the HDF file
-                HDFfilters = tables.Filters(complevel = 1, complib='zlib')
+            HDFfilters = tables.Filters(complevel = 1, complib='zlib')
     #XIA prepare
-                XIAfilesNames=[]
-                for i in zip(cardXIA,XIANexusPath):
-                    XIAfilesNames.append([j for j in os.listdir(i[1]) if j.startswith(i[0].DP.streamTargetFile)])
-                XIAfilesNames = [numpy.sort(i) for i in XIAfilesNames]                  
-                #print XIAfilesNames
-                XIAfiles=[]
-                for path in zip(XIANexusPath,XIAfilesNames):
-                    XIAfiles.append([tables.openFile(path[0] +os.sep + x, "r") for x in path[1]])
+            XIAfilesNames=[]
+            for i in zip(cardXIA,XIANexusPath):
+                XIAfilesNames.append([j for j in os.listdir(i[1]) if j.startswith(i[0].DP.streamTargetFile)])
+            XIAfilesNames = [numpy.sort(i) for i in XIAfilesNames]                  
+            #print XIAfilesNames
+            XIAfiles=[]
+            for path in zip(XIANexusPath,XIAfilesNames):
+                XIAfiles.append([tables.openFile(path[0] +os.sep + x, "r") for x in path[1]])
         #Common
-                outtaName = filename2ruche(ActualFileNameData)
-                outtaHDF = tables.openFile(outtaName[:outtaName.rfind(".")] + ".hdf","w")
-                outtaHDF.createGroup("/","XIA")
+            outtaName = filename2ruche(ActualFileNameData)
+            outtaHDF = tables.openFile(outtaName[:outtaName.rfind(".")] + ".hdf","w")
+            outtaHDF.createGroup("/","XIA")
     #Superpose all XIA matrices and make one to avoid exploding the TeraByte/week limits and keep on a USB stick (actually, this changes with compression)
-                outtaHDF.createCArray(outtaHDF.root.XIA, "mcaSum", title="McaSum", shape=cardXiaDataShape[0], atom = tables.UInt32Atom(), filters=HDFfilters)
-                mcaSum = numpy.zeros(cardXiaDataShape[0],numpy.uint32)
-                #outtaHDF.createArray("/XIA", "mcaSum", numpy.zeros(cardXIA1dataShape, numpy.uint32))
+            outtaHDF.createCArray(outtaHDF.root.XIA, "mcaSum", title="McaSum", shape=cardXiaDataShape[0], atom = tables.UInt32Atom(), filters=HDFfilters)
+            mcaSum = numpy.zeros(cardXiaDataShape[0],numpy.uint32)
+            #outtaHDF.createArray("/XIA", "mcaSum", numpy.zeros(cardXIA1dataShape, numpy.uint32))
     
     #XIA1 read / write
     
     #Declare a RAM buffer for a single MCA
-                bCmca = numpy.zeros(cardXiaDataShape[0],numpy.uint32)
-                Breaked=False
-                for xiaN in range(len(cardXIA)):
-                    outChannels = iter(cardXIAChannels[xiaN])                    
-                    for ch in range(len(cardXIA[xiaN].channels)):
-                        if Breaked:
-                            break
-                        outCh = outChannels.next()
-                        #print "outCh = ",outCh
+            bCmca = numpy.zeros(cardXiaDataShape[0],numpy.uint32)
+            Breaked=False
+            for xiaN in range(len(cardXIA)):
+                outChannels = iter(cardXIAChannels[xiaN])                    
+                for ch in range(len(cardXIA[xiaN].channels)):
+                    if Breaked:
+                        break
+                    outCh = outChannels.next()
+                    #print "outCh = ",outCh
     #Single Channel MCA CArray creation
-                        outtaHDF.createCArray(outtaHDF.root.XIA, "mca%02i"%outCh, title="mca%02i"%outCh,\
-                        shape=cardXiaDataShape[0], atom = tables.UInt32Atom(), filters=HDFfilters)
+                    outtaHDF.createCArray(outtaHDF.root.XIA, "mca%02i"%outCh, title="mca%02i"%outCh,\
+                    shape=cardXiaDataShape[0], atom = tables.UInt32Atom(), filters=HDFfilters)
     #Get pointer to a Channel MCA on disk
-                        pCmca = outtaHDF.getNode("/XIA/mca%02i"%outCh)
+                    pCmca = outtaHDF.getNode("/XIA/mca%02i"%outCh)
     #Fluo Channel ROI values                
-                        outtaHDF.createArray("/XIA", "fluo%02i"%outCh, numpy.zeros(NumberOfPoints, numpy.uint32))
+                    outtaHDF.createArray("/XIA", "fluo%02i"%outCh, numpy.zeros(NumberOfPoints, numpy.uint32))
     #ICR line comment out if required
-                        outtaHDF.createArray("/XIA", "inputCountRate%02i"%outCh, numpy.zeros(NumberOfPoints, numpy.float32))
+                    outtaHDF.createArray("/XIA", "inputCountRate%02i"%outCh, numpy.zeros(NumberOfPoints, numpy.float32))
     #OCR line comment out if required
-                        outtaHDF.createArray("/XIA", "outputCountRate%02i"%outCh, numpy.zeros(NumberOfPoints, numpy.float32))
+                    outtaHDF.createArray("/XIA", "outputCountRate%02i"%outCh, numpy.zeros(NumberOfPoints, numpy.float32))
     #DT line comment out if required
-                        outtaHDF.createArray("/XIA", "deadtime%02i"%outCh, numpy.zeros(NumberOfPoints, numpy.float32))
-                        block = 0
-                        blockLen = cardXIA[xiaN].DP.streamNbAcqPerFile
-                        pointerCh = eval("outtaHDF.root.XIA.fluo%02i"%outCh)
+                    outtaHDF.createArray("/XIA", "deadtime%02i"%outCh, numpy.zeros(NumberOfPoints, numpy.float32))
+                    block = 0
+                    blockLen = cardXIA[xiaN].DP.streamNbAcqPerFile
+                    pointerCh = eval("outtaHDF.root.XIA.fluo%02i"%outCh)
     #ICR line comment out if required
-                        pointerIcr = eval("outtaHDF.root.XIA.inputCountRate%02i"%outCh)
+                    pointerIcr = eval("outtaHDF.root.XIA.inputCountRate%02i"%outCh)
     #OCR line comment out if required
-                        pointerOcr = eval("outtaHDF.root.XIA.outputCountRate%02i"%outCh)
+                    pointerOcr = eval("outtaHDF.root.XIA.outputCountRate%02i"%outCh)
     #DT line comment out if required
-                        pointerDt = eval("outtaHDF.root.XIA.deadtime%02i"%outCh)
-                        for XFile in XIAfiles[xiaN]:
-                            try:
-                                __block = eval("XFile.root.entry.scan_data.channel%02i"%ch).read()
+                    pointerDt = eval("outtaHDF.root.XIA.deadtime%02i"%outCh)
+                    for XFile in XIAfiles[xiaN]:
+                        try:
+                            __block = eval("XFile.root.entry.scan_data.channel%02i"%ch).read()
     #ICR line comment out if required
-                                __blockIcr = eval("XFile.root.entry.scan_data.icr%02i"%ch).read()
+                            __blockIcr = eval("XFile.root.entry.scan_data.icr%02i"%ch).read()
     #OCR line comment out if required
-                                __blockOcr = eval("XFile.root.entry.scan_data.ocr%02i"%ch).read()
+                            __blockOcr = eval("XFile.root.entry.scan_data.ocr%02i"%ch).read()
+
     #DT line comment out if required
-                                __blockDT = eval("XFile.root.entry.scan_data.deadtime%02i"%ch).read()
-                            except:
-                                print "Cannot read ch = %i in XIA card #%i (first card is card 0)"%(ch,xiaN)
-                                Breaked = True
-                                break
-                            actualBlockLen = shape(__block)[0]
+                            __blockDT = eval("XFile.root.entry.scan_data.deadtime%02i"%ch).read()
+                        except:
+                            print "Cannot read ch = %i in XIA card #%i (first card is card 0)"%(ch,xiaN)
+                            Breaked = True
+                            break
+                        actualBlockLen = shape(__block)[0]
     #Feed RAM buffers with MCA values
-                            bCmca[block * blockLen: (block * blockLen) + actualBlockLen,:] = __block
-                            mcaSum[block * blockLen: (block * blockLen) + actualBlockLen,:] += __block
-                            #pointerCh[block * blockLen: (block + 1) * blockLen] = sum(__block[:,roiStart:roiEnd], axis=1)
-                            pointerCh[block * blockLen: (block * blockLen) + actualBlockLen] = sum(__block[:,roiStart:roiEnd], axis=1)
+                        bCmca[block * blockLen: (block * blockLen) + actualBlockLen,:] = __block
+                        mcaSum[block * blockLen: (block * blockLen) + actualBlockLen,:] += __block
+                        #pointerCh[block * blockLen: (block + 1) * blockLen] = sum(__block[:,roiStart:roiEnd], axis=1)
+                        pointerCh[block * blockLen: (block * blockLen) + actualBlockLen] = sum(__block[:,roiStart:roiEnd], axis=1)
     #ICR line comment out if required
-                            pointerIcr[block * blockLen: (block * blockLen) + actualBlockLen] = __blockIcr
+                        pointerIcr[block * blockLen: (block * blockLen) + actualBlockLen] = __blockIcr
     #OCR line comment out if required
-                            pointerOcr[block * blockLen: (block * blockLen) + actualBlockLen] = __blockOcr
+                        pointerOcr[block * blockLen: (block * blockLen) + actualBlockLen] = __blockOcr
     #DT line comment out if required
-                            pointerDt[block * blockLen: (block * blockLen) + actualBlockLen] = __blockDT
-                            block += 1
+                        pointerDt[block * blockLen: (block * blockLen) + actualBlockLen] = __blockDT
+                        block += 1
     #Write Single MCA to Disk
-                        pCmca[:] = bCmca
-                    print "XIA%i: OK"%(xiaN+1)
+                    pCmca[:] = bCmca
+                print "XIA%i: OK"%(xiaN+1)
 
     #Finalize derived quantities
-                fluoXraw = numpy.nan_to_num(array( sum(mcaSum[:,roiStart:roiEnd], axis=1), "f") / I0)
-                fluoX = numpy.nan_to_num(sum(\
-                [eval("outtaHDF.root.XIA.fluo%02i[:]"%nch)/(1.-eval("outtaHDF.root.XIA.deadtime%02i[:]"%nch)*0.01)\
-                for nch in range(cardXIAChannels[-1][-1])]\
-                ,axis=0)/I0)
-                #
-                outtaHDF.root.XIA.mcaSum[:] = mcaSum
-                del mcaSum
-                xmuS = numpy.nan_to_num(log(I1/I2))
-                outtaHDF.createGroup("/","Spectra")
-                outtaHDF.createArray("/Spectra", "xmuTransmission", xmu)
-                outtaHDF.createArray("/Spectra", "xmuStandard", xmuS)
-                outtaHDF.createArray("/Spectra", "xmuFluo", fluoX)
-                outtaHDF.createArray("/Spectra", "xmuFluoRaw", fluoXraw)
-                outtaHDF.createArray("/Spectra", "xmuFluoXP", fluoXP)
-                outtaHDF.createGroup("/","Raw")
-                outtaHDF.createArray("/Raw", "Energy", ene)
-                outtaHDF.createArray("/Raw", "I0", I0)
-                outtaHDF.createArray("/Raw", "I1", I1)
-                outtaHDF.createArray("/Raw", "I2", I2)
-                outtaHDF.createArray("/Raw", "I3", I3)
+            fluoXraw = numpy.nan_to_num(array( sum(mcaSum[:,roiStart:roiEnd], axis=1), "f") / I0)
+            fluoX = numpy.nan_to_num(sum(\
+            [eval("outtaHDF.root.XIA.fluo%02i[:]"%nch)/(1.-eval("outtaHDF.root.XIA.deadtime%02i[:]"%nch)*0.01)\
+            for nch in range(cardXIAChannels[-1][-1])]\
+            ,axis=0)/I0)
+            #
+            outtaHDF.root.XIA.mcaSum[:] = mcaSum
+            del mcaSum
+            xmuS = numpy.nan_to_num(log(I1/I2))
+            outtaHDF.createGroup("/","Spectra")
+            outtaHDF.createArray("/Spectra", "xmuTransmission", xmu)
+            outtaHDF.createArray("/Spectra", "xmuStandard", xmuS)
+            outtaHDF.createArray("/Spectra", "xmuFluo", fluoX)
+            outtaHDF.createArray("/Spectra", "xmuFluoRaw", fluoXraw)
+            outtaHDF.createArray("/Spectra", "xmuFluoXP", fluoXP)
+            outtaHDF.createGroup("/","Raw")
+            outtaHDF.createArray("/Raw", "Energy", ene)
+            outtaHDF.createArray("/Raw", "I0", I0)
+            outtaHDF.createArray("/Raw", "I1", I1)
+            outtaHDF.createArray("/Raw", "I2", I2)
+            outtaHDF.createArray("/Raw", "I3", I3)
     #Stop feeding the monster. Close HDF
-                outtaHDF.close()
-                print "HDF closed."
-                shell.logger.log_write("Saving data in: %s\n" % (outtaName[:outtaName.rfind(".")] + ".hdf"), kind='output')
+            outtaHDF.close()
+            print "HDF closed."
+            shell.logger.log_write("Saving data in: %s\n" % (outtaName[:outtaName.rfind(".")] + ".hdf"), kind='output')
     #Now that data are saved try to plot it for the last time
-                try:
-                    update_graphs(CP, dcm, cardAI, cardCT, cardXIA, roiStart, roiEnd,\
-                    XIANexusPath, XIAfilesList, fluoXIA, cardXIAChannels)
-                    print "Graph Final Update OK"
-                    pass
-                except KeyboardInterrupt:
-                    raise
-                except Exception, tmp:
-                    print tmp
+            try:
+               update_graphs(CP, dcm, cardAI, cardCT, cardXIA, roiStart, roiEnd,\
+               XIANexusPath, XIAfilesList, fluoXIA, cardXIAChannels)
+               print "Graph Final Update OK"
+               pass
+            except KeyboardInterrupt:
+               raise
+            except Exception, tmp:
+               print tmp
     #Clean up the mess in the spool 
     #XIA close and wipe
-                for i in XIAfiles:
-                    for j in i:
-                        for ret in xrange(3):
-                            try:
-                                j.close()
-                                break
-                            except:
-                                sleep(1)
-                                pass
-                for i in zip(cardXIA,XIANexusPath):
-                    for j in os.listdir(i[1]):
-                        if j.startswith(i[0].DP.streamTargetFile):
-                            pass
-                            os.remove(i[1] + os.sep + j)
+            for i in XIAfiles:
+                for j in i:
+                    for ret in xrange(3):
+                        try:
+                            j.close()
+                            break
+                        except:
+                            sleep(1)
+            for i in zip(cardXIA,XIANexusPath):
+                for j in os.listdir(i[1]):
+                    if j.startswith(i[0].DP.streamTargetFile):
+                        os.remove(i[1] + os.sep + j)
 
     #Local data saving
-                dataBlock = array([ene,theta,xmu,fluoX,xmuS,fluoXraw,\
-                I0,I1,I2,I3],"f")
-                numpy.savetxt(ActualFileNameData, transpose(dataBlock))
-                FInfo = file(ActualFileNameInfo,"w")
-                FInfo.write("#.txt file columns content is:\n")
-                FInfo.write("# 1) Energy\n")
-                FInfo.write("# 2) Angle\n")
-                FInfo.write("# 3) Transmission\n")
-                FInfo.write("# 4) Fluorescence\n")
-                FInfo.write("# 5) Standard\n")
-                FInfo.write("# 6) RawFluorescence\n")
-                FInfo.write("# 7) I0\n")
-                FInfo.write("# 8) I1\n")
-                FInfo.write("# 9) I2\n")
-                FInfo.write("#10) I3\n")
-                FInfo.write("#TimeAtStart = %s\n" % (timeAtStart))
-                FInfo.write("#TimeAtStop  = %s\n" % (timeAtStop))
-                FInfo.write("#Scan from %g to %g at velocity= %g eV/s\n" % (e1, e2, velocity))
-                FInfo.write("#Counter Card Config\n")
-                for i in cardCTsavedAttributes:
-                    FInfo.write("#%s = %g\n" % (i,cardCT.read_attribute(i).value))
-                FInfo.write("#Analog  Card Config\n")
-                #Report in file Info dark currents applied
-                FInfo.write("#Dark_I0= %9.8f\nDark_I1= %9.8f\nDark_I2= %9.8f\nDark_I3= %9.8f\n"\
-                %(cardAI_dark0,cardAI_dark1,cardAI_dark2,cardAI_dark3,))
-                #
-                for i in cardAIsavedAttributes:
-                    FInfo.write("#%s = %g\n" % (i, cardAI.read_attribute(i).value))
+            dataBlock = array([ene,theta,xmu,fluoX,xmuS,fluoXraw,\
+            I0,I1,I2,I3],"f")
+            numpy.savetxt(ActualFileNameData, transpose(dataBlock))
+            FInfo = file(ActualFileNameInfo,"w")
+            FInfo.write("#.txt file columns content is:\n")
+            FInfo.write("# 1) Energy\n")
+            FInfo.write("# 2) Angle\n")
+            FInfo.write("# 3) Transmission\n")
+            FInfo.write("# 4) Fluorescence\n")
+            FInfo.write("# 5) Standard\n")
+            FInfo.write("# 6) RawFluorescence\n")
+            FInfo.write("# 7) I0\n")
+            FInfo.write("# 8) I1\n")
+            FInfo.write("# 9) I2\n")
+            FInfo.write("#10) I3\n")
+            FInfo.write("#TimeAtStart = %s\n" % (timeAtStart))
+            FInfo.write("#TimeAtStop  = %s\n" % (timeAtStop))
+            FInfo.write("#Scan from %g to %g at velocity= %g eV/s\n" % (e1, e2, velocity))
+            FInfo.write("#Counter Card Config\n")
+            for i in cardCTsavedAttributes:
+                FInfo.write("#%s = %g\n" % (i,cardCT.read_attribute(i).value))
+            FInfo.write("#Analog  Card Config\n")
+            #Report in file Info dark currents applied
+            FInfo.write("#Dark_I0= %9.8f\nDark_I1= %9.8f\nDark_I2= %9.8f\nDark_I3= %9.8f\n"\
+            %(cardAI_dark0,cardAI_dark1,cardAI_dark2,cardAI_dark3,))
+            #
+            for i in cardAIsavedAttributes:
+                FInfo.write("#%s = %g\n" % (i, cardAI.read_attribute(i).value))
     
-                #XIA cards
-                for xia in cardXIA:
-                    FInfo.write("#DxMap Card Config: %s\n"%xia.label)
-                    FInfo.write("#Config File: %s\n" %(xia.DP.currentConfigFile))
-                    FInfo.write("#Mode : %s\n" %(xia.DP.currentMode))
-                    FInfo.write("#ROI(s) : \n")
-                    for i in xia.DP.getrois():
-                        FInfo.write("#%s\n" % i)
+            #XIA cards
+            for xia in cardXIA:
+                FInfo.write("#DxMap Card Config: %s\n"%xia.label)
+                FInfo.write("#Config File: %s\n" %(xia.DP.currentConfigFile))
+                FInfo.write("#Mode : %s\n" %(xia.DP.currentMode))
+                FInfo.write("#ROI(s) : \n")
+                for i in xia.DP.getrois():
+                    FInfo.write("#%s\n" % i)
 
-                #DCM Config follows:
-                try:
-                    FInfo.write("#Monochromator Status:\n")
-                    for __dcmStatusBit in tuple(["#%s\n"%i for i in dcm.status().split("\n")]):
-                        FInfo.write("#%s" % __dcmStatusBit)
-                except:
-                    print dcm.status()
-                    print "Error reporting monochromator status."
+            #DCM Config follows:
+            try:
+                FInfo.write("#Monochromator Status:\n")
+                for __dcmStatusBit in tuple(["#%s\n"%i for i in dcm.status().split("\n")]):
+                    FInfo.write("#%s" % __dcmStatusBit)
+            except:
+                print dcm.status()
+                print "Error reporting monochromator status."
 
-                #MOSTAB Config follows:
-                try:
-                    FInfo.write("#MOSTAB Status:\n")
-                    for __mostabStatusBit in tuple(["#%s\n"%i for i in mostab.status().split("\n")]):
-                        FInfo.write("#%s" % __mostabStatusBit)
-                except:
-                    print mostab.status()
-                    print "Error reporting MOSTAB status."
-                
-                #Where All Info follow
-                for i in wa(returns=True, verbose=False):
-                    FInfo.write("#" + i + "\n")
-                FInfo.close()
+            #MOSTAB Config follows:
+            try:
+                FInfo.write("#MOSTAB Status:\n")
+                for __mostabStatusBit in tuple(["#%s\n"%i for i in mostab.status().split("\n")]):
+                    FInfo.write("#%s" % __mostabStatusBit)
+            except:
+                print mostab.status()
+                print "Error reporting MOSTAB status."
+           
+            #Where All Info follow
+            for i in wa(returns=True, verbose=False):
+                FInfo.write("#" + i + "\n")
+            FInfo.close()
     
-                os.system("cp " + ActualFileNameData +" " +filename2ruche(ActualFileNameData))
-                os.system("cp " + ActualFileNameInfo +" " +filename2ruche(ActualFileNameInfo))            
-                print myTime.asctime(), " : Data saved to backup."
-                shell.logger.log_write("Data saved in %s at %s\n" % (ActualFileNameData, myTime.asctime()), kind='output')
-    #Measure time spent for saving data
-                print "Time spent for data saving, backup and refresh plots: %3.2fs" % (myTime.time()-DataSavingTime)
-                try:
-                    if e1 < e0 <e2:
-                        #thread.start_new_thread(dentist.dentist, (ActualFileNameData,), {"e0":e0,})
-                        if mode.startswith("f"):
-                            dentist.dentist(ActualFileNameData, e0 =e0, mode="f")
-                        else:
-                            dentist.dentist(ActualFileNameData, e0 =e0, mode=mode)
-                except KeyboardInterrupt:
-                    raise
-                except Exception, tmp:
-                    print tmp
-                #dcm.velocity(60)
-                #if CurrentScan < NofScans-1: 
-                #    print myTime.asctime(), " : sending dcm back to starting point."
-                #    myTime.sleep(0.2)
-                #    dcm.pos(e1-1.)
+            os.system("cp " + ActualFileNameData +" " +filename2ruche(ActualFileNameData))
+            os.system("cp " + ActualFileNameInfo +" " +filename2ruche(ActualFileNameInfo))            
+            print myTime.asctime(), " : Data saved to backup."
+            shell.logger.log_write("Data saved in %s at %s\n" % (ActualFileNameData, myTime.asctime()), kind='output')
+            #Measure time spent for saving data
+            print "Time spent for data saving, backup and refresh plots: %3.2fs" % (myTime.time()-DataSavingTime)
+            try:
+                if e1 < e0 <e2:
+                    #thread.start_new_thread(dentist.dentist, (ActualFileNameData,), {"e0":e0,})
+                    if mode.startswith("f"):
+                        dentist.dentist(ActualFileNameData, e0 =e0, mode="f")
+                    else:
+                        dentist.dentist(ActualFileNameData, e0 =e0, mode=mode)
+            except KeyboardInterrupt:
+                raise
+            except Exception, tmp:
+                print tmp
     except Exception, tmp:
         #print "Acquisition Halted on Exception: wait for dcm to stop."
         #stopscan(shutter)
