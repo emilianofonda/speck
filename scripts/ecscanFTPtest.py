@@ -72,33 +72,6 @@ class CPlotter:
 __CPlotter__ = CPlotter()
 
 def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,backlash=100):
-    try:
-        for i in range(n):
-            ecscanActor(fileName,e1,e2,dt,velocity, e0, mode,shutter, beamCheck,backlash=backlash,CurrentScan=i,NofScans=n)
-    except KeyboardInterrupt:
-        shell.logger.log_write("ecscan halted on user request: Ctrl-C\n", kind='output')
-        print "Halting on user request."
-        sys.stdout.flush()
-        stopscan(shutter)
-        print "ecscan halted. OK."
-        print "Raising KeyboardInterrupt as requested."
-        sys.stdout.flush()
-        raise KeyboardInterrupt
-    except Exception, tmp:
-        shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp, kind='output')
-        print tmp
-        stopscan(shutter)
-        #raise
-    return 
-
-
-def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,backlash=100,CurrentScan=1,NofScans=1):
-    """Start from e1 (eV) to e2 (eV) and count over dt (s) per point.
-    velocity: Allowed velocity doesn't exceed 40eV/s.
-    The backup folder MUST be defined for the code to run.
-    Global variables: FE and obxg must exist and should point to Front End and Shutter
-    The filename: the only acceptable characters are [a-Z][0-9] + - . _ @ failing to do so will cause an exception
-    """
     #CheckFilename first
     fileName = fileName.replace(" ","_")
     if string.whitespace in fileName:
@@ -107,12 +80,6 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
         if ch not in string.letters+string.digits+"_./\\+-@":
             raise Exception("ecscan does not accept special characters in filenames. Aborting.",fileName)
     #
-    shell=get_ipython()
-    FE = shell.user_ns["FE"]
-    obxg = shell.user_ns["obxg"]
-    TotalScanTime = myTime.time()
-    cardCTsavedAttributes = ["totalNbPoint","integrationTime","continuous","bufferDepth"]
-    cardAIsavedAttributes = ["configurationId","frequency","integrationTime","dataBufferNumber"]
     if fileName == None: 
         raise Exception("filename and limits must be specified")
     if velocity <= 0.:
@@ -216,9 +183,6 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
         #Reset Nexus index and cleanup spool
         xia.DP.streamresetindex()
         map(lambda x: x.startswith(xia.DP.streamTargetFile) and os.remove(XIANexusPath[-1] +os.sep + x), os.listdir(XIANexusPath[-1]))
-    NumberOfXIAFiles = int(cardXIA[0].DP.nbpixels / cardXIA[0].DP.streamNbAcqPerFile) 
-    if numpy.mod(cardXIA[0].DP.nbpixels, cardXIA[0].DP.streamNbAcqPerFile):
-        NumberOfXIAFiles += 1
 
     #DCM Setup
     if dcm.state() == DevState.DISABLE:
@@ -230,6 +194,47 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
             break
         except:
             myTime.sleep(3)
+    try:
+        for i in range(n):
+            ecscanActor(fileName,e1,e2,dt,velocity, e0, mode,shutter, beamCheck,backlash=backlash,CurrentScan=i,NofScans=n,
+            cardXiaDataShape=cardXiaDataShape,XIANexusPath=XIANexusPath,cardXIAChannels=cardXIAChannels)
+    except KeyboardInterrupt:
+        shell.logger.log_write("ecscan halted on user request: Ctrl-C\n", kind='output')
+        print "Halting on user request."
+        sys.stdout.flush()
+        stopscan(shutter)
+        print "ecscan halted. OK."
+        print "Raising KeyboardInterrupt as requested."
+        sys.stdout.flush()
+        raise KeyboardInterrupt
+    except Exception, tmp:
+        shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp, kind='output')
+        print tmp
+        stopscan(shutter)
+        #raise
+    return 
+
+
+def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,backlash=100,CurrentScan=1,NofScans=1,
+    cardXiaDataShape=[],XIANexusPath=[],cardXIAChannels=[]):
+    """Start from e1 (eV) to e2 (eV) and count over dt (s) per point.
+    velocity: Allowed velocity doesn't exceed 40eV/s.
+    The backup folder MUST be defined for the code to run.
+    Global variables: FE and obxg must exist and should point to Front End and Shutter
+    The filename: the only acceptable characters are [a-Z][0-9] + - . _ @ failing to do so will cause an exception
+    """
+    shell=get_ipython()
+    FE = shell.user_ns["FE"]
+    obxg = shell.user_ns["obxg"]
+    TotalScanTime = myTime.time()
+    cardCTsavedAttributes = ["totalNbPoint","integrationTime","continuous","bufferDepth"]
+    cardAIsavedAttributes = ["configurationId","frequency","integrationTime","dataBufferNumber"]
+
+
+    NumberOfXIAFiles = int(cardXIA[0].DP.nbpixels / cardXIA[0].DP.streamNbAcqPerFile) 
+    if numpy.mod(cardXIA[0].DP.nbpixels, cardXIA[0].DP.streamNbAcqPerFile):
+        NumberOfXIAFiles += 1
+
     #Start graphic windows    
     try:
         CP = __CPlotter__
@@ -323,8 +328,6 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
             dcm.velocity(60)
             myTime.sleep(0.2)
             dcm.pos(e1-backlash, wait=False)
-        else:
-            print "Scan %i of %i"%(CurrentScan,NofScans)
             
         if DevState.FAULT in [xia.state() for xia in cardXIA]:
             cardCT.stop()
