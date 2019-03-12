@@ -103,6 +103,11 @@ def setMODE(recursive = 0, mode=""):
     else:
         #print "DxMap Ready for service."
         pass
+    for i in ct.mca_units:
+        try:
+            i.DP.accumulate=False
+        except:
+            pass
     return
 
 
