@@ -388,10 +388,6 @@ __tmp={
 #"raman_x"    :["d09-1-cx1/ex/raman-tx.1","position"],
 #"z2"    :["d09-1-cx1/ex/raman-tz.1","position"],
 "thetaBoral"    :["d09-1-cx1/ex/pfi.1-mt_rs.1","position"],
-"sx"        :["d09-1-cx2/ex/sex-mt_tx.1","position"],
-"sy"        :["d09-1-cx2/ex/sex-mt_ty.1","position"],
-"sz"        :["d09-1-cx2/ex/sex-mt_tz.1","position"],
-"sphi"        :["d09-1-cx2/ex/sex-mt_rz.1","position"],
 "imag1"        :["D09-1-C02/DT/IMAG1-MT_Tz.1","position"],
 "imag2"        :["D09-1-C04/DT/IMAG2-MT_Tz.1","position"],
 "imag3"        :["D09-1-C06/DT/IMAG3-MT_Tz.1","position"],
@@ -844,12 +840,6 @@ except Exception, tmp:
 
 #instrument("VortexME4")
 
-#slits=[vgap1,vpos1,hgap1,hpos1,vgap2,vpos2,vgap4,vpos4,hgap4,hpos4,vgap5,vpos5,hgap5,hpos5,vgap6,vpos6,hgap6,hpos6]
-#sample=[x, z, phi, theta]
-#fluo=[fluo_x, fluo_s, fluo_z]
-#sexafs=[sx,sy,sz,sphi]
-#optics=[dcm,rx1,rx2,rz2,rx2,rx2fine,tz2,ts2,mir1_pitch,mir1_roll,mir1_z,mir1_c,mir2_pitch,mir2_roll,mir2_z,mir2_c]
-
 #Load marccd 
 #instrument("MARCCD")
 
@@ -863,7 +853,7 @@ except Exception, tmp:
 #instrument("CAMERAS")
 
 #load Eurotherm controllers
-instrument("FORNO")
+#instrument("FORNO")
 
 #Enable setMCAconfig and getMCAconfig
 domacro("changePeakingTime")

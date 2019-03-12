@@ -54,8 +54,8 @@ mode="t", figN=1, overlap=False,out=False):
     ipoly2 = min(ene.searchsorted(e0+poly2), len(ene)-1)
     if inor2 - inor1 < 5: inor1 = inor2 -30 
     
-    ider1 = max(0, ene.searchsorted(e0 - 80))
-    ider2 = min(len(ene), ene.searchsorted(e0 + 140))
+    ider1 = max(0, ene.searchsorted(e0 - 50))
+    ider2 = min(len(ene), ene.searchsorted(e0 + 120))
     
     #InterpENE = numpy.array(list(numpy.arange(ene[1],ene[ipre2],2)) + list (ene[ipre2:inor1]) + list(numpy.arange(ene[inor1],ene[-2],1)) )
     #InterpXMU = scipy.interpolate.interp1d(ene,xmu, bounds_error=False)(InterpENE)

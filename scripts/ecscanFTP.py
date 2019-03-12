@@ -673,31 +673,29 @@ XIANexusPath, XIAfilesList, fluoXIA, cardXIAChannels):
     for xia in zip(cardXIA, XIANexusPath):
         __tmp = os.listdir(xia[1])
         __tmp.sort()
-        #print __tmp
         for i in list(__tmp):
-            #if not str(i).startswith(xia[0].DP.streamTargetFile) or str(i).startswith("."):
             if not str(i).startswith(xia[0].DP.streamTargetFile):
                 __tmp.remove(i)
         tmp.append(__tmp)
     if len(tmp[0]) > len(XIAfilesList[0]):
         for xiaN in range(len(cardXIA)):
-            for name in tmp[xiaN][len(XIAfilesList[xiaN]):]:
+            __lll = len(XIAfilesList[xiaN])
+            for name in tmp[xiaN][__lll:]:
                 XIAfilesList[xiaN].append(name)
                 try:
                     f = tables.openFile(XIANexusPath[xiaN] + os.sep + name, "r")
-                    #fluoSeg=zeros([shape(eval("f.root.entry.scan_data.channel%02i"%cardXIAChannels[xiaN][0]))[0],cardXIA[xiaN].DP.streamNbDataPerAcq],numpy.float32)
-                    #for ch in range(len(cardXIAChannels[xiaN])):
-                    #    fluoSeg += eval("f.root.entry.scan_data.channel%02i"%ch).read()
                     fluoSeg=zeros(len(eval("f.root.entry.scan_data.channel%02i"%cardXIAChannels[xiaN][0])),numpy.float32)
                     for ch in range(len(cardXIAChannels[xiaN])):
                         fluoSeg += sum(eval("f.root.entry.scan_data.channel%02i[:,roiStart:roiEnd]"%ch),axis=1)\
                         /(1.-eval("f.root.entry.scan_data.deadtime%02i"%ch).read()*0.01)
+                except:
+                    pass
+                    #print dir(eval("f.root.entry.scan_data"))
                 finally:
                     try:
                         f.close()
                     except:
                         pass
-                #fluoSeg = sum(fluoSeg[:,roiStart:roiEnd],axis=1) 
                 fluoXIA[xiaN] += list(fluoSeg)
         ll = min([len(i) for i in fluoXIA])
         if len(I0) >= ll and ll > 2:
