@@ -241,8 +241,12 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
             vgap1.pos(0.4)
             vgap2.pos(2.)
         else:    
-            vgap1.pos(min(max(0.1,theta-0.4),6.))
-            vgap2.pos(theta)
+# Old code
+            #vgap1.pos(min(max(0.1,theta-0.4),6.))
+            #vgap2.pos(theta)
+# 19/3/2019
+            vgap1.pos(min(max(0.1,theta),6.))
+            vgap2.pos(theta+1.)
     else:
         vgap1.pos(min(max(0.1,theta-0.4),6.))
         vgap2.pos(theta+2.)
