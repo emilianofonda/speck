@@ -277,9 +277,13 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
         myTime.sleep(1)
         dcm.mode(1)
         myTime.sleep(0.5)
-        dcm.velocity(velocity)
+        #dcm.velocity(velocity)
+        #dcm.velocity(10)
         myTime.sleep(0.5)
         dcm.pos(e1)
+        myTime.sleep(0.5)
+        #Moved here to increase speed in backlash region
+        dcm.velocity(velocity)
         myTime.sleep(0.5)
         try:
             pass

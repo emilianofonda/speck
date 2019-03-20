@@ -246,9 +246,13 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
             #vgap2.pos(theta)
 # 19/3/2019
             vgap1.pos(min(max(0.1,theta),6.))
-            vgap2.pos(theta+1.)
+            vgap2.pos(theta+2.)
     else:
-        vgap1.pos(min(max(0.1,theta-0.4),6.))
+# Old code
+        #vgap1.pos(min(max(0.1,theta-0.4),6.))
+        #vgap2.pos(theta+2.)
+# 19/3/2019
+        vgap1.pos(min(max(0.1,theta),6.))
         vgap2.pos(theta+2.)
     #Moved down of 1mm on 8/11/2016
     vpos2.pos(get_ipython().user_ns["dcm"].H() - 25. -1 )
