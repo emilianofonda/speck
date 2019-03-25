@@ -269,7 +269,7 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
         CP.GraceWin.wins[0].command('with g3\nxaxis ticklabel char size 0.7\n')
         CP.GraceWin.wins[0].command('with g3\nyaxis ticklabel char size 0.7\n')
         CP.GraceWin.wins[0].command('with g3\nyaxis label char size 0.7\nyaxis label "STD"')
-        timeAtStart = asctime()
+        timeAtStart = myTime.asctime()
         cardAI.start()
         for xia in cardXIA:
             #xia.DP.snap()
@@ -340,11 +340,11 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
         else:
             while(DevState.RUNNING in [cardCT.state(),]):
                 myTime.sleep(1.)
-            timeAtStop = asctime()
-            timeout0 = time()
-            while(DevState.RUNNING in [cardAI.state(),] and time()-timeout0 < 3):
+            timeAtStop = myTime.asctime()
+            timeout0 = myTime.time()
+            while(DevState.RUNNING in [cardAI.state(),] and myTime.time()-timeout0 < 3):
                 myTime.sleep(1)
-            if time()-timeout0 > 6:
+            if myTime.time()-timeout0 > 6:
                 print "cardAI of ecscan failed to stop!"
             cardAI.stop()
             theta = cardCT.Theta
@@ -369,7 +369,7 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
             print myTime.asctime(), " : Saving Data..."
 
     #Wait for XIA files to be saved in spool
-            XIAt0=time()
+            XIAt0=myTime.time()
             while(DevState.RUNNING in [i.state() for i in cardXIA]):
                 myTime.sleep(1)
                 if myTime.time() - XIAt0 > 60.:
