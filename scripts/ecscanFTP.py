@@ -32,14 +32,15 @@ print mycurses.RED+"Using FTP version of ecscan"+mycurses.RESET
 cardCT = DeviceProxy("d09-1-c00/ca/cpt.3")
 cardAI = DeviceProxy("d09-1-c00/ca/sai.1")
 
-cardXIA = ct.mca_units
+#cardXIA = ct.mca_units
 
 #cardXIA1 = DeviceProxy("d09-1-cx1/dt/dtc-mca_xmap.1")
 #cardXIA2 = DeviceProxy("d09-1-cx1/dt/dtc-mca_xmap.2")
 #cardXIA1Channels = range(1,20) #remember the range stops at N-1: 19
 #cardXIA2Channels = range(0,16) #remember the range stops at N-1: 15
 
-def stopscan(shutter=False):
+def stopscan(shutter=False,scaler="ct"):
+    cardXIA = eval(scaler+".mca_units")
     try:
         if shutter:
             sh_fast.close()
@@ -71,15 +72,15 @@ class CPlotter:
 
 __CPlotter__ = CPlotter()
 
-def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,backlash=100):
+def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,backlash=100,scaler="ct"):
     try:
         for i in range(n):
-            ecscanActor(fileName,e1,e2,dt,velocity, e0, mode,shutter, beamCheck,backlash=backlash,CurrentScan=i,NofScans=n)
+            ecscanActor(fileName,e1,e2,dt,velocity, e0, mode,shutter, beamCheck,backlash=backlash,CurrentScan=i,NofScans=n,scaler=scaler)
     except KeyboardInterrupt:
         shell.logger.log_write("ecscan halted on user request: Ctrl-C\n", kind='output')
         print "Halting on user request."
         sys.stdout.flush()
-        stopscan(shutter)
+        stopscan(shutter,scaler=scaler)
         print "ecscan halted. OK."
         print "Raising KeyboardInterrupt as requested."
         sys.stdout.flush()
@@ -87,18 +88,19 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
     except Exception, tmp:
         shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp, kind='output')
         print tmp
-        stopscan(shutter)
+        stopscan(shutter,scaler=scaler)
         #raise
     return 
 
 
-def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,backlash=100,CurrentScan=1,NofScans=1):
+def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,backlash=100,CurrentScan=1,NofScans=1,scaler="ct"):
     """Start from e1 (eV) to e2 (eV) and count over dt (s) per point.
     velocity: Allowed velocity doesn't exceed 40eV/s.
     The backup folder MUST be defined for the code to run.
     Global variables: FE and obxg must exist and should point to Front End and Shutter
     The filename: the only acceptable characters are [a-Z][0-9] + - . _ @ failing to do so will cause an exception
     """
+    cardXIA = eval(scaler+".mca_units")
     #CheckFilename first
     fileName = fileName.replace(" ","_")
     if string.whitespace in fileName:
@@ -188,6 +190,7 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
         xia.DP.nbpixels = NumberOfPoints
         xia.DP.streamNbAcqPerFile = 250
         xia.DP.set_timeout_millis(30000)
+        xia.DP.fileGeneration=True
         cardXiaDataShape.append([ NumberOfPoints,xia.DP.streamNbDataPerAcq ])
         if xia.FTPclient:
             XIANexusPath.append(xia.spoolMountPoint)
@@ -239,6 +242,7 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
         if beamCheck and not(checkTDL(FE)):
             wait_injection(FE,[obxg,])
             myTime.sleep(10.)
+
         ActualFileNameData = findNextFileName(fileName,"txt")
         shell.logger.log_write("Saving data in: %s\n" % ActualFileNameData, kind='output')
         ActualFileNameInfo = ActualFileNameData[:ActualFileNameData.rfind(".")] + ".info"
@@ -278,7 +282,7 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
         dcm.mode(1)
         myTime.sleep(0.5)
         #dcm.velocity(velocity)
-        #dcm.velocity(10)
+        dcm.velocity(10)
         myTime.sleep(0.5)
         dcm.pos(e1)
         myTime.sleep(0.5)
@@ -455,7 +459,9 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
                             __blockOcr = eval("XFile.root.entry.scan_data.ocr%02i"%ch).read()
 
     #DT line comment out if required
-                            __blockDT = eval("XFile.root.entry.scan_data.deadtime%02i"%ch).read()
+                            #__blockDT = eval("XFile.root.entry.scan_data.deadtime%02i"%ch).read()
+                            __blockDT = numpy.nan_to_num(100.*(1.-eval("XFile.root.entry.scan_data.ocr%02i"%ch).read()\
+                            /eval("XFile.root.entry.scan_data.icr%02i"%ch).read()))
                         except:
                             print "Cannot read ch = %i in XIA card #%i (first card is card 0)"%(ch,xiaN)
                             Breaked = True
@@ -479,9 +485,10 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
 
     #Finalize derived quantities
             fluoXraw = numpy.nan_to_num(array( sum(mcaSum[:,roiStart:roiEnd], axis=1), "f") / I0)
+            #print "cardXIAChannels[-1][-1]=",cardXIAChannels[-1][-1]
             fluoX = numpy.nan_to_num(sum(\
             [eval("outtaHDF.root.XIA.fluo%02i[:]"%nch)/(1.-eval("outtaHDF.root.XIA.deadtime%02i[:]"%nch)*0.01)\
-            for nch in range(cardXIAChannels[-1][-1])]\
+            for nch in range(cardXIAChannels[-1][-1]+1)]\
             ,axis=0)/I0)
             #
             outtaHDF.root.XIA.mcaSum[:] = mcaSum
@@ -526,6 +533,7 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
             for i in zip(cardXIA,XIANexusPath):
                 for j in os.listdir(i[1]):
                     if j.startswith(i[0].DP.streamTargetFile):
+                        pass
                         os.remove(i[1] + os.sep + j)
 
     #Local data saving
@@ -690,10 +698,10 @@ XIANexusPath, XIAfilesList, fluoXIA, cardXIAChannels):
                     f = tables.openFile(XIANexusPath[xiaN] + os.sep + name, "r")
                     fluoSeg=zeros(len(eval("f.root.entry.scan_data.channel%02i"%cardXIAChannels[xiaN][0])),numpy.float32)
                     for ch in range(len(cardXIAChannels[xiaN])):
-                        fluoSeg += sum(eval("f.root.entry.scan_data.channel%02i[:,roiStart:roiEnd]"%ch),axis=1)\
-                        /(1.-eval("f.root.entry.scan_data.deadtime%02i"%ch).read()*0.01)
-                except:
-                    pass
+                        fluoSeg += numpy.nan_to_num(sum(eval("f.root.entry.scan_data.channel%02i[:,roiStart:roiEnd]"%ch),axis=1)\
+                        *(eval("f.root.entry.scan_data.icr%02i"%ch).read()/eval("f.root.entry.scan_data.ocr%02i"%ch).read()))
+                except Exception, tmp:
+                    print tmp
                     #print dir(eval("f.root.entry.scan_data"))
                 finally:
                     try:

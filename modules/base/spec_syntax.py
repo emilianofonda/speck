@@ -862,6 +862,7 @@ class pseudo_counter:
                 pass
             while(self.masters_state() == DevState.RUNNING):
                 pass
+            sleep(self.deadtime)
             for i in self.slaves2arm2stop:
                 __tmp=thread.start_new_thread(i.stop,())
             while(self.state() == DevState.RUNNING):
