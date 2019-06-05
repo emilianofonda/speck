@@ -188,7 +188,10 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
         #Line below should work for non overlapping output channels
         __Nch += len(xia.channels)
         xia.DP.nbpixels = NumberOfPoints
-        xia.DP.streamNbAcqPerFile = 250
+        xia.DP.nbPixelsPerBuffer = 63
+#There seems to be a direct relation, though empirically found, between crashes of XIA and the fact that we
+#save a multiple of the buffer length in files. Black Magic?
+        xia.DP.streamNbAcqPerFile = xia.DP.nbPixelsPerBuffer * 10
         xia.DP.set_timeout_millis(30000)
         xia.DP.fileGeneration=True
         cardXiaDataShape.append([ NumberOfPoints,xia.DP.streamNbDataPerAcq ])
@@ -460,11 +463,13 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
 
     #DT line comment out if required
                             #__blockDT = eval("XFile.root.entry.scan_data.deadtime%02i"%ch).read()
-                            __blockDT = numpy.nan_to_num(100.*(1.-eval("XFile.root.entry.scan_data.ocr%02i"%ch).read()\
-                            /eval("XFile.root.entry.scan_data.icr%02i"%ch).read()))
-                        except:
+                            __icr = eval("XFile.root.entry.scan_data.icr%02i"%ch).read()
+                            __ocr = eval("XFile.root.entry.scan_data.ocr%02i"%ch).read()
+                            __blockDT = 100. * numpy.nan_to_num(1.-__ocr/__icr)
+                        except Exception, tmp:
                             print "Cannot read ch = %i in XIA card #%i (first card is card 0)"%(ch,xiaN)
                             Breaked = True
+                            print tmp
                             break
                         actualBlockLen = shape(__block)[0]
     #Feed RAM buffers with MCA values
@@ -627,6 +632,7 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
                         __j.close()
                         myTime.sleep(0.25)
                     except:
+
                         pass
         except:
             pass
@@ -648,9 +654,9 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
             pass
         if dcm.state() <> DevState.MOVING:
             dcm.velocity(60)
-    #Finally stop FTPclients
-    for xia in cardXIA:
-        xia.FTPclient.stop()
+        #Finally stop FTPclients
+        #for xia in cardXIA:
+            #xia.FTPclient.stop()
     
     
     #Write END of the Story
@@ -689,6 +695,8 @@ XIANexusPath, XIAfilesList, fluoXIA, cardXIAChannels):
             if not str(i).startswith(xia[0].DP.streamTargetFile):
                 __tmp.remove(i)
         tmp.append(__tmp)
+    #X-Files :-)   wait for files to really exist... !?!
+    myTime.sleep(1)
     if len(tmp[0]) > len(XIAfilesList[0]):
         for xiaN in range(len(cardXIA)):
             __lll = len(XIAfilesList[xiaN])
@@ -696,13 +704,19 @@ XIANexusPath, XIAfilesList, fluoXIA, cardXIAChannels):
                 XIAfilesList[xiaN].append(name)
                 try:
                     f = tables.openFile(XIANexusPath[xiaN] + os.sep + name, "r")
-                    fluoSeg=zeros(len(eval("f.root.entry.scan_data.channel%02i"%cardXIAChannels[xiaN][0])),numpy.float32)
+                    fluoSeg=zeros(len(eval("f.root.entry.scan_data.channel00")),numpy.float32)
                     for ch in range(len(cardXIAChannels[xiaN])):
-                        fluoSeg += numpy.nan_to_num(sum(eval("f.root.entry.scan_data.channel%02i[:,roiStart:roiEnd]"%ch),axis=1)\
-                        *(eval("f.root.entry.scan_data.icr%02i"%ch).read()/eval("f.root.entry.scan_data.ocr%02i"%ch).read()))
+                        icr =  eval("f.root.entry.scan_data.icr%02i"%ch).read()
+                        ocr =  eval("f.root.entry.scan_data.ocr%02i"%ch).read()
+                        if all(icr) and all(ocr):
+                            cor = icr/ocr
+                        else:
+                            cor = 1.
+                        fluoSeg += numpy.nan_to_num(sum(eval("f.root.entry.scan_data.channel%02i[:,roiStart:roiEnd]"%ch),axis=1)*cor)
                 except Exception, tmp:
-                    print tmp
-                    #print dir(eval("f.root.entry.scan_data"))
+                    #print tmp
+                    print XIANexusPath[xiaN]+ os.sep + name
+                    print ch,"\n",dir(eval("f.root.entry.scan_data"))
                 finally:
                     try:
                         f.close()

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from time import sleep
 
 print
@@ -392,9 +393,9 @@ __tmp={
 "imag2"        :["D09-1-C04/DT/IMAG2-MT_Tz.1","position"],
 "imag3"        :["D09-1-C06/DT/IMAG3-MT_Tz.1","position"],
 "dac0"        :["d09-1-c00/ca/mao.1","channel0"],
-"dac1"        :["d09-1-c00/ca/mao.1","channel1"],
+"HePump"        :["d09-1-c00/ca/mao.1","channel1"],
 "dac2"        :["d09-1-c00/ca/mao.1","channel2"],
-"dac3"        :["d09-1-c00/ca/mao.1","channel3"],
+"HeFlow"        :["d09-1-c00/ca/mao.1","channel3"],
 "dac4"        :["d09-1-c00/ca/mao.1","channel4"],
 "dac5"        :["d09-1-c00/ca/mao.1","channel5"],
 "dac6"        :["d09-1-c00/ca/mao.1","channel6"],

@@ -166,8 +166,8 @@ class dxmap:
                 self.DP.command_inout("Stop")
             except DevFailed:
                 self.DP.command_inout("Abort")
-        if self.FTPclient and self.DP.currentMODE=="MAPPING" and self.FTPclient.state() == DevState.RUNNING:
-            self.FTPclient.stop()
+        #if self.FTPclient and self.DP.currentMODE=="MAPPING" and self.FTPclient.state() == DevState.RUNNING:
+        #    self.FTPclient.stop()
         return self.state()
     
     def read_mca(self, channels=None):
