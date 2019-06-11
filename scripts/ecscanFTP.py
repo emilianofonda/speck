@@ -338,12 +338,16 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
             print "Scan %i of %i"%(CurrentScan,NofScans)
             
         if DevState.FAULT in [xia.state() for xia in cardXIA]:
+            shell.logger.log_write(mycurses.RED+mycurses.BOLD + "XIA cards in FAULT condition!" + mycurses.RESET, kind='output')
+            print mycurses.RED+mycurses.BOLD + "XIA cards in FAULT condition!" + mycurses.RESET
             cardCT.stop()
             cardAI.stop()
             setSTEP()
             sleep(1)
             setMAP()
             sleep(1)
+            shell.logger.log_write(mycurses.RED+mycurses.BOLD + "Skipping this file!" + mycurses.RESET, kind='output')
+            print mycurses.RED+mycurses.BOLD + "Skipping this file!" + mycurses.RESET
         else:
             while(DevState.RUNNING in [cardCT.state(),]):
                 myTime.sleep(1.)
@@ -377,25 +381,59 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
 
     #Wait for XIA files to be saved in spool
             XIAt0=myTime.time()
+            
             while(DevState.RUNNING in [i.state() for i in cardXIA]):
+                
                 myTime.sleep(1)
+                
                 if myTime.time() - XIAt0 > 60.:
-                    print "Time Out waiting for XIA cards to stop! Waited more than 60s... !"
+                    
+                    shell.logger.log_write(mycurses.RED+mycurses.BOLD + \
+                    "Time Out waiting for XIA cards to stop! Waited more than 60s... !" + mycurses.RESET, kind='output')
+                    print mycurses.RED+mycurses.BOLD + "Time Out waiting for XIA cards to stop! Waited more than 60s... !" + mycurses.RESET
+                    
                     for i in cardXIA:
                         i.stop()
+                    
                     setSTEP()
                     raise Exception("Time Out waiting for XIA cards to stop! Waited more than 60s... !")
                     shell.logger.log_write("Time Out waiting for XIA cards to stop! Waited more than 60s... !", kind='output')
-            while(True in [i[0] not in os.listdir(i[1]) for i in zip(LastXIAFileName, XIANexusPath)]):
+            
+            nfs_t0 = myTime.time()
+            
+            while(True in [i[0] not in os.listdir(i[1]) for i in zip(LastXIAFileName, XIANexusPath)] and myTime.time()-nfs_t0 < 3.):
                 myTime.sleep(1)
-                #        os.system("cd %s&&ls"%i)
-                if myTime.time()-XIAt0>300:
-                    print "Waited more than 300s. Exception Raised!"
-                    raise Exception("XIA did not provided files in less than 300s!!!!!! Halt.")
+           
+            if myTime.time()-nfs_t0 > 3.:
+                
+                print mycurses.BOLD + "Waited more than 3s. Severe spool latency?" + mycurses.RESET
+                shell.logger.log_write("Waited more than 3s. Severe spool latency?",kind='output')
+                
+            while(False in [
+            ( __fobj[0] in os.listdir(__fobj[1]) )\
+            or \
+            ( "temp_"+__fobj[0] in [__sfn[:__sfn.rfind(".")] for __sfn in os.listdir(__fobj[1])] )\
+            for __fobj in zip(LastXIAFileName, XIANexusPath)\
+            ]\
+            and myTime.time()-nfs_t0 < 30.):
+
+                myTime.sleep(1)
+
+            if myTime.time()-nfs_t0>30:
+                
+                print "XIA: Waited more than 30s. Exception Raised!"
+                #raise Exception("XIA did not provided files in less than 30s!!!!!! Halt.")
+            
             XIAtEnd = myTime.time()-XIAt0
-            print "XIA needed additional %3.1f seconds to provide data files."%(XIAtEnd)
-            shell.logger.log_write("XIA needed additional %3.1f seconds to provide data files."%(XIAtEnd) + ".hdf", kind='output')
-    
+            print mycurses.BOLD+"XIA needed additional %3.1f seconds to provide data files."%(XIAtEnd)+mycurses.RESET
+            shell.logger.log_write(mycurses.BOLD+"XIA needed additional %3.1f seconds to provide data files."%(XIAtEnd) + mycurses.RESET, kind='output')
+            
+            for i in cardXIA:
+                if i.DP.currentPixel < i.DP.nbPixels:
+                    print mycurses.RED+"Card %s has saved % points instead of %i."%(i.label,i.DP.currentPixel,i.DP.nbPixels)+mycurses.RESET
+                    shell.logger.log_write(mycurses.RED+"Card %s has saved % points insetad of %i."\
+                    %(i.label,i.DP.currentPixel,i.DP.nbPixels)+ mycurses.RESET, kind='output')
+         
     #Additional time to wait (?)
             myTime.sleep(0.2)
     #Measure time spent for saving data
@@ -419,7 +457,7 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
             mcaSum = numpy.zeros(cardXiaDataShape[0],numpy.uint32)
             #outtaHDF.createArray("/XIA", "mcaSum", numpy.zeros(cardXIA1dataShape, numpy.uint32))
     
-    #XIA1 read / write
+    #XIA read / write
     
     #Declare a RAM buffer for a single MCA
             bCmca = numpy.zeros(cardXiaDataShape[0],numpy.uint32)

@@ -861,7 +861,8 @@ domacro("changePeakingTime")
 
 #Load Energy Continuous Scan
 #domacro("ecscanME4")
-domacro("ecscanFTP")
+#domacro("ecscanFTP")
+domacro("ecscanFTPeureka")
 domacro("ecscanXP")
 domacro("averageThis")
 domacro("resetFEMTO")

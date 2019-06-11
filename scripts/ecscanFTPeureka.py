@@ -20,7 +20,7 @@ except:
     print "Warning from ecscan: Tkinter not installed."
     NoTk=True
 
-print mycurses.RED+"Using FTP version of ecscan"+mycurses.RESET
+print mycurses.RED+"Using eureka! version of ecscan"+mycurses.RESET
 
 
 # WARNING This script version uses the global object ct from speck to import XIA cards.
@@ -32,14 +32,15 @@ print mycurses.RED+"Using FTP version of ecscan"+mycurses.RESET
 cardCT = DeviceProxy("d09-1-c00/ca/cpt.3")
 cardAI = DeviceProxy("d09-1-c00/ca/sai.1")
 
-cardXIA = ct.mca_units
+#cardXIA = ct.mca_units
 
 #cardXIA1 = DeviceProxy("d09-1-cx1/dt/dtc-mca_xmap.1")
 #cardXIA2 = DeviceProxy("d09-1-cx1/dt/dtc-mca_xmap.2")
 #cardXIA1Channels = range(1,20) #remember the range stops at N-1: 19
 #cardXIA2Channels = range(0,16) #remember the range stops at N-1: 15
 
-def stopscan(shutter=False):
+def stopscan(shutter=False,scaler="ct"):
+    cardXIA = eval(scaler+".mca_units")
     try:
         if shutter:
             sh_fast.close()
@@ -71,7 +72,35 @@ class CPlotter:
 
 __CPlotter__ = CPlotter()
 
-def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,backlash=100):
+def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,backlash=100,scaler="ct"):
+    try:
+        for i in range(n):
+            ecscanActor(fileName,e1,e2,dt,velocity, e0, mode,shutter, beamCheck,backlash=backlash,CurrentScan=i,NofScans=n,scaler=scaler)
+    except KeyboardInterrupt:
+        shell.logger.log_write("ecscan halted on user request: Ctrl-C\n", kind='output')
+        print "Halting on user request."
+        sys.stdout.flush()
+        stopscan(shutter,scaler=scaler)
+        print "ecscan halted. OK."
+        print "Raising KeyboardInterrupt as requested."
+        sys.stdout.flush()
+        raise KeyboardInterrupt
+    except Exception, tmp:
+        shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp, kind='output')
+        print tmp
+        stopscan(shutter,scaler=scaler)
+        #raise
+    return 
+
+
+def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,backlash=100,CurrentScan=1,NofScans=1,scaler="ct"):
+    """Start from e1 (eV) to e2 (eV) and count over dt (s) per point.
+    velocity: Allowed velocity doesn't exceed 40eV/s.
+    The backup folder MUST be defined for the code to run.
+    Global variables: FE and obxg must exist and should point to Front End and Shutter
+    The filename: the only acceptable characters are [a-Z][0-9] + - . _ @ failing to do so will cause an exception
+    """
+    cardXIA = eval(scaler+".mca_units")
     #CheckFilename first
     fileName = fileName.replace(" ","_")
     if string.whitespace in fileName:
@@ -80,6 +109,12 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
         if ch not in string.letters+string.digits+"_./\\+-@":
             raise Exception("ecscan does not accept special characters in filenames. Aborting.",fileName)
     #
+    shell=get_ipython()
+    FE = shell.user_ns["FE"]
+    obxg = shell.user_ns["obxg"]
+    TotalScanTime = myTime.time()
+    cardCTsavedAttributes = ["totalNbPoint","integrationTime","continuous","bufferDepth"]
+    cardAIsavedAttributes = ["configurationId","frequency","integrationTime","dataBufferNumber"]
     if fileName == None: 
         raise Exception("filename and limits must be specified")
     if velocity <= 0.:
@@ -153,8 +188,12 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
         #Line below should work for non overlapping output channels
         __Nch += len(xia.channels)
         xia.DP.nbpixels = NumberOfPoints
-        xia.DP.streamNbAcqPerFile = 250
+        xia.DP.nbPixelsPerBuffer = 63
+#There seems to be a direct relation, though empirically found, between crashes of XIA and the fact that we
+#save a multiple of the buffer length in files. Black Magic?
+        xia.DP.streamNbAcqPerFile = xia.DP.nbPixelsPerBuffer * 10
         xia.DP.set_timeout_millis(30000)
+        xia.DP.fileGeneration=True
         cardXiaDataShape.append([ NumberOfPoints,xia.DP.streamNbDataPerAcq ])
         if xia.FTPclient:
             XIANexusPath.append(xia.spoolMountPoint)
@@ -183,6 +222,9 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
         #Reset Nexus index and cleanup spool
         xia.DP.streamresetindex()
         map(lambda x: x.startswith(xia.DP.streamTargetFile) and os.remove(XIANexusPath[-1] +os.sep + x), os.listdir(XIANexusPath[-1]))
+    NumberOfXIAFiles = int(cardXIA[0].DP.nbpixels / cardXIA[0].DP.streamNbAcqPerFile) 
+    if numpy.mod(cardXIA[0].DP.nbpixels, cardXIA[0].DP.streamNbAcqPerFile):
+        NumberOfXIAFiles += 1
 
     #DCM Setup
     if dcm.state() == DevState.DISABLE:
@@ -194,56 +236,20 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
             break
         except:
             myTime.sleep(3)
-    try:
-        for i in range(n):
-            ecscanActor(fileName,e1,e2,dt,velocity, e0, mode,shutter, beamCheck,backlash=backlash,CurrentScan=i,NofScans=n,
-            cardXiaDataShape=cardXiaDataShape,XIANexusPath=XIANexusPath,cardXIAChannels=cardXIAChannels)
-    except KeyboardInterrupt:
-        shell.logger.log_write("ecscan halted on user request: Ctrl-C\n", kind='output')
-        print "Halting on user request."
-        sys.stdout.flush()
-        stopscan(shutter)
-        print "ecscan halted. OK."
-        print "Raising KeyboardInterrupt as requested."
-        sys.stdout.flush()
-        raise KeyboardInterrupt
-    except Exception, tmp:
-        shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp, kind='output')
-        print tmp
-        stopscan(shutter)
-        #raise
-    return 
-
-
-def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,backlash=100,CurrentScan=1,NofScans=1,
-    cardXiaDataShape=[],XIANexusPath=[],cardXIAChannels=[]):
-    """Start from e1 (eV) to e2 (eV) and count over dt (s) per point.
-    velocity: Allowed velocity doesn't exceed 40eV/s.
-    The backup folder MUST be defined for the code to run.
-    Global variables: FE and obxg must exist and should point to Front End and Shutter
-    The filename: the only acceptable characters are [a-Z][0-9] + - . _ @ failing to do so will cause an exception
-    """
-    shell=get_ipython()
-    FE = shell.user_ns["FE"]
-    obxg = shell.user_ns["obxg"]
-    TotalScanTime = myTime.time()
-    cardCTsavedAttributes = ["totalNbPoint","integrationTime","continuous","bufferDepth"]
-    cardAIsavedAttributes = ["configurationId","frequency","integrationTime","dataBufferNumber"]
-
-
-    NumberOfXIAFiles = int(cardXIA[0].DP.nbpixels / cardXIA[0].DP.streamNbAcqPerFile) 
-    if numpy.mod(cardXIA[0].DP.nbpixels, cardXIA[0].DP.streamNbAcqPerFile):
-        NumberOfXIAFiles += 1
-
     #Start graphic windows    
     try:
         CP = __CPlotter__
         CP.GraceWin = GracePlotter()
         #Calculate name of last data buffer file to wait (XIA)
         LastXIAFileName = ["%s_%06i.nxs" % (xia.DP.streamTargetFile, NumberOfXIAFiles) for xia in cardXIA]
+        AllXIAFileNames = [["%s_%06i.nxs" % (xia.DP.streamTargetFile, i) for i in range(1,NumberOfXIAFiles+1)] for xia in cardXIA]
+        print "Expecting :"
+        for i in AllXIAFileNames:
+            print i
         if beamCheck and not(checkTDL(FE)):
             wait_injection(FE,[obxg,])
             myTime.sleep(10.)
+
         ActualFileNameData = findNextFileName(fileName,"txt")
         shell.logger.log_write("Saving data in: %s\n" % ActualFileNameData, kind='output')
         ActualFileNameInfo = ActualFileNameData[:ActualFileNameData.rfind(".")] + ".info"
@@ -274,7 +280,7 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
         CP.GraceWin.wins[0].command('with g3\nxaxis ticklabel char size 0.7\n')
         CP.GraceWin.wins[0].command('with g3\nyaxis ticklabel char size 0.7\n')
         CP.GraceWin.wins[0].command('with g3\nyaxis label char size 0.7\nyaxis label "STD"')
-        timeAtStart = asctime()
+        timeAtStart = myTime.asctime()
         cardAI.start()
         for xia in cardXIA:
             #xia.DP.snap()
@@ -282,9 +288,13 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
         myTime.sleep(1)
         dcm.mode(1)
         myTime.sleep(0.5)
-        dcm.velocity(velocity)
+        #dcm.velocity(velocity)
+        dcm.velocity(10)
         myTime.sleep(0.5)
         dcm.pos(e1)
+        myTime.sleep(0.5)
+        #Moved here to increase speed in backlash region
+        dcm.velocity(velocity)
         myTime.sleep(0.5)
         try:
             pass
@@ -328,22 +338,28 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
             dcm.velocity(60)
             myTime.sleep(0.2)
             dcm.pos(e1-backlash, wait=False)
+        else:
+            print "Scan %i of %i"%(CurrentScan,NofScans)
             
         if DevState.FAULT in [xia.state() for xia in cardXIA]:
+            shell.logger.log_write(mycurses.RED+mycurses.BOLD + "XIA cards in FAULT condition!" + mycurses.RESET, kind='output')
+            print mycurses.RED+mycurses.BOLD + "XIA cards in FAULT condition!" + mycurses.RESET
             cardCT.stop()
             cardAI.stop()
             setSTEP()
             sleep(1)
             setMAP()
             sleep(1)
+            shell.logger.log_write(mycurses.RED+mycurses.BOLD + "Skipping this file!" + mycurses.RESET, kind='output')
+            print mycurses.RED+mycurses.BOLD + "Skipping this file!" + mycurses.RESET
         else:
             while(DevState.RUNNING in [cardCT.state(),]):
                 myTime.sleep(1.)
-            timeAtStop = asctime()
-            timeout0 = time()
-            while(DevState.RUNNING in [cardAI.state(),] and time()-timeout0 < 3):
+            timeAtStop = myTime.asctime()
+            timeout0 = myTime.time()
+            while(DevState.RUNNING in [cardAI.state(),] and myTime.time()-timeout0 < 3):
                 myTime.sleep(1)
-            if time()-timeout0 > 6:
+            if myTime.time()-timeout0 > 6:
                 print "cardAI of ecscan failed to stop!"
             cardAI.stop()
             theta = cardCT.Theta
@@ -368,26 +384,60 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
             print myTime.asctime(), " : Saving Data..."
 
     #Wait for XIA files to be saved in spool
-            XIAt0=time()
+            XIAt0=myTime.time()
+            
             while(DevState.RUNNING in [i.state() for i in cardXIA]):
+                
                 myTime.sleep(1)
+                
                 if myTime.time() - XIAt0 > 60.:
-                    print "Time Out waiting for XIA cards to stop! Waited more than 60s... !"
+                    
+                    shell.logger.log_write(mycurses.RED+mycurses.BOLD + \
+                    "Time Out waiting for XIA cards to stop! Waited more than 60s... !" + mycurses.RESET, kind='output')
+                    print mycurses.RED+mycurses.BOLD + "Time Out waiting for XIA cards to stop! Waited more than 60s... !" + mycurses.RESET
+                    
                     for i in cardXIA:
                         i.stop()
+                    
                     setSTEP()
                     raise Exception("Time Out waiting for XIA cards to stop! Waited more than 60s... !")
                     shell.logger.log_write("Time Out waiting for XIA cards to stop! Waited more than 60s... !", kind='output')
-            while(True in [i[0] not in os.listdir(i[1]) for i in zip(LastXIAFileName, XIANexusPath)]):
+            
+            nfs_t0 = myTime.time()
+            
+            while(True in [i[0] not in os.listdir(i[1]) for i in zip(LastXIAFileName, XIANexusPath)] and myTime.time()-nfs_t0 < 3.):
                 myTime.sleep(1)
-                #        os.system("cd %s&&ls"%i)
-                if myTime.time()-XIAt0>300:
-                    print "Waited more than 300s. Exception Raised!"
-                    raise Exception("XIA did not provided files in less than 300s!!!!!! Halt.")
+           
+            if myTime.time()-nfs_t0 > 3.:
+                
+                print mycurses.BOLD + "Waited more than 3s. Severe spool latency?" + mycurses.RESET
+                shell.logger.log_write("Waited more than 3s. Severe spool latency?",kind='output')
+                
+            while(False in [
+            ( __fobj[0] in os.listdir(__fobj[1]) )\
+            or \
+            ( "temp_"+__fobj[0] in [__sfn[:__sfn.rfind(".")] for __sfn in os.listdir(__fobj[1])] )\
+            for __fobj in zip(LastXIAFileName, XIANexusPath)\
+            ]\
+            and myTime.time()-nfs_t0 < 30.):
+
+                myTime.sleep(1)
+
+            if myTime.time()-nfs_t0>30:
+                
+                print "XIA: Waited more than 30s. Exception Raised!"
+                #raise Exception("XIA did not provided files in less than 30s!!!!!! Halt.")
+            
             XIAtEnd = myTime.time()-XIAt0
-            print "XIA needed additional %3.1f seconds to provide data files."%(XIAtEnd)
-            shell.logger.log_write("XIA needed additional %3.1f seconds to provide data files."%(XIAtEnd) + ".hdf", kind='output')
-    
+            print mycurses.BOLD+"XIA needed additional %3.1f seconds to provide data files."%(XIAtEnd)+mycurses.RESET
+            shell.logger.log_write(mycurses.BOLD+"XIA needed additional %3.1f seconds to provide data files."%(XIAtEnd) + mycurses.RESET, kind='output')
+            
+            for i in cardXIA:
+                if i.DP.currentPixel < i.DP.nbPixels:
+                    print mycurses.RED+"Card %s has saved % points instead of %i."%(i.label,i.DP.currentPixel,i.DP.nbPixels)+mycurses.RESET
+                    shell.logger.log_write(mycurses.RED+"Card %s has saved % points insetad of %i."\
+                    %(i.label,i.DP.currentPixel,i.DP.nbPixels)+ mycurses.RESET, kind='output')
+         
     #Additional time to wait (?)
             myTime.sleep(0.2)
     #Measure time spent for saving data
@@ -396,11 +446,15 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
             HDFfilters = tables.Filters(complevel = 1, complib='zlib')
     #XIA prepare
             XIAfilesNames=[]
-            for i in zip(cardXIA,XIANexusPath):
-                XIAfilesNames.append([j for j in os.listdir(i[1]) if j.startswith(i[0].DP.streamTargetFile)])
-            XIAfilesNames = [numpy.sort(i) for i in XIAfilesNames]                  
+            #This's very stupid, let's replace it!
+            #for i in zip(cardXIA,XIANexusPath):
+            #    XIAfilesNames.append([j for j in os.listdir(i[1]) if j.startswith(i[0].DP.streamTargetFile)])
+            #XIAfilesNames = [numpy.sort(i) for i in XIAfilesNames]                  
+            #XIAfiles=[]
+            #for path in zip(XIANexusPath,XIAfilesNames):
+            #    XIAfiles.append([tables.openFile(path[0] +os.sep + x, "r") for x in path[1]])
             XIAfiles=[]
-            for path in zip(XIANexusPath,XIAfilesNames):
+            for path in zip(XIANexusPath,AllXIAFileNames):
                 XIAfiles.append([tables.openFile(path[0] +os.sep + x, "r") for x in path[1]])
         #Common
             outtaName = filename2ruche(ActualFileNameData)
@@ -411,7 +465,7 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
             mcaSum = numpy.zeros(cardXiaDataShape[0],numpy.uint32)
             #outtaHDF.createArray("/XIA", "mcaSum", numpy.zeros(cardXIA1dataShape, numpy.uint32))
     
-    #XIA1 read / write
+    #XIA read / write
     
     #Declare a RAM buffer for a single MCA
             bCmca = numpy.zeros(cardXiaDataShape[0],numpy.uint32)
@@ -454,10 +508,14 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
                             __blockOcr = eval("XFile.root.entry.scan_data.ocr%02i"%ch).read()
 
     #DT line comment out if required
-                            __blockDT = eval("XFile.root.entry.scan_data.deadtime%02i"%ch).read()
-                        except:
+                            #__blockDT = eval("XFile.root.entry.scan_data.deadtime%02i"%ch).read()
+                            __icr = eval("XFile.root.entry.scan_data.icr%02i"%ch).read()
+                            __ocr = eval("XFile.root.entry.scan_data.ocr%02i"%ch).read()
+                            __blockDT = 100. * numpy.nan_to_num(1.-__ocr/__icr)
+                        except Exception, tmp:
                             print "Cannot read ch = %i in XIA card #%i (first card is card 0)"%(ch,xiaN)
                             Breaked = True
+                            print tmp
                             break
                         actualBlockLen = shape(__block)[0]
     #Feed RAM buffers with MCA values
@@ -478,9 +536,10 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
 
     #Finalize derived quantities
             fluoXraw = numpy.nan_to_num(array( sum(mcaSum[:,roiStart:roiEnd], axis=1), "f") / I0)
+            #print "cardXIAChannels[-1][-1]=",cardXIAChannels[-1][-1]
             fluoX = numpy.nan_to_num(sum(\
             [eval("outtaHDF.root.XIA.fluo%02i[:]"%nch)/(1.-eval("outtaHDF.root.XIA.deadtime%02i[:]"%nch)*0.01)\
-            for nch in range(cardXIAChannels[-1][-1])]\
+            for nch in range(cardXIAChannels[-1][-1]+1)]\
             ,axis=0)/I0)
             #
             outtaHDF.root.XIA.mcaSum[:] = mcaSum
@@ -525,6 +584,7 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
             for i in zip(cardXIA,XIANexusPath):
                 for j in os.listdir(i[1]):
                     if j.startswith(i[0].DP.streamTargetFile):
+                        pass
                         os.remove(i[1] + os.sep + j)
 
     #Local data saving
@@ -618,6 +678,7 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
                         __j.close()
                         myTime.sleep(0.25)
                     except:
+
                         pass
         except:
             pass
@@ -639,9 +700,9 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
             pass
         if dcm.state() <> DevState.MOVING:
             dcm.velocity(60)
-    #Finally stop FTPclients
-    for xia in cardXIA:
-        xia.FTPclient.stop()
+        #Finally stop FTPclients
+        #for xia in cardXIA:
+            #xia.FTPclient.stop()
     
     
     #Write END of the Story
@@ -676,31 +737,37 @@ XIANexusPath, XIAfilesList, fluoXIA, cardXIAChannels):
     for xia in zip(cardXIA, XIANexusPath):
         __tmp = os.listdir(xia[1])
         __tmp.sort()
-        #print __tmp
         for i in list(__tmp):
-            #if not str(i).startswith(xia[0].DP.streamTargetFile) or str(i).startswith("."):
             if not str(i).startswith(xia[0].DP.streamTargetFile):
                 __tmp.remove(i)
         tmp.append(__tmp)
+    #X-Files :-)   wait for files to really exist... !?!
+    myTime.sleep(1)
     if len(tmp[0]) > len(XIAfilesList[0]):
         for xiaN in range(len(cardXIA)):
-            for name in tmp[xiaN][len(XIAfilesList[xiaN]):]:
+            __lll = len(XIAfilesList[xiaN])
+            for name in tmp[xiaN][__lll:]:
                 XIAfilesList[xiaN].append(name)
                 try:
                     f = tables.openFile(XIANexusPath[xiaN] + os.sep + name, "r")
-                    #fluoSeg=zeros([shape(eval("f.root.entry.scan_data.channel%02i"%cardXIAChannels[xiaN][0]))[0],cardXIA[xiaN].DP.streamNbDataPerAcq],numpy.float32)
-                    #for ch in range(len(cardXIAChannels[xiaN])):
-                    #    fluoSeg += eval("f.root.entry.scan_data.channel%02i"%ch).read()
-                    fluoSeg=zeros(len(eval("f.root.entry.scan_data.channel%02i"%cardXIAChannels[xiaN][0])),numpy.float32)
+                    fluoSeg=zeros(len(eval("f.root.entry.scan_data.channel00")),numpy.float32)
                     for ch in range(len(cardXIAChannels[xiaN])):
-                        fluoSeg += sum(eval("f.root.entry.scan_data.channel%02i[:,roiStart:roiEnd]"%ch),axis=1)\
-                        /(1.-eval("f.root.entry.scan_data.deadtime%02i"%ch).read()*0.01)
+                        icr =  eval("f.root.entry.scan_data.icr%02i"%ch).read()
+                        ocr =  eval("f.root.entry.scan_data.ocr%02i"%ch).read()
+                        if all(icr) and all(ocr):
+                            cor = icr/ocr
+                        else:
+                            cor = 1.
+                        fluoSeg += numpy.nan_to_num(sum(eval("f.root.entry.scan_data.channel%02i[:,roiStart:roiEnd]"%ch),axis=1)*cor)
+                except Exception, tmp:
+                    #print tmp
+                    print XIANexusPath[xiaN]+ os.sep + name
+                    print ch,"\n",dir(eval("f.root.entry.scan_data"))
                 finally:
                     try:
                         f.close()
                     except:
                         pass
-                #fluoSeg = sum(fluoSeg[:,roiStart:roiEnd],axis=1) 
                 fluoXIA[xiaN] += list(fluoSeg)
         ll = min([len(i) for i in fluoXIA])
         if len(I0) >= ll and ll > 2:
