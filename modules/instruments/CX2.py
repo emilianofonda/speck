@@ -64,16 +64,14 @@ except Exception, tmp:
 
 #bufferedCounter (Theta)
 
-#from p_bufferedCounter import bufferedCounter as p_bufferedCounter
+from p_bufferedCounter import bufferedCounter as p_bufferedCounter
 
-#config = {"frequency":100,"integrationTime":0.01,"nexusFileGeneration":False,\
-#"nexusTargetPath":'/dev/shm/cx2cpt',"nexusNbAcqPerFile":1000,"totalNbPoint":1000,\
-#"bufferDepth":100}
+config = {"frequency":100,"integrationTime":0.01,"nexusFileGeneration":False,\
+"nexusTargetPath":'/dev/shm/cpt3',"nexusNbAcqPerFile":1000,"totalNbPoint":1000,\
+"bufferDepth":100}
 
-#cpt3 = p_bufferedCounter("d09-1-c00/ca/cpt.3",deadtime=0.1,timeout=10,config = config,
-#spoolMountPoint="/dev/shm/cpt3",identifier="encoder_0",GateDownTime=2.)
-
-
+cpt3 = p_bufferedCounter("d09-1-c00/ca/cpt.3",deadtime=0.1,timeout=10,config = config,
+spoolMountPoint="/dev/shm/cpt3",identifier="encoder_rx1",GateDownTime=2.)
 
 
 #PulseGenerator
@@ -100,7 +98,7 @@ try:
     #ct=pseudo_counter(masters=[pulseGen0],slaves=[sai_1,x3mca], posts= ctPosts)
     #Remember to set the cpt3 card from master to slave mode and modify BNC cable position from OUT to GATE
     #ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai_1,mca1,cpt3], posts= ctPosts)
-    ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai_1,cx2xia1])
+    ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai_1,cx2xia1,cpt3])
 
 except Exception, tmp:
     print tmp
@@ -108,4 +106,13 @@ except Exception, tmp:
 
 mostab.scaler = "ct"
 
-#domacro("ecscanPulse")
+execfile(__pySamba_root+"/modules/pulse/p_ascan.py")
+
+#from p_ecscan import ecscan
+
+#legacy definitions
+
+def setSTEP():
+    return
+def setMAP():
+    return

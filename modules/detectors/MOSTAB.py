@@ -1,7 +1,8 @@
 #and now something completely different...
 import time
 
-from ascan import ascan, ScanStats
+#from ascan import ascan, ScanStats
+from IPython.core.getipython import get_ipython
 
 import numpy
 from numpy import inf, nan
@@ -46,6 +47,7 @@ class MOSTAB_serial:
             }
         self.init_file = init_file
         self.forceOutBeam = forceOutBeam
+        self.ipy = get_ipython()
         return
 
 
@@ -201,6 +203,8 @@ class MOSTAB_serial:
         if self.forceOutBeam:
             self.__call__(self.forceOutBeam)
         self.InOutS("OPRANGE 0. 10. 5.")
+        ascan = self.ipy.user_ns["ascan"]
+        ScanStats = self.ipy.user_ns["ScanStats"]
         rocca = ascan(self, p1, p2, (p1-p2)/float(np), dt = dt, channel=self.channel, graph=-1, scaler=self.scaler, returndata=True)
         if tune == "max":
             pt = ScanStats.max_pos
@@ -327,6 +331,7 @@ class MOSTAB_tango(MOSTAB_serial):
         #self.InOutS("PID:PROF 0")
         self.init_file = init_file
         self.forceOutBeam = forceOutBeam
+        self.ipy = get_ipython()
         return
 
     def open(self):
