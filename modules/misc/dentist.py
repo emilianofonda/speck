@@ -125,7 +125,7 @@ mode="t", figN=1, overlap=False,out=False):
         pylab.title(filename)
     pylab.grid()
     xmuNOR = (xmu-pylab.polyval(preEdge,ene))/(pylab.polyval(norPoly,ene)-pylab.polyval(preEdge,ene))
-    derNOR = pylab.diff(xmuNOR[ider1:ider2])/pylab.diff(ene[ider1:ider2])
+    derNOR = pylab.nan_to_num(pylab.diff(xmuNOR[ider1:ider2])/pylab.diff(ene[ider1:ider2]))
     ###derNORsg = pylab.diff(xas.SavitzkyGolay(xmuNOR[ider1:ider2],23,3))/pylab.diff(ene[ider1:ider2])
     derNORsg = xas.SavitzkyGolay(pylab.diff(xas.SavitzkyGolay(xmuNOR[ider1:ider2],13,5))/pylab.diff(ene[ider1:ider2]),13,5)
     derNOR = derNOR / max(derNOR)

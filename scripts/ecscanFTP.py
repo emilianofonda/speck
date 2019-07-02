@@ -219,6 +219,7 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
             xia.FTPclient.start()
         else:
             XIANexusPath.append("/nfs" + xia.DP.streamTargetPath.replace("\\","/")[1:])
+            #XIANexusPath.append(xia.DP.streamTargetPath.replace("\\","/")[1:])
         #Reset Nexus index and cleanup spool
         xia.DP.streamresetindex()
         map(lambda x: x.startswith(xia.DP.streamTargetFile) and os.remove(XIANexusPath[-1] +os.sep + x), os.listdir(XIANexusPath[-1]))
@@ -401,29 +402,14 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
             
             nfs_t0 = myTime.time()
             
-            while(True in [i[0] not in os.listdir(i[1]) for i in zip(LastXIAFileName, XIANexusPath)] and myTime.time()-nfs_t0 < 3.):
+            while(True in [i[0] not in os.listdir(i[1]) for i in zip(LastXIAFileName, XIANexusPath)] and myTime.time()-nfs_t0 < 10.):
                 myTime.sleep(1)
            
-            if myTime.time()-nfs_t0 > 3.:
+            if myTime.time()-nfs_t0 > 10.:
                 
-                print mycurses.BOLD + "Waited more than 3s. Severe spool latency?" + mycurses.RESET
-                shell.logger.log_write("Waited more than 3s. Severe spool latency?",kind='output')
+                print mycurses.BOLD + "Waited more than 10s. Severe spool latency?" + mycurses.RESET
+                shell.logger.log_write("Waited more than 10s. Severe spool latency?",kind='output')
                 
-            while(False in [
-            ( __fobj[0] in os.listdir(__fobj[1]) )\
-            or \
-            ( "temp_"+__fobj[0] in [__sfn[:__sfn.rfind(".")] for __sfn in os.listdir(__fobj[1])] )\
-            for __fobj in zip(LastXIAFileName, XIANexusPath)\
-            ]\
-            and myTime.time()-nfs_t0 < 30.):
-
-                myTime.sleep(1)
-
-            if myTime.time()-nfs_t0>30:
-                
-                print "XIA: Waited more than 30s. Exception Raised!"
-                #raise Exception("XIA did not provided files in less than 30s!!!!!! Halt.")
-            
             XIAtEnd = myTime.time()-XIAt0
             print mycurses.BOLD+"XIA needed additional %3.1f seconds to provide data files."%(XIAtEnd)+mycurses.RESET
             shell.logger.log_write(mycurses.BOLD+"XIA needed additional %3.1f seconds to provide data files."%(XIAtEnd) + mycurses.RESET, kind='output')
@@ -582,7 +568,8 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
     #Local data saving
             dataBlock = array([ene,theta,xmu,fluoX,xmuS,fluoXraw,\
             I0,I1,I2,I3],"f")
-            numpy.savetxt(ActualFileNameData, transpose(dataBlock))
+#First two points of data could be buggy (double points) just remove them from saved data
+            numpy.savetxt(ActualFileNameData, transpose(dataBlock)[2:])
             FInfo = file(ActualFileNameInfo,"w")
             FInfo.write("#.txt file columns content is:\n")
             FInfo.write("# 1) Energy\n")

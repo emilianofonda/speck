@@ -255,8 +255,11 @@ try:
     ]
 #    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig1)
 #    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",user_readconfig=user_readconfig2)
-    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig1,FTPclient="d09-1-c00/ca/ftpclientxia.1",FTPserver="d09-1-c00/ca/ftpserverxia.1",spoolMountPoint="/nfs/srv5/spool1/xia1")
-    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",user_readconfig=user_readconfig2,FTPclient="d09-1-c00/ca/ftpclientxia.2",FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/nfs/srv5/spool1/xia2")
+#    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig1,FTPclient="d09-1-c00/ca/ftpclientxia.1",FTPserver="d09-1-c00/ca/ftpserverxia.1",spoolMountPoint="/nfs/srv5/spool1/xia1")
+#   mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig1,FTPclient="d09-1-c00/ca/ftpclientxia.1",FTPserver="d09-1-c00/ca/ftpserverxia.1",spoolMountPoint="/home/experiences/samba/com-samba/tmp/xia1")
+    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig1,FTPclient="d09-1-c00/ca/ftpclientxia.1",FTPserver="d09-1-c00/ca/ftpserverxia.1",spoolMountPoint="/dev/shm/xia1")
+#    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",user_readconfig=user_readconfig2,FTPclient="d09-1-c00/ca/ftpclientxia.2",FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/nfs/srv5/spool1/xia2")
+    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",user_readconfig=user_readconfig2,FTPclient="d09-1-c00/ca/ftpclientxia.2",FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/dev/shm/xia2")
      #mca2 = None
 #    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",)
 #    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",)
@@ -382,6 +385,9 @@ __tmp={
 "sample_rx"    :["d09-1-cx1/ex/tab-mt_rx.1","position"],
 "sample_rx2"    :["d09-1-cx1/ex/tab-mt_rx.2","position"],
 "sample_rz"        :["d09-1-cx1/ex/tab-mt_rz.1","position"],
+"tab2x"    :["d09-1-cx1/ex/tab2-tx.1","position"],
+"tab2s"    :["d09-1-cx1/ex/tab2-ts.1","position"],
+"tab2z"    :["d09-1-cx1/ex/tab2-tz.1","position"],
 "tbt_z"        :["d09-1-cx1/ex/cryo-tbt-mt_tz.1","position"],
 "fluo_x"    :["d09-1-cx1/dt/dtc_ge.1-mt_tx.1","position"],
 "fluo_s"    :["d09-1-cx1/dt/dtc_ge.1-mt_ts.1","position"],
@@ -861,8 +867,8 @@ domacro("changePeakingTime")
 
 #Load Energy Continuous Scan
 #domacro("ecscanME4")
-#domacro("ecscanFTP")
-domacro("ecscanFTPeureka")
+domacro("ecscanFTP")
+#domacro("ecscanFTPeureka")
 domacro("ecscanXP")
 domacro("averageThis")
 domacro("resetFEMTO")
