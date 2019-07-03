@@ -98,7 +98,8 @@ try:
     #ct=pseudo_counter(masters=[pulseGen0],slaves=[sai_1,x3mca], posts= ctPosts)
     #Remember to set the cpt3 card from master to slave mode and modify BNC cable position from OUT to GATE
     #ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai_1,mca1,cpt3], posts= ctPosts)
-    ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai_1,cx2xia1,cpt3])
+    #ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai_1,cx2xia1,cpt3])
+    ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai_1,cpt3])
 
 except Exception, tmp:
     print tmp
@@ -106,10 +107,21 @@ except Exception, tmp:
 
 mostab.scaler = "ct"
 
+z  = moveable("d09-1-cx2/ex/sex-mt_tz.1","position")
+z2 = moveable("d09-1-cx2/ex/sex-mt_tz.2","position")
+x  = moveable("d09-1-cx2/ex/sex-mt_tx.1","position")
+rz = moveable("d09-1-cx2/ex/sex-mt_rz.1","position")
+
+I0_gain = moveable("d09-1-cx2/ex/amp_i0","gain")
+I1_gain = moveable("d09-1-cx2/ex/amp_i1","gain")
+I2_gain = moveable("d09-1-cx2/ex/amp_i2","gain")
+
+# Scan macros
+
 execfile(__pySamba_root+"/modules/pulse/p_ascan.py")
+execfile(__pySamba_root+"/modules/pulse/p_ecscan.py")
 
 #from p_ecscan import ecscan
-
 #legacy definitions
 
 def setSTEP():
