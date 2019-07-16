@@ -515,10 +515,10 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
     #Finalize derived quantities
             fluoXraw = numpy.nan_to_num(array( sum(mcaSum[:,roiStart:roiEnd], axis=1), "f") / I0)
             #print "cardXIAChannels[-1][-1]=",cardXIAChannels[-1][-1]
-            fluoX = numpy.nan_to_num(sum(\
+            fluoX = sum(numpy.nan_to_num(\
             [eval("outtaHDF.root.XIA.fluo%02i[:]"%nch)/(1.-eval("outtaHDF.root.XIA.deadtime%02i[:]"%nch)*0.01)\
             for nch in range(cardXIAChannels[-1][-1]+1)]\
-            ,axis=0)/I0)
+            /I0),axis=0)
             #
             outtaHDF.root.XIA.mcaSum[:] = mcaSum
             del mcaSum
