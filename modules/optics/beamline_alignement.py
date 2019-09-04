@@ -49,7 +49,8 @@ def __m1Z(theta):
     if theta<=1e-2:
         return -8.
     else:
-        return 0.3
+        return 0.12
+        #return 0.3
 
 def __m1bender(theta,hgap=25.):
     """hgap dependence removed. """
@@ -114,7 +115,8 @@ def __m2Roll(theta):
 #Girder
 def __girder(theta):
     if theta<=1e-1:
-        return 0.517
+        return 0.
+        #return 0.517
     else:
         return -0.16033+2.0212*theta
 
@@ -255,7 +257,7 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
         vgap1.pos(min(max(0.1,theta/1.2),6.))
         vgap2.pos(min(6,theta+2.))
     #Moved down of 1mm on 8/11/2016
-    vpos2.pos(get_ipython().user_ns["dcm"].H() - 25. -1 )
+    vpos2.pos(get_ipython().user_ns["dcm"].H() - 25. -0.25)
     print "Primary   vertical slits aperture: vgap1 = %6.4f mm"%(vgap1.pos())
     print "Secondary vertical slits aperture: vgap2 = %6.4f mm"%(vgap2.pos())
     print "Secondary vertical slits position: vpos2 = %6.4f mm"%(vpos2.pos())

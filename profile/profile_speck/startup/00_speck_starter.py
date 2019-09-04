@@ -1,3 +1,4 @@
+print "Starting speck..."
 #Import Python modules
 import sys,os
 import scipy

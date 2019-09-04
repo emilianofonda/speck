@@ -80,14 +80,17 @@ def setuser(name=None):
             IPy.magic("logstop")
         except:
             pass
-        print "New folder is: " + __Default_Data_Folder + os.sep +"%4i" % time.localtime()[0] +os.sep + "%4i%02i%02i" % time.localtime()[0:3] + "_%s" % name
-        try:
-            os.makedirs(__Default_Data_Folder + os.sep +"%4i" % time.localtime()[0] + os.sep + "%4i%02i%02i" % time.localtime()[0:3] + "_%s" % name)
-        except Exception, tmp:
-            print tmp
-        os.chdir(__Default_Data_Folder + os.sep +"%4i" % time.localtime()[0] + os.sep + "%4i%02i%02i" % time.localtime()[0:3] + "_%s" % name)
+        
         cfg["NAME"] = name
         cfg["FOLDER"] = "%4i" % time.localtime()[0] +os.sep + "%4i%02i%02i" % time.localtime()[0:3] + "_%s" % name
+        
+
+        print "New folder is: " + cfg["FOLDER"]
+        try:
+            os.makedirs(__Default_Data_Folder + os.sep +cfg["FOLDER"])
+        except Exception, tmp:
+            print tmp
+        os.chdir(__Default_Data_Folder + os.sep +cfg["FOLDER"])
         cfgfile=file(os.getenv("SPECK") + "/config/user.cfg","w")
         for i in cfg.keys():
             cfgfile.write("%s=%s\n" % (i,cfg[i]))

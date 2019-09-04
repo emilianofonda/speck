@@ -15,15 +15,25 @@ else:
 dn = os.path.dirname(os.path.realpath(__file__))
 dn=dn[:dn.rfind(os.sep)]
 
+for i in args:
+    if i.startswith("--setup="):
+        SPECK_SETUP = i[i.rfind("=")+1:]
+        print "SPECK_SETUP = ", SPECK_SETUP
+        args.pop(args.index("--setup="+SPECK_SETUP))
+        break
+    else:
+        SPECK_SETUP = ""
+
+
 os.putenv("SPECK",dn)
 os.system("export SPECK=%s"%dn)
 execfile(dn + "/config/speck_folders.py")
 
-#print "+++++++++++++++++++++++++++++++++++++++++"
-#print '\x1b[31;01m',
-#print "SPECK says: 'dans le cochon tout est bon'",
-#print '\x1b[0m'
-#print "+++++++++++++++++++++++++++++++++++++++++"
+print "+++++++++++++++++++++++++++++++++++++++++"
+print '\x1b[31;01m',
+print "SPECK says: 'dans le cochon tout est bon'",
+print '\x1b[0m'
+print "+++++++++++++++++++++++++++++++++++++++++"
 print "This speck folder is : %s"%dn
 
 #print ">Setting TANGO environment variables"
@@ -40,10 +50,10 @@ else:
     else:
         print "speck starter: unknown ipython version! Defaulting to 3.0.0"
         Version = "3.0.0"
-print "IPython version is %s"%Version
-print ""
-print ">Starting speck environment"
-print ""
+#print "IPython version is %s"%Version
+#print ""
+#print ">Starting speck environment"
+#print ""
 if Version.count(".")>1:
     V=Version.split(".")
     Version=float(V[0]+"."+V[1])
@@ -55,9 +65,12 @@ if Version<0.11:
     #os.system("/usr/bin/env EDITOR=gedit VERSION=%s ipython -i --pylab  --profile=speck --autocall 2 --colors LightBG -ipythondir %s"\
     os.system("/usr/bin/env EDITOR=gedit VERSION=%s ipython -i --pylab  --profile=speck --autocall 2 --colors LightBG -ipythondir %s"\
     %(Version,dn+os.sep+"oldstyle_profile")\
-    +string.join(args))
+    +" "+string.join(args))
 else:
     #os.system("EDITOR=gedit VERSION=%s ipython -i --no-banner --pylab  --profile=speck --autocall 2 --colors LightBG --gui=gtk --ipython-dir %s/profile"%(Version,dn)\
-    os.system("/usr/bin/env EDITOR=gedit VERSION=%s ipython -i --no-banner --pylab  --profile=speck --autocall 2 --colors LightBG --gui=gtk --ipython-dir %s/profile"%(Version,dn)\
-+string.join(args))
+    ss = "/usr/bin/env EDITOR=gedit VERSION=%s ipython -i --no-banner --pylab  --profile=speck --autocall 2 --colors LightBG --ipython-dir %s/profile --gui=gtk "%(Version,dn)+" "+string.join(args)
+    #print ss
+    #print ""
+    os.system("/usr/bin/env EDITOR=gedit VERSION=%s SPECK_SETUP=%s ipython -i --no-banner --pylab  --profile=speck --autocall 2 --colors LightBG --ipython-dir %s/profile --gui=gtk "%(Version,SPECK_SETUP,dn)\
++" "+string.join(args))
 

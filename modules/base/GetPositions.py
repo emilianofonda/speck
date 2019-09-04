@@ -214,7 +214,7 @@ def SetPositions(filename=""):
                     if(_nodef):
                         print "Define failed on motor:",i[0].label
                     failedmotors.append(i[0].label)
-                    sleep(.25)
+                    sleep(0.1)
         if(failures>0):
             print "WARNING: I got ",failures," failures."
             fmt = "%s\n" * len(failedmotors)

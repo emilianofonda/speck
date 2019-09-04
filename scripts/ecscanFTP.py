@@ -433,7 +433,14 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
             XIAfilesNames = [numpy.sort(i) for i in XIAfilesNames]                  
             XIAfiles=[]
             for path in zip(XIANexusPath,XIAfilesNames):
-                XIAfiles.append([tables.openFile(path[0] +os.sep + x, "r") for x in path[1]])
+                for try2open in range(5):
+                    try:
+                        XIAfiles.append([tables.openFile(path[0] +os.sep + x, "r") for x in path[1]])
+                        sleep(0.1)
+                        break
+                    except:
+                        print "Cannot open file %s for reading."(path[0] +os.sep + x)
+                        sleep(1)
         #Common
             outtaName = filename2ruche(ActualFileNameData)
             outtaHDF = tables.openFile(outtaName[:outtaName.rfind(".")] + ".hdf","w")
@@ -559,11 +566,18 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
                             break
                         except:
                             sleep(1)
-            for i in zip(cardXIA,XIANexusPath):
-                for j in os.listdir(i[1]):
-                    if j.startswith(i[0].DP.streamTargetFile):
-                        pass
-                        os.remove(i[1] + os.sep + j)
+            for i in cardXIA:
+                try:
+                    i.FTPclient.deleteremainingfiles()
+                except:
+                    pass
+            #for i in zip(cardXIA,XIANexusPath):
+            #    for j in os.listdir(i[1]):
+            #        if j.startswith(i[0].DP.streamTargetFile):
+            #            try:
+            #                os.remove(i[1] + os.sep + j)
+            #            except:
+            #                print "Cannot remove file %s"%(i[1] + os.sep + j)
 
     #Local data saving
             dataBlock = array([ene,theta,xmu,fluoX,xmuS,fluoXraw,\

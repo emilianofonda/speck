@@ -179,7 +179,11 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 f=tables.open_file(handler.filename,"r")
                 fig1 = pylab.figure(1)
                 fig1.clear()
+                pylab.subplot(2,1,1)
                 pylab.plot(dcm.theta2e(f.root.encoder_rx1.Theta.read()), pylab.log(f.root.cx2sai1.I0.read()/f.root.cx2sai1.I1.read()))
+                pylab.subplot(2,1,2)
+                pylab.plot(dcm.theta2e(f.root.encoder_rx1.Theta.read()), f.root.cx2sai1.I0.read(),"r")
+                pylab.plot(dcm.theta2e(f.root.encoder_rx1.Theta.read()), f.root.cx2sai1.I1.read(),"k")
             except Exception, tmp:
                 print "No Plot! Bad Luck!"
                 print tmp

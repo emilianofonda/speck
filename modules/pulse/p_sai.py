@@ -186,13 +186,13 @@ class sai:
         return
 
     def read(self):
-        return [i[0].value - i[1]*self.DP.integrationTime*1e-3 for i in zip(self.DP.read_attributes(self.channels),self.dark)]
+        return [i[0].value - i[1] for i in zip(self.DP.read_attributes(self.channels),self.dark)]
 
     def readBuffer(self):
         if self.stepMode:
-            return [array(self.DP.read_attribute(i[0]).value[::2]) - i[1]*self.DP.integrationTime*1e-3 for i in zip(self.bufferedChannels, self.dark)]
+            return [array(self.DP.read_attribute(i[0]).value[::2]) - i[1] for i in zip(self.bufferedChannels, self.dark)]
         else:
-            return [array(self.DP.read_attribute(i[0]).value) - i[1]*self.DP.integrationTime*1e-3 for i in zip(self.bufferedChannels, self.dark)]
+            return [array(self.DP.read_attribute(i[0]).value) - i[1] for i in zip(self.bufferedChannels, self.dark)]
 
     def count(self,dt=1):
         """This is a slave device, but it can be useful to test it with a standalone count
@@ -207,7 +207,7 @@ class sai:
     def writeDark(self):
         """Use it after one dark count to store dark counter values."""
         self.clearDark()
-        dark = list(array(self.read(),"f")/ self.DP.integrationTime * 1000)
+        dark = self.read()
         #print "dark values are:", dark
         self.DP.put_property({'SPECK_DARK_VALUES': map(str, dark)})
         return self.readDark()
@@ -215,7 +215,7 @@ class sai:
     def readDark(self):
         """Reload dark values from device to python object and then return it."""
         dark = self.DP.get_property("SPECK_DARK_VALUES")["SPECK_DARK_VALUES"]
-        print dark
+        #print dark
         if dark == []:
             self.DP.put_property({'SPECK_DARK_VALUES':['0',] * len(self.user_readconfig)})
             dark = ['0',] * len(self.user_readconfig)
