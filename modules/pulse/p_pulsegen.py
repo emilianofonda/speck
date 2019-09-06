@@ -2,6 +2,7 @@ import PyTango
 from PyTango import DevState, DeviceProxy,DevFailed
 from time import sleep
 import time
+import numpy, tables
 
 class pulseGen:
     def __init__(self,label="",user_readconfig=[],timeout=10.,deadtime=0.1,config={}, identifier=""):
@@ -89,6 +90,19 @@ class pulseGen:
             except:
                 raise
         return
+
+    def prepareHDF(self, handler, HDFfilters = tables.Filters(complevel = 1, complib='zlib')):
+        """the handler is an already opened file object"""
+#Write down contextual data
+        ll = numpy.array(["%s = %s"%(i,str(self.config[i])) for i in self.config.keys()])
+        outGroup = handler.createGroup("/context",self.identifier)
+        outGroup = handler.getNode("/context/"+self.identifier)
+        handler.createCArray(outGroup, "config", title = "config",\
+        shape = numpy.shape(ll), atom = tables.Atom.from_dtype(ll.dtype), filters = HDFfilters)
+        outNode = handler.getNode("/context/"+self.identifier+"/config")
+        outNode[:] = ll
+        return
+
 
     def start(self,dt=1):
         if self.state()<>DevState.RUNNING:

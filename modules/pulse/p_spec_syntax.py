@@ -16,6 +16,8 @@ import PyTango
 from PyTango import DevState
 import Universal_Prefilter
 
+import p_post_calc
+
 #Speclike functions
 
 from numpy import mod
@@ -593,7 +595,7 @@ def dark(dt=10):
     return
 
 class pseudo_counter:
-    def __init__(self,masters=[],slaves=[],posts=[],deadtime=0.05,timeout=3):
+    def __init__(self,masters=[],slaves=[],posts=[],postDictionary={},deadtime=0.05,timeout=3):
         """
         In this version the only distinction should be between masters and slaves.
         the slaves themselves are configured through prepare, pre count and post count functions if defined.
@@ -617,6 +619,10 @@ class pseudo_counter:
         posts cannot calculate over other posts.
         posts=[{"name":"Delta","formula":"ch[1]-ch[2]","format":"%6.3f","units"}]
 
+        BEWARE posts have a limited usage and are not used in continuous scans.
+        Have a look to p_post_calc.dataBlock instructions for defining a postDictionary to perform such computations 
+        and store results in the HDF file. (Highly experimental!)
+
         New version !
         A multi points time scan with data saving can be performed with the following sequence
         A single point without data saving follow the same sequence or may be performed with a simple count method.
@@ -633,6 +639,8 @@ class pseudo_counter:
         self.saveData2HDF (*)
         self.closeHDFfile (*)
         """
+
+        #HDF filters should be defined as a global parameter with a reasonable default. This modification is pending.
 
         self.masters = masters
         self.slaves = slaves
@@ -669,6 +677,7 @@ class pseudo_counter:
             n += len(i.user_readconfig)
         
         #Strange xia behaviour due to init system and config file depencency
+        #This code should be removed, too specific
         self.xia_units = [i for i in self.mca_units if "currentMode" in dir (i)]
         #
         
@@ -682,6 +691,8 @@ class pseudo_counter:
             if not "format" in i.keys():
                 i["format"]="%9g"
             self.posts.append(i)
+        
+        self.postDictionary = postDictionary
         return
 
     def reinit(self):
@@ -951,10 +962,15 @@ class pseudo_counter:
         The file has to be explicitly closed at the end of the scan: self.closeHDFfile.
         """
         self.handler = tables.openFile(findNextFileName("./ruche/" + fileName, "hdf"), "w")
+        self.handler.createGroup("/", "data")
+        self.handler.createGroup("/", "post")
+        self.handler.createGroup("/", "context")
         self.__prepareHDF(HDFfilters = HDFfilters)
         return self.handler
 
     def closeHDFfile(self):
+        if self.postDictionary not in [{}, None]:
+            self.savePostDictionary2HDF(HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="post")
         self.handler.close()
         return
 
@@ -979,7 +995,79 @@ class pseudo_counter:
             if "saveData2HDF" in dir(i):
                 i.saveData2HDF(self.handler, wait = wait)
         return
- 
+
+    def savePost2HDF(self, name, value, group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'),domain="post"):
+        """
+        the name is a string that will be the name of the value stored in the HDF file.
+        The value can be saved in a subgroup to order the post calculated value in order  to find them grouped as
+        xas.mux   or    map.elastic
+        
+        this function has been designed to store values derived from measured quantities right after scan is finished
+        and just before closing the HDF file.
+
+        The value MUST be a numpy.array. Anyway.
+        
+        the handler is an already opened file object that will be passed to all masters and slaves
+        owing a saveHDFfunction
+       
+        The domain can be changed from post to other to save the data under /domain/group/name 
+
+        The domain should be data, post and context for scan data, post calculated and contextual data respectively
+
+        The function will not open nor close the file to be written so it has to be used after an openHDFfile method.
+
+        This function should be used to write more standard scan macros"""
+#Define shape
+        try:
+            value_shape = numpy.shape(value)
+        except:
+            value_shape=()
+#Find type from one value
+        value_type = value.dtype
+#Define atom type
+        value_atom = tables.Atom.from_dtype(value_type)
+#Get the right node and/or create it
+        try:
+            if group == "":
+                outGroup = self.handler.getNode("/" + domain )
+            else:
+                outGroup = self.handler.getNode("/" + domain + "/" + group)
+        except:
+            if group <> "":
+                try:
+                    self.handler.createGroup("/" + domain, group)
+                except:
+                    pass
+                outGroup = self.handler.getNode("/" + domain + "/" + group)
+#Create nodes with the correct shape and atom type
+        self.handler.createCArray(outGroup, name, title = name,\
+        shape = value_shape, atom = value_atom, filters = HDFfilters)
+#Point to node
+        if group <> "":
+            outNode = self.handler.getNode("/" + domain + "/" + group + "/" + name)
+        else:
+            outNode = self.handler.getNode("/" + domain + "/" + name)
+#Store value
+        outNode[:] = value
+        return
+
+    def savePostDictionary2HDF(self, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="post"):
+        """
+       
+        this function has been designed to store values derived from measured quantities right after scan is finished
+        and just before closing the HDF file.
+
+        Values are defined using the p_post_calc scheme in a dictionary to be supplied when initializing the pseudo counter. 
+
+        The domain can be changed from post to other to save the data under /domain/name 
+
+        The function will not open nor close the file to be written so it has to be used after an openHDFfile method.
+
+        This function is highly experimentally and risky, it is active if a postDictonary is defined."""
+        db = p_post_calc.dataBlock(self.postDictionary, HDFfile=self.handler, domain=domain, HDFfilters=HDFfilters)
+        db.evaluate()
+        del db
+        return
 
 def findNextFileName(prefix,ext,file_index=1):
     #

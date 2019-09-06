@@ -2,8 +2,8 @@ import PyTango
 from PyTango import DevState, DeviceProxy,DevFailed
 from time import sleep
 import time
+import numpy, tables
 from numpy import array
-import tables
 
 class sai:
     def __init__(self,label="",user_readconfig=[],
@@ -242,11 +242,20 @@ class sai:
             ShapeArrays = (self.DP.dataBufferNumber/2,)
         else:
             ShapeArrays = (self.DP.dataBufferNumber,)
-        handler.createGroup("/", self.identifier)
-        outNode = handler.getNode("/" + self.identifier)
+        handler.createGroup("/data/", self.identifier)
+        outNode = handler.getNode("/data/" + self.identifier)
         for i in xrange(self.numChan):
             handler.createCArray(outNode, "I%i" % i, title = "I%i" % i,\
             shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
+#Write down contextual data
+        ll = numpy.array(["%s = %s"%(i,str(self.config[i])) for i in self.config.keys()])
+        outGroup = handler.createGroup("/context",self.identifier)
+        outGroup = handler.getNode("/context/"+self.identifier)
+        handler.createCArray(outGroup, "config", title = "config",\
+        shape = numpy.shape(ll), atom = tables.Atom.from_dtype(ll.dtype), filters = HDFfilters)
+        outNode = handler.getNode("/context/"+self.identifier+"/config")
+        outNode[:] = ll
+
         return
 
     def saveData2HDF(self, handler, wait=True):
@@ -260,7 +269,7 @@ class sai:
 #One after the other: open, transfert data, close and delete
         buffer = self.readBuffer()
         for i in xrange(self.numChan):
-            outNode = handler.getNode("/" + self.identifier + "/I%i" % i)
+            outNode = handler.getNode("/data/" + self.identifier + "/I%i" % i)
             outNode[:] = buffer[i]
         del buffer
         return

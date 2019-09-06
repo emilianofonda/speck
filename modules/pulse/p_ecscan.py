@@ -91,6 +91,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     FE = shell.user_ns["FE"]
     obxg = shell.user_ns["obxg"]
     cpt = shell.user_ns["ct"]
+    mostab = shell.user_ns["mostab"]
     TotalScanTime = myTime.time()
     NofScans = n
     #
@@ -125,6 +126,10 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             #f=file(ActualFileNameData,"w")
             #f.close()
             #Configure and move mono
+            
+            # Store the where_all_before
+            wa_before = wa(verbose=False,returns=True)
+            #
             if dcm.state() == DevState.MOVING:
                 wait_motor(dcm)
                 myTime.sleep(1)
@@ -171,6 +176,25 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 pass
             ct.wait()
             ct.saveData2HDF()
+            #
+            #Insert here specific data saving in ct.handler at position root.post? root.spectra?....
+            #
+            #The following is specific of the energy scan while the xmu not, it is defined in the postDictionary
+            post_ene = dcm.theta2e(ct.handler.root.data.encoder_rx1.Theta.read())
+            ct.savePost2HDF("energy", post_ene, group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="post")
+            #
+            #Save CONTEXT
+            #
+            ct.savePost2HDF("where_all_before", array(wa_before), 
+            group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
+            ct.savePost2HDF("where_all_after", array(wa(verbose=False,returns=True)), 
+            group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
+            # MOSTAB and Mono Configs
+            ct.savePost2HDF("mostab", array(mostab.status().split("\n")), 
+            group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
+            ct.savePost2HDF("dcm", array(dcm.status().split("\n")), 
+            group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
+            #
             ct.closeHDFfile()
             timeAtStop = asctime()
             timeout0 = time()
@@ -180,10 +204,10 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 fig1 = pylab.figure(1)
                 fig1.clear()
                 pylab.subplot(2,1,1)
-                pylab.plot(dcm.theta2e(f.root.encoder_rx1.Theta.read()), pylab.log(f.root.cx2sai1.I0.read()/f.root.cx2sai1.I1.read()))
+                pylab.plot(post_ene, post_xmu)
                 pylab.subplot(2,1,2)
-                pylab.plot(dcm.theta2e(f.root.encoder_rx1.Theta.read()), f.root.cx2sai1.I0.read(),"r")
-                pylab.plot(dcm.theta2e(f.root.encoder_rx1.Theta.read()), f.root.cx2sai1.I1.read(),"k")
+                pylab.plot(post_ene, f.root.data.cx2sai1.I0.read(),"r")
+                pylab.plot(post_ene, f.root.data.cx2sai1.I1.read(),"k")
             except Exception, tmp:
                 print "No Plot! Bad Luck!"
                 print tmp

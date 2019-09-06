@@ -2,6 +2,7 @@ import PyTango
 from PyTango import DevState, DeviceProxy,DevFailed
 from time import sleep
 import time
+import numpy 
 import numpy as np
 from numpy import array
 import os
@@ -262,8 +263,8 @@ class xspress3mini:
         """the handler is an already opened file object"""
         ShapeArrays = (self.DP.acq_nb_frames,)
         ShapeMatrices = (self.DP.acq_nb_frames, self.DP.image_width - 10)
-        handler.createGroup("/", self.identifier)
-        outNode = handler.getNode("/" + self.identifier)
+        handler.createGroup("/data/", self.identifier)
+        outNode = handler.getNode("/data/" + self.identifier)
 
         for i in xrange(self.numChan):
             handler.createCArray(outNode, "mca%02i" % i, title = "mca%02i" % i,\
@@ -279,7 +280,16 @@ class xspress3mini:
             handler.createCArray(outNode, "deadtime%02i" % i, title = "deadtime%02i" % i,\
             shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
 
-        handler.createArray("/"+self.identifier, "roiLimits", array(self.getROIs(),"i"))
+        handler.createArray("/data/"+self.identifier, "roiLimits", array(self.getROIs(),"i"))
+
+#Write down contextual data
+        ll = numpy.array(["%s = %s"%(i,str(self.config[i])) for i in self.config.keys()])
+        outGroup = handler.createGroup("/context",self.identifier)
+        outGroup = handler.getNode("/context/"+self.identifier)
+        handler.createCArray(outGroup, "config", title = "config",\
+        shape = numpy.shape(ll), atom = tables.Atom.from_dtype(ll.dtype), filters = HDFfilters)
+        outNode = handler.getNode("/context/"+self.identifier+"/config")
+        outNode[:] = ll
 
         return
 
@@ -312,15 +322,15 @@ class xspress3mini:
                 p0 = self.DP.saving_frame_per_file * Nfile 
                 p1 = self.DP.saving_frame_per_file * (Nfile + 1)
                 for i in xrange(self.numChan):
-                    outNode = handler.getNode("/" + self.identifier + "/mca%02i" % i)
+                    outNode = handler.getNode("/data/" + self.identifier + "/mca%02i" % i)
                     p0 = self.DP.saving_frame_per_file * Nfile 
                     p1 = self.DP.saving_frame_per_file * (Nfile + 1)
                     outNode[p0:p1] = sourceFile.root.entry_0000.measurement.xspress3.data[:,i,0:nBins]
 
                 for i in xrange(self.numChan):
-                    outNode = handler.getNode("/" + self.identifier + "/icr%02i" % i)
+                    outNode = handler.getNode("/data/" + self.identifier + "/icr%02i" % i)
                     outNode[p0:p1] = sourceFile.root.entry_0000.measurement.xspress3.data[:,i,nBins+4:nBins+5].transpose()[0]
-                    outNode = handler.getNode("/" + self.identifier + "/ocr%02i" % i)
+                    outNode = handler.getNode("/data/" + self.identifier + "/ocr%02i" % i)
                     outNode[p0:p1] = sourceFile.root.entry_0000.measurement.xspress3.data[:,i,nBins+5:nBins+6].transpose()[0]
             finally:
                 sourceFile.close()
@@ -328,12 +338,12 @@ class xspress3mini:
             os.system("rm %s" % (self.spoolMountPoint + os.sep + files2read[Nfile]))
 
         for i in xrange(self.numChan):
-            dt = handler.getNode("/" + self.identifier + "/deadtime%02i" % i)
-            ocr = handler.getNode("/" + self.identifier + "/ocr%02i" % i)
-            icr = handler.getNode("/" + self.identifier + "/icr%02i" % i)
+            dt = handler.getNode("/data/" + self.identifier + "/deadtime%02i" % i)
+            ocr = handler.getNode("/data/" + self.identifier + "/ocr%02i" % i)
+            icr = handler.getNode("/data/" + self.identifier + "/icr%02i" % i)
             dt[:] = np.nan_to_num(1.0 - (array(ocr[:],"f") / array(icr[:],"f")))*100.0
-            roi = handler.getNode("/" + self.identifier + "/roi%02i" % i)
-            mca = handler.getNode("/" + self.identifier + "/mca%02i" % i)
+            roi = handler.getNode("/data/" + self.identifier + "/roi%02i" % i)
+            mca = handler.getNode("/data/" + self.identifier + "/mca%02i" % i)
             roi[:] = np.sum(mca[:,Roi0:Roi1],axis=1)
         return
     

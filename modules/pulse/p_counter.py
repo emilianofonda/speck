@@ -6,6 +6,7 @@ from PyTango import DevState,DeviceProxy
 from exceptions import NotImplementedError
 import exceptions
 import thread
+import numpy
 from numpy import array, round
 
 class counter:

@@ -2,9 +2,9 @@ import PyTango
 from PyTango import DevState, DeviceProxy,DevFailed
 from time import sleep
 import time
+import numpy, tables
 from numpy import array
 from string import lower
-import tables
 
 class bufferedCounter:
     def __init__(self,label="",user_readconfig=[],
@@ -190,11 +190,19 @@ class bufferedCounter:
     def prepareHDF(self, handler, HDFfilters = tables.Filters(complevel = 1, complib='zlib')):
         """the handler is an already opened file object"""
         ShapeArrays = (self.DP.totalnbpoint,)
-        handler.createGroup("/", self.identifier)
-        outNode = handler.getNode("/" + self.identifier)
+        handler.createGroup("/data/", self.identifier)
+        outNode = handler.getNode("/data/" + self.identifier)
         for s in self.channels:
             handler.createCArray(outNode, "%s" % s, title = "%s" % s,\
             shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
+#Write down contextual data
+        ll = numpy.array(["%s = %s"%(i,str(self.config[i])) for i in self.config.keys()])
+        outGroup = handler.createGroup("/context",self.identifier)
+        outGroup = handler.getNode("/context/"+self.identifier)
+        handler.createCArray(outGroup, "config", title = "config",\
+        shape = numpy.shape(ll), atom = tables.Atom.from_dtype(ll.dtype), filters = HDFfilters)
+        outNode = handler.getNode("/context/"+self.identifier+"/config")
+        outNode[:] = ll
         return
 
     def saveData2HDF(self, handler, wait=True):
@@ -208,7 +216,7 @@ class bufferedCounter:
 #One after the other: open, transfert data, close and delete
         buffer = self.readBuffer()
         for i in xrange(len(buffer)):
-            outNode = handler.getNode("/" + self.identifier + "/%s" % self.channels[i])
+            outNode = handler.getNode("/data/" + self.identifier + "/%s" % self.channels[i])
             outNode[:] = buffer[i]
         del buffer
         return

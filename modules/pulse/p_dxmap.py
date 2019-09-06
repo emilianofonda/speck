@@ -3,6 +3,7 @@ from PyTango import DevState, DeviceProxy,DevFailed,AttributeInfoEx
 from time import sleep
 import time
 import tables
+import numpy 
 import numpy as np
 import os
 
@@ -412,8 +413,8 @@ class dxmap:
         """the handler is an already opened file object"""
         ShapeArrays = (self.NbFrames,)
         ShapeMatrices = (self.NbFrames, self.DP.streamnbDataPerAcq)
-        handler.createGroup("/", self.identifier)
-        outNode = handler.getNode("/" + self.identifier)
+        handler.createGroup("/data", self.identifier)
+        outNode = handler.getNode("/data/" + self.identifier)
 
         for i in xrange(self.numChan):
             handler.createCArray(outNode, "mca%02i" % i, title = "mca%02i" % i,\
@@ -429,7 +430,15 @@ class dxmap:
             handler.createCArray(outNode, "deadtime%02i" % i, title = "deadtime%02i" % i,\
             shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
 
-        handler.createArray("/"+self.identifier, "roiLimits", np.array(self.getROIs(),"i"))
+        handler.createArray("/data/"+self.identifier, "roiLimits", np.array(self.getROIs(),"i"))
+#Write down contextual data
+        ll = numpy.array(["%s = %s"%(i,str(self.config[i])) for i in self.config.keys()])
+        outGroup = handler.createGroup("/context",self.identifier)
+        outGroup = handler.getNode("/context/"+self.identifier)
+        handler.createCArray(outGroup, "config", title = "config",\
+        shape = numpy.shape(ll), atom = tables.Atom.from_dtype(ll.dtype), filters = HDFfilters)
+        outNode = handler.getNode("/context/"+self.identifier+"/config")
+        outNode[:] = ll
 
         return
 
@@ -463,17 +472,17 @@ class dxmap:
                 p0 = self.DP.streamnbacqperfile * Nfile 
                 p1 = self.DP.streamnbacqperfile * (Nfile + 1)
                 for i in xrange(self.numChan):
-                    outNode = handler.getNode("/" + self.identifier + "/mca%02i" % i)
+                    outNode = handler.getNode("/data/" + self.identifier + "/mca%02i" % i)
                     p0 = self.DP.streamnbacqperfile * Nfile 
                     p1 = self.DP.streamnbacqperfile * (Nfile + 1)
                     outNode[p0:p1] = eval("sourceFile.root.entry.scan_data.channel%02i" % i)[:]
 
                 for i in xrange(self.numChan):
-                    outNode = handler.getNode("/" + self.identifier + "/icr%02i" % i)
+                    outNode = handler.getNode("/data/" + self.identifier + "/icr%02i" % i)
                     outNode[p0:p1] = eval("sourceFile.root.entry.scan_data.icr%02i" % i)[:]
-                    outNode = handler.getNode("/" + self.identifier + "/ocr%02i" % i)
+                    outNode = handler.getNode("/data/" + self.identifier + "/ocr%02i" % i)
                     outNode[p0:p1] =  eval("sourceFile.root.entry.scan_data.ocr%02i" % i)[:]
-                    outNode = handler.getNode("/" + self.identifier + "/deadtime%02i" % i)
+                    outNode = handler.getNode("/data/" + self.identifier + "/deadtime%02i" % i)
                     outNode[p0:p1] =  eval("sourceFile.root.entry.scan_data.deadtime%02i" % i)[:]
             except:
                 raise
@@ -482,8 +491,8 @@ class dxmap:
             os.system("rm %s" % (self.spoolMountPoint + os.sep + files2read[Nfile]))
 
         for i in xrange(self.numChan):
-            roi = handler.getNode("/" + self.identifier + "/roi%02i" % i)
-            mca = handler.getNode("/" + self.identifier + "/mca%02i" % i)
+            roi = handler.getNode("/data/" + self.identifier + "/roi%02i" % i)
+            mca = handler.getNode("/data/" + self.identifier + "/mca%02i" % i)
             roi[:] = np.sum(mca[:,Roi0:Roi1],axis=1)
         return
     

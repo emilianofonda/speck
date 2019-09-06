@@ -15,9 +15,11 @@ if os.getenv("SPECK_SETUP") <> "":
         domacro(__target)
         c = get_ipython()
         c.prompt_manager.in_template = u'\w\n \T Speck[\#] %s >'%os.getenv("SPECK_SETUP")
-    except:
+        del c
+    except Exception, tmp:
         print mycurses.RED+"Fault executing %s in folder %s."%( os.getenv("SPECK_SETUP"),__setupDir) +mycurses.RESET
-
-    del __target,__setupDir,c
+        raise tmp
+    
+    del __target,__setupDir
 
 
