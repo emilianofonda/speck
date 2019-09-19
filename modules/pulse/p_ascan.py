@@ -387,8 +387,7 @@ def dscan(mot,p1,p2,dp=0.1,dt=0.1,channel=1,returndata=False,fulldata=False,name
     abs_p1=previous_pos+p1
     abs_p2=previous_pos+p2
     #results=ascan(mot,abs_p1,abs_p2,dp,dt,channel,returndata,fulldata,name,delay=delay,glob=glob,scaler=scaler,fullmca=fullmca,\
-    results=ascan(mot,abs_p1,abs_p2,dp,dt,channel,returndata,fulldata,name,delay=delay,delay0=delay0,scaler=scaler,fullmca=fullmca,\
-    graph=graph)
+    results=ascan(mot,abs_p1,abs_p2,dp,dt,channel,returndata,fulldata,name,delay=delay,delay0=delay0,scaler=scaler,fullmca=fullmca,graph=graph)
     mot.pos(previous_pos)
     if results <> None:
         return results

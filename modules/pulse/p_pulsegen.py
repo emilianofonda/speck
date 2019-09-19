@@ -75,7 +75,7 @@ class pulseGen:
     def prepare(self,dt=1,NbFrames=1,nexusFileGeneration=False,stepMode=False):
         cKeys = self.config.keys()
         if stepMode:
-            self.config["pulseNumber"] = 2 
+            self.config["pulseNumber"] = 1 
         else:
             self.config["pulseNumber"] = NbFrames + 1 
         #Remove GateDownTime:

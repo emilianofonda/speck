@@ -204,7 +204,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 fig1 = pylab.figure(1)
                 fig1.clear()
                 pylab.subplot(2,1,1)
-                pylab.plot(post_ene, post_xmu)
+                pylab.plot(post_ene, log(f.root.data.cx2sai1.I0.read()/f.root.data.cx2sai1.I1.read()))
                 pylab.subplot(2,1,2)
                 pylab.plot(post_ene, f.root.data.cx2sai1.I0.read(),"r")
                 pylab.plot(post_ene, f.root.data.cx2sai1.I1.read(),"k")

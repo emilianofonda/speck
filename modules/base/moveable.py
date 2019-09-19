@@ -16,7 +16,6 @@ def speckit(name,classname,*args,**kwargs):
 
 class moveable:
     def __init__(self,label="",attribute="",moving_state=DevState.MOVING,stop_command="",deadtime=0.01,timeout=0.1,delay=0.):
-        #print "moveable class: experimental version."
         self.DP=DeviceProxy(label)
         cmds=map(lambda x:x.cmd_name, self.DP.command_list_query())
         self.device_command_list=cmds
