@@ -49,8 +49,8 @@ def __m1Z(theta):
     if theta<=1e-2:
         return -8.
     else:
-        return 0.12
-        #return 0.3
+        #return 0.12
+        return 0.3
 
 def __m1bender(theta,hgap=25.):
     """hgap dependence removed. """
