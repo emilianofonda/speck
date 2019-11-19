@@ -50,7 +50,8 @@ def __m1Z(theta):
         return -8.
     else:
         #return 0.12
-        return 0.3
+        #return 0.3
+        return 0.65
 
 def __m1bender(theta,hgap=25.):
     """hgap dependence removed. """
@@ -243,19 +244,19 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
             vgap1.pos(0.4)
             vgap2.pos(2.)
         else:    
-# Old code
-            #vgap1.pos(min(max(0.1,theta-0.4),6.))
-            #vgap2.pos(theta)
+# 19/11/2019
+            vgap1.pos(min(max(0.1,theta),6.))
+            vgap2.pos(theta+2)
 # 2/4/2019
-            vgap1.pos(min(max(0.1,theta/1.2),6.))
-            vgap2.pos(min(6,theta+2.))
+#            vgap1.pos(min(max(0.1,theta/1.2),6.))
+#            vgap2.pos(min(6,theta+2.))
     else:
-# Old code
-        #vgap1.pos(min(max(0.1,theta-0.4),6.))
-        #vgap2.pos(theta+2.)
+# 19/11/2019
+        vgap1.pos(min(max(0.1,theta),6.))
+        vgap2.pos(theta+2.)
 # 2/4/2019
-        vgap1.pos(min(max(0.1,theta/1.2),6.))
-        vgap2.pos(min(6,theta+2.))
+#        vgap1.pos(min(max(0.1,theta/1.2),6.))
+#        vgap2.pos(min(6,theta+2.))
     #Moved down of 1mm on 8/11/2016
     vpos2.pos(get_ipython().user_ns["dcm"].H() - 25. -0.25)
     print "Primary   vertical slits aperture: vgap1 = %6.4f mm"%(vgap1.pos())

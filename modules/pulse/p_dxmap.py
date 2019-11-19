@@ -236,12 +236,6 @@ class dxmap:
             self.setMode(self.config["mode"])
         #The following setup must be supplied in original config
         #self.config["streamNbAcqPerFile"]=NbFrames
-        if nexusFileGeneration:
-            #Auto delete remaining files!!! this avoids aborting, but it is a potential risk.
-            self.DP.streamresetindex()
-            self.startFTP(deleteRemainingFiles=True)
-        else:
-            pass
         ##If possible, to be replaced with write_attributes...
         attValues=[]
         if stepMode :
@@ -254,8 +248,16 @@ class dxmap:
             try:
                 #attValues.append((i,self.config[i]))
                 self.DP.write_attribute(i,self.config[i])
+                #print i,self.config[i]
             except Exception, tmp:
                 print tmp
+        if nexusFileGeneration:
+            #Auto delete remaining files!!! this avoids aborting, but it is a potential risk.
+            self.DP.streamresetindex()
+            self.startFTP(deleteRemainingFiles=True)
+            self.DP.filegeneration = True
+        else:
+            self.DP.filegeneration = False
         #self.DP.write_attributes(attValues)
         #sleep(self.deadtime)
 
@@ -488,12 +490,13 @@ class dxmap:
                 raise
             finally:
                 sourceFile.close()
-            os.system("rm %s" % (self.spoolMountPoint + os.sep + files2read[Nfile]))
+            #os.system("rm %s" % (self.spoolMountPoint + os.sep + files2read[Nfile]))
 
         for i in xrange(self.numChan):
             roi = handler.getNode("/data/" + self.identifier + "/roi%02i" % i)
             mca = handler.getNode("/data/" + self.identifier + "/mca%02i" % i)
             roi[:] = np.sum(mca[:,Roi0:Roi1],axis=1)
+        self.FTPclient.deleteremainingfiles()
         return
     
 

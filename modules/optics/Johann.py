@@ -29,7 +29,7 @@ class JohannAnalyzer:
         #Allowed:
         #H,K,L all odd
         #H,K,L all even and H+K+L = 4n
-        Oddity = (npy.mod(h*order,2) and npy.mod(k*order,2) and npy.mod(l*order,2))
+        Oddity = ((npy.mod(h*order,2) or h == 0) and (npy.mod(k*order,2) or k == 0) and (npy.mod(l*order,2) or l == 0))
         Evenly = (not npy.mod(h*order,2) and not npy.mod(k*order,2) and not npy.mod(l*order,2))
         if Oddity or (Evenly and not npy.mod(order*(h+k+l),4)):
                 #K. O. Kvashnina and A. C. Scheinost, Journal of Synchrotron Radiation 23 (3), 836-841 (2016).

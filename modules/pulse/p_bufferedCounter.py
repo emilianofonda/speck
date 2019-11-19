@@ -134,7 +134,8 @@ class bufferedCounter:
 #Remove GateDownTime (this card works in seconds and GateDown is always in ms): 
         self.config["integrationTime"] = dt - self.GateDownTime/1000. 
         self.config["totalNbPoint"] = NbFrames
-        self.config["bufferDepth"] = min(NbFrames, max(int(1./dt), 1)) #Check with ECA ... this value is exotic...
+        self.config["bufferDepth"] = 1
+        #min(NbFrames, max(int(1./dt), 1)) #Check with ECA ... this value is exotic...
         self.config["continuous"] = False
         sleep(self.deadtime)
         reloadAtts = self.DP.get_attribute_list()
