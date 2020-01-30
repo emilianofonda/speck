@@ -6,6 +6,8 @@ import tables
 import numpy 
 import numpy as np
 import os
+from string import lower
+
 
 class dxmap:
     def __init__(self,label="",channels=None,user_readconfig=[],timeout=30.,deadtime=0.05, FTPclient="",FTPserver="",spoolMountPoint="",
@@ -220,8 +222,10 @@ class dxmap:
             self.setROIs(rois)
         return
 
-    def prepare(self, dt=1, NbFrames=1, nexusFileGeneration=False,stepMode=False):
-        #Order of the following attributes seems to matter!
+    def prepare(self, dt=1., NbFrames=1, nexusFileGeneration=False,stepMode=False):
+#Verify stream items
+        self.stream_items = [lower(i) for i in self.DP.get_property("StreamItems")["StreamItems"]]
+#Order of the following attributes seems to matter!
         cKeys = self.config.keys()
 #The frame numbers is a concept that does not exists in DxMap
 #so I store it in a variable that prepare updates. This is reused for saving data
@@ -253,9 +257,9 @@ class dxmap:
                 print tmp
         if nexusFileGeneration:
             #Auto delete remaining files!!! this avoids aborting, but it is a potential risk.
-            self.DP.streamresetindex()
             self.startFTP(deleteRemainingFiles=True)
             self.DP.filegeneration = True
+            self.DP.streamresetindex()
         else:
             self.DP.filegeneration = False
         #self.DP.write_attributes(attValues)
@@ -423,14 +427,17 @@ class dxmap:
             shape = ShapeMatrices, atom = tables.UInt32Atom(), filters = HDFfilters)
 
         for i in xrange(self.numChan):
-            handler.createCArray(outNode, "icr%02i" % i, title = "icr%02i" % i,\
-            shape = ShapeArrays, atom = tables.UInt32Atom(), filters = HDFfilters)
-            handler.createCArray(outNode, "ocr%02i" % i, title = "ocr%02i" % i,\
-            shape = ShapeArrays, atom = tables.UInt32Atom(), filters = HDFfilters)
+            if 'icr' in self.stream_items:
+                handler.createCArray(outNode, "icr%02i" % i, title = "icr%02i" % i,\
+                shape = ShapeArrays, atom = tables.UInt32Atom(), filters = HDFfilters)
+            if 'ocr' in self.stream_items:
+                handler.createCArray(outNode, "ocr%02i" % i, title = "ocr%02i" % i,\
+                shape = ShapeArrays, atom = tables.UInt32Atom(), filters = HDFfilters)
+            if 'deadtime' in self.stream_items:
+                handler.createCArray(outNode, "deadtime%02i" % i, title = "deadtime%02i" % i,\
+                shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
             handler.createCArray(outNode, "roi%02i" % i, title = "roi%02i" % i,\
             shape = ShapeArrays, atom = tables.UInt32Atom(), filters = HDFfilters)
-            handler.createCArray(outNode, "deadtime%02i" % i, title = "deadtime%02i" % i,\
-            shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
 
         handler.createArray("/data/"+self.identifier, "roiLimits", np.array(self.getROIs(),"i"))
 #Write down contextual data
@@ -480,12 +487,15 @@ class dxmap:
                     outNode[p0:p1] = eval("sourceFile.root.entry.scan_data.channel%02i" % i)[:]
 
                 for i in xrange(self.numChan):
-                    outNode = handler.getNode("/data/" + self.identifier + "/icr%02i" % i)
-                    outNode[p0:p1] = eval("sourceFile.root.entry.scan_data.icr%02i" % i)[:]
-                    outNode = handler.getNode("/data/" + self.identifier + "/ocr%02i" % i)
-                    outNode[p0:p1] =  eval("sourceFile.root.entry.scan_data.ocr%02i" % i)[:]
-                    outNode = handler.getNode("/data/" + self.identifier + "/deadtime%02i" % i)
-                    outNode[p0:p1] =  eval("sourceFile.root.entry.scan_data.deadtime%02i" % i)[:]
+                    if 'icr' in self.stream_items:
+                        outNode = handler.getNode("/data/" + self.identifier + "/icr%02i" % i)
+                        outNode[p0:p1] = eval("sourceFile.root.entry.scan_data.icr%02i" % i)[:]
+                    if 'ocr' in self.stream_items:
+                        outNode = handler.getNode("/data/" + self.identifier + "/ocr%02i" % i)
+                        outNode[p0:p1] =  eval("sourceFile.root.entry.scan_data.ocr%02i" % i)[:]
+                    if 'deadtime' in self.stream_items:
+                        outNode = handler.getNode("/data/" + self.identifier + "/deadtime%02i" % i)
+                        outNode[p0:p1] =  eval("sourceFile.root.entry.scan_data.deadtime%02i" % i)[:]
             except:
                 raise
             finally:

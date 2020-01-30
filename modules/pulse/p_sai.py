@@ -122,7 +122,8 @@ class sai:
         else:
             raise Exception("%s: You should define an FTP client first."%self.DP.name)
 
-    def prepare(self,dt=1,NbFrames=1,nexusFileGeneration=False,stepMode=False):
+    def prepare(self,dt=1,NbFrames=1,nexusFileGeneration=False,stepMode=False,upperDimensions=()):
+        self.upperDimensions = upperDimensions
         cKeys = self.config.keys()
         if self.DP.configurationId <> self.config["configurationId"]:
             self.DP.write_attribute("configurationId",self.config["configurationId"])
@@ -236,12 +237,12 @@ class sai:
         self.dark = ['0',] * len(self.user_readconfig)
         return self.readDark()
         
-    def prepareHDF(self, handler, HDFfilters = tables.Filters(complevel = 1, complib='zlib')):
+    def prepareHDF(self, handler, HDFfilters = tables.Filters(complevel = 1, complib='zlib'),upperIndex=()):
         """the handler is an already opened file object"""
         if self.stepMode:
-            ShapeArrays = (self.DP.dataBufferNumber/2,)
+            ShapeArrays = (self.DP.dataBufferNumber/2,)+ tuple(self.upperDimensions)
         else:
-            ShapeArrays = (self.DP.dataBufferNumber,)
+            ShapeArrays = (self.DP.dataBufferNumber,)+ tuple(self.upperDimensions)
         handler.createGroup("/data/", self.identifier)
         outNode = handler.getNode("/data/" + self.identifier)
         for i in xrange(self.numChan):
@@ -258,19 +259,31 @@ class sai:
 
         return
 
-    def saveData2HDF(self, handler, wait=True):
+    def saveData2HDF(self, handler, wait=True,upperIndex=(),reverse=1):
         """the handler is an already opened file object
         The function will not open nor close the file to be written.
 
-        This version uses the buffered data through TANGO"""
+        This version uses the buffered data through TANGO
+        The upperIndex is used when storing data of nD maps, it has nD-1 elements
+        reverse is used to save date reversed if in azigzag scan. Can be 1 or -1. """
 #Calculate the number of files expected
         #NOfiles = self.NbFrames / self.DP.streamnbacqperfile
 # Get the list of files to read and wait for the last to appear (?)
 #One after the other: open, transfert data, close and delete
+        if reverse not in [-1,1]:
+            reverse = 1
+        
         buffer = self.readBuffer()
+        if upperIndex != ():
+          fmt = "%i," * len(tuple(upperIndex))
+          stringIndex = fmt % tuple(upperIndex)     
         for i in xrange(self.numChan):
             outNode = handler.getNode("/data/" + self.identifier + "/I%i" % i)
-            outNode[:] = buffer[i]
+            #outNode[:] = buffer[i]
+            if upperIndex == ():
+                outNode[:] = buffer[i]
+            else:
+                exec("outNode[::,%s] = buffer[i][::reverse]"%(stringIndex))
         del buffer
         return
 

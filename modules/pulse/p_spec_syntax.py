@@ -776,7 +776,7 @@ class pseudo_counter:
             i.init()
         return
 
-    def prepare(self,dt=1, NbFrames=1, nexusFileGeneration=False, stepMode=False):
+    def prepare(self,dt=1, NbFrames=1, nexusFileGeneration=False, stepMode=False, upperDimensions=()):
         """New version of pseudo_counter, commonly defined ct:
         the prepare must be used before counting, the sequence should be as follows.
 
@@ -792,14 +792,14 @@ class pseudo_counter:
         if stepMode:
             for i in self.masters:
                 if "prepare" in dir(i):
-                    i.prepare(dt = dt, NbFrames = 1,nexusFileGeneration = nexusFileGeneration, stepMode=stepMode)
+                    i.prepare(dt = dt, NbFrames = 1,nexusFileGeneration = nexusFileGeneration, stepMode=stepMode,upperDimensions=upperDimensions)
         else:
             for i in self.masters:
                 if "prepare" in dir(i):
-                    i.prepare(dt = dt, NbFrames = NbFrames,nexusFileGeneration = nexusFileGeneration,stepMode=stepMode)
+                    i.prepare(dt = dt, NbFrames = NbFrames,nexusFileGeneration = nexusFileGeneration,stepMode=stepMode,upperDimensions=upperDimensions)
         for i in self.slaves:
             if "prepare" in dir(i):
-                i.prepare(dt = dt, NbFrames = NbFrames,nexusFileGeneration = nexusFileGeneration,stepMode=stepMode)
+                i.prepare(dt = dt, NbFrames = NbFrames,nexusFileGeneration = nexusFileGeneration,stepMode=stepMode,upperDimensions=upperDimensions)
         return
 
     def start(self,dt=1):
@@ -965,6 +965,7 @@ class pseudo_counter:
         self.handler.createGroup("/", "data")
         self.handler.createGroup("/", "post")
         self.handler.createGroup("/", "context")
+        self.handler.createGroup("/", "coordinates")
         self.__prepareHDF(HDFfilters = HDFfilters)
         return self.handler
 
@@ -984,7 +985,7 @@ class pseudo_counter:
                 i.prepareHDF(self.handler, HDFfilters = HDFfilters)
         return
 
-    def saveData2HDF(self, wait=True):
+    def saveData2HDF(self, wait=True,upperIndex=(),reverse=1):
         """the handler is an already opened file object that will be passed to all masters and slaves
         owing a saveHDFfunction
         
@@ -993,7 +994,7 @@ class pseudo_counter:
         This function should be used to write more standard scan macros"""
         for i in self.all:
             if "saveData2HDF" in dir(i):
-                i.saveData2HDF(self.handler, wait = wait)
+                i.saveData2HDF(self.handler, wait = wait,upperIndex=upperIndex,reverse=reverse)
         return
 
     def savePost2HDF(self, name, value, group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'),domain="post"):

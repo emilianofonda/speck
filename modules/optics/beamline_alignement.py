@@ -51,7 +51,8 @@ def __m1Z(theta):
     else:
         #return 0.12
         #return 0.3
-        return 0.65
+        #return 0.65
+        return 0.85   #21/1/2020  for vpos1 -0.4
 
 def __m1bender(theta,hgap=25.):
     """hgap dependence removed. """
@@ -106,7 +107,8 @@ def __m2Z(theta):
     if theta<=1e-2:
         return 33.
     else:
-        return -0.0307 * theta ** 2 + 0.0276 * theta - 0.717  + get_ipython().user_ns["dcm"].H() #Provisoire
+        return -0.0307 * theta ** 2 + 0.0276 * theta + get_ipython().user_ns["dcm"].H() #21/1/2020
+        #return -0.0307 * theta ** 2 + 0.0276 * theta - 0.717  + get_ipython().user_ns["dcm"].H() #Provisoire
         #return -0.0307 * theta ** 2 + 0.0276 * theta - 2.717  + get_ipython().user_ns["dcm"].H()
         #return -0.0307 * theta ** 2 + 0.0276 * theta + 0.942 + get_ipython().user_ns["dcm"].H() #26/6/2016
 
@@ -126,7 +128,8 @@ def __exafsZ(theta):
     """EXAFS table quota"""
     #return 11.055 * theta -0.2 + get_ipython().user_ns["dcm"].H()    #   8/11/2016
     #return 11.055 * theta + 2.813 + get_ipython().user_ns["dcm"].H()   #  27/5/2016
-    return 11.2074018292933 * theta + 0.3438106790538 -0.17 + get_ipython().user_ns["dcm"].H() - 1.
+    #return 11.2074018292933 * theta + 0.3438106790538 -0.17 + get_ipython().user_ns["dcm"].H() - 1.
+    return 11.2074018292933 * theta + get_ipython().user_ns["dcm"].H() #21/1/2020
     
 def __obxgZ(theta):
     #shell=get_ipython()

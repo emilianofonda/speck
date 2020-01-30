@@ -114,7 +114,10 @@ class bufferedCounter:
         else:
             raise Exception("%s: You should define an FTP client first."%self.DP.name)
 
-    def prepare(self,dt=1,NbFrames=1,nexusFileGeneration=False,stepMode=False):
+    def prepare(self,dt=1,NbFrames=1,nexusFileGeneration=False,stepMode=False,upperDimensions=()):
+#New attributes used for mapping purposes (to be used...)
+        self.upperDimensions=upperDimensions
+
         if self.DP.state() == DevState.FAULT:
             self.DP.init()
         cKeys = self.config.keys()
@@ -190,7 +193,7 @@ class bufferedCounter:
 
     def prepareHDF(self, handler, HDFfilters = tables.Filters(complevel = 1, complib='zlib')):
         """the handler is an already opened file object"""
-        ShapeArrays = (self.DP.totalnbpoint,)
+        ShapeArrays = (self.DP.totalnbpoint,) + tuple(self.upperDimensions)
         handler.createGroup("/data/", self.identifier)
         outNode = handler.getNode("/data/" + self.identifier)
         for s in self.channels:
@@ -206,19 +209,29 @@ class bufferedCounter:
         outNode[:] = ll
         return
 
-    def saveData2HDF(self, handler, wait=True):
+    def saveData2HDF(self, handler, wait=True,upperIndex=(),reverse=1):
         """the handler is an already opened file object
         The function will not open nor close the file to be written.
 
-        This version uses the buffered data through TANGO"""
+        This version uses the buffered data through TANGO
+        The upperIndex is used when storing data of nD maps, it has nD-1 elements
+        reverse is used to save date reversed if in azigzag scan. Can be 1 or -1."""
 #Calculate the number of files expected
         #NOfiles = self.NbFrames / self.DP.streamnbacqperfile
 # Get the list of files to read and wait for the last to appear (?)
 #One after the other: open, transfert data, close and delete
+        if reverse not in [-1,1]:
+            reverse = 1
         buffer = self.readBuffer()
+        if upperIndex != ():
+            fmt = "%i," * len(tuple(upperIndex))
+            stringIndex = fmt % tuple(upperIndex)
         for i in xrange(len(buffer)):
             outNode = handler.getNode("/data/" + self.identifier + "/%s" % self.channels[i])
-            outNode[:] = buffer[i]
+            if upperIndex == ():
+                outNode[:] = buffer[i]
+            else:
+                exec("outNode[:,%s]=buffer[i][::reverse]"%(stringIndex))
         del buffer
         return
 

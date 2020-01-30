@@ -203,9 +203,14 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 f=tables.open_file(handler.filename,"r")
                 fig1 = pylab.figure(1)
                 fig1.clear()
-                pylab.subplot(2,1,1)
+                pylab.subplot(3,1,1)
                 pylab.plot(post_ene, log(f.root.data.cx2sai1.I0.read()/f.root.data.cx2sai1.I1.read()))
-                pylab.subplot(2,1,2)
+                try:
+                    pylab.subplot(3,1,2)
+                    pylab.plot(post_ene, f.root.post.FLUO.read())
+                except:
+                    pass
+                pylab.subplot(3,1,3)
                 pylab.plot(post_ene, f.root.data.cx2sai1.I0.read(),"r")
                 pylab.plot(post_ene, f.root.data.cx2sai1.I1.read(),"k")
                 pylab.draw()
@@ -215,8 +220,11 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             finally:
                 f.close()
     except Exception, tmp:
-        raise tmp #?
-
+        try:
+            ct.closeHDFfile()
+        except:
+            pass
+        raise tmp
     shell.logger.log_write("Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime), kind='output')
     print "Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime) 
     AlarmBeep()

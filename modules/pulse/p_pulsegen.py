@@ -72,7 +72,7 @@ class pulseGen:
     def status(self):
         return self.DP.status()
         
-    def prepare(self,dt=1,NbFrames=1,nexusFileGeneration=False,stepMode=False):
+    def prepare(self,dt=1,NbFrames=1,nexusFileGeneration=False,stepMode=False,upperDimensions=()):
         cKeys = self.config.keys()
         if stepMode:
             self.config["pulseNumber"] = 1 

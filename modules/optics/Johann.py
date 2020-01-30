@@ -29,7 +29,7 @@ class JohannAnalyzer:
         #Allowed:
         #H,K,L all odd
         #H,K,L all even and H+K+L = 4n
-        Oddity = ((npy.mod(h*order,2) or h == 0) and (npy.mod(k*order,2) or k == 0) and (npy.mod(l*order,2) or l == 0))
+        Oddity = (npy.mod(h*order,2) and npy.mod(k*order,2) and npy.mod(l*order,2))
         Evenly = (not npy.mod(h*order,2) and not npy.mod(k*order,2) and not npy.mod(l*order,2))
         if Oddity or (Evenly and not npy.mod(order*(h+k+l),4)):
                 #K. O. Kvashnina and A. C. Scheinost, Journal of Synchrotron Radiation 23 (3), 836-841 (2016).
@@ -243,7 +243,7 @@ class JohannSpectro:
             return "Mode = 1 ==> Analyzer Move in Energy  Mode"
         else:
             print "Bad mode selected. mode can be 0 (angle) or 1 (energy) only."
-
+        print "Analyzer Crystal Theta Offset = %6.4f"%(self.offset_crystal_theta)
     def __call__(self):
         Geometry=self.Geometry
         if self.mode == 0:
@@ -292,13 +292,13 @@ class JohannSpectro:
         """
         if position == None:
             if self.mode == 0:
-                return self.motors["crystal_theta"].pos()+self.offset_crystal_theta
+                return self.motors["crystal_theta"].pos() + self.offset_crystal_theta
             elif self.mode == 1:
-                return self.Analyzer.theta2e(self.motors["crystal_theta"].pos()+self.offset_crystal_theta)
+                return self.Analyzer.theta2e(self.motors["crystal_theta"].pos() + self.offset_crystal_theta)
         if self.mode == 0:
-            thC = position
+            thC = position - self.offset_crystal_theta
         elif self.mode == 1:
-            thC = self.Analyzer.e2theta(position)-self.offset_crystal_theta
+            thC = self.Analyzer.e2theta(position) - self.offset_crystal_theta
         else:
             print "Bad mode defined, I will not move. Modes are 0 for angle and 1 for energy"
             return

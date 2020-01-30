@@ -7,7 +7,7 @@ def polySc(x,*args):
     return pylab.polyval(args, x)   
 
 def dentist(filename, e0=20060., \
-pre1  = -300, pre2  = -40, nor1  =  45, nor2  = -1,\
+pre1  = -300, pre2  = -30, nor1  =  45, nor2  = -1,\
 poly1 =  15., poly2 =  -1, polyN =  -1, kweight = -1, rmax=6,\
 mode="t", figN=1, overlap=False,out=False):
     """mode can be t = transmission or f = fluorescence or s = standard
@@ -38,7 +38,7 @@ mode="t", figN=1, overlap=False,out=False):
     if nor2 < nor1:
         nor2 = nor1 +10
     if pre2 < pre1:
-        pre2 = pre1 + 10
+        pre2 = pre1 + 20
    
     ie0 = ene.searchsorted(e0)
     if ene[0] > e0-pre2:
