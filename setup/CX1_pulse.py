@@ -9,7 +9,7 @@ try:
     "mode":"MAP2", "streamNbAcqPerFile":250,"nbPixelsPerBuffer":50,"streamtargetfile":"xia1"}
     
     cx1xia1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",FTPclient="d09-1-c00/ca/ftpclientxia.1",identifier = "cx1xia1",\
-    FTPserver="d09-1-c00/ca/ftpserverxia.1",spoolMountPoint="/dev/shm/xia1", config=config)
+    FTPserver="d09-1-c00/ca/ftpserverxia.1",spoolMountPoint="/nfs/tempdata/samba/com-samba/xia1", config=config)
     
     print GREEN+"cx1xia2 --> DxMap card"+RESET
     
@@ -17,7 +17,7 @@ try:
     "mode":"MAP2", "streamNbAcqPerFile":250,"nbPixelsPerBuffer":50,"streamtargetfile":"xia2"}
     
     cx1xia2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",FTPclient="d09-1-c00/ca/ftpclientxia.2",identifier = "cx1xia2",\
-    FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/dev/shm/xia2", config=config)
+    FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/nfs/tempdata/samba/com-samba/xia2", config=config)
     
     print GREEN+"cx1xia1 --> DxMap card"+RESET
     
@@ -48,12 +48,12 @@ except Exception, tmp:
 from p_sai import sai as p_sai
 
 config = {"configurationId":3,"frequency":10000,"integrationTime":1,"nexusFileGeneration":False,\
-"nexusTargetPath":'/dev/shm/cx1sai1',"nexusNbAcqPerFile":1000,"dataBufferNumber":1,\
+"nexusTargetPath":'/nfs/tempdata/samba/com-samba/cx1sai1',"nexusNbAcqPerFile":1000,"dataBufferNumber":1,\
 "statHistoryBufferDepth":1000}
 
 try:
 
-    sai = p_sai("d09-1-c00/ca/sai.1", timeout=10., deadtime=0.1, spoolMountPoint="/dev/shm/cx1sai1",\
+    sai = p_sai("d09-1-c00/ca/sai.1", timeout=10., deadtime=0.1, spoolMountPoint="/nfs/tempdata/samba/com-samba/cx1sai1",\
     config=config, identifier="cx1sai1",GateDownTime=2.)
 
 except Exception, tmp:
@@ -64,11 +64,11 @@ except Exception, tmp:
 from p_bufferedCounter import bufferedCounter as p_bufferedCounter
 
 config = {"frequency":100,"integrationTime":0.01,"nexusFileGeneration":False,\
-"nexusTargetPath":'/dev/shm/cpt3',"nexusNbAcqPerFile":1000,"totalNbPoint":1000,\
+"nexusTargetPath":'/nfs/tempdata/samba/com-samba/cpt3',"nexusNbAcqPerFile":1000,"totalNbPoint":1000,\
 "bufferDepth":1}
 
 cpt3 = p_bufferedCounter("d09-1-c00/ca/cpt.3",deadtime=0.1,timeout=10,config = config,
-spoolMountPoint="/dev/shm/cpt3",identifier="encoder_rx1",GateDownTime=2.)
+spoolMountPoint="/nfs/tempdata/samba/com-samba/cpt3",identifier="encoder_rx1",GateDownTime=2.)
 
 #Associate counters to moveables for continuous scans
 

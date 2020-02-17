@@ -25,7 +25,7 @@ try:
     config = {"fileGeneration":False,"streamTargetPath":'D:\\FTP',\
     "mode":"MAP", "streamNbAcqPerFile":250,"nbPixelsPerBuffer":50,"streamtargetfile":"cx2xia1"}
     cx2xia1=dxmap("d09-1-cx2/dt/dtc-mca_xmap.1",FTPclient="d09-1-c00/ca/ftpclientcx2xia1",identifier = "cx2xia1",\
-    FTPserver="d09-1-c00/ca/ftpservercx2xia1",spoolMountPoint="/dev/shm/cx2xia1", config=config)
+    FTPserver="d09-1-c00/ca/ftpservercx2xia1",spoolMountPoint="/nfs/tempdata/samba/com-samba/cx2xia1", config=config)
     mca1=cx2xia1
     mca2=None
     print GREEN+"cx2xia1 --> DxMap card"+RESET
@@ -55,12 +55,12 @@ except Exception, tmp:
 from p_sai import sai as p_sai
 
 config = {"configurationId":3,"frequency":10000,"integrationTime":1,"nexusFileGeneration":False,\
-"nexusTargetPath":'/dev/shm/cx2sai1',"nexusNbAcqPerFile":1000,"dataBufferNumber":1,\
+"nexusTargetPath":'/nfs/tempdata/samba/com-samba/cx2sai1',"nexusNbAcqPerFile":1000,"dataBufferNumber":1,\
 "statHistoryBufferDepth":1000}
 
 try:
 
-    sai = p_sai("d09-1-cx2/ca/sai.1", timeout=10., deadtime=0.1, spoolMountPoint="/dev/shm/cx2sai1",\
+    sai = p_sai("d09-1-cx2/ca/sai.1", timeout=10., deadtime=0.1, spoolMountPoint="/nfs/tempdata/samba/com-samba/cx2sai1",\
     config=config, identifier="cx2sai1",GateDownTime=2.)
 
 except Exception, tmp:
@@ -71,11 +71,11 @@ except Exception, tmp:
 from p_bufferedCounter import bufferedCounter as p_bufferedCounter
 
 config = {"frequency":100,"integrationTime":0.01,"nexusFileGeneration":False,\
-"nexusTargetPath":'/dev/shm/cpt3',"nexusNbAcqPerFile":1000,"totalNbPoint":1000,\
+"nexusTargetPath":'/nfs/tempdata/samba/com-samba/cpt3',"nexusNbAcqPerFile":1000,"totalNbPoint":1000,\
 "bufferDepth":1}
 
 cpt3 = p_bufferedCounter("d09-1-c00/ca/cpt.3",deadtime=0.1,timeout=10,config = config,
-spoolMountPoint="/dev/shm/cpt3",identifier="encoder_rx1",GateDownTime=2.)
+spoolMountPoint="/nfs/tempdata/samba/com-samba/cpt3",identifier="encoder_rx1",GateDownTime=2.)
 
 
 #PulseGenerator

@@ -199,7 +199,8 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
             XIANexusPath.append(xia.spoolMountPoint)
             #Clean Up the mess (if any) in the source disk
             try:
-                xia.FTPclient.DeleteRemainingFiles()
+                pass
+#xia.FTPclient.DeleteRemainingFiles()
             except:
                 print "Failed to delete remaining files from %s" % xia.FTPclient.name
             if xia.FTPclient.state() <> DevState.STANDBY:
@@ -498,6 +499,7 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
                             __ocr = eval("XFile.root.entry.scan_data.ocr%02i"%ch).read()
                             __blockDT = 100. * numpy.nan_to_num(1.-__ocr/__icr)
                         except Exception, tmp:
+                            shell.logger.log_write("Cannot read ch = %i in XIA card #%i (first card is card 0)"%(ch,xiaN), kind='output')
                             print "Cannot read ch = %i in XIA card #%i (first card is card 0)"%(ch,xiaN)
                             Breaked = True
                             print tmp
@@ -568,6 +570,7 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
                             sleep(1)
             for i in cardXIA:
                 try:
+                    pass
                     i.FTPclient.deleteremainingfiles()
                 except:
                     pass
