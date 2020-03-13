@@ -359,7 +359,7 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
                 myTime.sleep(1)
             if myTime.time()-timeout0 > 6:
                 print "cardAI of ecscan failed to stop!"
-            cardAI.stop()
+                cardAI.stop()
             theta = cardCT.Theta
             
             #Begin of new block: test for I0 data, sometimes nan are returned .... why?
@@ -381,7 +381,7 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
             ene = numpy.nan_to_num(dcm.theta2e(theta))
             print myTime.asctime(), " : Saving Data..."
 
-    #Wait for XIA files to be saved in spool
+#Wait for XIA files to be saved in spool
             XIAt0=myTime.time()
             
             while(DevState.RUNNING in [i.state() for i in cardXIA]):
@@ -402,14 +402,14 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
                     shell.logger.log_write("Time Out waiting for XIA cards to stop! Waited more than 60s... !", kind='output')
             
             nfs_t0 = myTime.time()
-            
-            while(True in [i[0] not in os.listdir(i[1]) for i in zip(LastXIAFileName, XIANexusPath)] and myTime.time()-nfs_t0 < 10.):
+            __nfs_timeout = 600.
+            while(True in [i[0] not in os.listdir(i[1]) for i in zip(LastXIAFileName, XIANexusPath)] and myTime.time()-nfs_t0 < __nfs_timeout):
                 myTime.sleep(1)
            
-            if myTime.time()-nfs_t0 > 10.:
+            if myTime.time()-nfs_t0 > __nfs_timeout:
                 
-                print mycurses.BOLD + "Waited more than 10s. Severe spool latency?" + mycurses.RESET
-                shell.logger.log_write("Waited more than 10s. Severe spool latency?",kind='output')
+                print mycurses.BOLD + "Waited more than %4.1f. Severe spool latency?"%__nfs_timeout + mycurses.RESET
+                shell.logger.log_write("Waited more than %4.1f. Severe spool latency?"%__nfs_timeout, kind='output')
                 
             XIAtEnd = myTime.time()-XIAt0
             print mycurses.BOLD+"XIA needed additional %3.1f seconds to provide data files."%(XIAtEnd)+mycurses.RESET
@@ -442,7 +442,7 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
                     except:
                         print "Cannot open file %s for reading."(path[0] +os.sep + x)
                         sleep(1)
-        #Common
+    #Common
             outtaName = filename2ruche(ActualFileNameData)
             outtaHDF = tables.openFile(outtaName[:outtaName.rfind(".")] + ".hdf","w")
             outtaHDF.createGroup("/","XIA")

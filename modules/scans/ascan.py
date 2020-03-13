@@ -352,7 +352,12 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
         ml=min(len(x),len(y))
         try:
             if graph >= 0 :
-                xplot(x[:ml],y[:ml],graph=graph)
+                try:
+                    xplot(x[:ml],y[:ml],graph=graph)
+                except:
+                    f1 = figure(graph)
+                    f1.clear()
+                    plot(x[:ml],y[:ml])
         except (KeyboardInterrupt,SystemExit), tmp:
             print "Scan finished on user request"
             raise tmp
