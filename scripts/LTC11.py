@@ -1,15 +1,17 @@
+#!/usr/bin/env python
+# -*- coding: latin-1 -*-
+
 from PyTango import DeviceProxy, DevState
 from PyTango import AttrQuality, AttrWriteType, DispLevel
-from PyTango.server import Device, attribute, command
-from PyTango.server import class_property, device_property
+from PyTango.server import Device, attribute, command, DeviceMeta
+from PyTango.server import class_property, device_property, run
 
 import time
 import numpy as npy
 
-
 ###Let's define here a class that will be used later on by the device server itself
 ###In this way we can check the code step by step by importing it as an object
-class LTC11:
+class LTC11_toolbox:
 
     def __init__(self,com_port,deadtime=0.1,tolerance=0.5):
         self.DP = DeviceProxy(com_port)
@@ -56,7 +58,7 @@ class LTC11:
             return DevState.MOVING
         elif st == 3:
             return DevState.OFF
-        return
+        return DevState.STANDBY
 
     def status(self):
         return
@@ -108,7 +110,7 @@ class LTC11:
         if channels[1]:
             self.write("SOSEN 2,2;")
         else:
-            self.DP.write("SOSEN 2,3;")
+            self.write("SOSEN 2,3;")
         return
 
     def set_max_power(self,maxpower=None):
@@ -193,43 +195,86 @@ class LTC11:
             self.pos(direction * (time.time() - t_start) * speed_seconds + T_0, wait=False)
         return
 
+#Properties list:
+#
+#Attributes list:
+#
+#Command list:
+#
 
 class LTC11(Device):
-    current = attribute(label="Current", dtype=float,
-                        display_level=DispLevel.EXPERT,
-                        access=AttrWriteType.READ_WRITE,
-                        unit="A", format="8.4f",
-                        min_value=0.0, max_value=8.5,
-                        min_alarm=0.1, max_alarm=8.4,
-                        min_warning=0.5, max_warning=8.0,
-                        fget="get_current", fset="set_current",
-                        doc="the power supply current")
+    __metaclass__ = DeviceMeta
 
-    noise = attribute(label="Noise", dtype=((float,),),
-                      max_dim_x=1024, max_dim_y=1024,
-                      fget="get_noise")
+    GpibProxy = device_property(dtype=str)
 
-    host = device_property(dtype=str)
-    port = class_property(dtype=int, default_value=9788)
+    T1 = attribute()
+    T2 = attribute()
+    use_channel = attribute()
+    
+    def init_device(self):
+        self.get_device_properties()
+        self.toolbox = LTC11_toolbox(self.GpibProxy, deadtime=0.1, tolerance=0.5)
+        self.__last_call = time.time()
+        self.__update_last_read = []
 
-    @attribute
-    def voltage(self):
-        self.info_stream("get voltage(%s, %d)" % (self.host, self.port))
-        return 10.0
+    def __update(self):
+        if self.__update_last_read == [] or time.time() - self.__update_last_call > 2.:
+            self.__update_last_read = self.toolbox.read()
+            self.__update_last_call = time.time()
+        return self.__update_last_read
+    
+    def read_T1(self):
+        return self.__update()[0]
 
-    def get_current(self):
-        return 2.3456, time(), AttrQuality.ATTR_WARNING
+    def read_T2(self):
+        return self.__update()[1]
 
-    def set_current(self, current):
-        print("Current set to %f" % current)
+    def read_use_channel(self):
+        return self.toolbox.select_channel()
 
-    def get_noise(self):
-        return random_sample((1024, 1024))
+    def dev_state(self):
+        return self.toolbox.state()
 
-    @command(dtype_in=float)
-    def ramp(self, value):
-        print("Ramping up...")
-
+    def dev_status(self):
+        return "Don't follow me, I was lost first. EF"
 
 if __name__ == "__main__":
-    LTC11.run_server()
+    run((LTC11,))
+
+    
+#   current = attribute(label="Current", dtype=float,
+#                       display_level=DispLevel.EXPERT,
+#                       access=AttrWriteType.READ_WRITE,
+#                       unit="A", format="8.4f",
+#                       min_value=0.0, max_value=8.5,
+#                       min_alarm=0.1, max_alarm=8.4,
+#                       min_warning=0.5, max_warning=8.0,
+#                       fget="get_current", fset="set_current",
+#                       doc="the power supply current")
+
+#   noise = attribute(label="Noise", dtype=((float,),),
+#                     max_dim_x=1024, max_dim_y=1024,
+#                     fget="get_noise")
+
+#   host = device_property(dtype=str)
+#   port = class_property(dtype=int, default_value=9788)
+
+#   @attribute
+#   def voltage(self):
+#       self.info_stream("get voltage(%s, %d)" % (self.host, self.port))
+#       return 10.0
+
+#   def get_current(self):
+#       return 2.3456, time(), AttrQuality.ATTR_WARNING
+
+#   def set_current(self, current):
+#       print("Current set to %f" % current)
+
+#   def get_noise(self):
+#       return random_sample((1024, 1024))
+
+#   @command(dtype_in=float)
+#   def ramp(self, value):
+#       print("Ramping up...")
+
+
