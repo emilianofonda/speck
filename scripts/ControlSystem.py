@@ -1,4 +1,6 @@
 from time import time, sleep
+from PyTango import DeviceProxy
+
 ControlSystem = DeviceProxy("tango/devadmin/ControlSystemMonitor.1")
 
 def StopServer(speckInstance, timeOut=10,delay=5):
@@ -6,10 +8,12 @@ def StopServer(speckInstance, timeOut=10,delay=5):
     There is a time to live and a time to die
     ... this is the time to kill ... a DeviceServer
     """
-    if "label" in dir(speckInstance):
+    if type(speckInstance) == str:
+        label = speckInstance
+    elif "label" in dir(speckInstance):
         label = speckInstance.label
-    elif "name" in dir(speckInstance):
-        label = speckInstance.name()
+    #elif "name" in dir(speckInstance):
+    #    label = speckInstance.name()
     else:
         raise Exception("Error: trying StartServer on non compatible object.")
     ControlSystem.killDevices([label,])
@@ -17,7 +21,9 @@ def StopServer(speckInstance, timeOut=10,delay=5):
     while(time()-t0<timeOut):
         try:
             sleep(0.1)
-            st = speckInstance.state()
+#Should find a more elegant way...
+            st = DeviceProxy(label).state()
+            #st = speckInstance.state()
         except:
             break
     sleep(delay)
@@ -25,10 +31,12 @@ def StopServer(speckInstance, timeOut=10,delay=5):
 
 def StartServer(speckInstance, timeOut=10,delay=0,retry=True):
     """Use the TANGO database to start a speckInstance that died."""
-    if "label" in dir(speckInstance):
+    if type(speckInstance) == str:
+        label = speckInstance
+    elif "label" in dir(speckInstance):
         label = speckInstance.label
-    elif "name" in dir(speckInstance):
-        label = speckInstance.name()
+    #elif "name" in dir(speckInstance):
+    #    label = speckInstance.name()
     else:
         raise Exception("Error: trying StartServer on non compatible object.")
     ControlSystem.startDevices([label,])
@@ -36,12 +44,16 @@ def StartServer(speckInstance, timeOut=10,delay=0,retry=True):
     while(time()-t0<timeOut):
         try:
             sleep(0.1)
-            st = speckInstance.state()
+#Should find a more elegant way...
+            st = DeviceProxy(label).state()
+            #st = speckInstance.state()
             break
         except:
             pass
     try:
-        st = speckInstance.state()
+#Should find a more elegant way...
+        st = DeviceProxy(label).state()
+        #st = speckInstance.state()
     except:
         if retry:
             StartServer(speckInstance, timeOut=timeOut, delay=delay,retry=False)

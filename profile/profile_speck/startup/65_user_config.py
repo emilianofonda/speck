@@ -403,6 +403,7 @@ __tmp={
 "cam2"        :["d09-1-c04/dt/vg1.1","ExposureTime"],
 "cam3"        :["d09-1-c06/dt/vg1.2","ExposureTime"],
 "cam4"        :["d09-1-cx1/dt/vg2-basler","ExposureTime"],
+"cam5"        :["d09-1-cx2/dt/vg2-basler","ExposureTime"],
 "I0_gain"    :["d09-1-cx1/ex/amp_iv.1","gain"],
 "I1_gain"    :["d09-1-cx1/ex/amp_iv.2","gain"],
 "I2_gain"    :["d09-1-cx1/ex/amp_iv.3","gain"],
@@ -858,9 +859,8 @@ except Exception, tmp:
 domacro("changePeakingTime")
 
 #Load Energy Continuous Scan
-#domacro("ecscanME4")
-domacro("ecscanFTP")
-#domacro("ecscanFTPeureka")
+#domacro("ecscanFTP")
+domacro("ecscanFTP_covid")
 domacro("ecscanXP")
 domacro("averageThis")
 domacro("resetFEMTO")

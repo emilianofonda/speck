@@ -653,12 +653,15 @@ class pseudo_counter:
         self.timeout = timeout
         self.user_readconfig = []
         self.mca_units = []
+#The units2restart_labels is used by ControlSystem to restart devices in case of error in a ecscan, could be generalized
+        self.units2restart_labels = []
         n = 0
         self.clock_channel = -1
         for i in self.all:
             self.user_readconfig+=i.user_readconfig
             if "read_mca" in dir(i):
                 self.mca_units.append(i)
+                self.units2restart_labels.append(i.label)
             if "clock_channel" in dir(i):
                 self.clock_channel = i.clock_channel + n
             n += len(i.user_readconfig)

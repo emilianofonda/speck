@@ -39,11 +39,12 @@ cardAI = DeviceProxy("d09-1-c00/ca/sai.1")
 #cardXIA1Channels = range(1,20) #remember the range stops at N-1: 19
 #cardXIA2Channels = range(0,16) #remember the range stops at N-1: 15
 
-def __resetFLUO(scaler="ct"):
-    ct=eval(scaler)
-    for i in ct.mca_units:
+def __resetFluo(scaler="ct"):
+    shell=get_ipython()
+    mca_units=eval(scaler+".units2restart_labels")
+    for i in mca_units:
         try:
-            print mycurses.BOLD + i.label +mycurses.RESET,
+            print mycurses.BOLD + i +mycurses.RESET,
             StopServer(i)
             print mycurses.RED+" --> halted"+mycurses.RESET
         except:
@@ -51,42 +52,79 @@ def __resetFLUO(scaler="ct"):
             pass
         sys.stdout.flush()
 
-    print mycurses.UPNLINES%4
+    print mycurses.UPNLINES%(len(mca_units)+1)
 
-    for i in ct.mca_units:
+    for i in mca_units:
         try:
-            print mycurses.BOLD + i.label +mycurses.RESET,
+            print mycurses.BOLD + i +mycurses.RESET,
             StartServer(i)
             print mycurses.GREEN+" --> started"+mycurses.RESET
         except:
             print " --> failed"
             pass
         sys.stdout.flush()
+    myTime.sleep(0.1)
+    eval(scaler+".stop()")
+    myTime.sleep(0.1)
+    eval(scaler+".count(1)")
+    myTime.sleep(0.1)
+    try:
+        cardCT.stop()
+    except Exception, tmp:
+        print tmp
+    try:
+        cardAI.stop()
+    except Exception, tmp:
+        print tmp
     return
 
 
 def stopscan(shutter=False,scaler="ct"):
-    cardXIA = eval(scaler+".mca_units")
+    shell=get_ipython()
+    cardXIA=[]
+    try:
+        cardXIA = eval(scaler+".mca_units")
+    except:
+        pass
+    tmp = ""
     try:
         if shutter:
             sh_fast.close()
     except:
         pass
     print "Wait... Stopping Devices...",
+    try:
+        dcm.stop()
+    except Exception, tmp:
+        pass
     sys.stdout.flush()
-    cardAI.stop()
-    cardCT.stop()
+    try:
+        cardAI.stop()
+    except Exception, tmp:
+        pass
+    try:
+        cardCT.stop()
+    except Exception, tmp:
+        pass
     for xia in cardXIA:
-        xia.stop()
-    #cardXIA1.stop()
-    #cardXIA2.stop()
-    dcm.stop()
+        try:
+            xia.stop()
+        except Exception, tmp:
+            pass
     myTime.sleep(3)
     dcm.velocity(60)
-    while(DevState.RUNNING in [i.state() for i in cardXIA]):
-        myTime.sleep(2)
-    setMAP()
+    if cardXIA<>[]:
+        try:
+            while(DevState.RUNNING in [i.state() for i in cardXIA]):
+                myTime.sleep(2)
+            setMAP()
+        except Exception, tmp:
+            pass
     wait_motor(dcm)
+    if tmp<>"":
+        shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp, kind='output')
+        print tmp
+        #raise tmp
     print "Scan Stopped: OK"
     sys.stdout.flush()
     return
@@ -99,7 +137,16 @@ class CPlotter:
 __CPlotter__ = CPlotter()
 
 def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,backlash=100,scaler="ct"):
+    shell=get_ipython()
     __failed=0
+    #CheckFilename first
+    fileName = fileName.replace(" ","_")
+    if string.whitespace in fileName:
+        raise Exception("ecscan does not accept tabulations and other special spacings in filenames. Aborting.",fileName)
+    for ch in fileName:
+        if ch not in string.letters+string.digits+"_./\\+-@":
+            raise Exception("ecscan does not accept special characters in filenames. Aborting.",fileName)
+    #
     try:
         for i in range(n):
             ecscanActor(fileName,e1,e2,dt,velocity, e0, mode,shutter, beamCheck,backlash=backlash,CurrentScan=i,NofScans=n,scaler=scaler)
@@ -114,15 +161,23 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
         raise KeyboardInterrupt
     except Exception, tmp:
         shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp, kind='output')
-        print tmp
+        __failed+=1
         try:
-            __failed+=1
-            __resetFluo(scaler)
+            print "ecscan halted on error."
+            print tmp
         except:
-            stopscan(shutter,scaler=scaler)
-            #raise
-    for i in range(__failed):
-        ecscan(fileName,e1,e2,n=n,dt=dt,velocity=velocity, e0=e0, mode=mode,\
+            pass
+        #raise tmp
+        try:
+            __resetFluo(scaler)
+        except Exception, tmp2:
+            shell.logger.log_write("Error during __resetFluo:\n %s\n\n" % tmp2, kind='output')
+            print tmp2
+            raise tmp2
+    if __failed >0 :
+        print "Missing %i scans"%__failed
+        print "Call ecscan to retry %i failed scans"%__failed
+        ecscan(fileName,e1,e2,n=__failed,dt=dt,velocity=velocity, e0=e0, mode=mode,\
         shutter=shutter,beamCheck=beamCheck,backlash=backlash,scaler=scaler)
     return 
 
@@ -134,16 +189,8 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
     Global variables: FE and obxg must exist and should point to Front End and Shutter
     The filename: the only acceptable characters are [a-Z][0-9] + - . _ @ failing to do so will cause an exception
     """
-    cardXIA = eval(scaler+".mca_units")
-    #CheckFilename first
-    fileName = fileName.replace(" ","_")
-    if string.whitespace in fileName:
-        raise Exception("ecscan does not accept tabulations and other special spacings in filenames. Aborting.",fileName)
-    for ch in fileName:
-        if ch not in string.letters+string.digits+"_./\\+-@":
-            raise Exception("ecscan does not accept special characters in filenames. Aborting.",fileName)
-    #
     shell=get_ipython()
+    cardXIA = eval(scaler+".mca_units")
     FE = shell.user_ns["FE"]
     obxg = shell.user_ns["obxg"]
     TotalScanTime = myTime.time()
@@ -186,6 +233,8 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
     map(float, cardAI.get_property(["SPECK_DARK"])["SPECK_DARK"])
 
     #Set Mapping mode if needed
+    if  DevState.OFF in [i.state() for i in cardXIA]:
+        setSTEP()
     try:
         setMAP()
         myTime.sleep(1)
@@ -355,7 +404,7 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
             except KeyboardInterrupt:
                 raise
             except Exception, tmp:
-                print tmp
+                raise tmp
             myTime.sleep(5)
         try:
             if shutter:
@@ -371,7 +420,7 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
             myTime.sleep(0.2)
             dcm.pos(e1-backlash, wait=False)
         else:
-            print "Scan %i of %i"%(CurrentScan,NofScans)
+            print "Scan %i of %i"%(CurrentScan+1, NofScans)
             
         if DevState.FAULT in [xia.state() for xia in cardXIA]:
             shell.logger.log_write(mycurses.RED+mycurses.BOLD + "XIA cards in FAULT condition!" + mycurses.RESET, kind='output')
