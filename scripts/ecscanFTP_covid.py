@@ -841,7 +841,10 @@ XIANexusPath, XIAfilesList, fluoXIA, cardXIAChannels):
                 except Exception, tmp:
                     #print tmp
                     print XIANexusPath[xiaN]+ os.sep + name
-                    print ch,"\n",dir(eval("f.root.entry.scan_data"))
+                    try:
+                        print ch,"\n",dir(eval("f.root.entry.scan_data"))
+                    except:
+                        pass
                 finally:
                     try:
                         f.close()
@@ -899,7 +902,6 @@ def dark(dt=10.):
         while(cardCT.state() == DevState.RUNNING):
             myTime.sleep(0.1)
         cardAI.stop()
-        darkAI0 = numpy.average(cardAI.historizedchannel0)
         darkAI1 = numpy.average(cardAI.historizedchannel1)
         darkAI2 = numpy.average(cardAI.historizedchannel2)
         darkAI3 = numpy.average(cardAI.historizedchannel3)
