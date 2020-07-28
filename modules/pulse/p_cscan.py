@@ -39,7 +39,7 @@ def stop_cscan(shutter=False,cmot=None,cmot_previous_velocity=None):
     return
 
 class CPlotter:
-    def h_init__(self):
+    def __init__(self):
         return
 
 
@@ -92,15 +92,14 @@ def cscanActor(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beam
     #Calculate acceleration overhead:
     accel_space = float(0.5 * velocity**2 / cmot.acceleration+ 0.5 * velocity**2 / cmot.deceleration)
     delta_time_acceleration = float(0.5 * velocity / cmot.acceleration + 0.5 * velocity / cmot.deceleration)
-    #Configure cards
+    
     TotalTime = float(abs(p2-p1)) / velocity + delta_time_acceleration
     print "Expected time = %g s" % TotalTime
-    #NumberOfPoints = int (float(abs(p2-p1)) / velocity / dt)
+    
     NumberOfPoints =  int(TotalTime / dt + 1)
     print "Number of points: ",NumberOfPoints
     print "One point every %8.6f motor units." % (velocity * dt)
     
-    #Calculate name of last data buffer file to wait (XIA)
     if beamCheck and not(checkTDL(FE)):
         wait_injection(FE,[obxg,])
         myTime.sleep(10.)
