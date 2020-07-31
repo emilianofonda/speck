@@ -133,6 +133,7 @@ class sai:
         #    self.DP.NexusResetBufferIndex()
         #    #Auto delete remaining files!!! this avoids aborting, but it is a potential risk.
         #    os.system("rm %s/*.%s"%(self.spoolMountPoint,"nxs"))
+        #Use FTPclient cleanup instead!
         #else:
         #    self.config["nexusFileGeneration"] = False
         #Hard remove nexus files from ADC
@@ -169,8 +170,11 @@ class sai:
                 self.DP.command_inout("Stop")
             except DevFailed:
                 self.DP.command_inout("Abort")
-        if self.FTPclient and self.FTPclient.state() == DevState.RUNNING:
-            self.FTPclient.stop()
+#It is not necessary to stop the FTP client, 
+#since it will clean up the remote spool and this is fine
+#Code below has been commented
+        #if self.FTPclient and self.FTPclient.state() == DevState.RUNNING:
+        #    self.FTPclient.stop()
         return self.state()
     
     def preCount(self, dt=1):
@@ -265,7 +269,7 @@ class sai:
 
         This version uses the buffered data through TANGO
         The upperIndex is used when storing data of nD maps, it has nD-1 elements
-        reverse is used to save date reversed if in azigzag scan. Can be 1 or -1. """
+        reverse is used to save date reversed if in a zigzag scan. Can be 1 or -1. """
 #Calculate the number of files expected
         #NOfiles = self.NbFrames / self.DP.streamnbacqperfile
 # Get the list of files to read and wait for the last to appear (?)

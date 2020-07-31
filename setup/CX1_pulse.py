@@ -125,9 +125,9 @@ try:
     #ct=pseudo_counter(masters=[pulseGen0],slaves=[sai_1,x3mca], posts= ctPosts)
     #Remember to set the cpt3 card from master to slave mode and modify BNC cable position from OUT to GATE
     #ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai_1,mca1,cpt3], posts= ctPosts)
-    #ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai,cx1xia1,cx1xia2,cpt3],posts=ctPosts, postDictionary=XAS_dictionary)
+    ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai,cx1xia1,cx1xia2,cpt3],posts=ctPosts, postDictionary=XAS_dictionary)
     #ct=pseudo_counter(masters=[pulseGen0,], slaves=[sai,cpt3], posts=ctPosts, postDictionary=XAS_dictionary)
-    ct=pseudo_counter(masters=[pulseGen0,], slaves=[sai,cpt3], posts=ctPosts)
+    #ct=pseudo_counter(masters=[pulseGen0,], slaves=[sai,cpt3], posts=ctPosts)
 
 except Exception, tmp:
     print tmp
