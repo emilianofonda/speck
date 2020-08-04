@@ -3,7 +3,7 @@ from PyTango import DevState, DeviceProxy,DevFailed,AttributeInfoEx
 from time import sleep
 import time
 import tables
-import numpy 
+import numpy
 import numpy as np
 import os
 from string import lower
@@ -222,7 +222,8 @@ class dxmap:
             self.setROIs(rois)
         return
 
-    def prepare(self, dt=1., NbFrames=1, nexusFileGeneration=False,stepMode=False):
+    def prepare(self, dt=1., NbFrames=1, nexusFileGeneration=False,stepMode=False, upperDimensions=()):
+        self.upperDimensions = upperDimensions
 #Verify stream items
         self.stream_items = [lower(i) for i in self.DP.get_property("StreamItems")["StreamItems"]]
 #Order of the following attributes seems to matter!
@@ -325,7 +326,7 @@ class dxmap:
     def posts(self):
         """Returns values calculated after counting: here it is used for determining rois in map mode"""
         roi1,roi2 = self.getROIs()
-        return list(np.sum(np.array(self.read_mca())[:,roi1:roi2],axis=1))
+        return list(numpy.sum(numpy.array(self.read_mca())[:,roi1:roi2],axis=1))
 
     def read_mca(self, channels=None):
         if channels==None: 
@@ -363,7 +364,7 @@ class dxmap:
 
     
     def count(self,dt=1):
-        """Not working, this is designed for a slave XIA device"""
+        """Not working, this code is designed for a slave XIA device not a master"""
         return
 
     def setROIs(self,*args):
@@ -415,10 +416,10 @@ class dxmap:
         return gottenROIS
         
         
-    def prepareHDF(self, handler, HDFfilters = tables.Filters(complevel = 1, complib='zlib')):
+    def prepareHDF(self, handler, HDFfilters = tables.Filters(complevel = 1, complib='zlib'),upperIndex=()):
         """the handler is an already opened file object"""
-        ShapeArrays = (self.NbFrames,)
-        ShapeMatrices = (self.NbFrames, self.DP.streamnbDataPerAcq)
+        ShapeArrays = (self.NbFrames,) + tuple(self.upperDimensions)
+        ShapeMatrices = (self.NbFrames, self.DP.streamnbDataPerAcq) + tuple(self.upperDimensions)
         handler.createGroup("/data", self.identifier)
         outNode = handler.getNode("/data/" + self.identifier)
 
@@ -441,20 +442,21 @@ class dxmap:
 
         handler.createArray("/data/"+self.identifier, "roiLimits", np.array(self.getROIs(),"i"))
 #Write down contextual data
-        ll = numpy.array(["%s = %s"%(i,str(self.config[i])) for i in self.config.keys()])
+        ll = np.array(["%s = %s"%(i,str(self.config[i])) for i in self.config.keys()])
         outGroup = handler.createGroup("/context",self.identifier)
         outGroup = handler.getNode("/context/"+self.identifier)
         handler.createCArray(outGroup, "config", title = "config",\
-        shape = numpy.shape(ll), atom = tables.Atom.from_dtype(ll.dtype), filters = HDFfilters)
+        shape = np.shape(ll), atom = tables.Atom.from_dtype(ll.dtype), filters = HDFfilters)
         outNode = handler.getNode("/context/"+self.identifier+"/config")
         outNode[:] = ll
 
         return
 
-    def saveData2HDF(self, handler, wait=True):
+    def saveData2HDF(self, handler, wait=True, upperIndex=(),reverse=1):
         """the handler is an already opened file object
         The function will not open nor close the file to be written.
-        Files in spool will be DELETED after writing data in output file."""
+        Files in spool will be DELETED after writing data in output file.
+        upperIndex has to be a tuple, it can be an empty tuple."""
         Roi0, Roi1 = self.getROIs()[:2]
 #Calculate the number of files expected
         NOfiles = int(self.NbFrames) / int(self.DP.streamnbacqperfile)
@@ -471,31 +473,52 @@ class dxmap:
                 files2read = [i for i in os.listdir(self.spoolMountPoint) if i.startswith(self.DP.streamTargetFile)\
                 and i.endswith("nxs")]
                 sleep(self.deadtime)
-            print "XIA files waited for %4.2fs" % (time.time()-t0)
+            print("XIA files waited for %4.2fs" % (time.time()-t0))
         files2read.sort()
+#check reverse value for upper dimensional scans
+        if reverse not in [-1,1]:
+            reverse = 1
 #One after the other: open, transfert data, close and delete
         for Nfile in xrange(len(files2read)):
             sourceFile = tables.open_file(self.spoolMountPoint + os.sep + files2read[Nfile], "r")
             
             try:
                 p0 = self.DP.streamnbacqperfile * Nfile 
-                p1 = self.DP.streamnbacqperfile * (Nfile + 1)
+                #p1 = self.DP.streamnbacqperfile * (Nfile + 1)
+#Get actual file length that can vary depending on number of points in scan
+                actualBlockLen = np.shape(sourceFile.root.entry.scan_data.channel00)[0]
+                p1 = p0 + actualBlockLen
                 for i in xrange(self.numChan):
                     outNode = handler.getNode("/data/" + self.identifier + "/mca%02i" % i)
-                    p0 = self.DP.streamnbacqperfile * Nfile 
-                    p1 = self.DP.streamnbacqperfile * (Nfile + 1)
-                    outNode[p0:p1] = eval("sourceFile.root.entry.scan_data.channel%02i" % i)[:]
+                    #p0 = self.DP.streamnbacqperfile * Nfile 
+                    #p1 = self.DP.streamnbacqperfile * (Nfile + 1)
+                    if upperIndex == ():
+                        outNode[p0:p1] = eval("sourceFile.root.entry.scan_data.channel%02i" % i)[:]
+                    else:
+                        #exec("outNode[::,%s] = buffer[i][::reverse]"%(stringIndex))
+                        outNode[p0:p1][upperIndex] = eval("sourceFile.root.entry.scan_data.channel%02i" % i)[::reverse]
 
                 for i in xrange(self.numChan):
                     if 'icr' in self.stream_items:
                         outNode = handler.getNode("/data/" + self.identifier + "/icr%02i" % i)
-                        outNode[p0:p1] = eval("sourceFile.root.entry.scan_data.icr%02i" % i)[:]
+                        if upperIndex == ():
+                            outNode[p0:p1] = eval("sourceFile.root.entry.scan_data.icr%02i" % i)[:]
+                        else:
+                            outNode[p0:p1][upperIndex] = eval("sourceFile.root.entry.scan_data.icr%02i" % i)[::reverse]
+
                     if 'ocr' in self.stream_items:
                         outNode = handler.getNode("/data/" + self.identifier + "/ocr%02i" % i)
-                        outNode[p0:p1] =  eval("sourceFile.root.entry.scan_data.ocr%02i" % i)[:]
+                        if upperIndex == ():
+                            outNode[p0:p1] =  eval("sourceFile.root.entry.scan_data.ocr%02i" % i)[:]
+                        else:
+                            outNode[p0:p1][upperIndex] =  eval("sourceFile.root.entry.scan_data.ocr%02i" % i)[::reverse]
                     if 'deadtime' in self.stream_items:
                         outNode = handler.getNode("/data/" + self.identifier + "/deadtime%02i" % i)
-                        outNode[p0:p1] =  eval("sourceFile.root.entry.scan_data.deadtime%02i" % i)[:]
+                        if upperIndex == ():
+                            outNode[p0:p1] =  eval("sourceFile.root.entry.scan_data.deadtime%02i" % i)[:]
+                        else:
+                            outNode[p0:p1][upperIndex] =  eval("sourceFile.root.entry.scan_data.deadtime%02i" % i)[::reverse]
+
             except:
                 raise
             finally:

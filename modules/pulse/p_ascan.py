@@ -13,10 +13,14 @@ try:
 except Exception, tmp:
     print "Cannot import Gnuplot"
 
+#THIS MODULE HAS TO BE COMPLETELY REWRITTEN:
+#   Data must be saved in temporary folder in hdf and THEN moved to ruche avoiding home folder
+#   Backup mechanism could be removed after.
+#   Saving should be performed directly by pseudocounter with the actuator coordinates inserted afterwards
 
 from mycurses import *
 
-from spec_syntax import mv, wa, whois
+from p_spec_syntax import mv, wa, whois, findNextFileName, findNextFileIndex, filename2ruche
 
 #The following line is commented out
 #from spec_syntax import whois
@@ -45,52 +49,6 @@ class __scanstats:
 
 ScanStats=__scanstats()
 
-def findNextFileName(prefix,ext,file_index=1):
-    #
-    #Prepare correct filename to avoid overwriting
-    #
-    psep=prefix.rfind(os.sep)
-    if(psep<>-1): 
-        fdir=prefix[:psep]
-    else:
-        fdir="."
-    if(psep<>-1): prefix=prefix[psep+1:]
-    if ext<>"":
-        fname=prefix+"_"+"%04i"%(file_index)+"."+ext
-    else:
-        fname=prefix+"_"+"%04i"%(file_index)
-    _dir=os.listdir(fdir)
-    while(fname in _dir):
-        file_index+=1
-        if ext<>"":
-            fname=prefix+"_"+"%04i"%(file_index)+"."+ext
-        else:
-            fname=prefix+"_"+"%04i"%(file_index)
-    fname=fdir+os.sep+fname
-    return fname
-
-def findNextFileIndex(prefix,ext,file_index=1):
-    #
-    #Prepare correct filename to avoid overwriting
-    #
-    psep=prefix.rfind(os.sep)
-    if(psep<>-1): 
-        fdir=prefix[:psep]
-    else:
-        fdir="."
-    if(psep<>-1): prefix=prefix[psep+1:]
-    if ext<>"":
-        fname=prefix+"_"+"%04i"%(file_index)+"."+ext
-    else:
-        fname=prefix+"_"+"%04i"%(file_index)
-    _dir=os.listdir(fdir)
-    while(fname in _dir):
-        file_index+=1
-        if ext<>"":
-            fname=prefix+"_"+"%04i"%(file_index)+"."+ext
-        else:
-            fname=prefix+"_"+"%04i"%(file_index)
-    return file_index
 
 def ascan_statistics(x,y,glob):
     try:
@@ -120,47 +78,29 @@ def ascan_statistics(x,y,glob):
     #Calculate pos of maximum derivative (+,-)
     return 0
 
-def filename2ruche(filename):
-    ##############################################################
-    #
-    #Returns complete filename to save data directly in ruche
-    #it works only if
-    #current folder is in data path
-    #__Default_Data_Folder must be a GLOBAL variable!
-    # MUST be declared outside this class and before the escan class!
-    #
-    __Default_Data_Folder = get_ipython().user_ns["__Default_Data_Folder"]
-    __Default_Backup_Folder = get_ipython().user_ns["__Default_Backup_Folder"]
-    if __Default_Backup_Folder == "":
-        print "No backup/ruche folder defined."
-        return
-    currentDataFolder=os.path.realpath(os.getcwd())
-    currentBackupFolder=__Default_Backup_Folder+os.sep+\
-    currentDataFolder.lstrip(__Default_Data_Folder.rstrip(os.sep))
-    cbf=currentBackupFolder
-    #currentBackupFolder=cbf[:cbf.rstrip(os.sep).rfind(os.sep)]
-    ruche_filename = currentBackupFolder + os.sep +filename
-    return ruche_filename
 
 def __backup_data():
     ##############################################################
     #
     #Define data and backup folders: backup only if
     #current folder is in data path
-    #__Default_Data_Folder must be a GLOBAL variable!
-    # MUST be declared outside this class and before the escan class!
     #
     try:
-        __Default_Data_Folder = get_ipython().user_ns["__Default_Data_Folder"]
-        __Default_Backup_Folder = get_ipython().user_ns["__Default_Backup_Folder"]
+        __IPy = get_ipython()
+        __Default_Data_Folder = __IPy.user_ns["__SPECK_CONFIG"]["TEMPORARY_HOME"]
+        __Default_Backup_Folder = __IPy.user_ns["__SPECK_CONFIG"]["DATA_FOLDER"]
         if __Default_Backup_Folder == "":
-            print "NO BACKUP: no backup folder defined."
+            print "No backup/ruche folder defined."
             return
-        #__Default_Data_Folder="/home/experiences/samba/com-samba/ExperimentalData/"
-        #__Default_Backup_Folder="/nfs/ruche-samba/samba-soleil/com-samba/"
+#The following line is risky. Now setuser is the only way to change temporary home and saving points
+        #currentDataFolder=os.path.realpath(os.getcwd())
+#the folder is set via the config:
+        currentDataFolder=__IPy.user_ns["__SPECK_CONFIG"]["USER_FOLDER"]
+#
         currentDataFolder=os.path.realpath(os.getcwd())
         print "Data Folder is :",currentDataFolder
-        if currentDataFolder.startswith(__Default_Data_Folder) and len(currentDataFolder.split(os.sep))>len(__Default_Data_Folder.split(os.sep)):
+        if currentDataFolder.startswith(__Default_Data_Folder) and\
+        len(currentDataFolder.split(os.sep))>len(__Default_Data_Folder.split(os.sep)):
             currentBackupFolder=__Default_Backup_Folder+"/"+\
             currentDataFolder.lstrip(__Default_Data_Folder.rstrip("/"))
             cbf=currentBackupFolder
@@ -192,7 +132,6 @@ def __backup_data():
         print "Experimental feature error: Cannot make backup to ruche... do it manually!"
     return
 
-#def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,name=None,delay=0.,glob=globals(),scaler="ct",comment="",fullmca=False,graph=0, n = 1):
 def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,name=None,delay=0.,delay0=0.,\
 scaler="ct",comment="",fullmca=False,graph=0, n = 1):
     """Scan mot from p1 to p2 with step dp, reads ct for dt seconds. The default timebase is named ct."""
@@ -379,14 +318,12 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
             return array([x[:ml], y[:ml]])
     return 
 
-#def dscan(mot,p1,p2,dp=0.1,dt=0.1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,glob=globals(),scaler="ct",fullmca=False,graph=0):
 def dscan(mot,p1,p2,dp=0.1,dt=0.1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,delay0=0.,scaler="ct",fullmca=False,graph=0):
     """Performs a relaive scan calling ascan and then set the motor back to previous position."""
     previous_pos=mot.pos()
     print "motor %s was at %g"%(whois(mot),mot.pos())
     abs_p1=previous_pos+p1
     abs_p2=previous_pos+p2
-    #results=ascan(mot,abs_p1,abs_p2,dp,dt,channel,returndata,fulldata,name,delay=delay,glob=glob,scaler=scaler,fullmca=fullmca,\
     results=ascan(mot,abs_p1,abs_p2,dp,dt,channel,returndata,fulldata,name,delay=delay,delay0=delay0,scaler=scaler,fullmca=fullmca,graph=graph)
     mot.pos(previous_pos)
     if results <> None:
@@ -394,15 +331,12 @@ def dscan(mot,p1,p2,dp=0.1,dt=0.1,channel=1,returndata=False,fulldata=False,name
     else:
         return
 
-#def tscan(n,t=1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,glob=globals(),scaler="ct",comment="",fullmca=False,graph=0):
 def tscan(n,t=1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,delay0=0.,scaler="ct",comment="",fullmca=False,graph=0):
     """Perform a time scan by using ascan capabilities. The integration time t and number of points n must be provided. 
     You may use the delay to set a deadtime between steps... if you want... The time scale is referred to actual time."""
     return ascan(cputime, p1=0, p2=n * t, dp = t,dt = t,channel=channel,returndata=returndata,fulldata=fulldata,name=name,delay=delay,\
     delay0=delay0,scaler=scaler,comment=comment,fullmca=fullmca,graph=graph)
-    #glob=glob,scaler=scaler,comment=comment,fullmca=fullmca,graph=graph)
 
-#def mapscan(mot1,p11,p12,dp1,mot2,p21,p22,dp2,dt=0.1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,glob=globals(),scaler="ct"):
 def mapscan(mot1,p11,p12,dp1,mot2,p21,p22,dp2,dt=0.1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,delay0=0.,scaler="ct"):
     """Scan mot1 from p11 to p12 with step dp1;mot2 from p21 to p22 with step dp2; reads scaler for dt seconds. The default scaler is named ct."""
     x=[]
@@ -462,9 +396,6 @@ def pre_scan(handler=None):
     handler.writelines(buffer)
     return 
 
-#Legacy definition:
-samplescan=ascan
-
 #Step scan (stepscan_open, stepscan_step, stepscan_close)
 #__stepscan instance of __StepScan must exist in globals to allow stepscan to
 #write into it common values
@@ -490,7 +421,6 @@ class __StepScan:
 #Initialize  instance
 __stepscan=__StepScan()
 
-#def stepscan_open(name=None,dt=1,glob=globals(),scaler="ct",comment="",fullmca=True):
 def stepscan_open(name=None,dt=1,scaler="ct",comment="",fullmca=True):
     """Open output files and wait for stepscan_step command to save data, reads ct for dt seconds. The default timebase is named ct. fullmca is active by default."""
     glob  = get_ipython().user_ns

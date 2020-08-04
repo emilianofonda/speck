@@ -4,28 +4,39 @@ import sys,os
 import scipy
 import exceptions
 from time import asctime,time,sleep,clock
+#Why these import here? old things forgotten here?
 import numpy
 from numpy import *
 
 #Define environment
-dn=os.getenv("SPECK")+os.sep+"modules"
+__SPECK_CONFIG = {}
+__SPECK_CONFIG["SPECK_FOLDER"] = os.getenv("SPECK")
+dn = __SPECK_CONFIG["SPECK_FOLDER"] + os.sep+"modules"
 sys.path.append(dn)
 subdn=os.listdir(dn)
 #print subdn
 for i in subdn: sys.path.append(dn+os.sep+i)
 
-
 ##
 ## Data folders
 ##
 import os
-__Default_Data_Folder=os.getenv("SPECK_DATA_FOLDER")
+
+#Old mechanism, dangerous
+
+#__Default_Data_Folder=os.getenv("SPECK_DATA_FOLDER")
 #"/home/experiences/samba/com-samba/ExperimentalData/"
-__Default_Backup_Folder=os.getenv("SPECK_BACKUP_FOLDER")
+#__Default_Backup_Folder=os.getenv("SPECK_BACKUP_FOLDER")
 #"/nfs/ruche-samba/samba-soleil/com-samba/"
 
-
-
+#New one, less dangerous
+execfile(__SPECK_CONFIG["SPECK_FOLDER"]+os.sep+"config"+os.sep+"speck_folders.py")
+__Default_Data_Folder=SPECK_TEMPORARY_HOME
+__Default_Backup_Folder=SPECK_DATA_FOLDER
+__SPECK_CONFIG["DATA_FOLDER"] = SPECK_DATA_FOLDER
+__SPECK_CONFIG["BACKUP_FOLDER"] = SPECK_BACKUP_FOLDER
+__SPECK_CONFIG["TEMPORARY_HOME"] = SPECK_TEMPORARY_HOME
+__SPECK_CONFIG["TEMPORARY_FOLDER"] = SPECK_TEMPORARY_FOLDER
 
 #Import generic speck modules
 from Universal_Prefilter import *

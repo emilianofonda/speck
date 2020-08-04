@@ -87,14 +87,17 @@ pulseGen0 = pulseGen("d09-1-cx1/dt/pulsgen.1",config=config,deadtime=0.1,timeout
 
 #The following post format is very heavy with large array detectors.
 #A simplification could be provided if detectors provided already computed averages or corrected counts, but it is tricky 
-#for detctors cut in several devices as our Germanium one
+#for detectors cut in several devices as our Germanium one. Even normalisation schemes may differ depending on experiment layout.
+
+#Attention has to be paid here, since any detector change has an impact on these posts that rely on order of channels and naming conventions
+#It is evident that it cannot be different, since these are user defined functions.
 
 try:
     ctPosts=[\
     {"name":"MUX","formula":"log(float(ch[0])/ch[1])","units":"","format":"%9.7f"},\
-#    {"name":"MUS","formula":"log(float(ch[1])/ch[2])","units":"","format":"%9.7f"},\
-#    {"name":"I1Norm","formula":"float(ch[1])/ch[0]","units":"","format":"%9.7e"},\
-    {"name":"MUF","formula":"float(sum(ch[7:24])+sum(ch[87:103]))/ch[0]","units":"","format":"%9.7e"},
+    {"name":"MUS","formula":"log(float(ch[1])/ch[2])","units":"","format":"%9.7f"},\
+    {"name":"I1Norm","formula":"float(ch[1])/ch[0]","units":"","format":"%9.7e"},\
+    {"name":"FLUO_RAW","formula":"float(sum(ch[66:84])+sum(ch[132:148]))/ch[0]","units":"","format":"%9.7e"},
     ]  
     XAS_dictionary = {
         "addresses":{
@@ -102,20 +105,34 @@ try:
             "I1":"cx1sai1.I1",
             "I2":"cx1sai1.I2",
             "I3":"cx1sai1.I3",
-            "ROI0":"cx1xia1.roi15",
-            "ICR0":"cx1xia1.icr15",
-            "OCR0":"cx1xia1.ocr15",
             },
         "constants":{},
         "formulas":{
             "XMU":"numpy.log(I0[:]/I1[:])",
-            "FLUO":"ROI0[:]*ICR0[:]/(I0[:]*OCR0[:])",
-            "FLUO_RAW":"ROI0[:]/I0[:]",
             "REF":"numpy.log(I1[:]/I2[:])",
             "FLUO_DIODE":"I3[:]/I0[:]",
             },
     }
-
+    __cx1xia1_channels=range(0,20)
+    __cx1xia2_channels=range(0,15)
+    __FLUO=""
+    __FLUO_RAW=""
+    for i in __cx1xia1_channels:
+        XAS_dictionary["addresses"]["ROI%02i"%i] = "cx1xia1.roi%02i"%i
+        XAS_dictionary["addresses"]["ICR%02i"%i] = "cx1xia1.roi%02i"%i
+        XAS_dictionary["addresses"]["OCR%02i"%i] = "cx1xia1.roi%02i"%i
+        __FLUO+="+numpy.array(ROI%02i[:],'f')/OCR%02i[:]*ICR%02i[:]"%(i,i,i)
+        __FLUO_RAW+="+ROI%02i[:]"%(i)
+    for i in __cx1xia2_channels:
+        XAS_dictionary["addresses"]["ROI%02i"%(i+20)] = "cx1xia2.roi%02i"%i
+        XAS_dictionary["addresses"]["ICR%02i"%(i+20)] = "cx1xia2.roi%02i"%i
+        XAS_dictionary["addresses"]["OCR%02i"%(i+20)] = "cx1xia2.roi%02i"%i
+        __FLUO+="+numpy.array(ROI%02i[:],'f')/OCR%02i[:]*ICR%02i[:]"%(i,i,i)
+        __FLUO_RAW+="+ROI%02i[:]"%(i)
+    __FLUO+="/I0[:]"
+    __FLUO_RAW+="/numpy.array(I0[:],'f')"
+    XAS_dictionary["formulas"]["FLUO"] = __FLUO
+    XAS_dictionary["formulas"]["FLUO_RAW"] = __FLUO_RAW
 
 #These Posts should be modified each time when changing detectors.
     from p_spec_syntax import pseudo_counter
@@ -125,10 +142,12 @@ try:
     #ct=pseudo_counter(masters=[pulseGen0],slaves=[sai_1,x3mca], posts= ctPosts)
     #Remember to set the cpt3 card from master to slave mode and modify BNC cable position from OUT to GATE
     #ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai_1,mca1,cpt3], posts= ctPosts)
-    ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai,cx1xia1,cx1xia2,cpt3],posts=ctPosts, postDictionary=XAS_dictionary)
     #ct=pseudo_counter(masters=[pulseGen0,], slaves=[sai,cpt3], posts=ctPosts, postDictionary=XAS_dictionary)
     #ct=pseudo_counter(masters=[pulseGen0,], slaves=[sai,cpt3], posts=ctPosts)
 
+    #ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai,cx1xia1,cx1xia2,cpt3])
+    ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai,cx1xia1,cx1xia2,cpt3],posts=ctPosts, postDictionary=XAS_dictionary)
+ 
 except Exception, tmp:
     print tmp
     print "Failure defining ct command"

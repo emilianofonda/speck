@@ -4,53 +4,54 @@ from ascan import filename2ruche
 #from IPython.core import ipapi
 from IPython.core.getipython import get_ipython
 
-#dn = os.path.dirname(os.path.realpath(__file__))
-#dn=dn[:dn.rfind(os.sep)]
-
-__Default_Data_Folder = os.getenv("SPECK_DATA_FOLDER")
-#IPy = ipapi.get()
 IPy = get_ipython()
+__Default_Data_Folder = IPy.user_ns["__SPECK_CONFIG"]['TEMPORARY_HOME'] #os.getenv("SPECK_DATA_FOLDER")
 
 def backup():
-    print "\n"*3
-    print "WARNING: This backup should be executed only at the END of your experiment! (or not repeated often!)"
-    print "\n"*3
+    IPy = get_ipython()
+    print("\n"*1)
+    print("Executing Backup.")
+    print("\n"*1)
     try:
-        __Default_Data_Folder = os.getenv("SPECK_DATA_FOLDER")
-        __Default_Backup_Folder = os.getenv("SPECK_BACKUP_FOLDER")
+        __Default_Backup_Folder = IPy.user_ns["__SPECK_CONFIG"]['DATA_FOLDER']
+        #os.getenv("SPECK_DATA_FOLDER")
+        __Default_Data_Folder = IPy.user_ns["__SPECK_CONFIG"]['TEMPORARY_HOME']
+        #os.getenv("SPECK_BACKUP_FOLDER")
         if __Default_Backup_Folder == "":
-            print "NO BACKUP: no backup folder defined."
-            raise Exception("GoodBye")
+           raise Exception("No Backup Folder defined! GoodBye")
         currentDataFolder=os.path.realpath(os.getcwd())
-        print "Data Folder is :",currentDataFolder
+        print("Data Folder is :",currentDataFolder)
         if currentDataFolder.startswith(__Default_Data_Folder) and len(currentDataFolder.split(os.sep)) > len(__Default_Data_Folder.split(os.sep)):
             currentBackupFolder=__Default_Backup_Folder+"/"+\
             currentDataFolder.lstrip(__Default_Data_Folder.rstrip("/"))
             cbf=currentBackupFolder
             currentBackupFolder=cbf[:cbf.rstrip("/").rfind("/")]
         else:
-            print "No backup!"
+            print("No backup!")
             raise Exception("No backup out of predefined data folders")
-        print "Backup Folder is :",currentBackupFolder
-    except (KeyboardInterrupt,SystemExit), tmp:
-        print "Backup halted on user request"
+        print("Backup Folder is :",currentBackupFolder)
+    except (KeyboardInterrupt,SystemExit) as tmp:
+        print("Backup halted on user request")
         raise tmp
     try:
         #command="rsync --ignore-existing -auv --temp-dir=/tmp '"+currentDataFolder+"' '"+currentBackupFolder+"'"
         command="rsync -auv --temp-dir=/tmp '"+currentDataFolder+"' '"+currentBackupFolder+"'"
         os.system(command)
-    except (KeyboardInterrupt,SystemExit), tmp:
-        print "Backup halted on user request"
+    except (KeyboardInterrupt,SystemExit) as tmp:
+        print("Backup halted on user request")
         raise tmp
     
 
 
 def setuser(name=None):
+    IPy = get_ipython()
     try:
-        ll=file(os.getenv("SPECK") + "/config/user.cfg","r").readlines()
+        ll=file(IPy.user_ns["__SPECK_CONFIG"]['SPECK_FOLDER'] + "/config/user.cfg","r").readlines()
+        #ll=file(os.getenv("SPECK") + "/config/user.cfg","r").readlines()
     except:
-        print "Missing user.cfg file in:",os.getenv("SPECK"),"/config/"
-        cfgfile=file(os.getenv("SPECK") + "/config/user.cfg","w")
+        #print "Missing user.cfg file in:",os.getenv("SPECK"),"/config/"
+        print "Missing user.cfg file in:",IPy.user_ns["__SPECK_CONFIG"]['SPECK_FOLDER'],"/config/"
+        cfgfile=file(IPy.user_ns["__SPECK_CONFIG"]['SPECK_FOLDER'] + "/config/user.cfg","w")
         cfgfile.close()
     
     cfg={}
@@ -61,7 +62,13 @@ def setuser(name=None):
     if name == None:
         if "FOLDER" in cfg.keys():
             os.chdir(__Default_Data_Folder + os.sep + cfg["FOLDER"])
-            #Start logging in speckle session
+            #Store information in shell SPECK dictionary
+            try:
+                IPy.user_ns["__SPECK_CONFIG"]["USER_FOLDER"]=__Default_Data_Folder + os.sep +cfg["FOLDER"]
+            except Exception as tmp:
+                print(tmp)
+
+#Start logging in speckle session
             try:
                 pass
                 #os.system("screen -X log off")
@@ -72,14 +79,19 @@ def setuser(name=None):
             except:
                 pass
         else:
-            print "setuser: No previous user folder defined!"
+            print("setuser: No previous user folder defined!")
             return
     else:
         try:
             #os.system("screen -X log off")
             IPy.magic("logstop")
-        except:
-            pass
+        except Exception as tmp:
+            print(tmp)
+        #After stoppin' log I perform a backup of current folder and then we move to the new one.
+        try:
+            backup()
+        except Exception as tmp:
+            print(tmp)
         
         cfg["NAME"] = name
         cfg["FOLDER"] = "%4i" % time.localtime()[0] +os.sep + "%4i%02i%02i" % time.localtime()[0:3] + "_%s" % name
@@ -91,7 +103,19 @@ def setuser(name=None):
         except Exception, tmp:
             print tmp
         os.chdir(__Default_Data_Folder + os.sep +cfg["FOLDER"])
-        cfgfile=file(os.getenv("SPECK") + "/config/user.cfg","w")
+        #Store information in shell SPECK dictionary
+        try:
+            if type(IPy.user_global_ns["__SPECK_CONFIG"]) == dict:
+                IPy.user_global_ns["__SPECK_CONFIG"]["USER_FOLDER"]=__Default_Data_Folder + os.sep +cfg["FOLDER"]
+            else:
+               raise Exception("__SPECK_CONFIG global variable is not a dictionary, it will be overwritten.")
+        except Exception as tmp:
+            print tmp
+            IPy.user_global_ns["__SPECK_CONFIG"]={}
+            IPy.user_global_ns["__SPECK_CONFIG"]["USER_FOLDER"]=__Default_Data_Folder + os.sep +cfg["FOLDER"]
+
+        #Store information in config file
+        cfgfile=file(IPy.user_ns["__SPECK_CONFIG"]['SPECK_FOLDER'] + "/config/user.cfg","w")
         for i in cfg.keys():
             cfgfile.write("%s=%s\n" % (i,cfg[i]))
         cfgfile.close()
@@ -104,7 +128,9 @@ def setuser(name=None):
             print tmp
             pass
         try:
-            os.makedirs(filename2ruche(""))
+            pass
+#In this version the folder is already in ruche, no need for two homes and a backup mechanism.
+            #os.makedirs(filename2ruche(""))
             #os.symlink(filename2ruche(""),"./ruche")
         except:
             print "CANNOT MAKE RUCHE FOLDER: "+filename2ruche("")

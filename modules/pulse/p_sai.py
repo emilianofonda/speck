@@ -3,7 +3,7 @@ from PyTango import DevState, DeviceProxy,DevFailed
 from time import sleep
 import time
 import numpy, tables
-from numpy import array
+import numpy as np
 
 class sai:
     def __init__(self,label="",user_readconfig=[],
@@ -44,6 +44,12 @@ class sai:
 
         """
         self.config = config
+        #The following line is used to adapt frequency to card capabilities
+        #Contextual data may be affected, to be verified.
+        try:
+            self.stored_frequency = self.config["frequency"]
+        except:
+            self.stored_frequency = 1e5
         self.init_user_readconfig=user_readconfig
         self.label=label
         self.DP=DeviceProxy(label)
@@ -75,7 +81,7 @@ class sai:
             self.user_readconfig[i].name = self.identifier + "_" + self.user_readconfig[i].name
 
         self.dark = self.readDark()
-        
+           
 #The card needs a double of points in step mode !!!! to be investigated!!!
 #this has to be managed in pulsegen and inside the sai module
 #the effect on other cards has to be investigated
@@ -148,6 +154,10 @@ class sai:
             self.stepMode = False
             self.config["dataBufferNumber"] = NbFrames 
             self.config["statHistoryBufferDepth"] = NbFrames 
+        #Taking into account hardware limits
+        if dt * self.config["frequency"] > 1.0e5:
+            self.stored_frequency = self.config["frequency"]
+            self.config["frequency"] = 1.0e5/dt
         reloadAtts = self.DP.get_attribute_list()
         for kk in [i for i in cKeys if i<> "configurationId" and self.config[i]<>self.DP.read_attribute(i).value]:
             self.DP.write_attribute(kk,self.config[kk])
@@ -165,6 +175,7 @@ class sai:
         
     def stop(self):
         #Version change: Abort becomes Abort. kept for compatibility 5/9/2014
+        self.config["frequency"] = self.stored_frequency
         if self.state()==DevState.RUNNING:
             try:
                 self.DP.command_inout("Stop")
@@ -195,9 +206,9 @@ class sai:
 
     def readBuffer(self):
         if self.stepMode:
-            return [array(self.DP.read_attribute(i[0]).value[::2]) - i[1] for i in zip(self.bufferedChannels, self.dark)]
+            return [np.array(self.DP.read_attribute(i[0]).value[::2]) - i[1] for i in zip(self.bufferedChannels, self.dark)]
         else:
-            return [array(self.DP.read_attribute(i[0]).value) - i[1] for i in zip(self.bufferedChannels, self.dark)]
+            return [np.array(self.DP.read_attribute(i[0]).value) - i[1] for i in zip(self.bufferedChannels, self.dark)]
 
     def count(self,dt=1):
         """This is a slave device, but it can be useful to test it with a standalone count
@@ -253,7 +264,7 @@ class sai:
             handler.createCArray(outNode, "I%i" % i, title = "I%i" % i,\
             shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
 #Write down contextual data
-        ll = numpy.array(["%s = %s"%(i,str(self.config[i])) for i in self.config.keys()])
+        ll = np.array(["%s = %s"%(i,str(self.config[i])) for i in self.config.keys()])
         outGroup = handler.createGroup("/context",self.identifier)
         outGroup = handler.getNode("/context/"+self.identifier)
         handler.createCArray(outGroup, "config", title = "config",\
@@ -279,15 +290,16 @@ class sai:
         
         buffer = self.readBuffer()
         if upperIndex != ():
-          fmt = "%i," * len(tuple(upperIndex))
-          stringIndex = fmt % tuple(upperIndex)     
+            fmt = "%i," * len(tuple(upperIndex))
+            stringIndex = fmt % tuple(upperIndex)     
         for i in xrange(self.numChan):
             outNode = handler.getNode("/data/" + self.identifier + "/I%i" % i)
             #outNode[:] = buffer[i]
             if upperIndex == ():
                 outNode[:] = buffer[i]
             else:
-                exec("outNode[::,%s] = buffer[i][::reverse]"%(stringIndex))
+                #exec("outNode[::,%s] = buffer[i][::reverse]"%(stringIndex))
+                outNode[::][upperIndex] = buffer[i][::reverse]
         del buffer
         return
 

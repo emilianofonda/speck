@@ -31,6 +31,10 @@ def stop_cscan(shutter=False,cmot=None,cmot_previous_velocity=None):
     print "Wait... Stopping Devices...",
     sys.stdout.flush()
     ct.stop()
+    try:
+        ct.handler.close()
+    except:
+        pass
     cmot.stop()
     myTime.sleep(3)
     cmot.velocity = cmot_previous_velocity
@@ -62,11 +66,11 @@ def cscan(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beamCheck
         print "Raising KeyboardInterrupt as requested."
         sys.stdout.flush()
         raise KeyboardInterrupt
-    except Exception, tmp:
+    except Exception as tmp:
         shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp, kind='output')
         print tmp
         stop_cscan(shutter, cmot, cmot_previous_velocity)
-        #raise
+        raise tmp
     return 
 
 def cscanActor(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beamCheck=True,filename="cscan_out"):
@@ -163,21 +167,35 @@ def cscanActor(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beam
     #
     #Save CONTEXT
     #
-    ct.savePost2HDF("where_all_before", array(wa_before), 
-    group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
-    ct.savePost2HDF("where_all_after", array(wa(verbose=False,returns=True)), 
-    group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
+    try:
+        ct.savePost2HDF("where_all_before", array(wa_before), 
+        group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
+    except:
+        print("Cannot save where_all_before.")
+    try:
+        ct.savePost2HDF("where_all_after", array(wa(verbose=False,returns=True)), 
+        group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
+    except:
+        print("Cannot save where_all_after.")
     # MOSTAB and Mono Configs
-    ct.savePost2HDF("mostab", array(mostab.status().split("\n")), 
-    group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
-    ct.savePost2HDF("dcm", array(dcm.status().split("\n")), 
-    group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
+    try:
+        ct.savePost2HDF("mostab", array(mostab.status().split("\n")), 
+        group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
+    except:
+        print("Cannot save mostab status.")
+    try:
+        ct.savePost2HDF("dcm", array(dcm.status().split("\n")), 
+        group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
+    except:
+        print("Cannot save dcm status.")
+    #
     #
     ct.closeHDFfile()
+    print("Saving actions over!")
     timeAtStop = asctime()
     timeout0 = time()
     try:
-        f=tables.open_file(handler.filename,"r")
+        f=tables.open_file(ct.final_filename,"r")
         fig1 = pylab.figure(1)
         fig1.clear()
         pylab.subplot(3,1,1)
@@ -191,7 +209,7 @@ def cscanActor(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beam
         pylab.plot(graph_x, f.root.data.cx1sai1.I0.read(),"r")
         pylab.plot(graph_x, f.root.data.cx1sai1.I1.read(),"k")
         pylab.draw()
-    except Exception, tmp:
+    except Exception as tmp:
         print "No Plot! Bad Luck!"
         print tmp
     finally:
@@ -222,11 +240,10 @@ def dcscan(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beamChec
         print "Raising KeyboardInterrupt as requested."
         sys.stdout.flush()
         raise KeyboardInterrupt
-    except Exception, tmp:
+    except Exception as tmp:
         shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp, kind='output')
         print tmp
         stop_cscan(shutter, cmot, cmot_previous_velocity)
-        #raise
     finally:
         cmot.pos(cmot_previous_position)
     return 

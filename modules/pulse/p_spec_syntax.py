@@ -7,7 +7,7 @@ from numpy import log, sin, cos, tan, exp, sum
 import numpy
 import exceptions
 from time import time, sleep
-import os
+import os, shutil
 import thread
 import tables
 
@@ -960,8 +960,25 @@ class pseudo_counter:
         To write data to this file in the calling process, use the self.handler pointer
 
         The file has to be explicitly closed at the end of the scan: self.closeHDFfile.
+        The saving scheme use the old global variable __DefaultBackup_Folder to determine where to save.
+        This has probably to be changed soon.
         """
-        self.handler = tables.openFile(findNextFileName("./ruche/" + fileName, "hdf"), "w")
+        sh = get_ipython()
+#The following line cannot work
+        #self.handler = tables.openFile(findNextFileName(sh.user_ns["__Default_Data_Folder"] + os.sep + fileName, "hdf"), "w")
+#The following line works but directly writes in ruche
+        #self.handler = tables.openFile(findNextFileName(filename2ruche(fileName),"hdf"), "w")
+#The following lines could work, but closeHDFfile should move the file from temp folder.
+#Find the final file name
+        self.final_filename = findNextFileName(filename2ruche(fileName),"hdf")
+#Prepare the temporary file name
+        __itmp = self.final_filename.rfind(os.sep)
+        if __itmp > 0:
+            __tmp = sh.user_ns["__SPECK_CONFIG"]["TEMPORARY_FOLDER"] + self.final_filename[__itmp:]
+        else:
+            __tmp = sh.user_ns["__SPECK_CONFIG"]["TEMPORARY_FOLDER"] + os.sep + self.final_filename[:]
+        self.handler = tables.openFile(__tmp, "w")
+#file is open and can be prepared
         self.handler.createGroup("/", "data")
         self.handler.createGroup("/", "post")
         self.handler.createGroup("/", "context")
@@ -973,6 +990,8 @@ class pseudo_counter:
         if self.postDictionary not in [{}, None]:
             self.savePostDictionary2HDF(HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="post")
         self.handler.close()
+#Now move file from temporary folder to ruche
+        shutil.move(self.handler.filename, self.final_filename)
         return
 
     def __prepareHDF(self, HDFfilters = tables.Filters(complevel = 1, complib='zlib')):
@@ -1095,9 +1114,6 @@ def findNextFileName(prefix,ext,file_index=1):
     return fname
 
 
-
-
-
 def findNextFileIndex(prefix,ext,file_index=1):
     #
     #Prepare correct filename to avoid overwriting
@@ -1121,31 +1137,30 @@ def findNextFileIndex(prefix,ext,file_index=1):
             fname=prefix+"_"+"%04i"%(file_index)
     return file_index
 
-
-    
 def filename2ruche(filename):
     ##############################################################
     #
     #Returns complete filename to save data directly in ruche
     #it works only if
     #current folder is in data path
-    #__Default_Data_Folder must be a GLOBAL variable!
-    # MUST be declared outside this class and before the escan class!
     #
-    __Default_Data_Folder = get_ipython().user_ns["__Default_Data_Folder"]
-    __Default_Backup_Folder = get_ipython().user_ns["__Default_Backup_Folder"]
+    __IPy = get_ipython()
+    __Default_Data_Folder = __IPy.user_ns["__SPECK_CONFIG"]["TEMPORARY_HOME"]
+    __Default_Backup_Folder = __IPy.user_ns["__SPECK_CONFIG"]["DATA_FOLDER"]
     if __Default_Backup_Folder == "":
         print "No backup/ruche folder defined."
         return
-    currentDataFolder=os.path.realpath(os.getcwd())
+#The following line is risky. Now setuser is the only way to change temporary home and saving points
+    #currentDataFolder=os.path.realpath(os.getcwd())
+#the folder is set via the config:
+    currentDataFolder=__IPy.user_ns["__SPECK_CONFIG"]["USER_FOLDER"]
+#
     currentBackupFolder=__Default_Backup_Folder+os.sep+\
     currentDataFolder.lstrip(__Default_Data_Folder.rstrip(os.sep))
     cbf=currentBackupFolder
-    #currentBackupFolder=cbf[:cbf.rstrip(os.sep).rfind(os.sep)]
-    ruche_filename = currentBackupFolder + os.sep +filename
+    ruche_filename = currentBackupFolder + os.sep + filename
     return ruche_filename
-    
-    
+   
 
     
     
