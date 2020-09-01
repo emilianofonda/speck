@@ -259,10 +259,10 @@ class dxmap:
         if nexusFileGeneration:
             #Auto delete remaining files!!! this avoids aborting, but it is a potential risk.
             self.startFTP(deleteRemainingFiles=True)
-            self.DP.filegeneration = True
+            self.DP.write_attribute("filegeneration",True)
             self.DP.streamresetindex()
         else:
-            self.DP.filegeneration = False
+            self.DP.write_attribute("filegeneration",False)
         #self.DP.write_attributes(attValues)
         #sleep(self.deadtime)
 

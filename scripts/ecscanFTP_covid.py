@@ -486,6 +486,7 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
             
             nfs_t0 = myTime.time()
             __nfs_timeout = 600.
+            #print(zip(LastXIAFileName, XIANexusPath))
             while(True in [i[0] not in os.listdir(i[1]) for i in zip(LastXIAFileName, XIANexusPath)] and myTime.time()-nfs_t0 < __nfs_timeout):
                 myTime.sleep(1)
            
@@ -500,8 +501,8 @@ def ecscanActor(fileName,e1,e2,dt=0.04,velocity=10, e0=-1, mode="",shutter=False
             
             for i in cardXIA:
                 if i.DP.currentPixel < i.DP.nbPixels:
-                    print mycurses.RED+"Card %s has saved % points instead of %i."%(i.label,i.DP.currentPixel,i.DP.nbPixels)+mycurses.RESET
-                    shell.logger.log_write(mycurses.RED+"Card %s has saved % points insetad of %i."\
+                    print mycurses.RED+"Card %s has saved %i points instead of %i."%(i.label,i.DP.currentPixel,i.DP.nbPixels)+mycurses.RESET
+                    shell.logger.log_write(mycurses.RED+"Card %s has saved %i points insetad of %i."\
                     %(i.label,i.DP.currentPixel,i.DP.nbPixels)+ mycurses.RESET, kind='output')
          
     #Additional time to wait (?)

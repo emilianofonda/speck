@@ -159,14 +159,12 @@ def cscanActor(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beam
     #
     #Insert here specific data saving in ct.handler at position root.post? root.spectra?....
     #
-    #The following is specific of the energy scan while the xmu not, it is defined in the postDictionary
-    #The cpt.3 card has been named encoder_rx1 this is very confusing and it's a naming method to be changed
-    post_ene = dcm.theta2e(ct.handler.root.data.encoder_rx1.Theta.read())
     graph_x = eval("ct.handler.root.data.%s.read()"%cmot.DP.associated_counter.replace("/","."))
-    ct.savePost2HDF("energy", post_ene, group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="post")
     #
     #Save CONTEXT
     #
+#Context can be saved to an approriate dictionary like post.
+#This will make scan procedures much more flexible and general
     try:
         ct.savePost2HDF("where_all_before", array(wa_before), 
         group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
@@ -194,20 +192,32 @@ def cscanActor(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beam
     print("Saving actions over!")
     timeAtStop = asctime()
     timeout0 = time()
+    #The plotting, once finalised a reasonable code, could be generalised via a generic function and a dictionary listing plot items 
     try:
         f=tables.open_file(ct.final_filename,"r")
-        fig1 = pylab.figure(1)
+        fig1 = pylab.figure(1,figsize=(8,11),edgecolor="white",facecolor="white",)
         fig1.clear()
-        pylab.subplot(3,1,1)
-        pylab.plot(graph_x, log(f.root.data.cx1sai1.I0.read()/f.root.data.cx1sai1.I1.read()))
+        pylab.subplot(4,1,1)
+        ylabel("$\mu$x")
+        pylab.plot(graph_x, f.root.post.MUX.read())
+        pylab.subplot(4,1,2)
+        ylabel("Fluo")
+        pylab.plot(graph_x, f.root.post.FLUO.read(),label="DTC on")
+        pylab.plot(graph_x, f.root.post.FLUO_RAW.read(),label="DTC off")
+        legend(frameon=False)    
+        pylab.subplot(4,1,3)
+        ylabel("$\mu$x Reference")
+        pylab.plot(graph_x, f.root.post.REF.read())
+        pylab.subplot(4,1,4)
+        ylabel("$I_0,I_1,I_2$ Counts")
         try:
-            pylab.subplot(3,1,2)
-            pylab.plot(graph_x, f.root.post.FLUO.read())
+            xlabel("%s (%s)"%(whois(cmot),cmot.DP.get_attribute_config(x.att_name).unit))
         except:
-            pass
-        pylab.subplot(3,1,3)
-        pylab.plot(graph_x, f.root.data.cx1sai1.I0.read(),"r")
-        pylab.plot(graph_x, f.root.data.cx1sai1.I1.read(),"k")
+            xlabel("%s"%(cmot.att_name))
+        pylab.plot(graph_x, f.root.post.I0.read(),"r",label="$I_0$")
+        pylab.plot(graph_x, f.root.post.I1.read(),"k",label="$I_1$")
+        pylab.plot(graph_x, f.root.post.I2.read(),"g",label="$I_2$")
+        legend(frameon=False)    
         pylab.draw()
     except Exception as tmp:
         print "No Plot! Bad Luck!"

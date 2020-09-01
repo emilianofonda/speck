@@ -1,14 +1,13 @@
 print "CX1_pulse: preparing."
 
 from p_spec_syntax import *
-
 from p_dxmap import dxmap
 
 try:
     config = {"fileGeneration":False,"streamTargetPath":'D:\\FTP',\
     "mode":"MAP2", "streamNbAcqPerFile":250,"nbPixelsPerBuffer":50,"streamtargetfile":"xia1"}
     
-    cx1xia1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",FTPclient="d09-1-c00/ca/ftpclientxia.1",identifier = "cx1xia1",\
+    cx1xia1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",FTPclient="d09-1-c00/ca/ftpclientxia.1",identifier = "fluo01",\
     FTPserver="d09-1-c00/ca/ftpserverxia.1",spoolMountPoint="/nfs/tempdata/samba/com-samba/xia1", config=config)
     
     print GREEN+"cx1xia2 --> DxMap card"+RESET
@@ -16,7 +15,7 @@ try:
     config = {"fileGeneration":False,"streamTargetPath":'D:\\FTP',\
     "mode":"MAP2", "streamNbAcqPerFile":250,"nbPixelsPerBuffer":50,"streamtargetfile":"xia2"}
     
-    cx1xia2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",FTPclient="d09-1-c00/ca/ftpclientxia.2",identifier = "cx1xia2",\
+    cx1xia2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",FTPclient="d09-1-c00/ca/ftpclientxia.2",identifier = "fluo02",\
     FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/nfs/tempdata/samba/com-samba/xia2", config=config)
     
     print GREEN+"cx1xia1 --> DxMap card"+RESET
@@ -68,13 +67,12 @@ config = {"frequency":100,"integrationTime":0.01,"nexusFileGeneration":False,\
 "bufferDepth":1}
 
 cpt3 = p_bufferedCounter("d09-1-c00/ca/cpt.3",deadtime=0.1,timeout=10,config = config,
-spoolMountPoint="/nfs/tempdata/samba/com-samba/cpt3",identifier="encoder_rx1",GateDownTime=2.)
+spoolMountPoint="/nfs/tempdata/samba/com-samba/cpt3",identifier="encoder01",GateDownTime=2.)
 
 #Associate counters to moveables for continuous scans
 
-x.DP.associated_counter = "encoder_rx1.X"
-dcm.DP.associated_counter = "encoder_rx1.Theta"
-
+x.DP.associated_counter = "encoder01.X"
+dcm.DP.associated_counter = "encoder01.Theta"
 
 #PulseGenerator
 
@@ -92,6 +90,8 @@ pulseGen0 = pulseGen("d09-1-cx1/dt/pulsgen.1",config=config,deadtime=0.1,timeout
 #Attention has to be paid here, since any detector change has an impact on these posts that rely on order of channels and naming conventions
 #It is evident that it cannot be different, since these are user defined functions.
 
+#### after addresses, constants and formulas, links could be a good idea to give  astandard name in posts to some quantities
+
 try:
     ctPosts=[\
     {"name":"MUX","formula":"log(float(ch[0])/ch[1])","units":"","format":"%9.7f"},\
@@ -99,16 +99,23 @@ try:
     {"name":"I1Norm","formula":"float(ch[1])/ch[0]","units":"","format":"%9.7e"},\
     {"name":"FLUO_RAW","formula":"float(sum(ch[66:84])+sum(ch[132:148]))/ch[0]","units":"","format":"%9.7e"},
     ]  
+    #>>>>>>>>>>>>>>>> Remember only formulas are saved to file <<<<<<<<<<<<<<<<<<<<<<<<
     XAS_dictionary = {
         "addresses":{
             "I0":"cx1sai1.I0",
             "I1":"cx1sai1.I1",
             "I2":"cx1sai1.I2",
             "I3":"cx1sai1.I3",
+            "Theta":"encoder01.Theta",
             },
         "constants":{},
         "formulas":{
-            "XMU":"numpy.log(I0[:]/I1[:])",
+            "Theta":"Theta[:]",
+            "energy":"dcm.theta2e(Theta[:])",
+            "I0":"I0[:]",
+            "I1":"I1[:]",
+            "I2":"I2[:]",
+            "MUX":"numpy.log(I0[:]/I1[:])",
             "REF":"numpy.log(I1[:]/I2[:])",
             "FLUO_DIODE":"I3[:]/I0[:]",
             },
@@ -118,15 +125,15 @@ try:
     __FLUO=""
     __FLUO_RAW=""
     for i in __cx1xia1_channels:
-        XAS_dictionary["addresses"]["ROI%02i"%i] = "cx1xia1.roi%02i"%i
-        XAS_dictionary["addresses"]["ICR%02i"%i] = "cx1xia1.roi%02i"%i
-        XAS_dictionary["addresses"]["OCR%02i"%i] = "cx1xia1.roi%02i"%i
+        XAS_dictionary["addresses"]["ROI%02i"%i] = "fluo01.roi%02i"%i
+        XAS_dictionary["addresses"]["ICR%02i"%i] = "fluo01.roi%02i"%i
+        XAS_dictionary["addresses"]["OCR%02i"%i] = "fluo01.roi%02i"%i
         __FLUO+="+numpy.array(ROI%02i[:],'f')/OCR%02i[:]*ICR%02i[:]"%(i,i,i)
         __FLUO_RAW+="+ROI%02i[:]"%(i)
     for i in __cx1xia2_channels:
-        XAS_dictionary["addresses"]["ROI%02i"%(i+20)] = "cx1xia2.roi%02i"%i
-        XAS_dictionary["addresses"]["ICR%02i"%(i+20)] = "cx1xia2.roi%02i"%i
-        XAS_dictionary["addresses"]["OCR%02i"%(i+20)] = "cx1xia2.roi%02i"%i
+        XAS_dictionary["addresses"]["ROI%02i"%(i+20)] = "fluo02.roi%02i"%i
+        XAS_dictionary["addresses"]["ICR%02i"%(i+20)] = "fluo02.roi%02i"%i
+        XAS_dictionary["addresses"]["OCR%02i"%(i+20)] = "fluo02.roi%02i"%i
         __FLUO+="+numpy.array(ROI%02i[:],'f')/OCR%02i[:]*ICR%02i[:]"%(i,i,i)
         __FLUO_RAW+="+ROI%02i[:]"%(i)
     __FLUO+="/I0[:]"
@@ -170,5 +177,3 @@ def setMAP():
 
 __shclose = shclose
 __shopen = shopen
-
-

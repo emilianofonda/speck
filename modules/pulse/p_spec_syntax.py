@@ -987,8 +987,6 @@ class pseudo_counter:
         return self.handler
 
     def closeHDFfile(self):
-        if self.postDictionary not in [{}, None]:
-            self.savePostDictionary2HDF(HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="post")
         self.handler.close()
 #Now move file from temporary folder to ruche
         shutil.move(self.handler.filename, self.final_filename)
@@ -1014,6 +1012,8 @@ class pseudo_counter:
         for i in self.all:
             if "saveData2HDF" in dir(i):
                 i.saveData2HDF(self.handler, wait = wait,upperIndex=upperIndex,reverse=reverse)
+        if self.postDictionary not in [{}, None]:
+            self.savePostDictionary2HDF(HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="post")
         return
 
     def savePost2HDF(self, name, value, group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'),domain="post"):

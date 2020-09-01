@@ -11,7 +11,7 @@ from GracePlotter import GracePlotter
 from spec_syntax import dark as ctDark
 from wait_functions import checkTDL, wait_injection
 import mycurses
-
+from p_dentist import dentist as p_dentist
 try:
     import Tkinter
     NoTk=False
@@ -19,7 +19,7 @@ except:
     print "Warning from escan: Tkinter not installed."
     NoTk=True
 
-print mycurses.RED+"Using FTP version of ecscan"+mycurses.RESET
+print mycurses.RED+"Using pulse ecscan"+mycurses.RESET
 
 
 # WARNING This script version uses the global object ct from speck to import XIA cards.
@@ -177,49 +177,86 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             ct.wait()
             ct.saveData2HDF()
             #
-            #Insert here specific data saving in ct.handler at position root.post? root.spectra?....
+            #Insert here specific data saving in ct.handler at position root.post
             #
-            #The following is specific of the energy scan while the xmu not, it is defined in the postDictionary
-            post_ene = dcm.theta2e(ct.handler.root.data.encoder_rx1.Theta.read())
-            ct.savePost2HDF("energy", post_ene, group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="post")
+            #The following is specific of the energy scan; everything could be moved directly in formulas but dcm.e2theta is not known at the evaluation
+            #
+            try:
+                post_ene = ct.handler.root.post.energy.read()
+                #post_ene = dcm.theta2e(ct.handler.root.post.Theta.read())
+                #ct.savePost2HDF("energy", post_ene, group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="post")
+            except Exception as tmp:
+                print("Error reading energy from hdf file post group.")
+                #print("Error converting angle to energy.")
+                print(tmp)
             #
             #Save CONTEXT
             #
-            ct.savePost2HDF("where_all_before", array(wa_before), 
-            group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
-            ct.savePost2HDF("where_all_after", array(wa(verbose=False,returns=True)), 
-            group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
+            try:
+                ct.savePost2HDF("where_all_before", array(wa_before), 
+                group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
+                ct.savePost2HDF("where_all_after", array(wa(verbose=False,returns=True)), 
+                group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
+            except:
+                print("No contextual data for where_all and/or where_after")
             # MOSTAB and Mono Configs
-            ct.savePost2HDF("mostab", array(mostab.status().split("\n")), 
-            group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
-            ct.savePost2HDF("dcm", array(dcm.status().split("\n")), 
-            group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
+            try:
+                ct.savePost2HDF("mostab", array(mostab.status().split("\n")), 
+                group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
+            except:
+                print("No contextual data for mostab")
+            try:
+                ct.savePost2HDF("dcm", array(dcm.status().split("\n")), 
+                group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
+            except:
+                print("No contextual data for dcm")
+
             #
             ct.closeHDFfile()
             timeAtStop = asctime()
             timeout0 = time()
-            dcm.velocity(60)
             try:
-                f=tables.open_file(handler.filename,"r")
-                fig1 = pylab.figure(1)
+                dcm.velocity(60)
+            except:
+                pass
+            try:
+                #The x axis should be joined together to improve readability
+                f=tables.open_file(ct.final_filename,"r")
+                fig1 = pylab.figure(1,figsize=(8,11),edgecolor="white",facecolor="white",)
                 fig1.clear()
-                pylab.subplot(3,1,1)
-                pylab.plot(post_ene, log(f.root.data.cx2sai1.I0.read()/f.root.data.cx2sai1.I1.read()))
-                try:
-                    pylab.subplot(3,1,2)
-                    pylab.plot(post_ene, f.root.post.FLUO.read())
-                except:
-                    pass
-                pylab.subplot(3,1,3)
-                pylab.plot(post_ene, f.root.data.cx2sai1.I0.read(),"r")
-                pylab.plot(post_ene, f.root.data.cx2sai1.I1.read(),"k")
+                pylab.subplot(4,1,1)
+                ylabel("$\mu$x")
+                pylab.plot(post_ene, f.root.post.MUX.read())
+                pylab.subplot(4,1,2)
+                ylabel("Fluo")
+                pylab.plot(post_ene, f.root.post.FLUO.read(),label="DTC on")
+                pylab.plot(post_ene, f.root.post.FLUO_RAW.read(),label="DTC off")
+                legend(frameon=False)    
+                pylab.subplot(4,1,3)
+                ylabel("$\mu$x Reference")
+                pylab.plot(post_ene, f.root.post.REF.read())
+                pylab.subplot(4,1,4)
+                ylabel("$I_0,I_1,I_2$ Counts")
+                xlabel("Energy (eV)")
+                pylab.plot(post_ene, f.root.post.I0.read(),"r",label="$I_0$")
+                pylab.plot(post_ene, f.root.post.I1.read(),"k",label="$I_1$")
+                pylab.plot(post_ene, f.root.post.I2.read(),"g",label="$I_2$")
+                legend(frameon=False)    
                 pylab.draw()
             except Exception, tmp:
-                print "No Plot! Bad Luck!"
-                print tmp
+                print("No Plot! Bad Luck!")
+                print(tmp)
             finally:
-                f.close()
-    except Exception, tmp:
+                try:
+                    f.close()
+                except:
+                    pass
+            try:
+                if e0>0:
+                    p_dentist(ct.final_filename,e0=e0,mode=mode,figN=2)
+            except:
+                pass
+    except Exception as tmp:
         try:
             ct.closeHDFfile()
         except:

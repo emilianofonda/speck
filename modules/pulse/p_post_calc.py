@@ -34,7 +34,8 @@ class dataBlock:
         self.domain = domain
         return
 
-    def evaluate(self):        
+    def evaluate(self):
+        __IPy = get_ipython()
         try:
             outGroup = self.HDFfile.getNode("/" + self.domain )
         except:
@@ -42,12 +43,22 @@ class dataBlock:
             outGroup = self.HDFfile.getNode("/" + self.domain )
         #self.computed["HDFfile"] = self.HDFfile
         for i in self.dictionary["addresses"].keys():
-            self.computed[i] = eval("self.HDFfile.root.data." + self.dictionary["addresses"][i])
+            try:
+                self.computed[i] = eval("self.HDFfile.root.data." + self.dictionary["addresses"][i])
+            except Exception as tmp:
+                print("post calculation error: %s = %s"%(i,"self.HDFfile.root.data." + self.dictionary["addresses"][i]))
+                print(tmp)
         for i in self.dictionary["constants"].keys():
-            self.computed[i] = eval(self.dictionary["constants"][i])
+            try:
+                self.computed[i] = eval(self.dictionary["constants"][i])
+            except Exception as tmp:
+                print("post calculation error: %s = %s"%(i,self.dictionary["constants"][i]))
+                print(tmp)
         for i in self.dictionary["formulas"].keys():
             try:
-                value = numpy.array(eval(self.dictionary["formulas"][i],globals(),self.computed))
+                glob = __IPy.user_ns
+                value = numpy.array(eval(self.dictionary["formulas"][i],glob,self.computed))
+                #value = numpy.array(eval(self.dictionary["formulas"][i],globals(),self.computed))
                 self.HDFfile.createCArray(outGroup, i , title = i,\
                 #shape = numpy.shape(value), atom = tables.Atom.from_dtype(value.dtype))
                 shape = numpy.shape(value), atom = tables.Atom.from_dtype(value.dtype), filters = self.HDFfilters)
@@ -55,7 +66,8 @@ class dataBlock:
                 outNode[:] = value
                 del value
             except Exception, tmp:
-                print tmp
+                print("post calculsation error: %s = %s"%(i, self.dictionary["formulas"][i]))
+                print(tmp)
         try:
             del outNode, c
         except:
