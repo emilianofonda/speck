@@ -5,18 +5,18 @@ from p_dxmap import dxmap
 
 try:
     config = {"fileGeneration":False,"streamTargetPath":'D:\\FTP',\
-    "mode":"MAP2", "streamNbAcqPerFile":250,"nbPixelsPerBuffer":50,"streamtargetfile":"xia1"}
+    "mode":"MAP2", "streamNbAcqPerFile":630,"nbPixelsPerBuffer":63,"streamtargetfile":"xia1"}
     
     cx1xia1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",FTPclient="d09-1-c00/ca/ftpclientxia.1",identifier = "fluo01",\
-    FTPserver="d09-1-c00/ca/ftpserverxia.1",spoolMountPoint="/nfs/tempdata/samba/com-samba/xia1", config=config)
+    FTPserver="d09-1-c00/ca/ftpserverxia.1",spoolMountPoint="/nfs/srv5/spool1/xia1", config=config)
     
     print GREEN+"cx1xia2 --> DxMap card"+RESET
     
     config = {"fileGeneration":False,"streamTargetPath":'D:\\FTP',\
-    "mode":"MAP2", "streamNbAcqPerFile":250,"nbPixelsPerBuffer":50,"streamtargetfile":"xia2"}
+    "mode":"MAP2", "streamNbAcqPerFile":630,"nbPixelsPerBuffer":63,"streamtargetfile":"xia2"}
     
     cx1xia2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",FTPclient="d09-1-c00/ca/ftpclientxia.2",identifier = "fluo02",\
-    FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/nfs/tempdata/samba/com-samba/xia2", config=config)
+    FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/nfs/srv5/spool1/xia2", config=config)
     
     print GREEN+"cx1xia1 --> DxMap card"+RESET
     
@@ -52,7 +52,7 @@ config = {"configurationId":3,"frequency":10000,"integrationTime":1,"nexusFileGe
 
 try:
 
-    sai = p_sai("d09-1-c00/ca/sai.1", timeout=10., deadtime=0.1, spoolMountPoint="/nfs/tempdata/samba/com-samba/cx1sai1",\
+    sai = p_sai("d09-1-c00/ca/sai.1", timeout=10., deadtime=0.1, spoolMountPoint="/nfs/srv5/spool1/cx1sai1",\
     config=config, identifier="cx1sai1",GateDownTime=2.)
 
 except Exception, tmp:
@@ -78,7 +78,7 @@ dcm.DP.associated_counter = "encoder01.Theta"
 
 from p_pulsegen import pulseGen
 config = {"generationType":"FINITE","pulseNumber":1,"counter0Enable":True,\
-"initialDelay0":0,"delayCounter0":2,"pulseWidthCounter0":998}
+"initialDelay0":0.5,"delayCounter0":0.5,"pulseWidthCounter0":999.5}
 #delayCounter0 is the GateDownTime of the other cards
 
 pulseGen0 = pulseGen("d09-1-cx1/dt/pulsgen.1",config=config,deadtime=0.1,timeout=10.)

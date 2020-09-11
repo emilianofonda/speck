@@ -161,10 +161,10 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 pass
             #Start Acqusiition
             ct.start(dt)
-            myTime.sleep(0.5)
+            myTime.sleep(0.1)
             #Start Mono
             dcm.pos(e2, wait=False)
-            myTime.sleep(2)
+            myTime.sleep(1.0)
             while(dcm.state() == DevState.MOVING):
                 myTime.sleep(1)
             try:

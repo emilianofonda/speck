@@ -823,7 +823,11 @@ class pseudo_counter:
             for i in self.all:
                 i.stop()
             raise tmp
-
+        finally:
+            try:
+                self.closeHDFfile()
+            except:
+                pass
     def read(self):
         "All objects must provide a read command, this command will supply a list of values"
         counts=[]
