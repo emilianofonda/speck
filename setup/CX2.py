@@ -22,10 +22,14 @@ from p_spec_syntax import *
 from p_dxmap import dxmap
 
 try:
+    #Recognized detector names:
+    #CdTe, Canberra_Ge36, Canberra_Ge7, Vortex_SDD4, Vortex_SDD1, Canberra_SDD13
+    detector_details={"detector_name":"CdTe","real_pixels_list":"1","comment":"AMPTEK CdTe installed in CX2"}
+
     config = {"fileGeneration":False,"streamTargetPath":'D:\\FTP',\
-    "mode":"MAP", "streamNbAcqPerFile":250,"nbPixelsPerBuffer":50,"streamtargetfile":"cx2xia1"}
-    cx2xia1=dxmap("d09-1-cx2/dt/dtc-mca_xmap.1",FTPclient="d09-1-c00/ca/ftpclientcx2xia1",identifier = "cx2xia1",\
-    FTPserver="d09-1-c00/ca/ftpservercx2xia1",spoolMountPoint="/nfs/tempdata/samba/com-samba/cx2xia1", config=config)
+    "mode":"MAP", "streamNbAcqPerFile":630,"nbPixelsPerBuffer":63,"streamtargetfile":"cx2xia1"}
+    cx2xia1=dxmap("d09-1-cx2/dt/dtc-mca_xmap.1",FTPclient="d09-1-c00/ca/ftpclientcx2xia1",identifier = "fluo01",\
+    FTPserver="d09-1-c00/ca/ftpservercx2xia1",spoolMountPoint="/nfs/.autofs/srv5/spool1/cx2xia1", config=config, detector_details=detector_details)
     mca1=cx2xia1
     mca2=None
     print GREEN+"cx2xia1 --> DxMap card"+RESET
@@ -60,8 +64,8 @@ config = {"configurationId":3,"frequency":10000,"integrationTime":1,"nexusFileGe
 
 try:
 
-    sai = p_sai("d09-1-cx2/ca/sai.1", timeout=10., deadtime=0.1, spoolMountPoint="/nfs/tempdata/samba/com-samba/cx2sai1",\
-    config=config, identifier="cx2sai1",GateDownTime=2.)
+    sai01 = p_sai("d09-1-cx2/ca/sai.1", timeout=10., deadtime=0.1, spoolMountPoint="/nfs/tempdata/samba/com-samba/cx2sai1",\
+    config=config, identifier="sai01",GateDownTime=2.)
 
 except Exception, tmp:
     print tmp
@@ -75,15 +79,16 @@ config = {"frequency":100,"integrationTime":0.01,"nexusFileGeneration":False,\
 "bufferDepth":1}
 
 cpt3 = p_bufferedCounter("d09-1-c00/ca/cpt.3",deadtime=0.1,timeout=10,config = config,
-spoolMountPoint="/nfs/tempdata/samba/com-samba/cpt3",identifier="encoder_rx1",GateDownTime=2.)
+spoolMountPoint="/nfs/tempdata/samba/com-samba/cpt3",identifier="encoder01",GateDownTime=1.)
 
 
 #PulseGenerator
 
 from p_pulsegen import pulseGen
 config = {"generationType":"FINITE","pulseNumber":1,"counter0Enable":True,\
-"initialDelay0":0,"delayCounter0":2,"pulseWidthCounter0":998}
+"initialDelay0":0,"delayCounter0":1.,"pulseWidthCounter0":999.}
 #delayCounter0 is the GateDownTime of the other cards
+#Verify the point above with oscilloscope please.
 
 pulseGen0 = pulseGen("d09-1-cx2/dt/pulsgen.2",config=config,deadtime=0.1,timeout=10.)
 
@@ -96,17 +101,24 @@ try:
     ]  
     XAS_dictionary = {
         "addresses":{
-            "I0":"cx2sai1.I0",
-            "I1":"cx2sai1.I1",
-            "I2":"cx2sai1.I2",
-            "I3":"cx2sai1.I3",
-            "ROI0":"cx2xia1.roi00",
-            "ICR0":"cx2xia1.icr00",
-            "OCR0":"cx2xia1.ocr00",
+            "Theta":"encoder01.Theta",
+            "I0":"sai01.I0",
+            "I1":"sai01.I1",
+            "I2":"sai01.I2",
+            "I3":"sai01.I3",
+            "ROI0":"fluo01.roi00",
+            "ICR0":"fluo01.icr00",
+            "OCR0":"fluo01.ocr00",
             },
         "constants":{},
         "formulas":{
-            "XMU":"numpy.log(I0[:]/I1[:])",
+            "Theta":"Theta[:]",
+            "energy":"dcm.theta2e(Theta[:])",
+            "I0":"I0[:]",
+            "I1":"I1[:]",
+            "I2":"I2[:]",
+            "I3":"I3[:]",
+            "MUX":"numpy.log(I0[:]/I1[:])",
             "FLUO":"ROI0[:]*ICR0[:]/(I0[:]*OCR0[:])",
             "FLUO_RAW":"ROI0[:]/I0[:]",
             "REF":"numpy.log(I1[:]/I2[:])",
@@ -120,11 +132,11 @@ try:
 
     cpt=pseudo_counter(masters=[pulseGen0,])
     #ct=pseudo_counter(masters=[pulseGen0,],slaves=[mca1,], posts= ctPosts)
-    #ct=pseudo_counter(masters=[pulseGen0],slaves=[sai_1,x3mca], posts= ctPosts)
+    #ct=pseudo_counter(masters=[pulseGen0],slaves=[sai01,x3mca], posts= ctPosts)
     #Remember to set the cpt3 card from master to slave mode and modify BNC cable position from OUT to GATE
-    #ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai_1,mca1,cpt3], posts= ctPosts)
-    ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai,cx2xia1,cpt3],posts=ctPosts, postDictionary=XAS_dictionary)
-    #ct=pseudo_counter(masters=[pulseGen0,], slaves=[sai,cpt3], posts=ctPosts, postDictionary=XAS_dictionary)
+    #ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai01,mca1,cpt3], posts= ctPosts)
+    ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai01,cx2xia1,cpt3],posts=ctPosts, postDictionary=XAS_dictionary)
+    #ct=pseudo_counter(masters=[pulseGen0,], slaves=[sai01,cpt3], posts=ctPosts, postDictionary=XAS_dictionary)
 
 except Exception, tmp:
     print tmp

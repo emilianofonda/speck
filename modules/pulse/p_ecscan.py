@@ -74,8 +74,8 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
         sys.stdout.flush()
         raise KeyboardInterrupt
     except Exception, tmp:
-        shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp, kind='output')
-        print tmp
+        print tmp.message
+        shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp.message, kind='output')
         stopscan(shutter)
         #raise
     return 
@@ -127,9 +127,6 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             #f.close()
             #Configure and move mono
             
-            # Store the where_all_before
-            wa_before = wa(verbose=False,returns=True)
-            #
             if dcm.state() == DevState.MOVING:
                 wait_motor(dcm)
                 myTime.sleep(1)
@@ -143,6 +140,9 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             myTime.sleep(0.2)
             
             timeAtStart = asctime()
+            # Store the where_all_before
+            wa_before = wa(verbose=False,returns=True)
+            #
             #Start acquisition?
             print "Preparing acquisition ... ",
             ct.prepare(dt=dt,NbFrames = NumberOfPoints, nexusFileGeneration = True)
@@ -216,31 +216,57 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             timeAtStop = asctime()
             timeout0 = time()
             try:
+                HDF2ASCII(ct.final_filename)
+            except Exception as tmp:
+                print(tmp)
+                print("ASCII output failed")
+            try:
                 dcm.velocity(60)
             except:
                 pass
             try:
                 #The x axis should be joined together to improve readability
                 f=tables.open_file(ct.final_filename,"r")
-                fig1 = pylab.figure(1,figsize=(8,11),edgecolor="white",facecolor="white",)
+                fig1 = pylab.figure(1,figsize=(8,11),edgecolor="white",facecolor="white")
                 fig1.clear()
-                pylab.subplot(4,1,1)
+                fig1.subplots_adjust(hspace=0)
+                ax1 = pylab.subplot(4,1,1)
                 ylabel("$\mu$x")
                 pylab.plot(post_ene, f.root.post.MUX.read())
-                pylab.subplot(4,1,2)
+                pylab.setp(ax1.get_xticklabels(), visible=False)
+                l1,l2 = ax1.get_ylim()
+                red = abs(l1-l2)*0.05
+                ax1.set_yticks(numpy.linspace(l1+red,l2-red,5))
+
+                ax2 = pylab.subplot(4,1,2, sharex=ax1)
                 ylabel("Fluo")
                 pylab.plot(post_ene, f.root.post.FLUO.read(),label="DTC on")
                 pylab.plot(post_ene, f.root.post.FLUO_RAW.read(),label="DTC off")
+                pylab.setp(ax2.get_xticklabels(), visible=False)
+                l1,l2 = ax2.get_ylim()
+                red = abs(l1-l2)*0.05
+                ax2.set_yticks(numpy.linspace(l1+red,l2-red,5))
                 legend(frameon=False)    
-                pylab.subplot(4,1,3)
+
+                ax3 = pylab.subplot(4,1,3, sharex=ax1)
                 ylabel("$\mu$x Reference")
                 pylab.plot(post_ene, f.root.post.REF.read())
-                pylab.subplot(4,1,4)
+                pylab.setp(ax3.get_xticklabels(), visible=False)
+                l1,l2 = ax3.get_ylim()
+                red = abs(l1-l2)*0.05
+                ax3.set_yticks(numpy.linspace(l1+red,l2-red,5))
+
+                ax4 = pylab.subplot(4,1,4, sharex=ax1)
                 ylabel("$I_0,I_1,I_2$ Counts")
                 xlabel("Energy (eV)")
                 pylab.plot(post_ene, f.root.post.I0.read(),"r",label="$I_0$")
                 pylab.plot(post_ene, f.root.post.I1.read(),"k",label="$I_1$")
                 pylab.plot(post_ene, f.root.post.I2.read(),"g",label="$I_2$")
+                l1,l2 = ax4.get_ylim()
+                red = abs(l1-l2)*0.05
+                ax4.set_yticks(numpy.linspace(l1+red,l2-red,5))
+                pylab.setp(ax4.get_xticklabels(),  visible=True)
+                ax4.xaxis.set_major_formatter(FormatStrFormatter('%.1f')) 
                 legend(frameon=False)    
                 pylab.draw()
             except Exception, tmp:
@@ -294,4 +320,27 @@ def AlarmBeep():
     return
 
 
+def HDF2ASCII(filename):
+    """Filename is the complete path to file.
+    The function is hard coded and looks for specific cards in post group.
+    Energy, Theta, XMU, FLUO, REF, FLUO_RAW, I0, I1, I2, I3 
+    
+    Warning: in this version all values are read into RAM before being saved, the whole table!"""
 
+    f=tables.open_file(filename, "r")
+    try:
+        filename_out = filename[:filename.rfind(".hdf")]+".txt"
+        tab_out = []
+        tab_out.append(f.root.post.energy[:])
+        npoints = len(tab_out[0])
+        for i in ["Theta", "MUX", "FLUO", "REF", "FLUO_RAW", "I0", "I1","I2","I3"]:
+            try:
+                tab_out.append(numpy.nan_to_num(eval("f.root.post."+i)[:]))
+            except Exception as tmp:
+                print(tmp)
+                print("Missing %s in file.root.post, replacing with zero values."%i)
+                tab_out.append(numpy.zeros(npoints))
+        savetxt(filename_out, array(tab_out).transpose(),header="Energy, Theta, XMU, FLUO, REF, FLUO_RAW, I0, I1, I2, I3")
+    finally:
+        f.close()
+    return

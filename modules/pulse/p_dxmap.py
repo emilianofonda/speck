@@ -11,7 +11,7 @@ from string import lower
 
 class dxmap:
     def __init__(self,label="",channels=None,user_readconfig=[],timeout=30.,deadtime=0.05, FTPclient="",FTPserver="",spoolMountPoint="",
-    specificDevice="",config={},identifier=""):
+    specificDevice="",config={},identifier="",detector_details={"detector_name":"","real_pixels_list":"","comment":""}):
        
         self.DP=DeviceProxy(label)
         self.label=label
@@ -20,6 +20,8 @@ class dxmap:
         self.DP.set_timeout_millis(int(self.timeout*1000))
         self.config = config
         self.identifier = identifier
+         
+        self.detector_details = detector_details
 
         self.init_user_readconfig=user_readconfig
         failure=False
@@ -258,10 +260,12 @@ class dxmap:
                 print tmp
         if nexusFileGeneration:
             #Auto delete remaining files!!! this avoids aborting, but it is a potential risk.
-            self.startFTP(deleteRemainingFiles=True)
+            sleep(self.deadtime)
             self.DP.write_attribute("filegeneration",True)
+            self.startFTP(deleteRemainingFiles=True)
             self.DP.streamresetindex()
         else:
+            sleep(self.deadtime)
             self.DP.write_attribute("filegeneration",False)
         #self.DP.write_attributes(attValues)
         #sleep(self.deadtime)
@@ -420,9 +424,11 @@ class dxmap:
         """the handler is an already opened file object"""
         ShapeArrays = (self.NbFrames,) + tuple(self.upperDimensions)
         ShapeMatrices = (self.NbFrames, self.DP.streamnbDataPerAcq) + tuple(self.upperDimensions)
+        
         handler.createGroup("/data", self.identifier)
         outNode = handler.getNode("/data/" + self.identifier)
-
+       
+         
         for i in xrange(self.numChan):
             handler.createCArray(outNode, "mca%02i" % i, title = "mca%02i" % i,\
             shape = ShapeMatrices, atom = tables.UInt32Atom(), filters = HDFfilters)
@@ -430,11 +436,14 @@ class dxmap:
         for i in xrange(self.numChan):
             if 'icr' in self.stream_items:
                 handler.createCArray(outNode, "icr%02i" % i, title = "icr%02i" % i,\
-                shape = ShapeArrays, atom = tables.UInt32Atom(), filters = HDFfilters)
+                shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
             if 'ocr' in self.stream_items:
                 handler.createCArray(outNode, "ocr%02i" % i, title = "ocr%02i" % i,\
-                shape = ShapeArrays, atom = tables.UInt32Atom(), filters = HDFfilters)
+                shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
             if 'deadtime' in self.stream_items:
+                handler.createCArray(outNode, "deadtime%02i" % i, title = "deadtime%02i" % i,\
+                shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
+            elif 'icr' in self.stream_items and 'ocr' in self.stream_items:
                 handler.createCArray(outNode, "deadtime%02i" % i, title = "deadtime%02i" % i,\
                 shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
             handler.createCArray(outNode, "roi%02i" % i, title = "roi%02i" % i,\
@@ -443,13 +452,30 @@ class dxmap:
         handler.createArray("/data/"+self.identifier, "roiLimits", np.array(self.getROIs(),"i"))
 #Write down contextual data
         ll = np.array(["%s = %s"%(i,str(self.config[i])) for i in self.config.keys()])
-        outGroup = handler.createGroup("/context",self.identifier)
+        handler.createGroup("/context",self.identifier)
         outGroup = handler.getNode("/context/"+self.identifier)
         handler.createCArray(outGroup, "config", title = "config",\
         shape = np.shape(ll), atom = tables.Atom.from_dtype(ll.dtype), filters = HDFfilters)
         outNode = handler.getNode("/context/"+self.identifier+"/config")
         outNode[:] = ll
+        
+        handler.createGroup("/data/"+self.identifier,"detector_details","Detector description")
+        outGroup = handler.getNode("/data/"+self.identifier+"/detector_details")
 
+        handler.createCArray(outGroup, "detector_name", title = "name of detector used by fastosh",\
+        shape = (1,), atom = tables.StringAtom(256,1))
+        outNode = handler.getNode("/data/"+self.identifier+"/detector_details"+"/detector_name")
+        outNode[:] = self.detector_details["detector_name"]
+
+        handler.createCArray(outGroup, "real_pixels_list", title = "List of Real Pixels: 13,17,19,21",\
+        shape = (1,), atom = tables.StringAtom(256,1))
+        outNode = handler.getNode("/data/"+self.identifier+"/detector_details"+"/real_pixels_list")
+        outNode[:] = self.detector_details["real_pixels_list"]
+
+        handler.createCArray(outGroup, "comment", title = "free user comment",\
+        shape = (1,), atom = tables.StringAtom(256,1))
+        outNode = handler.getNode("/data/"+self.identifier+"/detector_details"+"/comment")
+        outNode[:] = self.detector_details["comment"]
         return
 
     def saveData2HDF(self, handler, wait=True, upperIndex=(),reverse=1):
@@ -518,7 +544,17 @@ class dxmap:
                             outNode[p0:p1] =  eval("sourceFile.root.entry.scan_data.deadtime%02i" % i)[:]
                         else:
                             outNode[p0:p1][upperIndex] =  eval("sourceFile.root.entry.scan_data.deadtime%02i" % i)[::reverse]
-
+                    elif 'icr' in self.stream_items and 'ocr' in self.stream_items:
+                        outNode = handler.getNode("/data/" + self.identifier + "/deadtime%02i" % i)
+                        if upperIndex == ():
+                            outNode[p0:p1] =  np.nan_to_num(\
+                            100.*(1.-eval("sourceFile.root.entry.scan_data.ocr%02i" % i)[:]/eval("sourceFile.root.entry.scan_data.icr%02i" % i)[:])\
+                            )
+                        else:
+                            outNode[p0:p1][upperIndex] =  np.nan_to_num(\
+                            100.*(1.-eval("sourceFile.root.entry.scan_data.ocr%02i" % i)[::reverse]\
+                            /eval("sourceFile.root.entry.scan_data.icr%02i" % i)[::reverse])\
+                            )
             except:
                 raise
             finally:

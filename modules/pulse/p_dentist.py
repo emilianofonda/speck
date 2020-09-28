@@ -120,7 +120,7 @@ mode="t", figN=1, overlap=False,out=False):
         polyN = min(9, numpy.round(chiK[-1]/2.))
     
     #bkgPoly = pylab.polyfit(chiK, chi, polyN, w=chiK**kweight)
-    bkgPoly = scipy.optimize.curve_fit(polySc,chiK, chi, [1.,]*polyN, sigma=1./chiK**kweight)[0]
+    bkgPoly = scipy.optimize.curve_fit(polySc,chiK, chi, [1,]*polyN, sigma=1./chiK**kweight)[0]
     bkg = pylab.polyval(bkgPoly, chiK)
     exafs = (chi - bkg) / Step
     mOut = pylab.array([chiK, exafs],"f")

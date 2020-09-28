@@ -6,6 +6,7 @@ from IPython.core.getipython import get_ipython
 
 IPy = get_ipython()
 __Default_Data_Folder = IPy.user_ns["__SPECK_CONFIG"]['TEMPORARY_HOME'] #os.getenv("SPECK_DATA_FOLDER")
+__Default_Backup_Folder = IPy.user_ns["__SPECK_CONFIG"]['DATA_FOLDER'] #os.getenv("SPECK_DATA_FOLDER")
 
 def backup():
     IPy = get_ipython()
@@ -98,6 +99,10 @@ def setuser(name=None):
         
 
         print "New folder is: " + cfg["FOLDER"]
+        try:
+            os.makedirs(__Default_Backup_Folder + os.sep +cfg["FOLDER"])
+        except Exception, tmp:
+            print tmp
         try:
             os.makedirs(__Default_Data_Folder + os.sep +cfg["FOLDER"])
         except Exception, tmp:

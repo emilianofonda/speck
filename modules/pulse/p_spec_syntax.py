@@ -544,11 +544,16 @@ def state(x):
     return x.state()
 
 def ps(x):
-    """ print the status of x to screen"""
     return status(x)
 
 def status(x):
+    """ print the status of x to screen"""
     print x.status()
+    return
+
+def lsruche():
+    return os.system("ls -lh "+get_ipython().user_ns["__SPECK_CONFIG"]["USER_FOLDER"])
+
 
 def editmacro(macrofilename):
     try:
@@ -719,9 +724,9 @@ class pseudo_counter:
                 s+="\n"
                 for j in range(l):
                     if i+j<ltmp:
-                        plainS += "%03i " % (i + j) + "% -20s" % self.user_readconfig[i+j].label + ":"\
+                        plainS += "%03i " % (i + j) + "% -25s" % self.user_readconfig[i+j].label + ":"\
                         + "%9s" % (self.user_readconfig[i+j].format % (tmp[i+j]))+" % -8s " % self.user_readconfig[i+j].unit + " "
-                        s += BOLD + "%03i " % (i + j) + RED + "% -20s" % self.user_readconfig[i+j].label + ":" + RESET\
+                        s += BOLD + "%03i " % (i + j) + RED + "% -25s" % self.user_readconfig[i+j].label + ":" + RESET\
                         + "%9s" % (self.user_readconfig[i+j].format % (tmp[i+j]))+" % -8s " % self.user_readconfig[i+j].unit + " "
             print s
             print "User Defined Post Calculations:"
@@ -1173,4 +1178,6 @@ def filename2ruche(filename):
     
 
     
-    
+
+
+

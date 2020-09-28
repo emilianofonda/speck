@@ -4,24 +4,31 @@ from p_spec_syntax import *
 from p_dxmap import dxmap
 
 try:
+    #Recognized detector names:
+    #CdTe, Canberra_Ge36, Canberra_Ge7, Vortex_SDD4, Vortex_SDD1, Canberra_SDD13
+    detector_details={"detector_name":"Canberra_Ge36","real_pixels_list":"nan,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19","comment":"Canberra 36 pixels HPGe installed in CX1"}
+
     config = {"fileGeneration":False,"streamTargetPath":'D:\\FTP',\
     "mode":"MAP2", "streamNbAcqPerFile":630,"nbPixelsPerBuffer":63,"streamtargetfile":"xia1"}
     
     cx1xia1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",FTPclient="d09-1-c00/ca/ftpclientxia.1",identifier = "fluo01",\
-    FTPserver="d09-1-c00/ca/ftpserverxia.1",spoolMountPoint="/nfs/srv5/spool1/xia1", config=config)
+    FTPserver="d09-1-c00/ca/ftpserverxia.1",spoolMountPoint="/nfs/srv5/spool1/xia1", config=config,detector_details = detector_details)
     
-    print GREEN+"cx1xia2 --> DxMap card"+RESET
+    print GREEN+"cx1xia1 --> DxMap card"+RESET
+    
+    detector_details={"detector_name":"Canberra_Ge36","real_pixels_list":"20,21,22,23,24,25,26,27,28,29,30,31,32,33,35,36","comment":"Canberra 36 pixels HPGe installed in CX1"}
     
     config = {"fileGeneration":False,"streamTargetPath":'D:\\FTP',\
     "mode":"MAP2", "streamNbAcqPerFile":630,"nbPixelsPerBuffer":63,"streamtargetfile":"xia2"}
     
     cx1xia2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",FTPclient="d09-1-c00/ca/ftpclientxia.2",identifier = "fluo02",\
-    FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/nfs/srv5/spool1/xia2", config=config)
+    FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/nfs/srv5/spool1/xia2", config=config,detector_details = detector_details)
     
-    print GREEN+"cx1xia1 --> DxMap card"+RESET
+    print GREEN+"cx1xia2 --> DxMap card"+RESET
     
     mca1=cx1xia1
     mca2=cx1xia2
+
 except Exception, tmp:
     print tmp
 
@@ -53,7 +60,7 @@ config = {"configurationId":3,"frequency":10000,"integrationTime":1,"nexusFileGe
 try:
 
     sai = p_sai("d09-1-c00/ca/sai.1", timeout=10., deadtime=0.1, spoolMountPoint="/nfs/srv5/spool1/cx1sai1",\
-    config=config, identifier="cx1sai1",GateDownTime=2.)
+    config=config, identifier="cx1sai1",GateDownTime=1.)
 
 except Exception, tmp:
     print tmp
@@ -67,7 +74,7 @@ config = {"frequency":100,"integrationTime":0.01,"nexusFileGeneration":False,\
 "bufferDepth":1}
 
 cpt3 = p_bufferedCounter("d09-1-c00/ca/cpt.3",deadtime=0.1,timeout=10,config = config,
-spoolMountPoint="/nfs/tempdata/samba/com-samba/cpt3",identifier="encoder01",GateDownTime=2.)
+spoolMountPoint="/nfs/tempdata/samba/com-samba/cpt3",identifier="encoder01",GateDownTime=1.)
 
 #Associate counters to moveables for continuous scans
 
@@ -78,7 +85,7 @@ dcm.DP.associated_counter = "encoder01.Theta"
 
 from p_pulsegen import pulseGen
 config = {"generationType":"FINITE","pulseNumber":1,"counter0Enable":True,\
-"initialDelay0":0.5,"delayCounter0":0.5,"pulseWidthCounter0":999.5}
+"initialDelay0":0.0,"delayCounter0":1.,"pulseWidthCounter0":999.}
 #delayCounter0 is the GateDownTime of the other cards
 
 pulseGen0 = pulseGen("d09-1-cx1/dt/pulsgen.1",config=config,deadtime=0.1,timeout=10.)
@@ -115,29 +122,30 @@ try:
             "I0":"I0[:]",
             "I1":"I1[:]",
             "I2":"I2[:]",
+            "I3":"I3[:]",
             "MUX":"numpy.log(I0[:]/I1[:])",
             "REF":"numpy.log(I1[:]/I2[:])",
             "FLUO_DIODE":"I3[:]/I0[:]",
             },
     }
     __cx1xia1_channels=range(0,20)
-    __cx1xia2_channels=range(0,15)
-    __FLUO=""
-    __FLUO_RAW=""
+    __cx1xia2_channels=range(0,16)
+    __FLUO="("
+    __FLUO_RAW="("
     for i in __cx1xia1_channels:
         XAS_dictionary["addresses"]["ROI%02i"%i] = "fluo01.roi%02i"%i
-        XAS_dictionary["addresses"]["ICR%02i"%i] = "fluo01.roi%02i"%i
-        XAS_dictionary["addresses"]["OCR%02i"%i] = "fluo01.roi%02i"%i
-        __FLUO+="+numpy.array(ROI%02i[:],'f')/OCR%02i[:]*ICR%02i[:]"%(i,i,i)
+        XAS_dictionary["addresses"]["ICR%02i"%i] = "fluo01.icr%02i"%i
+        XAS_dictionary["addresses"]["OCR%02i"%i] = "fluo01.ocr%02i"%i
+        __FLUO+="+numpy.nan_to_num(ROI%02i[:]/OCR%02i[:]*ICR%02i[:])"%(i,i,i)
         __FLUO_RAW+="+ROI%02i[:]"%(i)
     for i in __cx1xia2_channels:
         XAS_dictionary["addresses"]["ROI%02i"%(i+20)] = "fluo02.roi%02i"%i
-        XAS_dictionary["addresses"]["ICR%02i"%(i+20)] = "fluo02.roi%02i"%i
-        XAS_dictionary["addresses"]["OCR%02i"%(i+20)] = "fluo02.roi%02i"%i
-        __FLUO+="+numpy.array(ROI%02i[:],'f')/OCR%02i[:]*ICR%02i[:]"%(i,i,i)
-        __FLUO_RAW+="+ROI%02i[:]"%(i)
-    __FLUO+="/I0[:]"
-    __FLUO_RAW+="/numpy.array(I0[:],'f')"
+        XAS_dictionary["addresses"]["ICR%02i"%(i+20)] = "fluo02.icr%02i"%i
+        XAS_dictionary["addresses"]["OCR%02i"%(i+20)] = "fluo02.ocr%02i"%i
+        __FLUO+="+numpy.nan_to_num(ROI%02i[:]/OCR%02i[:]*ICR%02i[:])"%(i+20,i+20,i+20)
+        __FLUO_RAW+="+ROI%02i[:]"%(i+20)
+    __FLUO+=")/numpy.array(I0[:],'f')"
+    __FLUO_RAW+=")/numpy.array(I0[:],'f')"
     XAS_dictionary["formulas"]["FLUO"] = __FLUO
     XAS_dictionary["formulas"]["FLUO_RAW"] = __FLUO_RAW
 
