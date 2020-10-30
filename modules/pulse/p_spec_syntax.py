@@ -823,16 +823,30 @@ class pseudo_counter:
             while(self.state() == DevState.RUNNING):
                 sleep(self.deadtime)
             return
-        except Exception, tmp:
+        except Exception as tmp:
             #Try again
             for i in self.all:
                 i.stop()
-            raise tmp
         finally:
             try:
                 self.closeHDFfile()
             except:
                 pass
+    
+    def stopAcq(self):
+#Slaves that require a stop at the end of a counting
+#are required to provide a stopAcq function
+        try:
+            for i in self.slaves:
+                if "stopAcq" in dir(i):
+                    i.stopAcq()
+            while(self.state() == DevState.RUNNING):
+                sleep(self.deadtime)
+            return
+        except Exception, tmp:
+            self.stop()
+            raise tmp
+
     def read(self):
         "All objects must provide a read command, this command will supply a list of values"
         counts=[]
@@ -917,9 +931,11 @@ class pseudo_counter:
             self.wait()
             if nexusFileGeneration:
                 self.saveData2HDF(wait=True)
-                self.closeHDFfile()
-        finally:     
+        except Exception as tmp:
             self.stop()
+            raise tmp
+        finally:     
+            self.stopAcq()
             if nexusFileGeneration:
                 self.closeHDFfile()
         return self.read()

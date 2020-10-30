@@ -19,7 +19,11 @@ class dxmap:
         self.timeout = timeout
         self.DP.set_timeout_millis(int(self.timeout*1000))
         self.config = config
+        if identifier == "":
+            raise Exception("Identifier not specified !")
         self.identifier = identifier
+
+        
          
         self.detector_details = detector_details
 
@@ -291,6 +295,14 @@ class dxmap:
             sleep(self.deadtime)
         return self.state()
         
+    def stopAcq(self):
+        try:
+            self.DP.command_inout("Stop")
+        except Exception as tmp:
+            print(tmp)
+            raise tmp
+        return self.state()
+
     def stop(self):
         #Version change: Abort becomes Abort. kept for compatibility 5/9/2014
         if self.state()==DevState.RUNNING:

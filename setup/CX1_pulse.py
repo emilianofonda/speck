@@ -33,21 +33,28 @@ except Exception, tmp:
     print tmp
 
 #EXSPRESS3
-#trigger modes can be internal_trigger or external_gate
+#trigger modes can be internal_trigger or external_gate  
 
-#from xspress3 import xspress3mini
+from p_xspress3 import xspress3
 
-#try:
-#    config={"acq_trigger_mode":"external_gate",\
-#    "saving_suffix":"hdf","saving_prefix":"xsp3_","saving_format":"hdf5",\
-#    "saving_directory":"/mnt/spoolSAMBA/xsp3","saving_mode":"auto_frame",\
-#    "saving_overwrite_policy":"abort"}
+try:
+    #config={"acq_trigger_mode":"internal_trigger",\
+    config={"acq_trigger_mode":"external_gate",\
+    "saving_suffix":"hdf","saving_prefix":"x3x_","saving_format":"hdf5",\
+    "saving_directory":"/mnt/spool/x3x","saving_mode":"auto_frame",\
+    "saving_overwrite_policy":"abort"}
+
+    detector_details={"detector_name":"Canberra_SDD13","real_pixels_list":"1,2,3,4,5,6,7,8,9,10,11,12,13","comment":"Canberra 13 elements SDD + xspress3x"}
     
-#    x3mca = xspress3mini(label = "xspress3/xspress3/xspress3.1", timeout=30,deadtime=0.1,
-#    spoolMountPoint="/nfs/srv5/spool1/xsp3",specificDevice="xspress3/xspress3/xspress3.1-specific",\
-#    config=config,identifier="xspress_1")
-#except Exception, tmp:
-#    print tmp
+#   x3mca = xspress3(label = "d09-1-cx1/dt/xspress3x.1", timeout=30,deadtime=0.1,
+#   spoolMountPoint="/nfs/srv5/spool1/x3x",specificDevice="d09-1-cx1/dt/xspress3x.1-specific",\
+#   config=config,identifier="fluo03")
+
+    x3mca = xspress3(label = "lima/limaccd/1", timeout=30,deadtime=0.1,
+    spoolMountPoint="/nfs/srv5/spool1/x3x",specificDevice="lima/xspress3/1",\
+    config=config,identifier="fluo03")
+except Exception, tmp:
+    print tmp
 
 #SAI
 
@@ -85,7 +92,7 @@ dcm.DP.associated_counter = "encoder01.Theta"
 
 from p_pulsegen import pulseGen
 config = {"generationType":"FINITE","pulseNumber":1,"counter0Enable":True,\
-"initialDelay0":0.0,"delayCounter0":1.,"pulseWidthCounter0":999.}
+"initialDelay0":0.0,"delayCounter0":5.,"pulseWidthCounter0":995.}
 #delayCounter0 is the GateDownTime of the other cards
 
 pulseGen0 = pulseGen("d09-1-cx1/dt/pulsgen.1",config=config,deadtime=0.1,timeout=10.)
@@ -148,7 +155,8 @@ try:
     __FLUO_RAW+=")/numpy.array(I0[:],'f')"
     XAS_dictionary["formulas"]["FLUO"] = __FLUO
     XAS_dictionary["formulas"]["FLUO_RAW"] = __FLUO_RAW
-
+    del __FLUO
+    del __FLUO_RAW
 #These Posts should be modified each time when changing detectors.
     from p_spec_syntax import pseudo_counter
 
@@ -161,11 +169,64 @@ try:
     #ct=pseudo_counter(masters=[pulseGen0,], slaves=[sai,cpt3], posts=ctPosts)
 
     #ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai,cx1xia1,cx1xia2,cpt3])
-    ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai,cx1xia1,cx1xia2,cpt3],posts=ctPosts, postDictionary=XAS_dictionary)
- 
+    ct0=pseudo_counter(masters=[pulseGen0,],slaves=[sai,cx1xia1,cx1xia2,cpt3],posts=ctPosts, postDictionary=XAS_dictionary)
+    ct=ct0
 except Exception, tmp:
     print tmp
-    print "Failure defining ct command"
+    print "Failure defining ct0 config"
+
+try:
+    ctPosts_1=[\
+    {"name":"MUX","formula":"log(float(ch[0])/ch[1])","units":"","format":"%9.7f"},\
+    {"name":"MUS","formula":"log(float(ch[1])/ch[2])","units":"","format":"%9.7f"},\
+    {"name":"I1Norm","formula":"float(ch[1])/ch[0]","units":"","format":"%9.7e"},\
+    {"name":"FLUO_RAW","formula":"float(sum(ch[4:17])/ch[0]","units":"","format":"%9.7e"},
+    ]  
+    #>>>>>>>>>>>>>>>> Remember only formulas are saved to file <<<<<<<<<<<<<<<<<<<<<<<<
+    XAS_dictionary_1 = {
+        "addresses":{
+            "I0":"cx1sai1.I0",
+            "I1":"cx1sai1.I1",
+            "I2":"cx1sai1.I2",
+            "I3":"cx1sai1.I3",
+            "Theta":"encoder01.Theta",
+            },
+        "constants":{},
+        "formulas":{
+            "Theta":"Theta[:]",
+            "energy":"dcm.theta2e(Theta[:])",
+            "I0":"I0[:]",
+            "I1":"I1[:]",
+            "I2":"I2[:]",
+            "I3":"I3[:]",
+            "MUX":"numpy.log(I0[:]/I1[:])",
+            "REF":"numpy.log(I1[:]/I2[:])",
+            "FLUO_DIODE":"I3[:]/I0[:]",
+            },
+    }
+    __x3x_channels=range(0,13)
+    __x3xid = x3mca.identifier
+    __FLUO="("
+    __FLUO_RAW="("
+    for i in __x3x_channels:
+        XAS_dictionary_1["addresses"]["ROI%02i"%i] = __x3xid + ".roi%02i"%i
+        XAS_dictionary_1["addresses"]["ICR%02i"%i] = __x3xid + ".icr%02i"%i
+        XAS_dictionary_1["addresses"]["OCR%02i"%i] = __x3xid + ".ocr%02i"%i
+        __FLUO+="+numpy.nan_to_num(ROI%02i[:]/OCR%02i[:]*ICR%02i[:])"%(i,i,i)
+        __FLUO_RAW+="+ROI%02i[:]"%(i)
+    __FLUO+=")/numpy.array(I0[:],'f')"
+    __FLUO_RAW+=")/numpy.array(I0[:],'f')"
+    XAS_dictionary_1["formulas"]["FLUO"] = __FLUO
+    XAS_dictionary_1["formulas"]["FLUO_RAW"] = __FLUO_RAW
+    del __FLUO
+    del __FLUO_RAW
+ 
+    ct1=pseudo_counter(masters=[pulseGen0,],slaves=[sai,cpt3,x3mca],posts=ctPosts_1, postDictionary=XAS_dictionary_1)
+
+    #ct=ct1
+except Exception, tmp:
+    print tmp
+    print "Failure defining ct1 config"
 
 mostab.scaler = "ct"
 
@@ -177,6 +238,21 @@ execfile(__pySamba_root+"/modules/pulse/p_cscan.py")
 execfile(__pySamba_root+"/modules/pulse/p_ecscan.py")
 
 #legacy definitions
+def setroi(ch1, ch2):
+    """Set roi an ALL channels between ch1 and ch2. This is a silly way to do it... must be redesigned"""
+    try:
+        mca1.setROIs(ch1, ch2)
+    except:
+        pass
+    try:
+        mca2.setROIs(ch1, ch2)
+    except:
+        pass
+    try:
+        x3mca.setROIs(ch1, ch2)
+    except:
+        pass
+    return 
 
 def setSTEP():
     return

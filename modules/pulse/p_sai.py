@@ -173,6 +173,15 @@ class sai:
             raise Exception("Trying to start %s when already in RUNNING state"%self.label)
         return self.state()
         
+    def stopAcq(self):
+        self.config["frequency"] = self.stored_frequency
+        if self.state()==DevState.RUNNING:
+            try:
+                self.DP.command_inout("Stop")
+            except DevFailed:
+                self.DP.command_inout("Abort")
+        return self.state()
+
     def stop(self):
         #Version change: Abort becomes Abort. kept for compatibility 5/9/2014
         self.config["frequency"] = self.stored_frequency
