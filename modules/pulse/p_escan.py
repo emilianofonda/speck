@@ -613,7 +613,7 @@ class escan_class:
         col=0
         for i in self.cpt.user_readconfig:
             self.cpt_header+=i.label+"\t"
-            if i.label.startswith("roi") and (i.label.endswith("_01") or i.label.endswith("_1")): self.auto_fluo_channels.append(col)
+            if i.label.startswith("fluo") and ("roi" in i.label): self.auto_fluo_channels.append(col)
             col+=1
         print "Number of fluo channels="+RED+"%i"%(len(self.auto_fluo_channels))+RESET
         del col

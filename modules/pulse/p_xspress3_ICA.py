@@ -19,8 +19,9 @@ class xspress3:
     spoolMountPoint="", specificDevice="",
     config={}, identifier="",detector_details={"detector_name":"","real_pixels_list":"","comment":""}):
         """
-        this class interface with xspress3mini through the lima framework
+        this class interface with xspress3 mini and X series through the SOLEIL ICA device server
         some of the parameters are set by default and cannot be changed.
+        
         specificDevice: name of the specific associated device
         config is a dictionary containing the following kw informations, name of kw must correspond to existing attributes:
         acq_trigger_mode: internal_trigger or external_gate  (external is default, which corresponds to external_gate, 

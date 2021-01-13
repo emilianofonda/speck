@@ -320,6 +320,8 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
 
 def dscan(mot,p1,p2,dp=0.1,dt=0.1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,delay0=0.,scaler="ct",fullmca=False,graph=0):
     """Performs a relaive scan calling ascan and then set the motor back to previous position."""
+    if name == None:
+        name = "dscan_out"
     previous_pos=mot.pos()
     print "motor %s was at %g"%(whois(mot),mot.pos())
     abs_p1=previous_pos+p1
@@ -334,6 +336,8 @@ def dscan(mot,p1,p2,dp=0.1,dt=0.1,channel=1,returndata=False,fulldata=False,name
 def tscan(n,t=1,channel=1,returndata=False,fulldata=False,name=None,delay=0.,delay0=0.,scaler="ct",comment="",fullmca=False,graph=0):
     """Perform a time scan by using ascan capabilities. The integration time t and number of points n must be provided. 
     You may use the delay to set a deadtime between steps... if you want... The time scale is referred to actual time."""
+    if name == None:
+        name = "tscan_out"
     return ascan(cputime, p1=0, p2=n * t, dp = t,dt = t,channel=channel,returndata=returndata,fulldata=fulldata,name=name,delay=delay,\
     delay0=delay0,scaler=scaler,comment=comment,fullmca=fullmca,graph=graph)
 

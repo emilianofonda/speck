@@ -1,5 +1,6 @@
 print "CX1_pulse: preparing."
 
+from p_escan import *
 from p_spec_syntax import *
 from p_dxmap import dxmap
 
@@ -35,7 +36,7 @@ except Exception, tmp:
 #EXSPRESS3
 #trigger modes can be internal_trigger or external_gate  
 
-from p_xspress3 import xspress3
+from p_xspress3_QD import xspress3
 
 try:
     #config={"acq_trigger_mode":"internal_trigger",\
@@ -180,7 +181,7 @@ try:
     {"name":"MUX","formula":"log(float(ch[0])/ch[1])","units":"","format":"%9.7f"},\
     {"name":"MUS","formula":"log(float(ch[1])/ch[2])","units":"","format":"%9.7f"},\
     {"name":"I1Norm","formula":"float(ch[1])/ch[0]","units":"","format":"%9.7e"},\
-    {"name":"FLUO_RAW","formula":"float(sum(ch[4:17])/ch[0]","units":"","format":"%9.7e"},
+    {"name":"FLUO_RAW","formula":"float(sum(ch[4:17]))/ch[0]","units":"","format":"%9.7e"},
     ]  
     #>>>>>>>>>>>>>>>> Remember only formulas are saved to file <<<<<<<<<<<<<<<<<<<<<<<<
     XAS_dictionary_1 = {

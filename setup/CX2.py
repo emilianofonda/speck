@@ -17,6 +17,7 @@ print "CX2: preparing."
 
 #dxmap: configured forVortexME4 (MAP10)
 
+from p_escan import *
 from p_spec_syntax import *
 
 from p_dxmap import dxmap
@@ -24,10 +25,11 @@ from p_dxmap import dxmap
 try:
     #Recognized detector names:
     #CdTe, Canberra_Ge36, Canberra_Ge7, Vortex_SDD4, Vortex_SDD1, Canberra_SDD13
-    detector_details={"detector_name":"CdTe","real_pixels_list":"1","comment":"AMPTEK CdTe installed in CX2"}
+    #detector_details={"detector_name":"CdTe","real_pixels_list":"1","comment":"AMPTEK CdTe installed in CX2"}
+    detector_details={"detector_name":"SDD1","real_pixels_list":"1","comment":"Vortex 100mm2 SDD installed in CX2"}
 
     config = {"fileGeneration":False,"streamTargetPath":'D:\\FTP',\
-    "mode":"MAP", "streamNbAcqPerFile":630,"nbPixelsPerBuffer":63,"streamtargetfile":"cx2xia1"}
+    "mode":"VORTEX", "streamNbAcqPerFile":630,"nbPixelsPerBuffer":63,"streamtargetfile":"cx2xia1"}
     cx2xia1=dxmap("d09-1-cx2/dt/dtc-mca_xmap.1",FTPclient="d09-1-c00/ca/ftpclientcx2xia1",identifier = "fluo01",\
     FTPserver="d09-1-c00/ca/ftpservercx2xia1",spoolMountPoint="/nfs/.autofs/srv5/spool1/cx2xia1", config=config, detector_details=detector_details)
     mca1=cx2xia1
@@ -191,11 +193,17 @@ def shopen(level=2):
 
 #       Johann Analyzer
 import Johann
-__Johann_Geometry = {"atom":"Si","hkl":[3,1,1],"order":3,"R":0.985,"A":0.05,"alpha":0.,"detectorsize":0.3,"beamsize":3e-4,"angleMax":85,"angleMin":55.}
+#__Johann_Geometry = {"atom":"Si","hkl":[3,1,1],"order":3,"R":0.985,"A":0.05,"alpha":0.,"detectorsize":0.3,"beamsize":3e-4,"angleMax":85,"angleMin":55.}
+#__Johann_Geometry = {"atom":"Si","hkl":[2,2,0],"order":4,"R":1.000,"A":0.05,"alpha":0.,"detectorsize":0.3,"beamsize":3e-4,"angleMax":85,"angleMin":55.}
+__Johann_Geometry = {"atom":"Si","hkl":[1,1,1],"order":5,"R":1.000,"A":0.05,"alpha":0.,"detectorsize":0.3,"beamsize":3e-4,"angleMax":85,"angleMin":55.}
 __Johann_Motors ={"crystal_theta":thetaCrystal,"crystal_x":xCrystal,"detector_theta":thetaDetector,"detector_x":xDetector,"detector_z":zDetector}
 jo = Johann.JohannSpectro(__Johann_Motors, __Johann_Geometry)
+jo.offset_crystal_theta=0.17
+
+#Previous offsets
+#Si 311 jo.offset_crystal_theta=0.441
+#Si 220 jo.offset_crystal_theta=0.22844905850348596
 del __Johann_Geometry, __Johann_Motors
-jo.offset_crystal_theta=0.441
 
 print "Sample distance from monochromator should be at 19.881"
 print "Remember to set correctly the master property of CPT3 to false when switching to CX2 and to true when back to CX1"

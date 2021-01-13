@@ -226,9 +226,9 @@ class JohannSpectro:
         return
 
     def reinit(self):
-        for i in self.Geometry.keys():
-            if i in ["atom","hkl","order","R","A","alpha","detectorsize","beamsize","angleMax","angleMin"]:
-                setattr(self,i,self.Geometry[i])
+        #for i in self.Geometry.keys():
+        #    if i in ["atom","hkl","order","R","A","alpha","detectorsize","beamsize","angleMax","angleMin"]:
+        #        setattr(self,i,self.Geometry[i])
         self.Analyzer=JohannAnalyzer(atom=self.atom,h=self.hkl[0],k=self.hkl[1],l=self.hkl[2],
         order=self.order,R=self.R,A=self.A,alpha=self.alpha,detectorsize=self.detectorsize,beamsize=self.beamsize,
         angleMax=self.angleMax,angleMin=self.angleMin)
@@ -285,6 +285,16 @@ class JohannSpectro:
     def go(self,position=None):
         return self.pos(position,wait=False)
 
+    def set_R(self, value=None):
+        """The set_R function is an handy way to modify the geometrical parameter R
+        and immediately move the optics accordingly."""
+        if value == None:
+            return self.Geometry["R"]
+        else:
+            self.R = value
+            self.reinit()
+            return self.pos(self.pos())
+        
     def pos(self,position=None,wait=True):
         """The position can be angle or energy depending on the attribute mode:
         self.mode=0   angle
@@ -318,4 +328,18 @@ class JohannSpectro:
             wait_motor([self.motors["crystal_theta"],self.motors["crystal_x"],\
             self.motors["detector_theta"],self.motors["detector_x"],self.motors["detector_z"]],verbose=False)
         return self.pos()
+
+    def calculate_positions(self):
+        position= self.pos()
+        if self.mode == 0:
+            thC = position - self.offset_crystal_theta
+        elif self.mode == 1:
+            thC = self.Analyzer.e2theta(position) - self.offset_crystal_theta
+        else:
+            print "Bad mode defined, I will not move. Modes are 0 for angle and 1 for energy"
+            return
+        xD,zD = self.Analyzer.detectorXY(thC)
+        xC,zC = self.Analyzer.crystalXY(thC)
+        thD = self.Analyzer.detectorTheta(thC)
+        return {"theta":thC,"xC":xC,"xD":xD,"zD":zD} 
 
