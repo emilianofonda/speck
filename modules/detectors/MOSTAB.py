@@ -196,7 +196,7 @@ class MOSTAB_serial:
         self.InOutS(mode)
         return self.mode()
     
-    def tune(self, p1=2, p2=8, np=100, dt=0.1, oprange=1.2, offset = 0., draw=True, tune="center"):
+    def tune(self, p1=2, p2=8, np=100, dt=0.1, oprange=1.2, offset = 0., draw=True, tune="max"):
         """The tuning procedure can move to max intenisty (tune="max")
         or to baricenter (tune="center")
         """
