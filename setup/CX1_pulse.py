@@ -229,14 +229,60 @@ except Exception, tmp:
     print tmp
     print "Failure defining ct1 config"
 
-mostab.scaler = "ct"
+#     Definition of ct_xp for ecscan_xp
 
+try:
+    ctPosts_xp=[\
+    {"name":"MUX","formula":"log(float(ch[0])/ch[1])","units":"","format":"%9.7f"},\
+    {"name":"MUS","formula":"log(float(ch[1])/ch[2])","units":"","format":"%9.7f"},\
+    {"name":"I1Norm","formula":"float(ch[1])/ch[0]","units":"","format":"%9.7e"},\
+    ]  
+    #>>>>>>>>>>>>>>>> Remember only formulas are saved to file <<<<<<<<<<<<<<<<<<<<<<<<
+    XAS_dictionary_xp = {
+        "addresses":{
+            "I0":"cx1sai1.I0",
+            "I1":"cx1sai1.I1",
+            "I2":"cx1sai1.I2",
+            "I3":"cx1sai1.I3",
+            "Theta":"encoder01.Theta",
+            },
+        "constants":{},
+        "formulas":{
+            "Theta":"Theta[:]",
+            "energy":"dcm.theta2e(Theta[:])",
+            "I0":"I0[:]",
+            "I1":"I1[:]",
+            "I2":"I2[:]",
+            "I3":"I3[:]",
+            "MUX":"numpy.log(I0[:]/I1[:])",
+            "REF":"numpy.log(I1[:]/I2[:])",
+            "FLUO_DIODE":"I3[:]/I0[:]",
+            },
+    }
+ 
+    ct_xp = pseudo_counter(masters=[pulseGen0,],slaves=[sai,cpt3],posts = ctPosts_xp, postDictionary = XAS_dictionary_xp)
+
+except Exception, tmp:
+    print tmp
+    print "Failure defining ct_xp config"
+
+mostab.scaler = "ct_xp"
 
 # Scan macros
-
 execfile(__pySamba_root+"/modules/pulse/p_ascan.py")
 execfile(__pySamba_root+"/modules/pulse/p_cscan.py")
 execfile(__pySamba_root+"/modules/pulse/p_ecscan.py")
+
+#define ecscan_xp on the base of ecscan
+def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="t",shutter=False,beamCheck=True):
+    try:
+        ct_default_backup = ct
+        ct = ct_xp
+        ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True)
+    except:
+        raise
+    finally:
+        ct = ct_default_backup
 
 #legacy definitions
 def setroi(ch1, ch2):

@@ -240,14 +240,16 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
 
                 ax2 = pylab.subplot(4,1,2, sharex=ax1)
                 ylabel("Fluo")
-                pylab.plot(post_ene, f.root.post.FLUO.read(),label="DTC on")
-                pylab.plot(post_ene, f.root.post.FLUO_RAW.read(),label="DTC off")
-                pylab.setp(ax2.get_xticklabels(), visible=False)
-                l1,l2 = ax2.get_ylim()
-                red = abs(l1-l2)*0.05
-                ax2.set_yticks(numpy.linspace(l1+red,l2-red,5))
-                legend(frameon=False)    
-
+                try:
+                    pylab.plot(post_ene, f.root.post.FLUO.read(),label="DTC on")
+                    pylab.plot(post_ene, f.root.post.FLUO_RAW.read(),label="DTC off")
+                    pylab.setp(ax2.get_xticklabels(), visible=False)
+                    l1,l2 = ax2.get_ylim()
+                    red = abs(l1-l2)*0.05
+                    ax2.set_yticks(numpy.linspace(l1+red,l2-red,5))
+                    legend(frameon=False)    
+                except:
+                    pass
                 ax3 = pylab.subplot(4,1,3, sharex=ax1)
                 ylabel("$\mu$x Reference")
                 pylab.plot(post_ene, f.root.post.REF.read())
