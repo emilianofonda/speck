@@ -222,9 +222,11 @@ class MOSTAB_serial:
             self.__call__("TUNE #")
             time.sleep(2)
         elif self.mode() == "OSCILLATION":
-            dp = float(self("?AMPLITUDE")[self.echo])
             phi = float(self("?PHASE")[self.echo])
-            ob_xy = self.oscbeam(pt - 2. * dp, pt + 1. * dp, 0.25 * dp, phase = phi, repeat = 10)
+            #dp = float(self("?AMPLITUDE")[self.echo])
+            #ob_xy = self.oscbeam(pt - 2. * dp, pt + 1. * dp, 0.25 * dp, phase = phi, repeat = 10)
+            dp = oprange/400.
+            ob_xy = self.oscbeam(pt - 6. * dp, pt + 5. * dp, dp, phase = phi, repeat = 50)
             ob_fit = numpy.polyfit(ob_xy[0], ob_xy[1], 1)
             pylab.subplot(1,2,2)
             pylab.plot(ob_xy[0], ob_fit[0] * ob_xy[0] + ob_fit[1], "g--", linewidth=3)

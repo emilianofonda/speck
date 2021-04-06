@@ -7,7 +7,7 @@ import numpy as np
 
 class sai:
     def __init__(self,label="",user_readconfig=[],
-    timeout=3.,deadtime=0.1, 
+    timeout=10.,deadtime=0.1, 
     FTPclient="",FTPserver="",
     spoolMountPoint="", config={},identifier="",
     GateDownTime=2
@@ -133,6 +133,7 @@ class sai:
         cKeys = self.config.keys()
         if self.DP.configurationId <> self.config["configurationId"]:
             self.DP.write_attribute("configurationId",self.config["configurationId"])
+            sleep(3) #This operation is blocking and takes long time
         self.wait()
         #if nexusFileGeneration:
         #    self.config["nexusFileGeneration"] = True
@@ -159,7 +160,7 @@ class sai:
             self.stored_frequency = self.config["frequency"]
             self.config["frequency"] = 1.0e5/dt
         reloadAtts = self.DP.get_attribute_list()
-        for kk in [i for i in cKeys if i<> "configurationId" and self.config[i]<>self.DP.read_attribute(i).value]:
+        for kk in [i for i in cKeys if i<> "configurationId" and i in reloadAtts and self.config[i]<>self.DP.read_attribute(i).value]:
             self.DP.write_attribute(kk,self.config[kk])
         self.start()
         return

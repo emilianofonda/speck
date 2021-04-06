@@ -62,12 +62,13 @@ except Exception, tmp:
 from p_sai import sai as p_sai
 
 config = {"configurationId":3,"frequency":10000,"integrationTime":1,"nexusFileGeneration":False,\
-"nexusTargetPath":'/nfs/tempdata/samba/com-samba/cx1sai1',"nexusNbAcqPerFile":1000,"dataBufferNumber":1,\
+"nexusTargetPath":'/nfs/srv5/spool1/cx1sai1',"nexusNbAcqPerFile":1000,"dataBufferNumber":1,\
 "statHistoryBufferDepth":1000}
 
 try:
 
-    sai = p_sai("d09-1-c00/ca/sai.1", timeout=10., deadtime=0.1, spoolMountPoint="/nfs/srv5/spool1/cx1sai1",\
+    cx1sai = p_sai("d09-1-c00/ca/sai.1", timeout=10., deadtime=0.1, spoolMountPoint="/nfs/srv5/spool1/cx1sai1",\
+    FTPclient="d09-1-c00/ca/ftpclientai.1",FTPserver="d09-1-c00/ca/ftpserverai.1",
     config=config, identifier="cx1sai1",GateDownTime=1.)
 
 except Exception, tmp:
@@ -163,15 +164,15 @@ try:
 
     cpt=pseudo_counter(masters=[pulseGen0,])
     #ct=pseudo_counter(masters=[pulseGen0,],slaves=[mca1,], posts= ctPosts)
-    #ct=pseudo_counter(masters=[pulseGen0],slaves=[sai_1,x3mca], posts= ctPosts)
+    #ct=pseudo_counter(masters=[pulseGen0],slaves=[cx1sai_1,x3mca], posts= ctPosts)
     #Remember to set the cpt3 card from master to slave mode and modify BNC cable position from OUT to GATE
-    #ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai_1,mca1,cpt3], posts= ctPosts)
-    #ct=pseudo_counter(masters=[pulseGen0,], slaves=[sai,cpt3], posts=ctPosts, postDictionary=XAS_dictionary)
-    #ct=pseudo_counter(masters=[pulseGen0,], slaves=[sai,cpt3], posts=ctPosts)
+    #ct=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai_1,mca1,cpt3], posts= ctPosts)
+    #ct=pseudo_counter(masters=[pulseGen0,], slaves=[cx1sai,cpt3], posts=ctPosts, postDictionary=XAS_dictionary)
+    #ct=pseudo_counter(masters=[pulseGen0,], slaves=[cx1sai,cpt3], posts=ctPosts)
 
-    #ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai,cx1xia1,cx1xia2,cpt3])
-    ct0=pseudo_counter(masters=[pulseGen0,],slaves=[sai,cx1xia1,cx1xia2,cpt3],posts=ctPosts, postDictionary=XAS_dictionary)
-    ct=ct0
+    #ct=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cx1xia1,cx1xia2,cpt3])
+    ct0=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cx1xia1,cx1xia2,cpt3],posts=ctPosts, postDictionary=XAS_dictionary)
+
 except Exception, tmp:
     print tmp
     print "Failure defining ct0 config"
@@ -222,7 +223,7 @@ try:
     del __FLUO
     del __FLUO_RAW
  
-    ct1=pseudo_counter(masters=[pulseGen0,],slaves=[sai,cpt3,x3mca],posts=ctPosts_1, postDictionary=XAS_dictionary_1)
+    ct1=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cpt3,x3mca],posts=ctPosts_1, postDictionary=XAS_dictionary_1)
 
     #ct=ct1
 except Exception, tmp:
@@ -238,7 +239,7 @@ try:
     {"name":"I1Norm","formula":"float(ch[1])/ch[0]","units":"","format":"%9.7e"},\
     ]  
     #>>>>>>>>>>>>>>>> Remember only formulas are saved to file <<<<<<<<<<<<<<<<<<<<<<<<
-    XAS_dictionary_xp = {
+    XAS_dictionary_xp={
         "addresses":{
             "I0":"cx1sai1.I0",
             "I1":"cx1sai1.I1",
@@ -260,29 +261,32 @@ try:
             },
     }
  
-    ct_xp = pseudo_counter(masters=[pulseGen0,],slaves=[sai,cpt3],posts = ctPosts_xp, postDictionary = XAS_dictionary_xp)
+    ct_xp=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cpt3],posts = ctPosts_xp, postDictionary = XAS_dictionary_xp)
 
 except Exception, tmp:
     print tmp
     print "Failure defining ct_xp config"
 
-mostab.scaler = "ct_xp"
+mostab.scaler="ct_xp"
 
 # Scan macros
 execfile(__pySamba_root+"/modules/pulse/p_ascan.py")
 execfile(__pySamba_root+"/modules/pulse/p_cscan.py")
 execfile(__pySamba_root+"/modules/pulse/p_ecscan.py")
 
+ct=ct0
+
 #define ecscan_xp on the base of ecscan
-def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="t",shutter=False,beamCheck=True):
+def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10,e0=-1,mode="t",shutter=False,beamCheck=True):
+    shell=get_ipython()
     try:
-        ct_default_backup = ct
-        ct = ct_xp
-        ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True)
+        shell.user_ns["ct"]=shell.user_ns["ct_xp"]
+        ecscan(fileName=fileName,e1=e1,e2=e2,n=n,dt=dt,velocity=velocity,e0=e0,mode=mode,shutter=shutter,beamCheck=beamCheck)
     except:
         raise
     finally:
-        ct = ct_default_backup
+        shell.user_ns["ct"]=shell.user_ns["ct0"]
+    return
 
 #legacy definitions
 def setroi(ch1, ch2):

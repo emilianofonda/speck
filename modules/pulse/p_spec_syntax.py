@@ -552,7 +552,10 @@ def status(x):
     return
 
 def lsruche():
-    return os.system("ls -lh "+get_ipython().user_ns["__SPECK_CONFIG"]["USER_FOLDER"])
+    return os.system("ls "+filename2ruche(""))
+
+def llruche():
+    return os.system("ls -lh "+filename2ruche(""))
 
 
 def editmacro(macrofilename):
