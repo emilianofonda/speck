@@ -100,19 +100,17 @@ def setuser(name=None):
 
         print "New folder is: " + cfg["FOLDER"]
         try:
-            os.makedirs(IPy.user_ns["__SPECK_CONFIG"]['DATA_FOLDER']+ os.sep +cfg["FOLDER"])
-        except Exception, tmp:
-            print tmp
-        try:
             os.makedirs(IPy.user_ns["__SPECK_CONFIG"]['DATA_FOLDER'] + os.sep +cfg["FOLDER"])
         except Exception, tmp:
             print tmp
-        os.chdir(IPy.user_ns["__SPECK_CONFIG"]['TEMPORARY_HOME'] + os.sep +cfg["FOLDER"])
+        tmp_home = IPy.user_ns["__SPECK_CONFIG"]['TEMPORARY_HOME'] + os.sep +cfg["FOLDER"]
+        try:
+            os.makedirs(tmp_home)
+        except Exception, tmp:
+            print tmp
+        os.chdir(tmp_home)
         #Store information in shell SPECK dictionary
-        if type(IPy.user_global_ns["__SPECK_CONFIG"]) == dict:
-            IPy.user_global_ns["__SPECK_CONFIG"]["USER_FOLDER"]= IPy.user_ns["__SPECK_CONFIG"]['TEMPORARY_HOME']+ os.sep +cfg["FOLDER"]
-        else:
-            raise Exception("__SPECK_CONFIG global variable is not a dictionary.")
+        IPy.user_global_ns["__SPECK_CONFIG"]["USER_FOLDER"] = tmp_home
        
         #Store information in config file
         cfgfile=file(IPy.user_ns["__SPECK_CONFIG"]['SPECK_FOLDER'] + "/config/user.cfg","w")

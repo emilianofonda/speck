@@ -68,7 +68,7 @@ config = {"configurationId":3,"frequency":10000,"integrationTime":1,"nexusFileGe
 try:
 
     cx1sai = p_sai("d09-1-c00/ca/sai.1", timeout=10., deadtime=0.1, spoolMountPoint="/nfs/srv5/spool1/cx1sai1",\
-    FTPclient="d09-1-c00/ca/ftpclientai.1",FTPserver="d09-1-c00/ca/ftpserverai.1",
+    FTPclient="",FTPserver="",
     config=config, identifier="cx1sai1",GateDownTime=1.)
 
 except Exception, tmp:

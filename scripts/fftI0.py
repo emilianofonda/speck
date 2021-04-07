@@ -20,9 +20,6 @@ def fftI0(name="fftI0", freq = 10000, figN=10, spool="/nfs/srv5/spool1/sai"):
     #cardAI.nexusNbAcqPerFile=10
     
     cardAI.prepare(dt=1,NbFrames=cardAI.config["statHistoryBufferDepth"],nexusFileGeneration=True,stepMode=False,upperDimensions=())
-    cardAI.stop()
-    cardAI.DP.nexusFileGeneration=True
-    cardAI.start()
     sleep(0.1)
     while(cardAI.state()==DevState.RUNNING):
         sleep(1)
@@ -48,15 +45,16 @@ def fftI0(name="fftI0", freq = 10000, figN=10, spool="/nfs/srv5/spool1/sai"):
     fig=figure(figN)
     fig.clear()
     halflen = len(thisFT[0])/2
+    title(txtOut)
     subplot(2,1,1)
-    plot(thisFT[0][1:halflen/10],log10(thisFT[1][1:halflen/10]),label=txtOut)
+    plot(thisFT[0][1:halflen/10],log10(thisFT[1][1:halflen/10]),label="")
     xlabel("")
     ylabel("log10(|FT|)")
-    legend(fontsize="x-small")
+    #legend(fontsize="x-small")
     subplot(2,1,2)
-    plot(thisFT[0][1:halflen/10],(thisFT[1][1:halflen/10]),label=txtOut)
+    plot(thisFT[0][1:halflen/10],(thisFT[1][1:halflen/10]),label="")
     del thisFT
-    legend(fontsize="x-small")
+    #legend(fontsize="x-small")
     xlabel("Hz")
     ylabel("|FT|")
     savefig(pngOut)

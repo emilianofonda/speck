@@ -118,6 +118,7 @@ class sai:
         if self.FTPclient:
             if self.FTPserver and self.FTPserver.state() <> DevState.RUNNING:
                 raise Exception("FTP server %s is not running. Starting client is useless. Please start it and retry.")%self.FTPserver.name
+            self.FTPclient.DeleteRemainingFiles()
             return self.FTPclient.start()
         else:
             raise Exception("%s: You should define an FTP client first."%self.DP.name)
@@ -144,7 +145,11 @@ class sai:
         #else:
         #    self.config["nexusFileGeneration"] = False
         #Hard remove nexus files from ADC
-        self.config["nexusFileGeneration"] = False
+        if self.FTPclient:
+            self.DP.nexusResetBufferIndex()
+            self.config["nexusFileGeneration"] = nexusFileGeneration
+        else:
+            self.config["nexusFileGeneration"] = False
         #Remove GateDownTime: 
         self.config["integrationTime"]=dt * 1000 - self.GateDownTime
         if stepMode:
@@ -167,7 +172,9 @@ class sai:
 
     def start(self,dt=1):
         if self.state() <> DevState.RUNNING:
-            if self.FTPclient and self.FTPclient.state()<>DevState.RUNNING:
+            if self.FTPclient:
+                self.FTPclient.stop()
+                self.FTPclient.deleteRemainingFiles()
                 self.FTPclient.start()
             self.DP.command_inout("Start")
         else:
