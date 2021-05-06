@@ -17,6 +17,7 @@ class LTC11_toolbox:
         self.DP = DeviceProxy(com_port)
         self.deadtime = deadtime
         self.tolerance =tolerance
+        self.label=com_port
         return
    
     def write(self, message):
@@ -38,7 +39,9 @@ class LTC11_toolbox:
         return out
 
     def __call__(self):
-        return
+        ll = "%4.1f %4.1f"%tuple(self.read())
+        ll+= " %4.1f"%self.read_power()
+        return ll
 
     def __repr__(self):
         ll = ""
@@ -46,19 +49,25 @@ class LTC11_toolbox:
         return ll
 
     def state(self):
-        st = int(self.writeread("QISTATE?;")[0])
-        if st == 0:
-            return DevState.STANDBY
-        elif st == 1:
-            if abs(self.read_delta()) > self.tolerance:
+        try:
+            st = int(self.writeread("QISTATE?;")[0])
+            if st == 0:
+                return DevState.STANDBY
+            elif st == 1:
+                if abs(self.read_delta()) > self.tolerance:
+                    return DevState.MOVING
+                else:
+                    return DevState.RUNNING
+            elif st == 2:
                 return DevState.MOVING
-            else:
-                return DevState.RUNNING
-        elif st == 2:
-            return DevState.MOVING
-        elif st == 3:
-            return DevState.OFF
-        return DevState.STANDBY
+            elif st == 3:
+                return DevState.OFF
+            return DevState.STANDBY
+        except:
+            self.DP.init()
+            time.sleep(3)
+            return self.state()
+
 
     def status(self):
         return
@@ -67,6 +76,12 @@ class LTC11_toolbox:
         while(self.state() == DevState.MOVING):
             time.sleep(self.deadtime)
         return
+
+    def read_power(self):
+        return 10.*float(self.writeread("QHEAT?;")[:-3])
+
+    def go(self, target=None):
+        return self.pos(target,wait=False)
 
     def pos(self, target=None, wait=True):
         ch = self.select_channel()
@@ -142,7 +157,7 @@ class LTC11_toolbox:
             self.set_channels([1,0])
         elif channel == 2:
             self.set_channels([0,1])
-        elif channel not in [1,2]:
+        elif channel == None:
             chs = self.get_channels()
             if chs[0]:
                 return 1

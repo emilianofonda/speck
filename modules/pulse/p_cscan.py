@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 import thread
 import tables
-import os
-import numpy
+import os,sys
+import numpy as np
 import time as myTime
-from time import sleep
+from time import sleep,asctime
 from spec_syntax import wait_motor
 from GracePlotter import GracePlotter
 from spec_syntax import dark as ctDark
 from wait_functions import checkTDL, wait_injection
 import mycurses
+from PyTango import DevState, DeviceProxy
+import pylab
 
 try:
     import Tkinter
@@ -22,6 +24,7 @@ print mycurses.PINK+"Using alpha version of cscan"+mycurses.RESET
 
 
 def stop_cscan(shutter=False,cmot=None,cmot_previous_velocity=None):
+    shell=get_ipython()
     ct = shell.user_ns["ct"]
     try:
         if shutter:
@@ -82,7 +85,8 @@ def cscanActor(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beam
     shell=get_ipython()
     FE = shell.user_ns["FE"]
     obxg = shell.user_ns["obxg"]
-    cpt = shell.user_ns["ct"]
+    ct = shell.user_ns["ct"]
+    dcm = shell.user_ns["dcm"]
     mostab = shell.user_ns["mostab"]
     TotalScanTime = myTime.time()
     NofScans = n
@@ -109,7 +113,7 @@ def cscanActor(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beam
         myTime.sleep(10.)
     
     # Store the where_all_before
-    wa_before = wa(verbose=False,returns=True)
+    wa_before = shell.user_ns["wa"](verbose=False,returns=True)
     #
     cmot_previous_velocity = cmot.velocity * 1
     #Send motor to start position
@@ -165,24 +169,21 @@ def cscanActor(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beam
     #
 #Context can be saved to an approriate dictionary like post.
 #This will make scan procedures much more flexible and general
+    ct.savePost2HDF("where_all_before", np.array(wa_before), 
+    group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
     try:
-        ct.savePost2HDF("where_all_before", array(wa_before), 
-        group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
-    except:
-        print("Cannot save where_all_before.")
-    try:
-        ct.savePost2HDF("where_all_after", array(wa(verbose=False,returns=True)), 
+        ct.savePost2HDF("where_all_after", np.array(shell.user_ns["wa"](verbose=False,returns=True)), 
         group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
     except:
         print("Cannot save where_all_after.")
     # MOSTAB and Mono Configs
     try:
-        ct.savePost2HDF("mostab", array(mostab.status().split("\n")), 
+        ct.savePost2HDF("mostab", np.array(mostab.status().split("\n")), 
         group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
     except:
         print("Cannot save mostab status.")
     try:
-        ct.savePost2HDF("dcm", array(dcm.status().split("\n")), 
+        ct.savePost2HDF("dcm", np.array(dcm.status().split("\n")), 
         group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
     except:
         print("Cannot save dcm status.")
@@ -191,33 +192,42 @@ def cscanActor(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beam
     ct.closeHDFfile()
     print("Saving actions over!")
     timeAtStop = asctime()
-    timeout0 = time()
+    timeout0 = myTime.time()
     #The plotting, once finalised a reasonable code, could be generalised via a generic function and a dictionary listing plot items 
     try:
         f=tables.open_file(ct.final_filename,"r")
         fig1 = pylab.figure(1,figsize=(8,11),edgecolor="white",facecolor="white",)
         fig1.clear()
         pylab.subplot(4,1,1)
-        ylabel("$\mu$x")
-        pylab.plot(graph_x, f.root.post.MUX.read())
+        pylab.ylabel("$\mu$x")
+        try:
+            pylab.plot(graph_x, f.root.post.MUX.read())
+        except:
+            pass
         pylab.subplot(4,1,2)
-        ylabel("Fluo")
-        pylab.plot(graph_x, f.root.post.FLUO.read(),label="DTC on")
-        pylab.plot(graph_x, f.root.post.FLUO_RAW.read(),label="DTC off")
-        legend(frameon=False)    
+        pylab.ylabel("Fluo")
+        try:
+            pylab.plot(graph_x, f.root.post.FLUO.read(),label="DTC on")
+        except:
+            pass
+        try:
+            pylab.plot(graph_x, f.root.post.FLUO_RAW.read(),label="DTC off")
+        except:
+            pass
+        pylab.legend(frameon=False)    
         pylab.subplot(4,1,3)
-        ylabel("$\mu$x Reference")
+        pylab.ylabel("$\mu$x Reference")
         pylab.plot(graph_x, f.root.post.REF.read())
         pylab.subplot(4,1,4)
-        ylabel("$I_0,I_1,I_2$ Counts")
+        pylab.ylabel("$I_0,I_1,I_2$ Counts")
         try:
-            xlabel("%s (%s)"%(whois(cmot),cmot.DP.get_attribute_config(x.att_name).unit))
+            pylab.xlabel("%s (%s)"%(whois(cmot),cmot.DP.get_attribute_config(x.att_name).unit))
         except:
-            xlabel("%s"%(cmot.att_name))
+            pylab.xlabel("%s"%(cmot.att_name))
         pylab.plot(graph_x, f.root.post.I0.read(),"r",label="$I_0$")
         pylab.plot(graph_x, f.root.post.I1.read(),"k",label="$I_1$")
         pylab.plot(graph_x, f.root.post.I2.read(),"g",label="$I_2$")
-        legend(frameon=False)    
+        pylab.legend(frameon=False)    
         pylab.draw()
     except Exception as tmp:
         print "No Plot! Bad Luck!"
@@ -268,7 +278,8 @@ def c2scan(cmot,p1,p2,velocity,mot2,p21,p22,dp2,n=1,dt=0.1, channel=1,shutter=Fa
     shell=get_ipython()
     FE = shell.user_ns["FE"]
     obxg = shell.user_ns["obxg"]
-    cpt = shell.user_ns["ct"]
+    ct = shell.user_ns["ct"]
+    dcm = shell.user_ns["dcm"]
     mostab = shell.user_ns["mostab"]
     TotalScanTime = myTime.time()
     NofScans = n
@@ -301,7 +312,7 @@ def c2scan(cmot,p1,p2,velocity,mot2,p21,p22,dp2,n=1,dt=0.1, channel=1,shutter=Fa
         myTime.sleep(10.)
     
     # Store the where_all_before
-    wa_before = wa(verbose=False,returns=True)
+    wa_before = shell.user_ns["wa"](verbose=False,returns=True)
     #
     cmot_previous_velocity = cmot.velocity * 1
     #Send motor to start position
@@ -317,7 +328,7 @@ def c2scan(cmot,p1,p2,velocity,mot2,p21,p22,dp2,n=1,dt=0.1, channel=1,shutter=Fa
     if "associated_counter" in dir(mot2.DP) and mot2.DP.associated_counter<>"":
         handler.create_soft_link('/coordinates', 'X2', target='/data/'+mot2.DP.associated_counter.replace(".","/"))
     else:
-        mot2_fake = array([arange(NumberOfLines,dtype="float32")*dp2 + p21]*NumberOfPoints,dtype="float32")
+        mot2_fake = np.array([arange(NumberOfLines,dtype="float32")*dp2 + p21]*NumberOfPoints,dtype="float32")
         outGroup = handler.getNode("/coordinates")
         handler.createCArray(outGroup, "X2", title = "X2",\
         shape =  (NumberOfPoints, NumberOfLines), atom = tables.Atom.from_dtype(mot2_fake.dtype))
@@ -372,14 +383,14 @@ def c2scan(cmot,p1,p2,velocity,mot2,p21,p22,dp2,n=1,dt=0.1, channel=1,shutter=Fa
     #
     #Save CONTEXT
     #
-    ct.savePost2HDF("where_all_before", array(wa_before), 
+    ct.savePost2HDF("where_all_before", np.array(wa_before), 
     group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
-    ct.savePost2HDF("where_all_after", array(wa(verbose=False,returns=True)), 
+    ct.savePost2HDF("where_all_after", np.array(shell.user_ns["wa"](verbose=False,returns=True)), 
     group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
     # MOSTAB and Mono Configs
-    ct.savePost2HDF("mostab", array(mostab.status().split("\n")), 
+    ct.savePost2HDF("mostab", np.array(shell.user_ns["mostab"].status().split("\n")), 
     group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
-    ct.savePost2HDF("dcm", array(dcm.status().split("\n")), 
+    ct.savePost2HDF("dcm", np.array(shell.user_ns["dcm"].status().split("\n")), 
     group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
     #
     ct.closeHDFfile()

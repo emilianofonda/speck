@@ -55,6 +55,30 @@ except Exception, tmp:
 #    config=config,identifier="xspress_1")
 #except Exception, tmp:
 #    print tmp
+#EXSPRESS3
+#trigger modes can be internal_trigger or external_gate  
+
+from p_xspress3_QD import xspress3
+
+try:
+    #config={"acq_trigger_mode":"internal_trigger",\
+    config={"acq_trigger_mode":"external_gate",\
+    "saving_suffix":"hdf","saving_prefix":"x3x_","saving_format":"hdf5",\
+    "saving_directory":"/mnt/spool/x3x","saving_mode":"auto_frame",\
+    "saving_overwrite_policy":"abort"}
+
+    detector_details={"detector_name":"Canberra_SDD13","real_pixels_list":"1,2,3,4,5,6,7,8,9,10,11,12,13","comment":"Canberra 13 elements SDD + xspress3x"}
+    
+#   x3mca = xspress3(label = "d09-1-cx1/dt/xspress3x.1", timeout=30,deadtime=0.1,
+#   spoolMountPoint="/nfs/srv5/spool1/x3x",specificDevice="d09-1-cx1/dt/xspress3x.1-specific",\
+#   config=config,identifier="fluo03")
+
+    x3mca = xspress3(label = "lima/limaccd/1", timeout=30,deadtime=0.1,
+    spoolMountPoint="/nfs/srv5/spool1/x3x",specificDevice="lima/xspress3/1",\
+    config=config,identifier="fluo03")
+except Exception, tmp:
+    print tmp
+
 
 #SAI
 
@@ -97,9 +121,9 @@ pulseGen0 = pulseGen("d09-1-cx2/dt/pulsgen.2",config=config,deadtime=0.1,timeout
 try:
     ctPosts=[\
     {"name":"MUX","formula":"log(float(ch[0])/ch[1])","units":"","format":"%9.7f"},\
-#    {"name":"MUS","formula":"log(float(ch[1])/ch[2])","units":"","format":"%9.7f"},\
-#    {"name":"I1Norm","formula":"float(ch[1])/ch[0]","units":"","format":"%9.7e"},\
-    {"name":"MUF","formula":"float(ch[16])/ch[0]","units":"","format":"%9.7e"},
+    {"name":"MUS","formula":"log(float(ch[1])/ch[2])","units":"","format":"%9.7f"},\
+    {"name":"I1Norm","formula":"float(ch[1])/ch[0]","units":"","format":"%9.7e"},\
+    {"name":"MUF","formula":"float(ch[4])/ch[0]","units":"","format":"%9.7e"},
     ]  
     XAS_dictionary = {
         "addresses":{
@@ -108,9 +132,9 @@ try:
             "I1":"sai01.I1",
             "I2":"sai01.I2",
             "I3":"sai01.I3",
-            "ROI0":"fluo01.roi00",
-            "ICR0":"fluo01.icr00",
-            "OCR0":"fluo01.ocr00",
+            "ROI0":"fluo03.roi00",
+            "ICR0":"fluo03.icr00",
+            "OCR0":"fluo03.ocr00",
             },
         "constants":{},
         "formulas":{
@@ -121,8 +145,10 @@ try:
             "I2":"I2[:]",
             "I3":"I3[:]",
             "MUX":"numpy.log(I0[:]/I1[:])",
-            "FLUO":"ROI0[:]*ICR0[:]/(I0[:]*OCR0[:])",
-            "FLUO_RAW":"ROI0[:]/I0[:]",
+            "FLUO":"ROI0[:]*ICR0[:]*OCR0[:]",
+            "FLUO_RAW":"ROI0[:]",
+            #"FLUO":"ROI0[:]*ICR0[:]/(I0[:]*OCR0[:])",
+            #"FLUO_RAW":"ROI0[:]/I0[:]",
             "REF":"numpy.log(I1[:]/I2[:])",
             "FLUO_DIODE":"I3[:]/I0[:]",
             },
@@ -133,12 +159,8 @@ try:
     from p_spec_syntax import pseudo_counter
 
     cpt=pseudo_counter(masters=[pulseGen0,])
-    #ct=pseudo_counter(masters=[pulseGen0,],slaves=[mca1,], posts= ctPosts)
-    #ct=pseudo_counter(masters=[pulseGen0],slaves=[sai01,x3mca], posts= ctPosts)
+    ct=pseudo_counter(masters=[pulseGen0],slaves=[sai01,x3mca,cpt3], posts= ctPosts, postDictionary=XAS_dictionary)
     #Remember to set the cpt3 card from master to slave mode and modify BNC cable position from OUT to GATE
-    #ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai01,mca1,cpt3], posts= ctPosts)
-    ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai01,cx2xia1,cpt3],posts=ctPosts, postDictionary=XAS_dictionary)
-    #ct=pseudo_counter(masters=[pulseGen0,], slaves=[sai01,cpt3], posts=ctPosts, postDictionary=XAS_dictionary)
 
 except Exception, tmp:
     print tmp

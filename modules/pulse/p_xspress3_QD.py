@@ -183,11 +183,11 @@ class xspress3:
         self.currentStep = -1
         
         self.upperDimensions = upperDimensions
-        try:
-            if not self.DPspecific.read_attribute("useDtc").value:
-                self.DPspecific.write_attribute("useDtc",True)
-        except Exception as tmp:
-            print(tmp)
+        #try:
+        #    if not self.DPspecific.read_attribute("useDtc").value:
+        #        self.DPspecific.write_attribute("useDtc",True)
+        #except Exception as tmp:
+        #    print(tmp)
             
         #Verify stream items
         #self.stream_items = [lower(i) for i in self.DP.get_property("StreamItems")["StreamItems"]]
@@ -195,6 +195,8 @@ class xspress3:
         cKeys = self.config.keys()
         self.config["acq_nb_frames"] = NbFrames
         #Multi file option needs to be studied... usefull?
+        #Saving HDF code has to be debugged for multi file support
+        #self.config["saving_frame_per_file"] = min(5000,NbFrames)
         self.config["saving_frame_per_file"] = NbFrames
 
         #self.config["nbframes"] = NbFrames
@@ -313,8 +315,8 @@ class xspress3:
                 print(tmp)
                 sleep(0.1)
 
-#       return self.computeRois() + list(reads[:,3]) + list(reads[:,4]) + list(reads[:,9])
-        return self.computeRois() + list(reads[:,3]) + list(reads[:,4]) + list(100.-100.*reads[:,4]/reads[:,3])
+#                   rois,               icrs,                                   ocrs,                               dts
+        return self.computeRois() + list(reads[:,3]/reads[:,0]*8.0e7) + list(reads[:,4]/reads[:,0]*8.0e7) + list(reads[:,9])
 #       if self.state() == DevState.ON:
 #           #The order matters: rois, icrs, ocrs, dts
 #           #out=self.DP.read_attributes(self.rois+self.icrs+self.ocrs+self.dts)
