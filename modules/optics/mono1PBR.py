@@ -286,8 +286,9 @@ class mono1:
         self.m_rz2=rz2
         self.m_rs2=rs2
         self.m_rx2fine=rx2fine
-        self.m_tz1=tz1
-        self.motors=[self.m_rx1, self.m_tz2, self.m_ts2, self.m_rx2,self.m_rs2, self.m_rz2, self.bender,self.m_tz1]
+        #self.m_tz1=tz1
+        #self.motors=[self.m_rx1, self.m_tz2, self.m_ts2, self.m_rx2,self.m_rs2, self.m_rz2, self.bender,self.m_tz1]
+        self.motors=[self.m_rx1, self.m_tz2, self.m_ts2, self.m_rx2,self.m_rs2, self.m_rz2, self.bender]
         ##Section LocalTable. This part relies on the dcm device
         if list(self.DP.get_property("SPECK_UseLocalTable")["SPECK_UseLocalTable"]) ==[]:
             self.DP.put_property({"SPECK_UseLocalTable": False})

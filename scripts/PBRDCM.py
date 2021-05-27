@@ -14,8 +14,9 @@ except Exception, tmp:
 #End of legacy
                         
 __tmp={
-"rx2"      :["d09-1-c03/op/mono1-mt_rx.2","position","deadtime=0.05"],
-"tz1"      :["d09-1-c03/op/mono1-mt_tz.1","position","deadtime=0.05"],
+#"rx2"      :["d09-1-c03/op/mono1-mt_rx.2","position","deadtime=0.05"],
+"rx2"      :["d09-1-c03/op/Axis9_Rx2","position","deadtime=0.05"],
+#"tz1"      :["d09-1-c03/op/mono1-mt_tz.1","position","deadtime=0.05"],
 "rz2"      :["d09-1-c03/op/Axis1_Rz2","position","deadtime=0.05"],
 "ts2"      :["d09-1-c03/op/Axis2_TS2","position","deadtime=0.05"],
 "tz2"      :["d09-1-c03/op/Axis3_TZ2","position","deadtime=0.05"],
@@ -60,7 +61,7 @@ try:
     print "Defining dcm...",
     from mono1PBR import mono1
     dcm = mono1(monoName="d09-1-c03/op/ENERGY", DataViewer="d09-1-c03/op/DATAVIEWER",\
-    rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, tz1=tz1, bender=bender,\
+    rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, bender=bender,\
     counter_label="d09-1-c00/ca/cpt.1", counter_channel=0,\
     delay=0.0, emin=5250.,emax=43000.)
     dcm.deadtime = 0.05

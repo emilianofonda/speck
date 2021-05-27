@@ -226,6 +226,7 @@ class MOSTAB_serial:
             #dp = float(self("?AMPLITUDE")[self.echo])
             #ob_xy = self.oscbeam(pt - 2. * dp, pt + 1. * dp, 0.25 * dp, phase = phi, repeat = 10)
             dp = oprange/400.
+            #dp = oprange/200.
             ob_xy = self.oscbeam(pt - 6. * dp, pt + 5. * dp, dp, phase = phi, repeat = 50)
             ob_fit = numpy.polyfit(ob_xy[0], ob_xy[1], 1)
             pylab.subplot(1,2,2)
@@ -254,6 +255,7 @@ class MOSTAB_serial:
         amplitude = float(self.InOutS("?AMPLITUDE")[self.echo])
         tau = float(self.InOutS("?TAU")[self.echo])
         
+        self.pos(self.lm()[0]+0.05)
         time.sleep(0.1)
         for p in numpy.arange(p1, p2+dp, dp):
             print self.pos(p)
