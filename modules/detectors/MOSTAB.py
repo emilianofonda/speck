@@ -245,23 +245,25 @@ class MOSTAB_serial:
             self.start()
         return self.state()
 
-    def oscbeam(self,p1,p2,dp=0.01, phase = 0., repeat=3):
+    def oscbeam(self,p1,p2,dp=0.01, phase = 0., repeat=50):
         self.mode("OSCILLATION")
         self.InOutS("PHASE %6.1f"% phase)
         points = []
-        self.InOutS("OSCIL OFF")
+        #self.InOutS("OSCIL OFF")
         
         frequency = float(self.InOutS("?FREQUENCY")[self.echo])
         amplitude = float(self.InOutS("?AMPLITUDE")[self.echo])
         tau = float(self.InOutS("?TAU")[self.echo])
+
+        self.InOutS("OSCIL ON")
         
         self.pos(self.lm()[0]+0.05)
         time.sleep(0.1)
         for p in numpy.arange(p1, p2+dp, dp):
             print self.pos(p)
             time.sleep(0.1)
-            self.InOutS("OSCIL ON")
-            time.sleep(2)
+            #self.InOutS("OSCIL ON")
+            #time.sleep(2)
             main=0.
             quad=0.
             for i in xrange(repeat):

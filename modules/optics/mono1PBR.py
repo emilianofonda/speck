@@ -385,11 +385,18 @@ class mono1:
                  self.DataViewer.A10 = A10 - self.bender.c1.offset
                  self.DataViewer.A21 = A21
                  self.DataViewer.A20 = A20 - self.bender.c2.offset
-                 self.DataViewer.Rs2_C5 = 0.
-                 self.DataViewer.Rs2_C4 = 0.
-                 self.DataViewer.Rs2_C3 = 0.
-                 self.DataViewer.Rs2_C2 = 0.
-                 self.DataViewer.Rs2_C1, self.DataViewer.Rs2_C0 = numpy.polyfit(x, self.LocalTable["RS2"],1)
+                 if len(x)>2:
+                    self.DataViewer.Rs2_C5 = 0.
+                    self.DataViewer.Rs2_C4 = 0.
+                    self.DataViewer.Rs2_C3 = 0.
+                    self.DataViewer.Rs2_C2, self.DataViewer.Rs2_C1, self.DataViewer.Rs2_C0 =\
+                    numpy.polyfit(x, self.LocalTable["RS2"],2)
+                 else:
+                    self.DataViewer.Rs2_C5 = 0.
+                    self.DataViewer.Rs2_C4 = 0.
+                    self.DataViewer.Rs2_C3 = 0.
+                    self.DataViewer.Rs2_C2 = 0.
+                    self.DataViewer.Rs2_C1, self.DataViewer.Rs2_C0 = numpy.polyfit(x, self.LocalTable["RS2"],1)
                  self.DataViewer.Rz2_C5 = 0.
                  self.DataViewer.Rz2_C4 = 0.
                  self.DataViewer.Rz2_C3 = 0.
