@@ -10,11 +10,6 @@ from time import time, sleep
 import os
 import thread
 
-#from motor_class import motor,piezo,motor_slit
-#from moveable import moveable
-#from mm4005 import mm4005_motor
-#from mono1b import mono1
-
 import PyTango
 from PyTango import DevState
 import Universal_Prefilter
@@ -66,13 +61,13 @@ def wa(returns = False, verbose = True):
     for i in g:
         if not(i.startswith("_")):
             j=eval(i,g)
-            if isinstance(j,eval("motor",g)) or isinstance(j,eval("piezo",g)) or isinstance(j,eval("motor_slit",g)) \
-            or isinstance(j,eval("mono1",g)) or isinstance(j,eval("moveable",g)): 
+            if isinstance(j,eval("motor",g)) or isinstance(j,eval("motor_slit",g)) \
+            or isinstance(j,eval("moveable",g)) or isinstance(j,eval("absorbing_system",g)): 
                 lm.append([i,j])
     lm.sort()
     outout=[]
     if verbose:
-        print "pySamba motors:"
+        print "Motors:"
     color=RED
     for i in lm:
         if color==RED:
