@@ -3,10 +3,10 @@
 #Imports section
 #from IPython.core.ipapi import get as get_ipython
 from IPython.core.getipython import get_ipython
-from numpy import log, sin, cos, tan, exp, sum
+from numpy import log, sin, cos, tan, exp, sum,array
 import numpy
 import exceptions
-from time import time, sleep
+from time import time, asctime, sleep
 import os, shutil
 import thread
 import tables
@@ -797,6 +797,8 @@ class pseudo_counter:
         self.saveData2HDF (*)
         self.closeHDFfile (*)
         """
+        self.timestamp_start=["",0]
+        self.timestamp_stop=["",0]
         if stepMode:
             for i in self.masters:
                 if "prepare" in dir(i):
@@ -811,20 +813,25 @@ class pseudo_counter:
         return
 
     def start(self,dt=1):
-        """slaves and arming is moved to prepare"""
+        """slaves and arming is moved to prepare.
+        Start should timestap the starting time in context."""
         for i in self.preCountList:
             i.preCount(dt=dt)
         for i in self.masters:
             i.start(dt=dt)
+        self.timestamp_start=[asctime(),"%f"%time()]
         return
 
 
     def stop(self):
+        """This stop function is used to abort the acquisition, not for a normal end of recording.
+        A time stamp is taken."""
         try:
             for i in self.all:
                 i.stop()
             while(self.state() == DevState.RUNNING):
                 sleep(self.deadtime)
+            self.timestamp_stop=[asctime(),"%f"%time()]
             return
         except Exception as tmp:
             #Try again
@@ -897,6 +904,7 @@ class pseudo_counter:
                 sleep(self.deadtime) 
             for i in self.postCountList:
                 i.postCount()
+            self.timestamp_stop=[asctime(),"%f"%time()]
             return
         except (KeyboardInterrupt, SystemExit), tmp:
             self.stop()
@@ -1015,6 +1023,15 @@ class pseudo_counter:
         return self.handler
 
     def closeHDFfile(self):
+        """Closes the HDF file and writes the two time stamps: timestamp_start and timestamp_stop.""" 
+        try:
+            self.savePost2HDF("time_at_start",  array(self.timestamp_start), 
+            group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
+            self.savePost2HDF("time_at_stop",  array(self.timestamp_stop), 
+            group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
+        except Exception as tmp:
+            print("Error writing timestamps in file %s"%self.handler.filename)
+            print (tmp)
         self.handler.close()
 #Now move file from temporary folder to ruche
         shutil.move(self.handler.filename, self.final_filename)

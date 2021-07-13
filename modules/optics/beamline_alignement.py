@@ -59,7 +59,8 @@ def __m1bender(theta,hgap=25.):
     if theta<=0.5:
         return 100e3
     else:
-        return 78214.2857189429 * theta + 2142.85711979773
+        return 8.0493E4 * theta + 3.4372E4
+        #return 78214.2857189429 * theta + 2142.85711979773
 #       return 35041.4691771089 * theta + 54787.1074748141
 #        return 89375. * theta - 4375.
 #        h40=74900.*theta+63750.
@@ -83,7 +84,8 @@ def __m2bender(theta,hgap=25.):
     if theta<0.5:
         return 100e3
     else:
-        return 89392.8571388639 * theta + 7285.71430548794
+        return 8.6328E4 * theta - 3.4563E4
+         #return 89392.8571388639 * theta + 7285.71430548794
 #        h40=92275.*theta-41312.5
 #        h25=87575.*theta-19562.5
 #        h15=87110.*theta-18125.
@@ -193,7 +195,7 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
         po2.on()
         po3.on()
         po4.on()
-        po5.on()
+        #po5.on()
         #
         #Wait two Galil cycles just in case...
         sleep(0.2)
@@ -209,8 +211,9 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
             
         mv(mir1_pitch, theta, mir2_pitch, __m2theta(theta), \
         po1, __girder(theta), po2, __obxgZ(theta), po3, __exafsZ(theta),\
-        po4, __exafsZ(theta), po5, __exafsZ(theta), \
+        po4, __exafsZ(theta), \
         mir1_c, __m1bender(theta,hgap), mir2_c, mir2_c_target )
+        #po4, __exafsZ(theta), po5, __exafsZ(theta), \
         mv(mir1_roll, __m1Roll(theta), mir2_roll, __m2Roll(theta))
         mv(mir1_z, __m1Z(theta), mir2_z, __m2Z(theta))
     except Exception, tmp:
@@ -227,7 +230,8 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
             mir2_pitch.pos(__m2theta(theta))
             mir2_roll.pos(__m2Roll(theta))
             mir2_z.pos(__m2Z(theta))
-            wait_motor([po1,po2,po3,po4,po5])
+            wait_motor([po1,po2,po3,po4])
+            #wait_motor([po1,po2,po3,po4,po5])
             print " OK!"
         else:
             mir1_pitch.stop()
@@ -236,7 +240,7 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
             po2.stop()
             po3.stop()
             po4.stop()
-            po5.stop()
+            #po5.stop()
             mir1_c.stop()
             mir2_c.stop()
             print "Stopping over error. Hint: Verify Security of tpp."
