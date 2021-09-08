@@ -668,6 +668,10 @@ class pseudo_counter:
 
         self.deadtime = deadtime
         self.timeout = timeout
+        
+        self.timestamp_start=0.
+        self.timestamp_stop=0.
+
         self.user_readconfig = []
         self.mca_units = []
         n = 0
@@ -839,7 +843,12 @@ class pseudo_counter:
                 i.stop()
         finally:
             try:
-                self.closeHDFfile()
+#Closing the file here is a problem for all post actions
+#1- we remove the close action and it has to be done separately
+#2- or we integrate a reopening of the file if needed in all post actions...
+#What is the better option?
+                pass
+                #self.closeHDFfile()
             except:
                 pass
     
@@ -1032,7 +1041,8 @@ class pseudo_counter:
         except Exception as tmp:
             print("Error writing timestamps in file %s"%self.handler.filename)
             print (tmp)
-        self.handler.close()
+        finally:
+            self.handler.close()
 #Now move file from temporary folder to ruche
         shutil.move(self.handler.filename, self.final_filename)
         return
@@ -1099,11 +1109,10 @@ class pseudo_counter:
                 outGroup = self.handler.getNode("/" + domain + "/" + group)
         except:
             if group <> "":
-                try:
-                    self.handler.createGroup("/" + domain, group)
-                except:
-                    pass
+                self.handler.createGroup("/" + domain, group)
                 outGroup = self.handler.getNode("/" + domain + "/" + group)
+            else:
+                outGroup = self.handler.getNode("/" + domain )
 #Create nodes with the correct shape and atom type
         self.handler.createCArray(outGroup, name, title = name,\
         shape = value_shape, atom = value_atom, filters = HDFfilters)

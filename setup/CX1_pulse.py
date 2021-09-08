@@ -12,7 +12,7 @@ try:
     config = {"fileGeneration":False,"streamTargetPath":'D:\\FTP',\
     "mode":"MAP2", "streamNbAcqPerFile":630,"nbPixelsPerBuffer":63,"streamtargetfile":"xia1"}
     
-    cx1xia1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",FTPclient="d09-1-c00/ca/ftpclientxia.1",identifier = "fluo01",\
+    cx1xia1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",FTPclient="d09-1-c00/ca/ftpclientxia.1",identifier = "fluo01",timeout=90.,\
     FTPserver="d09-1-c00/ca/ftpserverxia.1",spoolMountPoint="/nfs/srv5/spool1/xia1", config=config,detector_details = detector_details)
     
     print GREEN+"cx1xia1 --> DxMap card"+RESET
@@ -22,7 +22,7 @@ try:
     config = {"fileGeneration":False,"streamTargetPath":'D:\\FTP',\
     "mode":"MAP2", "streamNbAcqPerFile":630,"nbPixelsPerBuffer":63,"streamtargetfile":"xia2"}
     
-    cx1xia2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",FTPclient="d09-1-c00/ca/ftpclientxia.2",identifier = "fluo02",\
+    cx1xia2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",FTPclient="d09-1-c00/ca/ftpclientxia.2",identifier = "fluo02",timeout=90.,\
     FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/nfs/srv5/spool1/xia2", config=config,detector_details = detector_details)
     
     print GREEN+"cx1xia2 --> DxMap card"+RESET

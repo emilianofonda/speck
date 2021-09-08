@@ -10,7 +10,7 @@ from string import lower
 
 
 class dxmap:
-    def __init__(self,label="",channels=None,user_readconfig=[],timeout=30.,deadtime=0.05, FTPclient="",FTPserver="",spoolMountPoint="",
+    def __init__(self,label="",channels=None,user_readconfig=[],timeout=90.,deadtime=0.05, FTPclient="",FTPserver="",spoolMountPoint="",
     specificDevice="",config={},identifier="",detector_details={"detector_name":"","real_pixels_list":"","comment":""}):
        
         self.DP=DeviceProxy(label)
@@ -567,7 +567,9 @@ class dxmap:
                             100.*(1.-eval("sourceFile.root.entry.scan_data.ocr%02i" % i)[::reverse]\
                             /eval("sourceFile.root.entry.scan_data.icr%02i" % i)[::reverse])\
                             )
-            except:
+            except Exception, tmp:
+                print("Error saving data from file %s"%sourceFile.name)
+                print(tmp)
                 raise
             finally:
                 sourceFile.close()
@@ -577,7 +579,15 @@ class dxmap:
             roi = handler.getNode("/data/" + self.identifier + "/roi%02i" % i)
             mca = handler.getNode("/data/" + self.identifier + "/mca%02i" % i)
             roi[:] = np.sum(mca[:,Roi0:Roi1],axis=1)
-        self.FTPclient.deleteremainingfiles()
+        try:
+            sleep(0.3)
+            self.FTPclient.deleteremainingfiles()
+        except Exception, tmp:
+            #print(tmp)
+            print("Timeout ==> Retry Once")
+            sleep(3)
+            self.FTPclient.deleteremainingfiles()
+            print("Timeout ==> OK")
         return
     
 
