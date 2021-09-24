@@ -512,6 +512,12 @@ class dxmap:
                 and i.endswith("nxs")]
                 sleep(self.deadtime)
             print("XIA files waited for %4.2fs" % (time.time()-t0))
+            if time.time()-t0 > self.timeout:
+                try:
+                    ipy=get_ipython()
+                    ipy.user_global_ns["ResetFluo"]()
+                except:
+                    print("p_dxmap tried to reset fluo electronics calling ResetFluo: failure.")
         files2read.sort()
 #check reverse value for upper dimensional scans
         if reverse not in [-1,1]:
@@ -585,7 +591,7 @@ class dxmap:
         except Exception, tmp:
             #print(tmp)
             print("Timeout ==> Retry Once")
-            sleep(3)
+            sleep(10)
             self.FTPclient.deleteremainingfiles()
             print("Timeout ==> OK")
         return

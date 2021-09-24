@@ -846,9 +846,8 @@ class pseudo_counter:
 #Closing the file here is a problem for all post actions
 #1- we remove the close action and it has to be done separately
 #2- or we integrate a reopening of the file if needed in all post actions...
-#What is the better option?
-                pass
-                #self.closeHDFfile()
+#What is the better option?  after test --> option 2
+                self.closeHDFfile()
             except:
                 pass
     
@@ -1009,11 +1008,6 @@ class pseudo_counter:
         This has probably to be changed soon.
         """
         sh = get_ipython()
-#The following line cannot work
-        #self.handler = tables.openFile(findNextFileName(sh.user_ns["__Default_Data_Folder"] + os.sep + fileName, "hdf"), "w")
-#The following line works but directly writes in ruche
-        #self.handler = tables.openFile(findNextFileName(filename2ruche(fileName),"hdf"), "w")
-#The following lines could work, but closeHDFfile should move the file from temp folder.
 #Find the final file name
         self.final_filename = findNextFileName(filename2ruche(fileName),"hdf")
 #Prepare the temporary file name
@@ -1092,6 +1086,11 @@ class pseudo_counter:
         The function will not open nor close the file to be written so it has to be used after an openHDFfile method.
 
         This function should be used to write more standard scan macros"""
+
+#If the handler has been closed due to an error, it has to be reopened for post operations to complete
+        if not self.handler.isopen :
+            self.handler = tables.openFile(self.handler.filename, "a")
+
 #Define shape
         try:
             value_shape = numpy.shape(value)
