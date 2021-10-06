@@ -515,7 +515,7 @@ class dxmap:
             if time.time()-t0 > self.timeout:
                 try:
                     ipy=get_ipython()
-                    ipy.user_global_ns["ResetFluo"]()
+                    ipy.user_global_ns["resetFluo"]()
                 except:
                     print("p_dxmap tried to reset fluo electronics calling ResetFluo: failure.")
         files2read.sort()

@@ -161,6 +161,8 @@ class sai:
             self.config["dataBufferNumber"] = NbFrames 
             self.config["statHistoryBufferDepth"] = NbFrames 
         #Taking into account hardware limits
+        if dt>50:
+            raise Exception("SAI card cannot accumulate for more than 50s.")
         if dt * self.config["frequency"] > 1.0e5:
             self.stored_frequency = self.config["frequency"]
             self.config["frequency"] = 1.0e5/dt

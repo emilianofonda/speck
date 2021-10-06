@@ -1142,6 +1142,50 @@ class pseudo_counter:
         del db
         return
 
+def FileNameFactory(prefix,ext,number=1,pad_to=4):
+    #
+    #Prepare correct filename to avoid overwriting
+    #
+    def file_name_i(i,prefix,ext,folder,fmt):
+        f_n = prefix + fmt%i + "." + ext
+        if folder != "":
+            f_n = folder + os.sep + f_n
+        return f_n
+    
+    fmt='%0'+"%i"%pad_to+'i'
+
+    psep=prefix.rfind(os.sep)
+    if(psep<>-1): 
+        fdir=prefix[:psep]
+    else:
+        fdir="."
+    if(psep<>-1): prefix=prefix[psep+1:]
+    
+    len_name = len(ext) + 1 + len(prefix) + pad_to
+    ldir = os.listdir(fdir)
+    ldir.sort()
+    last_file = [i for i in ldir if len(i)==len_name and i.startswith(prefix) and (i.endswith(ext) or ext=="")][-1]
+    last_index = int(last_file[-len(ext)-pad_to-1:-len(ext)-1])
+    #return [last_index,fdir + os.sep + last_file]
+    return iter([[i,file_name_i(i,prefix,ext,fdir,fmt)] for i in range(last_index+1,last_index+1+number)])
+    
+    
+    
+    
+    if ext<>"":
+        fname=prefix+"_"+ fmt%(file_index)+"."+ext
+    else:
+        fname=prefix+"_" + fmt%(file_index)
+    _dir=os.listdir(fdir)
+    while(fname in _dir):
+        file_index += 1
+        if ext<>"":
+            fname = prefix + "_" + fmt%(file_index) + "." + ext
+        else:
+            fname = prefix + "_" + fmt%(file_index)
+    fname=fdir+os.sep+fname
+    return fname
+
 def findNextFileName(prefix,ext,file_index=1):
     #
     #Prepare correct filename to avoid overwriting
@@ -1158,11 +1202,11 @@ def findNextFileName(prefix,ext,file_index=1):
         fname=prefix+"_"+"%04i"%(file_index)
     _dir=os.listdir(fdir)
     while(fname in _dir):
-        file_index+=1
+        file_index += 1
         if ext<>"":
-            fname=prefix+"_"+"%04i"%(file_index)+"."+ext
+            fname = prefix + "_" + "%04i"%(file_index) + "." + ext
         else:
-            fname=prefix+"_"+"%04i"%(file_index)
+            fname = prefix + "_" + "%04i"%(file_index)
     fname=fdir+os.sep+fname
     return fname
 
