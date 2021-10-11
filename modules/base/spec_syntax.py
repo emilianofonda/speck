@@ -54,14 +54,14 @@ def whois(x):
 def wa(returns = False, verbose = True):
     """Tells the correspondence between tango and python motor names and their positions. 
     Should be rewritten to point to a dictionary of classes defined in the main initialisation.
-    The list of classes is presently hard coded."""
+    The list of classes is presently hard coded and there is the special case of the energy actuator!"""
     lm=[]
     g = get_ipython().user_ns
     #g=globals()
     for i in g:
         if not(i.startswith("_")):
             j=eval(i,g)
-            if isinstance(j,eval("motor",g)) or isinstance(j,eval("motor_slit",g)) \
+            if isinstance(j,eval("motor",g)) or isinstance(j,eval("motor_slit",g)) or j == eval("energy",g) \
             or isinstance(j,eval("moveable",g)) or isinstance(j,eval("absorbing_system",g)): 
                 lm.append([i,j])
     lm.sort()
@@ -81,6 +81,7 @@ def wa(returns = False, verbose = True):
         if verbose: print color+outoutline+RESET
         if returns: outout.append(outoutline)
     if returns:
+        print "Test Version!!!!!!!!!!!!!"
         return outout 
     else:
         return

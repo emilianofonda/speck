@@ -61,7 +61,9 @@ def wa(returns = False, verbose = True):
     g = get_ipython().user_ns
     #g=globals()
     for i in g:
-        if not(i.startswith("_")):
+        if i=="energy" or i =="dcm":
+            lm.append([i,eval(i,g)])
+        elif not(i.startswith("_")):
             j=eval(i,g)
             if isinstance(j,eval("motor",g)) or isinstance(j,eval("motor_slit",g)) \
             or isinstance(j,eval("moveable",g)) or isinstance(j,eval("absorbing_system",g)): 
