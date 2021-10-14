@@ -137,7 +137,9 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 myTime.sleep(1)
 
             dcm.velocity(60)
-            dcm.pos(e1-50.)
+            dcm.pos(e1-40.)
+            if e1 < 5000:
+                mvr(dcm.bender,10000)
             myTime.sleep(0.2)
             dcm.velocity(velocity)
             myTime.sleep(0.2)
