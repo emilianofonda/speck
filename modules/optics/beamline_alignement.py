@@ -140,13 +140,8 @@ def __obxgZ(theta):
     return __girder(theta) * 5.6 + get_ipython().user_ns["dcm"].H()
 
 
-#Alias for SEXAFS users
-def SetAngleSEXAFS(theta=None,hgap=25.,SEXAFS=True):
-    return SetAngle(theta,SEXAFS)
-    
 
 #Do the full job:
-#Nouvelle procedure ... rustine!
 def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
     """Close the vertical primary slits, align everything, open the primary slits back to the previous value.
     If the previous gap value in mm exceeds the mir1_pitch (mrad) the mir1_pitch (mrad) is taken as slit gap in mm.
@@ -211,9 +206,8 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
             
         mv(mir1_pitch, theta, mir2_pitch, __m2theta(theta), \
         po1, __girder(theta), po2, __obxgZ(theta), po3, __exafsZ(theta),\
-        po4, __exafsZ(theta), \
+        po4, __exafsZ(theta), po5, __exafsZ(theta),\
         mir1_c, __m1bender(theta,hgap), mir2_c, mir2_c_target )
-        po4, __exafsZ(theta), po5, __exafsZ(theta), \
         mv(mir1_roll, __m1Roll(theta), mir2_roll, __m2Roll(theta))
         mv(mir1_z, __m1Z(theta), mir2_z, __m2Z(theta))
     except Exception, tmp:
@@ -230,7 +224,6 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
             mir2_pitch.pos(__m2theta(theta))
             mir2_roll.pos(__m2Roll(theta))
             mir2_z.pos(__m2Z(theta))
-            #wait_motor([po1,po2,po3,po4])
             wait_motor([po1,po2,po3,po4,po5])
             print " OK!"
         else:
