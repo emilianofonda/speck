@@ -658,7 +658,7 @@ class pseudo_counter:
         self.preCountList = []
         self.postCountList = []
         self.stepWaitList = []
-        self.handler = None
+        #self.handler = None
 
         for i in slaves: 
             if "preCount" in dir(i):
@@ -803,6 +803,12 @@ class pseudo_counter:
         self.saveData2HDF (*)
         self.closeHDFfile (*)
         """
+        #First set handler to None in order to prevent manipulations of a previously defined file
+        #In case this is not done a stop before setting the name can overwrite a previous file
+        try:
+            self.handler=None
+        except:
+            pass
         self.timestamp_start=["",0]
         self.timestamp_stop=["",0]
         if stepMode:
@@ -845,11 +851,12 @@ class pseudo_counter:
                 i.stop()
         finally:
             try:
+                if self.handler.isopen:
 #Closing the file here is a problem for all post actions
 #1- we remove the close action and it has to be done separately
 #2- or we integrate a reopening of the file if needed in all post actions...
 #What is the better option?  after test --> option 2
-                self.closeHDFfile()
+                    self.closeHDFfile()
             except:
                 pass
     
@@ -1028,7 +1035,7 @@ class pseudo_counter:
         return self.handler
 
     def closeHDFfile(self):
-        """Closes the HDF file and writes the two time stamps: timestamp_start and timestamp_stop.""" 
+        """Closes the HDF file and right before writes the two time stamps: timestamp_start and timestamp_stop.""" 
         try:
             self.savePost2HDF("time_at_start",  array(self.timestamp_start), 
             group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")

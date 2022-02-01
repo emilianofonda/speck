@@ -5,9 +5,9 @@ import os,sys
 import numpy as np
 import time as myTime
 from time import sleep,asctime
-from spec_syntax import wait_motor
+from p_spec_syntax import wait_motor,whois
 from GracePlotter import GracePlotter
-from spec_syntax import dark as ctDark
+from p_spec_syntax import dark as ctDark
 from wait_functions import checkTDL, wait_injection
 import mycurses
 from PyTango import DevState, DeviceProxy
@@ -54,6 +54,8 @@ __CPlotter__ = CPlotter()
 
 def cscan(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beamCheck=True,filename="cscan_out"):
     cmot_previous_velocity = cmot.velocity
+    cmot_previous_position = cmot.pos()
+    print("motor %s was at %f"%(whois(cmot),cmot_previous_position))
     shell=get_ipython()
     try:
         for i in range(n):
@@ -82,6 +84,11 @@ def cscanActor(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beam
     The backup folder MUST be defined for the code to run.
     Global variables: FE and obxg must exist and should point to Front End and Shutter
     """
+    if velocity==None:
+        try:
+            velocity=cmot.velocity
+        except:
+            raise("Velocity cannot be retrieved or set on motor.")
     shell=get_ipython()
     FE = shell.user_ns["FE"]
     obxg = shell.user_ns["obxg"]
@@ -123,7 +130,7 @@ def cscanActor(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beam
     ct.prepare(dt=dt,NbFrames = NumberOfPoints, nexusFileGeneration = True)
     print "OK"
     handler = ct.openHDFfile(filename)
-    
+#Warning: using the handler out of ct and directly has to be avoided, problems arise when scans are aborted and resumed. 
     #Create coordinates links and arrays in file
     handler.create_soft_link('/coordinates', 'X1', target='/data/'+cmot.DP.associated_counter.replace(".","/"))
     #Set scan speed
@@ -133,7 +140,7 @@ def cscanActor(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beam
     timeAtStart = asctime()
     #Start acquisition?
        #Print Name:
-    print "Measuring : %s\n"%handler.filename
+    print "Measuring : %s\n"%ct.handler.filename
     try:
         pass
         if shutter:
@@ -196,7 +203,7 @@ def cscanActor(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beam
     #The plotting, once finalised a reasonable code, could be generalised via a generic function and a dictionary listing plot items 
     try:
         f=tables.open_file(ct.final_filename,"r")
-        fig1 = pylab.figure(1,figsize=(8,11),edgecolor="white",facecolor="white",)
+        fig1 = pylab.figure(3,figsize=(8,11),edgecolor="white",facecolor="white",)
         fig1.clear()
         pylab.subplot(4,1,1)
         pylab.ylabel("$\mu$x")
@@ -244,6 +251,7 @@ def dcscan(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beamChec
     cmot_previous_velocity = cmot.velocity
     shell=get_ipython()
     cmot_previous_position = cmot.pos()
+    print("motor %s was at %f"%(whois(cmot),cmot_previous_position))
     try:
         for i in range(n):
             #Previous speed to record
@@ -271,7 +279,7 @@ def dcscan(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beamChec
 def c2scan(cmot,p1,p2,velocity,mot2,p21,p22,dp2,n=1,dt=0.1, channel=1,shutter=False,beamCheck=True,filename="c2scan_out"):
     """Start from p1 to p2 and count over dt (s) per point.
     Make a map over cmot2 position, this not being moved continuously.
-    velocity: if None currenty is used.
+    velocity: if None current is used.
     The backup folder MUST be defined for the code to run.
     Global variables: FE and obxg must exist and should point to Front End and Shutter
     """

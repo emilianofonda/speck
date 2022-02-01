@@ -138,8 +138,8 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
 
             dcm.velocity(60)
             dcm.pos(e1-40.)
-            if e1 < 5000:
-                mvr(dcm.bender,10000)
+            #General bender backlash correction
+            mvr(dcm.bender,20000)
             myTime.sleep(0.2)
             dcm.velocity(velocity)
             myTime.sleep(0.2)
@@ -154,6 +154,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             print "Preparing acquisition ... ",
             ct.prepare(dt=dt,NbFrames = NumberOfPoints, nexusFileGeneration = True)
             print "OK"
+#It is dangerous to address the handler out of the ct context
             handler = ct.openHDFfile(fileName)
             #Print Name:
             print "Measuring : %s\n"%handler.filename

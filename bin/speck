@@ -1,6 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env /usr/Local/pyroot/PyTangoRoot/bin/pytango
 # -*- coding: iso-8859-15 -*-
 
+## changed on 10/01/2022 following JIRA Infiter-2556#############!/usr/bin/env python
 import os,sys,string
 
 #for i in ["subprocess", "commands"]:
