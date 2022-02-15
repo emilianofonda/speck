@@ -3,17 +3,17 @@ print "Loading Vortex_SDD4 version pulse under XIA: preparing."
 try:
     #Recognized detector names:
     #CdTe, Canberra_Ge36, Canberra_Ge7, Vortex_SDD4, Vortex_SDD1, Canberra_SDD13
-    detector_details={"detector_name":"Vortex_SDD4","real_pixels_list":"1,2,3,4","comment":"Vortex 4 elements installed in CX1"}
+    detector_details={"detector_name":"Vortex_SDD4","real_pixels_list":"1,2,3,4","comment":"Vortex 4 elements from DiffAbs installed in CX1"}
 
     config = {"fileGeneration":False,"streamTargetPath":'D:\\FTP',\
     "mode":"MAP10", "streamNbAcqPerFile":630,"nbPixelsPerBuffer":63,"streamtargetfile":"xia1"}
     
-    cx1xia1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",FTPclient="d09-1-c00/ca/ftpclientxia.1",identifier = "fluo01",timeout=90.,\
+    cx1xia1_sdd4=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",FTPclient="d09-1-c00/ca/ftpclientxia.1",identifier = "fluo01",timeout=90.,\
     FTPserver="d09-1-c00/ca/ftpserverxia.1",spoolMountPoint="/nfs/srv5/spool1/xia1", config=config,detector_details = detector_details)
     
-    print GREEN+"cx1xia1 --> DxMap card"+RESET
+    print GREEN+"cx1xia1_sdd4 --> DxMap card"+RESET
     
-    mca1=cx1xia1
+    mca1=cx1xia1_sdd4
 
 except Exception, tmp:
     print tmp
@@ -71,9 +71,9 @@ try:
     XAS_dictionary["formulas"]["FLUO_RAW"] = __FLUO_RAW
     del __FLUO
     del __FLUO_RAW
-    #ct=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cx1xia1,cx1xia2,cpt3])
+    #ct=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cx1xia1_sdd4,cx1xia2,cpt3])
 
-    ct_sdd4=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cx1xia1,cpt3],posts=ctPosts, postDictionary=XAS_dictionary)
+    ct_sdd4=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cx1xia1_sdd4,cpt3],posts=ctPosts, postDictionary=XAS_dictionary)
 
 except Exception, tmp:
     print tmp
@@ -82,11 +82,11 @@ except Exception, tmp:
 ct=ct_sdd4
 ct.reinit()
 #legacy definitions
-def setroi(ch1, ch2):
-    """Set roi an ALL channels between ch1 and ch2. This is a silly way to do it... must be redesigned"""
-    try:
-        mca1.setROIs(ch1, ch2)
-    except:
-        pass
-    return 
+#def setroi(ch1, ch2):
+#    """Set roi an ALL channels between ch1 and ch2. This is a silly way to do it... must be redesigned"""
+#    try:
+#        mca1.setROIs(ch1, ch2)
+#    except:
+#        pass
+#    return 
 

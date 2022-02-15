@@ -10,7 +10,7 @@ from time import time, asctime, sleep
 import os, shutil
 import thread
 import tables
-
+import copy
 
 import PyTango
 from PyTango import DevState
@@ -652,15 +652,15 @@ class pseudo_counter:
 
         #HDF filters should be defined as a global parameter with a reasonable default. This modification is pending.
 
-        self.masters = masters
-        self.slaves = slaves
-        self.all = masters + slaves 
+        self.masters = copy.copy(masters)
+        self.slaves = copy.copy(slaves)
+        self.all = self.masters + self.slaves 
         self.preCountList = []
         self.postCountList = []
         self.stepWaitList = []
         #self.handler = None
 
-        for i in slaves: 
+        for i in self.slaves: 
             if "preCount" in dir(i):
                 self.preCountList.append(i)
             if "postCount" in dir(i):
@@ -714,12 +714,19 @@ class pseudo_counter:
             if "reinit" in dir(i):
                 i.reinit()
         self.user_readconfig = []
+        self.mca_units=[]
         n=0
         for i in self.all:
+            if "read_mca" in dir(i):
+                self.mca_units.append(i)
             self.user_readconfig += i.user_readconfig
             if "clock_channel" in dir(i):
                 self.clock_channel = i.clock_channel + n
             n += len(i.user_readconfig)
+        #Strange xia behaviour due to init system and config file depencency
+        #This code should be removed, too specific
+        self.xia_units = [i for i in self.mca_units if "currentMode" in dir (i)]
+        #
         return
 
     def __call__(self,dt=1,NbFrames=1, nexusFileGeneration=False, fileName ="", HDFfilters = tables.Filters(complevel = 1, complib='zlib')):

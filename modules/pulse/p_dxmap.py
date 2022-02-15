@@ -105,23 +105,24 @@ class dxmap:
         self.DP.command_inout("Init")
         while(self.state() in [DevState.UNKNOWN, DevState.DISABLE]):
             sleep(self.deadtime)
+        self.setMode(self.config["mode"])
         return
 
     def reinit(self):
-        for prova in range(5):
-            try:
-                if self.init_user_readconfig<>[]: 
-                    for i in self.init_user_readconfig:
-                        #ac=self.DP.get_attribute_config_ex([i[0],])[0]
-                        ac=self.DP.get_attribute_config([i[0],])[0]
-                        ac.label=i[1]
-                        ac.format=i[2]
-                        ac.unit=i[3]
-                        #self.DP.set_attribute_config_ex([ac,])
-                        self.DP.set_attribute_config([ac,])
-                break
-            except:
-                print self.label+": Failed setting user_readconfig! Trial no: %i"%prova
+        #for prova in range(5):
+        #    try:
+        #        if self.init_user_readconfig<>[]: 
+        #            for i in self.init_user_readconfig:
+        #                #ac=self.DP.get_attribute_config_ex([i[0],])[0]
+        #                ac=self.DP.get_attribute_config([i[0],])[0]
+        #                ac.label=i[1]
+        #                ac.format=i[2]
+        #                ac.unit=i[3]
+        #                #self.DP.set_attribute_config_ex([ac,])
+        #                self.DP.set_attribute_config([ac,])
+        #        break
+        #    except:
+        #        print self.label+": Failed setting user_readconfig! Trial no: %i"%prova
         self.rois,self.ocrs,self.icrs,self.dts=[],[],[],[]
         self.channels=[]
         self.channels_labels=[]
@@ -135,7 +136,7 @@ class dxmap:
             if i[:len("outputCountRate")]=="outputCountRate" and int(i[-2:])>=0 and int(i[-2:])<=99:
                 self.ocrs.append(i)
             if i[:len("deadTime")]=="deadTime" and int(i[-2:])>=0 and int(i[-2:])<=99:
-                self.ocrs.append(i)
+                self.dts.append(i)
         self.user_readconfig=[]
         for i in self.rois+self.icrs+self.ocrs+self.dts:
             self.user_readconfig.append(self.DP.get_attribute_config(i))
