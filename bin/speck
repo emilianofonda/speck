@@ -1,15 +1,11 @@
-#!/usr/bin/env /usr/Local/pyroot/PyTangoRoot/bin/pytango
+#!/usr/Local/pyroot/PyTango3Root/bin/ipython
 # -*- coding: iso-8859-15 -*-
+###Commented Out   #!/usr/bin/env /usr/Local/pyroot/PyTangoRoot/bin/pytango
 
 ## changed on 10/01/2022 following JIRA Infiter-2556#############!/usr/bin/env python
 import os,sys,string
-
-#for i in ["subprocess", "commands"]:
-for i in ["commands",]:
-    try:
-        exec("import "+i)
-    except:
-        raise Exception("speck: cannot import module %s\n" % (i))
+import subprocess
+import importlib
 
 if len(sys.argv)>1:
     args=sys.argv[1:]
@@ -21,7 +17,7 @@ dn=dn[:dn.rfind(os.sep)]
 for i in args:
     if i.startswith("--setup="):
         SPECK_SETUP = i[i.rfind("=")+1:]
-        print "SPECK_SETUP = ", SPECK_SETUP
+        print("SPECK_SETUP = ", SPECK_SETUP)
         args.pop(args.index("--setup="+SPECK_SETUP))
         break
     else:
@@ -30,50 +26,38 @@ for i in args:
 
 os.putenv("SPECK",dn)
 os.system("export SPECK=%s"%dn)
-execfile(dn + "/config/speck_folders.py")
+exec(open(dn+"/config/speck_folders.py","r").read())
 
-print "+++++++++++++++++++++++++++++++++++++++++"
-print '\x1b[31;01m',
-print "SPECK says: 'dans le cochon tout est bon'",
-print '\x1b[0m'
-print "+++++++++++++++++++++++++++++++++++++++++"
-print "This speck folder is : %s"%dn
+print("+++++++++++++++++++++++++++++++++++++++++")
+print('\x1b[31;01m',)
+print("SPECK says: 'dans le cochon tout est bon'",)
+print('\x1b[0m')
+print("+++++++++++++++++++++++++++++++++++++++++")
+print("This speck folder is : %s"%dn)
 
-#print ">Setting TANGO environment variables"
+#print(">Setting TANGO environment variables")
 os.system("%s/bin/tango_config"%(dn))
 
-#print ">Checking ipython version"
-status, out = commands.getstatusoutput("ipython -Version")
+status, out = subprocess.getstatusoutput("ipython -Version")
 if not(status):
     Version = out
 else:
-    status, out = commands.getstatusoutput("ipython --version")
+    status, out = subprocess.getstatusoutput("ipython --version")
     if not(status):
         Version = out
     else:
-        print "speck starter: unknown ipython version! Defaulting to 3.0.0"
+        print("speck starter: unknown ipython version! Defaulting to 3.0.0")
         Version = "3.0.0"
-#print "IPython version is %s"%Version
-#print ""
-#print ">Starting speck environment"
-#print ""
+print("IPython version is %s"%Version)
+
 if Version.count(".")>1:
     V=Version.split(".")
     Version=float(V[0]+"."+V[1])
 else:
     Version=float(Version)
+
 os.putenv("VERSION","%3.2f"%Version)
-if Version<0.11:
-    print "Fallback mode (namely beamline old ipython)"
-    #os.system("/usr/bin/env EDITOR=gedit VERSION=%s ipython -i --pylab  --profile=speck --autocall 2 --colors LightBG -ipythondir %s"\
-    os.system("/usr/bin/env EDITOR=gedit VERSION=%s ipython -i --pylab  --profile=speck --autocall 2 --colors LightBG -ipythondir %s"\
-    %(Version,dn+os.sep+"oldstyle_profile")\
-    +" "+string.join(args))
-else:
-    #os.system("EDITOR=gedit VERSION=%s ipython -i --no-banner --pylab  --profile=speck --autocall 2 --colors LightBG --gui=gtk --ipython-dir %s/profile"%(Version,dn)\
-    ss = "/usr/bin/env EDITOR=gedit VERSION=%s ipython -i --no-banner --pylab  --profile=speck --autocall 2 --colors LightBG --ipython-dir %s/profile --gui=gtk "%(Version,dn)+" "+string.join(args)
-    #print ss
-    #print ""
-    os.system("/usr/bin/env EDITOR=gedit VERSION=%s SPECK_SETUP=%s ipython -i --no-banner --pylab  --profile=speck --autocall 2 --colors LightBG --ipython-dir %s/profile --gui=gtk "%(Version,SPECK_SETUP,dn)\
-+" "+string.join(args))
+s=""
+os.system("/usr/bin/env EDITOR=gedit VERSION=%s SPECK_SETUP=%s ipython -i --no-banner --pylab  --profile=speck --autocall 2 --colors LightBG --ipython-dir %s/profile --gui=gtk "%(Version,SPECK_SETUP,dn)\
++" "+s.join(args))
 

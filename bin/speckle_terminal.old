@@ -1,2 +1,0 @@
-#!/bin/bash
-gnome-terminal --hide-menubar --title=SPECK --geometry 140x50+10+20 -e "screen -A speck"
