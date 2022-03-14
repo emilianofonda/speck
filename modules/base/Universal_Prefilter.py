@@ -5,6 +5,7 @@
 EX.: <wm motor> will be parsed into <wm('motor')>
 
 Contributors E. Fonda, S. Stanescu..."""
+from __future__ import print_function
 
 ####
 #### Import the function/modules as specified in hooks.py by Fernando Perez
@@ -40,52 +41,6 @@ def new_run_cell(cell, *args, **kwargs):
     return old_run_cell(new_cell, *args, **kwargs)
 
 shell.run_cell = new_run_cell
-#else:
-#    ####
-#    #### Import the function/modules as specified in hooks.py by Fernando Perez
-#    ####
-#    try: 
-#        import IPython.ipapi
-#    except:
-#        import IPython.core.ipapi
-#
-#    try:
-#        ip=IPython.ipapi.get()
-#        __NewVersion=True
-#    except:
-#        print "...old ipython mode...",
-#        __NewVersion=False
-#    ####
-#
-#    def myparser(self, line,continuation=""):
-#        if __NewVersion:
-#            #return mylineparser(line)
-#            return universal_lineparser(line)
-#        else:
-#            #return self._prefilter(mylineparser(line),continuation)
-#            return self._prefilter(universal_lineparser(line),continuation)
-#        
-#
-#    ####
-#    #### Finally replace the input_prefilter with my custom function myparser
-#    ####
-#
-#    if __NewVersion:
-#        ip.set_hook("input_prefilter",myparser)
-#        #Cleanup namespace
-#        del ip
-#    else:
-#        try:
-#            from IPython.core import interactiveshell as InteractiveShell
-#        except:
-#            from IPython.iplib import InteractiveShell
-#        InteractiveShell.prefilter=myparser
-#        #Clean up namespace
-#        del InteractiveShell
-#
-#
-#
-#
 #################################################################
 #The real transform is here below and it is named mylineparser
 ################################################################
@@ -191,13 +146,13 @@ def universal_lineparser(line):
                     output_line += frontspaces + parts[0] + fmt % tuple(parts[1:])
             else:
                 output_line += thisline
-            if thisline <> lines[-1]:
+            if thisline != lines[-1]:
                 output_line += ";"
         #print output_line
         return output_line
-    except Exception, tmp:
-        print tmp
-        print "universal_lineparser error"
+    except Exception as tmp:
+        print(tmp)
+        print("universal_lineparser error")
         return line
 ###Universal Ends
 
@@ -207,18 +162,11 @@ def fileparser(filename_in,filename_out):
     It is used by the domacro function to execute pyHermes code with spec like syntax."""
     fin=file(filename_in,"r")
     linesin=fin.readlines()
-#   print linesin
     fin.close()
     fout=file(filename_out,"w")
-#   fout.write("""import PyTango\n""")
-#   fout.write("""from XPEEM import *\n""")
-#   fout.write("""execfile("/home/experiences/hermes/com-hermes/PYTHON/HERMES_CONF/PY_HERMES.py")\n""")
     for lin in linesin:
         lin=lin.rstrip('\n')
-#       print lin
-#       lout=mylineparser(lin)
         lout=universal_lineparser(lin)
-#       print lout
         fout.write(lout+"\n")
     fout.close()
     return
@@ -231,7 +179,7 @@ def process_macro_file(filename,uns, n=1):
     fileparser(filename,macro_tmp_file)
     #print "Executing file ",macro_tmp_file
     for __repeat_this_macro in range(n):
-        execfile(macro_tmp_file, uns)
+        exec(open(macro_tmp_file,"r").read())
     #print "Removing temporary file ",macro_tmp_file
     os.remove(macro_tmp_file)
     return

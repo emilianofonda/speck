@@ -1,9 +1,19 @@
 from __future__ import print_function
 print("Starting speck...")
+import time
+import os
+from IPython.terminal.prompts import Prompts,Token
+
+class MyPrompt(Prompts):
+    def in_prompt_tokens(self,cli=None):
+        return[(Token, os.getcwd()+"\nSPECK3"),(Token.Prompt,' >')]
+
+ip=get_ipython()
+ip.prompts=MyPrompt(ip)
+
 #Import Python modules
 import sys,os
 import scipy
-import exceptions
 from time import asctime,time,sleep,clock
 #Why these import here? old things forgotten here?
 import numpy
@@ -23,7 +33,7 @@ for i in subdn: sys.path.append(dn+os.sep+i)
 import os
 
 
-execfile(__SPECK_CONFIG["SPECK_FOLDER"]+os.sep+"config"+os.sep+"speck_folders.py")
+exec(open(__SPECK_CONFIG["SPECK_FOLDER"]+os.sep+"config"+os.sep+"speck_folders.py","r").read())
 __Default_Data_Folder=SPECK_TEMPORARY_HOME
 __Default_Backup_Folder=SPECK_DATA_FOLDER
 __SPECK_CONFIG["DATA_FOLDER"] = SPECK_DATA_FOLDER

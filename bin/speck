@@ -38,26 +38,8 @@ print("This speck folder is : %s"%dn)
 #print(">Setting TANGO environment variables")
 os.system("%s/bin/tango_config"%(dn))
 
-status, out = subprocess.getstatusoutput("ipython -Version")
-if not(status):
-    Version = out
-else:
-    status, out = subprocess.getstatusoutput("ipython --version")
-    if not(status):
-        Version = out
-    else:
-        print("speck starter: unknown ipython version! Defaulting to 3.0.0")
-        Version = "3.0.0"
-print("IPython version is %s"%Version)
-
-if Version.count(".")>1:
-    V=Version.split(".")
-    Version=float(V[0]+"."+V[1])
-else:
-    Version=float(Version)
-
-os.putenv("VERSION","%3.2f"%Version)
 s=""
-os.system("/usr/bin/env EDITOR=gedit VERSION=%s SPECK_SETUP=%s ipython -i --no-banner --pylab  --profile=speck --autocall 2 --colors LightBG --ipython-dir %s/profile --gui=gtk "%(Version,SPECK_SETUP,dn)\
+#os.system("/usr/bin/env EDITOR=gedit VERSION=%s SPECK_SETUP=%s ipython -i --no-banner --pylab  --profile=speck --autocall 2 --colors LightBG --ipython-dir %s/profile --gui=gtk "%(Version,SPECK_SETUP,dn)\
+os.system("/usr/bin/env EDITOR=gedit SPECK_SETUP=%s ipython -i --no-banner --pylab  --profile=speck --autocall 2 --colors LightBG --ipython-dir %s/profile --gui=gtk "%(SPECK_SETUP,dn)\
 +" "+s.join(args))
 

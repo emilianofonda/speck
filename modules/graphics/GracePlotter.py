@@ -1,5 +1,7 @@
+from __future__ import print_function
 #Requires ipython
-import exceptions
+from builtins import range
+from builtins import object
 import os
 import grace_np
 from numpy import mod, arange, nan_to_num
@@ -10,12 +12,12 @@ def xplot(x,y=None,curve=-1,graph=0,color=-1):
         x, y = arange(len(x)), x
     if not("GracePlotter_x" in globals()):
         try:
-            print "Opening New Grace Window"
+            print("Opening New Grace Window")
             __IP.user_ns["GracePlotter_x"]=GracePlotter()
         except:
             #ipy=globals()["get_ipython"]()
             #ipy.ex("GracePlotter_x=GracePlotter()")
-            exec "GracePlotter_x=GracePlotter()" in globals()
+            exec("GracePlotter_x=GracePlotter()", globals())
     #GracePlotter_x.GPlot(x,y,gw=0,curve=curve,graph=graph,color=color)
     if graph > len(GracePlotter_x.wins) + 1: 
         graph = len(GracePlotter_x.wins) + 1
@@ -26,7 +28,7 @@ def xplot(x,y=None,curve=-1,graph=0,color=-1):
         try:
             GracePlotter_x.GPlot(x, y, gw=graph, curve=curve, graph=0, color=color)
             xauto(graph)
-        except Exception, tmp:
+        except Exception as tmp:
             raise tmp
     return
 
@@ -43,7 +45,7 @@ def xauto(i=None):
         except:
             #ipy=get_ipython()
             #ipy.ex("GracePlotter_x=GracePlotter()")
-            exec "GracePlotter_x=GracePlotter()" in globals()
+            exec("GracePlotter_x=GracePlotter()", globals())
     if i==None: i=0
     if i<0 or i>=len(GracePlotter_x.wins): i=-1
     GracePlotter_x.wins[i]("autoscale\nredraw\n")
@@ -53,7 +55,7 @@ def xarrange():
     """Should find number of graphs and arrange them well..."""
     return
 
-class GracePlotter:
+class GracePlotter(object):
     def __init__(self):
         self.curves=[]
         self.wins=[]
@@ -98,7 +100,7 @@ class GracePlotter:
         for i in range(l):
             pipe_string+='g%i.s%i point %g,%g\n'%(graph,curve, px[i], py[i])
         #pipe_string+="autoscale\n"
-        if legend<>None:
+        if legend!=None:
             pipe_string+='g%i.s%i legend "%s"\n'%(graph,curve,legend)
         pipe_string+="g%i.s%i LINE COLOR %i\n"%(graph,curve,color)
         pipe_string+="g%i.s%i LINE LINEWIDTH 2\n"%(graph,curve) #,width)
@@ -115,13 +117,13 @@ class GracePlotter:
             else:
                 self.wins[gw].command(pipe_string+'redraw\n')
             return
-        except Exception, tmp:
+        except Exception as tmp:
             self.wins[gw]=grace_np.GraceProcess()
             if noredraw:
                 self.wins[gw](pipe_string)
             else:
                 self.wins[gw](pipe_string+'redraw\n')
-            print tmp
+            print(tmp)
             return
         return
 

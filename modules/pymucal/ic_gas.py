@@ -1,3 +1,5 @@
+from __future__ import division
+from past.utils import old_div
 import exceptions
 from pymucal import muro,atomic_data
 import math
@@ -28,7 +30,7 @@ def gas_mux(energy,gas,pressure,temperature=294.,l=1.):
 		gdata=atomic_data(gas)
 	else:
 		raise exceptions.Exception("Unknown Chamber Gas")
-	return gab*pressure*__mbar_conv/(__gas_constant*temperature)*gdata.weight*l
+	return old_div(gab*pressure*__mbar_conv,(__gas_constant*temperature))*gdata.weight*l
 
 def xbpm_abs(energy=9000.,gas1="N2",p1=100.,gas2="He",p2=None,l=10.,T=294.,):
 	"""Returns the absorption 1-exp(-mux) of the chamber of given lenght. 
