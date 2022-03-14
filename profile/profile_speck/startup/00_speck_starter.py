@@ -1,4 +1,5 @@
-print "Starting speck..."
+from __future__ import print_function
+print("Starting speck...")
 #Import Python modules
 import sys,os
 import scipy
@@ -14,7 +15,6 @@ __SPECK_CONFIG["SPECK_FOLDER"] = os.getenv("SPECK")
 dn = __SPECK_CONFIG["SPECK_FOLDER"] + os.sep+"modules"
 sys.path.append(dn)
 subdn=os.listdir(dn)
-#print subdn
 for i in subdn: sys.path.append(dn+os.sep+i)
 
 ##
@@ -22,14 +22,7 @@ for i in subdn: sys.path.append(dn+os.sep+i)
 ##
 import os
 
-#Old mechanism, dangerous
 
-#__Default_Data_Folder=os.getenv("SPECK_DATA_FOLDER")
-#"/home/experiences/samba/com-samba/ExperimentalData/"
-#__Default_Backup_Folder=os.getenv("SPECK_BACKUP_FOLDER")
-#"/nfs/ruche-samba/samba-soleil/com-samba/"
-
-#New one, less dangerous
 execfile(__SPECK_CONFIG["SPECK_FOLDER"]+os.sep+"config"+os.sep+"speck_folders.py")
 __Default_Data_Folder=SPECK_TEMPORARY_HOME
 __Default_Backup_Folder=SPECK_DATA_FOLDER
@@ -44,16 +37,16 @@ import pymucal
 from GracePlotter import *
 try:
     import Gnuplot
-except Exception, tmp:
-    print "Cannot import Gnuplot"
+except Exception as tmp:
+    print("Cannot import Gnuplot")
 from mycurses import *
 
 #Import Periodic Table
-print '\x1b[01;06m'
-print "Loading Periodic Table: usage type Fe or other chemical symbol for information"
-print '\x1b[32;01m',
-print "help(pymucal) or help(atomic_data) for more details"
-print '\x1b[0m'
+print('\x1b[01;06m')
+print("Loading Periodic Table: usage type Fe or other chemical symbol for information")
+print('\x1b[32;01m', end=' ')
+print("help(pymucal) or help(atomic_data) for more details")
+print('\x1b[0m')
 for i in pymucal.atomic_data.atoms.keys():
         exec("%s=pymucal.atomic_data(i)"%(i))
 
@@ -77,12 +70,12 @@ try:
                 sleep(0.35)
             a.destroy()
         except:
-            print "WARNING: Error alerting for end of scan... no Tkinter?\n"
-            print "BUT: Ignore this message if escan is working well,\n just report this to your local contact\n"
+            print("WARNING: Error alerting for end of scan... no Tkinter?\n")
+            print("BUT: Ignore this message if escan is working well,\n just report this to your local contact\n")
         return
-except Exception, tmp:
-    print "Cannot initialize wakemeup function, reason follows:"
-    print tmp
+except Exception as tmp:
+    print("Cannot initialize wakemeup function, reason follows:")
+    print(tmp)
 
 
 ########
@@ -99,12 +92,6 @@ __pySamba_root=os.getenv("SPECK")
 __pySamba_scans=__pySamba_root+"/modules/scans/"
 
 
-#try:
-#    get_ipython().magic("logstart -ort "+__pySamba_root+"/files/log/log.txt rotate")
-#except Exception, tmp:
-#    print tmp
-#    print "Cannot log commands!"
-
     
 #Import more specific speck modules
 
@@ -112,30 +99,23 @@ imp_mdls = ["galil_multiaxis", "xbpm_class", "PSS"]
 
 from_mdls = {"ascan":"*","GetPositions":"*","e2theta":"*", "motor_class":"*", "mono1d":"*", "counter_class":"*", "valve_class":"valve", "pressure_gauge_class":"pressure_gauge", "thermocouple_class":"temperature_gauge", "mirror_class":"mirror", "absorbing_system_class":"*", "FrontEnd_class":"FrontEnd", "ic_gas":"xbpm_abs,  ic_abs", "NHQ_HVsupply_class":"NHQ_HVsupply", "rontec_MCA":"rontec_MCA", "mm4005":"mm4005_motor", "channel_cut":"channel_cut", "simple_DxMAP":"dxmap", "moveable":"moveable, sensor","beamline_alignement":"*","escan_class":"escan, escan_class", "spec_syntax":"*","setuser":"*"}
 
-__exec_files = []
 
 for i in imp_mdls:
     try:
         exec("import "+i)
-    except Exception, tmp:
-        print "Error while importing ",i
-        print "Exception description follows: \n",tmp
+    except Exception as tmp:
+        print("Error while importing ",i)
+        print("Exception description follows: \n",tmp)
 
 for i in from_mdls:
     try:
         exec("from %s import %s"%(i,from_mdls[i]))
-    except Exception, tmp:
-        print "Error while importing ",from_mdls[i]," from ",i
-        print "Exception description follows: \n",tmp
+    except Exception as tmp:
+        print("Error while importing ",from_mdls[i]," from ",i)
+        print("Exception description follows: \n",tmp)
 
-#for i in __exec_files:
-#    try:
-#        execfile(__pySamba_root+i)
-#    except Exception, tmp:
-#                print "Error while executing ",__pySamba_root+i
-#                print "Exception description follows: \n",tmp
                         
-print "OK"
+print("OK")
 
 
 #A simple way to load Instrumental setups:
@@ -149,7 +129,7 @@ def instrument(name=None):
                 instrs.append(i[:i.rfind(".")])
         return instrs
     instrument_file=__pySamba_root+"/modules/instruments/"+name+".py"
-    print "Loading instrument macro from "+instrument_file
+    print("Loading instrument macro from "+instrument_file)
     return domacro(instrument_file)
 
 ##### External Commands: #####
@@ -164,17 +144,17 @@ def atkpanel(object):
             try:
                 __oname__=object.dev_name()
             except:
-                print "Cannot ..."
+                print("Cannot ...")
          
-        print "atkpanel ",__oname__
+        print("atkpanel ",__oname__)
         #os.spawnvp(os.P_NOWAIT,"/usr/Local/DistribTango/soleil-root/tango/bin/atkpanel",[" ",__oname__])
         os.system(atkpanel_command+" "+__oname__+" >& /dev/null &")
         return
-    except os.EX_OSERR,tmp:
-        print tmp.args
+    except os.EX_OSERR as tmp:
+        print(tmp.args)
         return 
     except: 
-        print "Error!"
+        print("Error!")
         return
 
 def atk(object):
@@ -215,57 +195,5 @@ __d220=2*1.92015585
 __d111=2.*3.1356
 
 __samplePos=13.95
-
-
-##--------------------------------------------------------------------------------------
-##General actions defined as functions: e.g. stop all motors, all motor off, etcetera
-##--------------------------------------------------------------------------------------
-
-
-
-
-##--------------------------------------------------------------------------------------
-##MOTORS
-##--------------------------------------------------------------------------------------
-
-def Stop():
-    """Stop all motors that support the Stop command that are in the allmotors tuple + mirrors in mirrors tuple."""
-    for mot in __allmotors+__allmirrors:
-        try:
-            thread.start_new_thread(mot.stop,())
-            print mot.label," stop command sent.\n"
-        except:
-            print "Error on motor!"
-    return
-
-def MotorsOFF():
-    """Put all motors that support the MotorOff command in the allmotors tuple."""
-    for mot in __allmotors+__allmirrors+__allpiezos:
-        try:
-            mot.mo()
-            print mot.label," off\n"
-        except:
-            print "Error on motor: "+mot.label+"\n"
-    return
-
-def MotorsON():
-    """Put all motors that support the sh (servo here) command in the allmotors tuple. Turns on the piezos too."""
-    for mot in __allmotors+__allmirrors+__allpiezos:
-        try:
-            mot.sh()
-            print mot.label," on\n"
-        except:
-            print "Error on motor: "+mot.label+"\n"
-    return
-
-def InitMotors():
-    """Init galilaxis of all motors and piezos: the init command must be supported."""
-    for mot in __allmotors+__allmirrors+__allpiezos:
-        try:
-            mot.init()
-            print mot.label," init ok"
-        except:
-            print "Error on motor: "+mot.label+"\n"
-    return
 
 setuser()
