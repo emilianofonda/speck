@@ -1,12 +1,14 @@
+from __future__ import print_function
+from builtins import object
 from PyTango import DeviceProxy,DevState
 from time import sleep
 
-class pressure_gauge:
+class pressure_gauge(object):
 	def __init__(self,tangoname,deadtime=0.5):
 		try:
 			self.DP=DeviceProxy(tangoname)
 		except:
-			print tangoname," does not exist."
+			print(tangoname," does not exist.")
 		self.label=tangoname
 		self.deadtime=deadtime
 		return

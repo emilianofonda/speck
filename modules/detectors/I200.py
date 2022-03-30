@@ -1,3 +1,4 @@
+from __future__ import print_function
 #and now something completely different...
 import time
 
@@ -28,20 +29,20 @@ class I200_serial:
             #    self.deadtime = self.range()[1]*2.
         except:
             pass
-        print self.version()
+        print(self.version())
         return
 
     def __call__(self,arg = None):
-        if arg <> None:
+        if arg != None:
             return self.InOutS(arg)
-        print "I200 DAC is at ", self.pos()
-        print "I0=%8.6e I1=%8.6e State=%s" % self.currents()
-        print "mode = %s" % self.pid()["modename"]
+        print("I200 DAC is at ", self.pos())
+        print("I0=%8.6e I1=%8.6e State=%s" % self.currents())
+        print("mode = %s" % self.pid()["modename"])
         _i200_status = self.status()
         if _i200_status["PID_state"] == "Servo not running?":
-            print "Servo not running?"
+            print("Servo not running?")
         else:
-            print "DAC_write_0 = %s DAC_write = %s" % (_i200_status["DAC_write_0"], _i200_status["DAC_write"])
+            print("DAC_write_0 = %s DAC_write = %s" % (_i200_status["DAC_write_0"], _i200_status["DAC_write"]))
         return
 
     def status(self):
@@ -63,8 +64,8 @@ class I200_serial:
                 try:
                     ll[i] = l[j]
                     j += 1
-                except Exception, tmp:
-                    print tmp
+                except Exception as tmp:
+                    print(tmp)
                     break
         return ll
 
@@ -124,31 +125,31 @@ class I200_serial:
         dp=float(p2- p1) / np
         x=[]
         y=[]
-        print "Profile..."
+        print("Profile...")
         ll = self.InOutS("PID:PROF 0",n=2)
         if verbose > 0:
-            print ll
+            print(ll)
         ll = self.InOutS("PID:SERV 0",n=2)
         if verbose > 0:
-            print ll
+            print(ll)
         self.pos(0.1)
         ll = self.InOutS("INIT",n=2)
         if verbose > 0:
-            print ll
+            print(ll)
         ll = self.InOutS("CONF:PID:PROF:LIM %i %i" % (int(p1), int(p2)),n=2)
         if verbose > 0:
-            print ll
+            print(ll)
         ll = self.InOutS("CONF:PID:PROF:POINTS %i" % (np),n=2)
         if verbose > 0:
-            print ll
+            print(ll)
         ll = self.InOutS("PID:PROF 1",n=2)
         if verbose > 0:
-            print ll
+            print(ll)
         for i in xrange(np):
             time.sleep(self.deadtime)
             ll=self.InOutS("FETCH:PROF?", n=2)
             if verbose > 1:
-                print ll
+                print(ll)
             x.append(float(ll[1].split(",")[1]))
             cor_value = float(ll[1].split(",")[0])
             if cor_value == 1.:
@@ -156,15 +157,15 @@ class I200_serial:
             y.append(cor_value)
         ll = self.InOutS("PID:PROF 0",n=2)
         if verbose > 0:
-            print ll
+            print(ll)
         tmp=[numpy.arange(p1, p2 , dp), numpy.array(y)]
         if draw:
             plot(tmp[0], tmp[1])
             #plot(x,tmp[1])
         mp = tmp[0][tmp[1].argmax()]
         cmp = sum(tmp[0] * tmp[1]) / sum(tmp[1])
-        print "maximum position is", mp
-        print "center of mass   is", cmp
+        print("maximum position is", mp)
+        print("center of mass   is", cmp)
         return mp, cmp, tmp
 
     def profile(self, p1=1, p2=9, np=50, draw=True, verbose = 0):
@@ -177,16 +178,16 @@ class I200_serial:
         self.pos(p1)
         dp = float(p2 - p1) / np
         y = []
-        print "Profile..."
+        print("Profile...")
         ll = self.InOutS("PID:SERV 0",n=2)
         if verbose > 0:
-            print ll
+            print(ll)
         for p in numpy.arange(p1, p2+dp, dp):
             self.pos(p)
             time.sleep(dt)
             i1, i2 = self.currents()[0:2]
             if verbose >2 : 
-                print "currents --> %g %g" % (i1, i2)
+                print("currents --> %g %g" % (i1, i2))
             if mode == 0:
                 y.append(i1)
             elif mode == 1:
@@ -202,8 +203,8 @@ class I200_serial:
             plot(tmp[0], tmp[1])
         mp = tmp[0][tmp[1].argmax()]
         cmp = sum(tmp[0] * tmp[1]) / sum(tmp[1])
-        print "maximum position is", mp
-        print "center of mass   is", cmp
+        print("maximum position is", mp)
+        print("center of mass   is", cmp)
         return mp, cmp, tmp
 
     def capacitor(self,capacity = None):
@@ -307,7 +308,7 @@ class I200_serial:
         then lock position to it starting servo in mode (I1-I2)/(I1+I2)"""
         self.stop()
         self.start_measurement()
-        if self.currents()[2] <> "OK":
+        if self.currents()[2] != "OK":
             raise Exception("I200 currents reading not OK: %s" % self.currents[2])
         __mode = self.mode()
         if not self.mode() in [0, 1]:
@@ -347,7 +348,7 @@ class I200_tango(I200_serial):
             #    self.deadtime = self.range()[1]*2.
         except:
             pass
-        print self.version()
+        print(self.version())
         return
 
     def open(self):
@@ -363,7 +364,7 @@ class I200_tango(I200_serial):
         ll = self.serial.writeread(message).split(self.EndOfLine)
         time.sleep(self.deadtime)
         l = self.serial.read()
-        while(l <> ""):
+        while(l != ""):
             ll.append(l)
             l = self.serial.read()
         return ll

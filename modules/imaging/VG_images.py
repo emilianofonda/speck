@@ -1,5 +1,6 @@
 #!/bin/env python
 
+from __future__ import print_function
 import time
 import sys
 import doctest
@@ -84,9 +85,9 @@ class VideoIntensityMonitor:
                 self.image = self.DP.read_attribute(self.attribute_name)
                 return
             except:
-                print time.ctime(),"Mince",i, self.devName
+                print(time.ctime(),"Mince",i, self.devName)
         
-        print "Mince de Mince, impossible de lire le sensor", self 
+        print("Mince de Mince, impossible de lire le sensor", self) 
         return 0
     
     def setAutoROI(self):
@@ -119,8 +120,8 @@ class VideoIntensityMonitor:
                                    sum(ia),min(ia),max(ia),\
                                    sum(ia) - len(ia)*mean(border)
         if verbose:
-            print "MeanBkgrd: %.1f  Median: %.1f  StdBkgrd: %.1f" % _stats[:3]
-            print "Sum: %d  Min:  %5d Max:  %5d  I: %.1f" % _stats[3:],
+            print("MeanBkgrd: %.1f  Median: %.1f  StdBkgrd: %.1f" % _stats[:3])
+            print("Sum: %d  Min:  %5d Max:  %5d  I: %.1f" % _stats[3:], end=' ')
         return _stats
         #ia[-len_border:] = ones((len_border))*1000
         #print "elapsed time read: %.4f convert to array + sum: %.4f" % (t1-t0, t2-t1)    
@@ -159,7 +160,7 @@ class VideoIntensityMonitor:
             edges = (_filter[1:] - _filter[:-1]) 
             #print edges[:10], "...", edges[-10:]
             nedge = sum((_filter[1:] - _filter[:-1]) == 1)
-            print "Cutoff = %5.2f   nedge = %5d" % (cutoff, nedge)
+            print("Cutoff = %5.2f   nedge = %5d" % (cutoff, nedge))
             
     
     def _read3(self, strong=10):
@@ -171,7 +172,7 @@ class VideoIntensityMonitor:
         border = ia[-len_border:]
         signal_value = mean(border) + strong * std(border)
         
-        print "RMSd = %7.1f" % std(border),
+        print("RMSd = %7.1f" % std(border), end=' ')
         iabeam = compress((ia>=signal_value),ia)
         ia = ia * ( ia >= signal_value)
         ia.shape = self.image.dim_y, self.image.dim_x
@@ -197,9 +198,9 @@ def get_Image(DPVG):
     t1 = time.time()
     ia = array(i.value)
     ia_border = ia[-len_border:]
-    print len(ia_border), ia_border
-    print "Border: Mean = %.2f  Std = %.2f Sum: %d" % (mean(ia_border), std(ia_border), sum(ia)),
-    print "Min:  %5d Max:  %5d" % (min(ia), max(ia))
+    print(len(ia_border), ia_border)
+    print("Border: Mean = %.2f  Std = %.2f Sum: %d" % (mean(ia_border), std(ia_border), sum(ia)), end=' ')
+    print("Min:  %5d Max:  %5d" % (min(ia), max(ia)))
     t2 = time.time()
     #ia[-len_border:] = ones((len_border))*1000
     ia.shape = i.dim_y, i.dim_x
@@ -214,7 +215,7 @@ def get_ROIImage(DPIA):
     ia = array(i.value)
     t2 = time.time()
     ia.shape = i.dim_y, i.dim_x
-    print "elapsed time read: %.3f convert to array: %.3f" % (t1-t0, t2-t1)
+    print("elapsed time read: %.3f convert to array: %.3f" % (t1-t0, t2-t1))
     #iax = add.reduce(ia, axis=0)
     #iay = add.reduce(ia, axis=1)
     #plot(iax)
@@ -231,7 +232,7 @@ def get_Profiles():
     t1 = time.time()
     pxa = array(px.value)
     t2 = time.time()
-    print "elapsed time read: %.3f convert to array: %.4f" % (t1-t0, t2-t1)
+    print("elapsed time read: %.3f convert to array: %.4f" % (t1-t0, t2-t1))
     #ia.shape = i.dim_y, i.dim_x
     #return pxa
     #iax = add.reduce(ia, axis=0)
@@ -249,7 +250,7 @@ def timingTest():
     for a in range(5):
         images.append(get_Image(DP_vg))
         #get_Profiles()
-    print "Total time = %.3f" % (time.time() -T0)        
+    print("Total time = %.3f" % (time.time() -T0))        
 
 def showTest():
     imshow(get_Image(DP_vg))

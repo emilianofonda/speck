@@ -1,8 +1,7 @@
+from __future__ import print_function
 from time import sleep,time
 import PyTango
 from PyTango import DeviceProxy, DevState
-from exceptions import Exception
-import exceptions
 import numpy, scipy
 from numpy import sin,cos,tan,arcsin,pi,arange,sign,array,nan,sqrt
 from scipy import interpolate
@@ -64,7 +63,7 @@ class sagittal_bender:
         a -DX offset on the two motors."""
         oc1 = self.c1.offset
         oc2 = self.c2.offset
-        if dest<>None:
+        if dest!=None:
             self.c1.offset = oc1-dest
             self.c2.offset = oc2-dest
         return {"Old offsets":[oc1,oc2],"New offsets":[self.c1.offset, self.c2.offset]}
@@ -130,7 +129,7 @@ class sagittal_bender:
             self.init()
         ss=self.state()
         if(ss in [DevState.DISABLE,DevState.OFF,DevState.UNKNOWN]):
-            print "At least one motor is in Off,Unknown or Disable state!!!"
+            print("At least one motor is in Off,Unknown or Disable state!!!")
             self.stop()
             raise Exception("Bender in bad state")
         dest1=dest-self.pos()+self.c1.pos()
@@ -150,25 +149,25 @@ class sagittal_bender:
                 self.c1.go(dest1)
                 self.c2.go(dest2)
             t=time()
-            while((self.state()<>DevState.MOVING) and (time()-t<self.timeout)):
+            while((self.state()!=DevState.MOVING) and (time()-t<self.timeout)):
                 sleep(self.deadtime)
             while(self.state()==DevState.MOVING): 
                 sleep(self.deadtime)
                 pass
                 #print "Bender=%8.3f\r"%(self.pos(dest=None)),
                 
-        except (KeyboardInterrupt,SystemExit), tmp:
+        except (KeyboardInterrupt,SystemExit) as tmp:
             self.stop()
-            print ""
+            print("")
             raise tmp                                
-        except Exception, tmp:
+        except Exception as tmp:
             self.stop()
             #if(self.MotOff):
             #    self.mo()
             #    print ""
             #    print "Motors OFF"
-            print "Stopped over exception"
-            print  self.pos()
+            print("Stopped over exception")
+            print(self.pos())
             raise tmp
         #print ""
         return self.pos()
@@ -185,13 +184,13 @@ class sagittal_bender:
     def asy(self,dest=None,wait=True):
         """Asymmetry is defined as bender1-bender2, this is a signed value: positive means bender1>bender2."""
         if(dest==None):
-            print "Last memorised value=%g This will be applied to next bender movement"%(self.asy_value)
+            print("Last memorised value=%g This will be applied to next bender movement"%(self.asy_value))
             return (self.c1.pos()-self.c2.pos())
         ss=self.state()
         if(ss==DevState.MOVING):
             raise Exception("Motors are already moving !!!")
         if(ss in [DevState.DISABLE,DevState.OFF,DevState.UNKNOWN]):
-            print "At least one motor is in Off,Unknown or Disable state!!!"
+            print("At least one motor is in Off,Unknown or Disable state!!!")
             self.stop()
             raise Exception("Bender: at least one motor is in Off,Unknown or Disable state!!!")
         dest1=self.c1.pos()+0.5*(dest-(self.c1.pos()-self.c2.pos()))
@@ -203,21 +202,21 @@ class sagittal_bender:
             if(not(wait)):
                 return dest
             t=0.
-            while(((self.c1.state()<>DevState.MOVING) and (self.c2.state()<>DevState.MOVING)) and (t<self.timeout)):
+            while(((self.c1.state()!=DevState.MOVING) and (self.c2.state()!=DevState.MOVING)) and (t<self.timeout)):
                 sleep(self.deadtime)
                 t+=self.deadtime
             while((self.c1.state()==DevState.MOVING) or (self.c2.state()==DevState.MOVING)): 
                 sleep(self.deadtime)
                 #print "Asy=%8.3f\r"%(self.c1.pos()-self.c2.pos()),
-        except (KeyboardInterrupt,SystemExit), tmp:
+        except (KeyboardInterrupt,SystemExit) as tmp:
                 self.stop()
                 self.asy_value=self.c1.pos()-self.c2.pos()
                 raise tmp                                
-        except Exception, tmp:
-            print "Stopped on exception"
+        except Exception as tmp:
+            print("Stopped on exception")
             self.stop()
             self.asy_value=self.c1.pos()-self.c2.pos()
-            print ""
+            print("")
             #if(self.MotOff):
             #    self.mo()
             #    print "Motors OFF"
@@ -232,15 +231,15 @@ class sagittal_bender:
         """The state function of the bender do not incorporate a check of the bender anymore.""" 
         try:
             s=self.compute_state()
-        except (KeyboardInterrupt,SystemExit), tmp:
+        except (KeyboardInterrupt,SystemExit) as tmp:
             self.c1.stop()
             self.c2.stop()
             raise tmp                                
-        except Exception, tmp:
+        except Exception as tmp:
             self.c1.stop()
             self.c2.stop()
-            print self.label," stopped over exception"
-            print  self.pos()
+            print(self.label," stopped over exception")
+            print(self.pos())
             raise tmp
         return s
     
@@ -270,7 +269,7 @@ class mono1:
             self.counter=counter(counter_label)
         except:
             self.counter=None
-            print "No usable counter: no tuning possible"
+            print("No usable counter: no tuning possible")
         self.counter_channel=counter_channel
         self.bender=bender
         self.timeout=timeout
@@ -298,18 +297,18 @@ class mono1:
         if list(self.DP.get_property("SPECK_LocalTable_p")["SPECK_LocalTable_p"]) == []:
             self.DP.put_property({"SPECK_LocalTable_p": [13.95,]})
             self.DP.put_property({"SPECK_UseLocalTable": False})
-        print "\nmono1PBR: Reading LocalTable from database...",
+        print("\nmono1PBR: Reading LocalTable from database...", end=' ')
         if self.state() not in [DevState.MOVING, DevState.RUNNING]:
             try:
                 self.readTable(write2controller = True)
             except:
-                print mycurses.RED+"Cannot load Local Table or Invalid Table, please reload it by using the readTable or readTableFile methods"+mycurses.RESET
+                print(mycurses.RED+"Cannot load Local Table or Invalid Table, please reload it by using the readTable or readTableFile methods"+mycurses.RESET)
         else:
             try:
                 self.readTable(write2controller = False)
             except:
-                print mycurses.RED+"Cannot load Local Table or Invalid Table, please reload it by using the readTable or readTableFile methods"+mycurses.RESET
-        print "OK"
+                print(mycurses.RED+"Cannot load Local Table or Invalid Table, please reload it by using the readTable or readTableFile methods"+mycurses.RESET)
+        print("OK")
         return
         
     def __str__(self):
@@ -368,7 +367,7 @@ class mono1:
             self.useLocalTable = False
             return
         if write2controller:
-             if tmp_p <> pp:
+             if tmp_p != pp:
                  for i in xrange(5):
                      try:
                          self.sample_at(pp)
@@ -410,7 +409,7 @@ class mono1:
         If a fileName is specified the table is written to a file and to the database.
         """
         if self.LocalTable["Points"] < 1:
-            print "Cannot Write Table to database for less than 2 points"
+            print("Cannot Write Table to database for less than 2 points")
             return
         outList =[self.LocalTable["Points"],]
         for i in ["Energy","C1","C2","RS2","RZ2"]:
@@ -420,7 +419,7 @@ class mono1:
         if fileName == "":
             return
         else:
-            fOut = file(fileName, "w")
+            fOut = open(fileName, "w")
             fOut.write("p\n%8.6f\n"%self.sample_at())
             for i in outList:
                 fOut.write(str(i)+"\n")
@@ -430,8 +429,8 @@ class mono1:
     def readTableFile(self, fileName = ""):
         """This function reads the table from a file, puts it in the database and then re read it to memory
         Use setLocalTable or unsetLocalTable to activate or disable the table."""
-        if fileName <> "":
-            fIn = file(fileName, "r")
+        if fileName != "":
+            fIn = open(fileName, "r")
             ll = fIn.readlines()
             fIn.close()
             pp = float(ll[1].strip())
@@ -472,12 +471,12 @@ class mono1:
         idx = self.LocalTable["Energy"].searchsorted(pointValue["Energy"])
         if numpy.any(abs(self.LocalTable["Energy"] - pointValue["Energy"]) < xtol ):
             #Replace Value
-            print "Replacing Value in Table at position ",
+            print("Replacing Value in Table at position ", end=' ')
             idx = min(self.LocalTable["Energy"].searchsorted(pointValue["Energy"]),\
             len(self.LocalTable["Energy"])-1)
             if (abs(self.LocalTable["Energy"][idx] - pointValue["Energy"]) > xtol):
                 idx = max(idx-1, 0)
-            print idx
+            print(idx)
             for i in ["Energy","C1","C2","RS2","RZ2"]:
                 self.LocalTable[i][idx] = pointValue[i]
         else:
@@ -487,15 +486,15 @@ class mono1:
                 + list(self.LocalTable[i][idx:]),"f")
         #Update database if possible
         if self.LocalTable["Points"] > 1:
-            print "Syncing table to database...",
+            print("Syncing table to database...", end=' ')
             self.writeTable()
-            print "OK"
-            print "Reading table from database...",
+            print("OK")
+            print("Reading table from database...", end=' ')
             self.readTable()
-            print "OK"
-            print "Activating table...",
+            print("OK")
+            print("Activating table...", end=' ')
             self.setLocalTable()
-            print "OK"
+            print("OK")
         return
         
     def clearLocalTable(self,e1=-1,e2=-1):
@@ -518,15 +517,15 @@ class mono1:
         for i in ["C1","C2","RS2","RZ2"]:
             self.LocalTable[i] = array([pointValue[i], pointValue[i]],"f")
         #Update database
-        print "Syncing table to database...",
+        print("Syncing table to database...", end=' ')
         self.writeTable()
-        print "OK"
-        print "Reading table from database...",
+        print("OK")
+        print("Reading table from database...", end=' ')
         self.readTable()
-        print "OK"
-        print "Activating table...",
+        print("OK")
+        print("Activating table...", end=' ')
         self.setLocalTable()
-        print "OK"
+        print("OK")
         return
 
 
@@ -582,7 +581,7 @@ class mono1:
             try:
                 self.DataViewer.write_attribute(s[0].strip(),float(s[1]))
             except:
-                print "Value of %s is not writable"%s[0].strip()
+                print("Value of %s is not writable"%s[0].strip())
         return
 
     def storeDefaultValues(self):
@@ -714,7 +713,7 @@ class mono1:
                 self.DP.velocity = velocity
                 break
             except:
-                print "Error setting velocity on ", self.label
+                print("Error setting velocity on ", self.label)
                 sleep(0.2)
         sleep(0.2)
         return self.DP.velocity
@@ -766,7 +765,7 @@ class mono1:
         This is not exact, but turns out to be a good approximation. The more accurate code is commented and ready for use."""
         th = theta/180.*pi
         rec_q = 1. / self.DataViewer.q
-        if self.sample_at() <> 0.: 
+        if self.sample_at() != 0.: 
             rec_p = 1. / self.sample_at()
         else:    
             raise Exception("Monochromator " + self.label + " sample_at() == 0 ?!?")
@@ -783,15 +782,15 @@ class mono1:
                 ps=self.m_rx1.pos()
                 if ps==0.: return 9.99e12
                 return self.theta2e(ps)
-            if self.emin <> None and energy < self.emin:
+            if self.emin != None and energy < self.emin:
                 raise Exception("Requested energy below monochromator limit: %7.2f"%self.emin)
-            if self.emax <> None and energy > self.emax:
+            if self.emax != None and energy > self.emax:
                 raise Exception("Requested energy above monochromator limit: %7.2f"%self.emax)
             #
             #Write movement code here
 
             if self.state() == DevState.DISABLE:
-                print "DCM in DISABLE state! Workaround ... ",
+                print("DCM in DISABLE state! Workaround ... ", end=' ')
                 mm = self.mode()
                 self.mode(0)
                 sleep(0.1)
@@ -799,43 +798,43 @@ class mono1:
                 sleep(0.1)
                 self.mode(mm)
                 sleep(0.1)
-                print "OK!"
+                print("OK!")
             for i in xrange(5):
                 try:
                     St = self.state()
                     self.DP.Energy = energy
                     break
-                except (KeyboardInterrupt,SystemExit), tmp:
+                except (KeyboardInterrupt,SystemExit) as tmp:
                     self.stop()
                     raise tmp
-                except Exception, tmp:
-                    print mycurses.BLUE + "Caught moving at %4.2feV in state %s" % (energy, St) + mycurses.RESET
+                except Exception as tmp:
+                    print(mycurses.BLUE + "Caught moving at %4.2feV in state %s" % (energy, St) + mycurses.RESET)
                     #print tmp
                     sleep(self.deadtime)
             if not wait:
                 return
             #sleep(self.deadtime)
             tt = time()
-            while(self.state() <> DevState.MOVING and time()-tt < self.timeout):
+            while(self.state() != DevState.MOVING and time()-tt < self.timeout):
                 sleep(self.deadtime)
             St = self.state()
             while(St in [DevState.MOVING,DevState.RUNNING,DevState.UNKNOWN]):
                 sleep(self.deadtime)
                 St = self.state()
 
-        except (KeyboardInterrupt,SystemExit), tmp:
+        except (KeyboardInterrupt,SystemExit) as tmp:
             self.stop()
             raise tmp
-        except PyTango.DevFailed, tmp:
+        except PyTango.DevFailed as tmp:
             self.stop()
             raise tmp
-        except PyTango.DevError, tmp:
+        except PyTango.DevError as tmp:
             self.stop()
             raise tmp
-        except Exception, tmp:
+        except Exception as tmp:
             self.stop()
-            print "\nUnknown Error"
-            print "Positions energy, theta=", self.pos(), self.m_rx1.pos()
+            print("\nUnknown Error")
+            print("Positions energy, theta=", self.pos(), self.m_rx1.pos())
             raise tmp
         #print "Time Elapsed=%4.2fs"%(time()- t0)
         return self.DP.Energy
@@ -853,20 +852,26 @@ class mono1:
             return self.m_rx1.pos()
         return self.pos(self.theta2e(theta),wait)
 
-    def calibrate(self,experiment_energy,true_energy):
+    def calibrate(self,experiment_energy,true_energy,force=False):
         """This function enters a new value for the position of main rotation rx1. 
         It requires the experimental energy position of the spectral feature as first argument
         and the true energy of the feature as second argument
-        calibrate(Energy_I_See,Energy_From_Tables)"""
-        print "Main goniometer position was: %8.6f"%(self.m_rx1.pos())
+        calibrate(Energy_I_See,Energy_From_Tables)
+        The calibration will not operate if the required angular delta is larger than 0.1 deg,
+        to perform such a huge calibration, operator must set the keyword force to True."""
+        print("Main goniometer position was: %8.6f"%(self.m_rx1.pos()))
         offset = self.e2theta(true_energy) - self.e2theta(experiment_energy)
-        print "New goniometer position is:   %8.6f"%(self.m_rx1.pos() + offset)
-        oe=self.pos()
-        self.m_rx1.init()
-        sleep(0.1)
-        self.m_rx1.DefinePosition(self.m_rx1.pos() + offset) 
-        sleep(self.deadtime *5)
-        return {"Old energy":oe,"New energy":self.pos()}
+        print("New goniometer position is:   %8.6f"%(self.m_rx1.pos() + offset))
+        if offset <= 0.1 or force == True:
+            oe=self.pos()
+            self.m_rx1.init()
+            sleep(0.1)
+            self.m_rx1.DefinePosition(self.m_rx1.pos() + offset) 
+            sleep(self.deadtime *5)
+            return {"Old energy":oe,"New energy":self.pos()}
+        else:
+            raise Exception(F"Requesting a monochromator calibration causing a too large angle variation (>0.1°): {offset:3.2f}")
+        return
 
 
     def tune(self,piezomin=1.,piezomax=9.,np=20,tolerance=0.005,countingtime=0.2,nested=False):
@@ -888,7 +893,7 @@ class mono1:
         #    print "dcm setup excludes a piezo. Tuning is nonsense without the piezo."
         #    return 0.
         if(np<4):
-            print "I use minimum 4 intervals (5 points). I set np=4."
+            print("I use minimum 4 intervals (5 points). I set np=4.")
             np=4
         piezomax=max(piezomin,piezomax)
         if (float(piezomax-piezomin)/np>1.): np=int((piezomax-piezomin)/1.)+1
@@ -915,19 +920,19 @@ class mono1:
         try:
             optimum= sum(array(scan[0],"f")*(array(scan[1],"f")-min(scan[1])))/sum(array(scan[1],"f")-min(scan[1]))
             if optimum==nan: 
-                print "Tuning failed!"
+                print("Tuning failed!")
                 optimum=5.
-        except Exception, tmp:
-            print sum(array(scan[1],"f"))
-            print "No tuning found!"
-            print "Returning 5 Volts as result... check it again!"
+        except Exception as tmp:
+            print(sum(array(scan[1],"f")))
+            print("No tuning found!")
+            print("Returning 5 Volts as result... check it again!")
             optimum=5.
-            print tmp
+            print(tmp)
         if not(nested):
             dp=0.75
             optimum=self.old_tune(max(optimum - dp * 2.,0.1),min(optimum + dp*2.,9.9),np=np,tolerance=tolerance,countingtime=countingtime,nested=True)
             self.m_rx2fine.pos(optimum)
-            print "Tuning this point took: %5.2f seconds"%(time()-t)
+            print("Tuning this point took: %5.2f seconds"%(time()-t))
         return optimum
     
     def ftune(self,piezomin=1.,piezomax=9.,np=20,tolerance=0.005,countingtime=0.2,nested=False):
@@ -943,7 +948,7 @@ class mono1:
         #    print "dcm setup excludes a piezo. Tuning is nonsense without the piezo."
         #    return 0.
         if(np<4):
-            print "I use minimum 4 intervals (5 points). I set np=4."
+            print("I use minimum 4 intervals (5 points). I set np=4.")
             np=4
         piezomax=max(piezomin,piezomax)
         if (float(piezomax-piezomin)/np>1.): np=int((piezomax-piezomin)/1.)+1
@@ -971,19 +976,19 @@ class mono1:
         try:
             optimum= sum(array(scan[0],"f")*(array(scan[1],"f")-min(scan[1])))/sum(array(scan[1],"f")-min(scan[1]))
             if optimum==nan: 
-                print "Tuning failed!"
+                print("Tuning failed!")
                 optimum=5.
-        except Exception, tmp:
-            print sum(array(scan[1],"f"))
-            print "No tuning found!"
-            print "Returning 5 Volts as result... check it again!"
+        except Exception as tmp:
+            print(sum(array(scan[1],"f")))
+            print("No tuning found!")
+            print("Returning 5 Volts as result... check it again!")
             optimum=5.
-            print tmp
+            print(tmp)
         if not(nested):
             dp=0.75
             optimum=self.tune(max(optimum-dp,0.1),min(optimum+dp,9.9),np=np,tolerance=tolerance,countingtime=countingtime,nested=True)
             self.m_rx2fine.pos(optimum)
-            print "Tuning this point took: %5.2f seconds"%(time()-t)
+            print("Tuning this point took: %5.2f seconds"%(time()-t))
         return optimum
     
     def detune(self,fraction):
@@ -994,16 +999,16 @@ class mono1:
         cpt=self.counter
         channel=self.counter_channel
         if fraction <=-1. or fraction>=1. or fraction==0.: 
-            raise exceptions.Exception("Illegal range","fraction value is out of bounds",fraction)
-        print "Finding maximum..."
+            raise Exception("Illegal range","fraction value is out of bounds",fraction)
+        print("Finding maximum...")
         p=self.tune()
         imax=cpt.count(.2)[channel]
-        print "Maximum=",imax/0.2," Position=",p
+        print("Maximum=",imax/0.2," Position=",p)
         inow=imax
         dp=0.1*sign(fraction)
         tolerance=0.01
         while (abs(float(inow)/imax-abs(fraction)) >=tolerance):
-            print "detuning... step=%5.3f"%(dp)
+            print("detuning... step=%5.3f"%(dp))
             while(inow>abs(imax*fraction)):
                 p+=dp
                 self.m_rx2fine.pos(p)
@@ -1012,7 +1017,7 @@ class mono1:
             self.m_rx2fine.pos(p)
             inow=cpt.count(0.2)[channel]
             dp=dp*0.2
-        print "Detuned=",inow/0.2," Position=",p
+        print("Detuned=",inow/0.2," Position=",p)
         return p
     
     def calculate_rz2(self,energy):

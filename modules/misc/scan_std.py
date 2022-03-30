@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
 import PyTango
 import time
 import numpy
@@ -221,11 +222,11 @@ def ascan(motor, debut, fin, n, dt, afterRunActionType=0,timeBases=_timeBases,de
     trajectories = [numpy.linspace(debut, fin, n + 1)]
     integrationTimes = numpy.ones(shape(trajectories[0])) * dt 
     
-    print "fileName :" ,_recorder.read_attribute("fileName").value
-    print "actuators : ", actuators
-    print "sensors :", sensors
-    print "timebases : ", timeBases
-    print("trajectories :", trajectories)
+    print("fileName :" ,_recorder.read_attribute("fileName").value)
+    print("actuators : ", actuators)
+    print("sensors :", sensors)
+    print("timebases : ", timeBases)
+    print(("trajectories :", trajectories))
 #    print("integrationTimes : ", integrationTimes)
 
     time.sleep(1)
@@ -259,10 +260,10 @@ def a2scan(motor1, debut1, fin1, motor2, debut2, fin2, n, dt, afterRunActionType
     trajectories = numpy.linspace(debut1, fin1, n + 1), numpy.linspace(debut2, fin2, n + 1)
     integrationTimes = numpy.linspace(dt,dt,n+1)
     
-    print "fileName :" ,_recorder.read_attribute("fileName").value
-    print "actuators : ", actuators
-    print "sensors :", sensors
-    print "timebases : ", timeBases
+    print("fileName :" ,_recorder.read_attribute("fileName").value)
+    print("actuators : ", actuators)
+    print("sensors :", sensors)
+    print("timebases : ", timeBases)
 #    print("trajectories :", trajectories)
 #    print("integrationTimes : ", integrationTimes)
 
@@ -394,14 +395,14 @@ def mesh(motor, debut, fin, n, motor2, debut2, fin2, n2, dt=1.,timeBases=_timeBa
     trajectories2 = [numpy.linspace(debut2, fin2, n2 +1)]
     integrationTimes = numpy.ones(len(trajectories[0]))*dt
 
-    print "fileName :" ,_recorder.read_attribute("fileName").value
-    print "actuators : ", actuators
-    print "actuators2 : ", actuators2
-    print "sensors :", sensors
-    print "timebases : ", timeBases 
-    print "trajectories :", trajectories 
-    print "trajectories2 : ", trajectories2 
-    print "integrationTimes : ", integrationTimes 
+    print("fileName :" ,_recorder.read_attribute("fileName").value)
+    print("actuators : ", actuators)
+    print("actuators2 : ", actuators2)
+    print("sensors :", sensors)
+    print("timebases : ", timeBases) 
+    print("trajectories :", trajectories) 
+    print("trajectories2 : ", trajectories2) 
+    print("integrationTimes : ", integrationTimes) 
 #
     time.sleep(1)
     _scan.Clean()
@@ -541,9 +542,9 @@ def mesh(motor, debut, fin, n, motor2, debut2, fin2, n2, dt=1.,timeBases=_timeBa
 def timescan(n,dt,timeBases=_timeBases):
     sensors = _sensors
     integrationTimes = numpy.ones((n+1)) * dt
-    print("sensors :", sensors)
-    print("timebases : ", timeBases)
-    print("integrationTimes : ", integrationTimes)
+    print(("sensors :", sensors))
+    print(("timebases : ", timeBases))
+    print(("integrationTimes : ", integrationTimes))
     time.sleep(1)
     
     _scan.Clean()
@@ -570,12 +571,12 @@ def _goto(type, actuator, sensor):
                 _scan.abort()
 
 def cen(sensor=0):
-        print "goto center of mass"
+        print("goto center of mass")
         _goto(7, 0, sensor)
 
 
 def pic(sensor=0):
-        print "goto peak"
+        print("goto peak")
         _goto(3, 0,sensor)
 
 #############################################################################################

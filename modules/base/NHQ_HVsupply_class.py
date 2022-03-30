@@ -1,7 +1,9 @@
+from __future__ import print_function
+from builtins import object
 from PyTango import DeviceProxy,DevState
 from time import sleep
 
-class NHQ_HVsupply:
+class NHQ_HVsupply(object):
     def __init__(self,label="",channel="A",speed=50.,deadtime=0.2,timeout=3.,tolerance=2.):
         """Control just one of the two HV channels: channels are A and B. Default channel is A.
         You can currently set the voltage, restore the voltage and change the speed ramp."""
@@ -18,7 +20,7 @@ class NHQ_HVsupply:
         self.att_maxV="maxVoltage"+self.channel
         self.att_maxCur="maxCurrent"+self.channel
         self.voltage_target=self.voltage()
-        print self.label," current voltage is %g"%(self.DP.read_attribute(self.att_voltage).value)
+        print(self.label," current voltage is %g"%(self.DP.read_attribute(self.att_voltage).value))
         return
     
 
@@ -71,14 +73,14 @@ class NHQ_HVsupply:
                 self.voltage_target = volts
                 self.DP.write_attribute(self.att_voltage,volts)
                 if wait: 
-                    print"\n"
+                    print("\n")
                     while(self.state()==DevState.MOVING):
-                        print "\r %g"%(self.voltage()),
+                        print("\r %g"%(self.voltage()), end=' ')
                         sleep(self.deadtime)
-                    print "\n"
+                    print("\n")
                 return self.voltage()        
             else:
-                print "Requested value exceed maxVoltage!"
+                print("Requested value exceed maxVoltage!")
                 return self.voltage()
 
     def maxVoltage(self,volts=None):

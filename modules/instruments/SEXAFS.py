@@ -1,3 +1,4 @@
+from __future__ import print_function
 #Macro to define the SEXAFS instrument:
 __IP = get_ipython()
 ####### REMOVE OBJECTS FROM EXAFS SETUP #############
@@ -10,12 +11,12 @@ for i in __tmp:
     try:
         exec("del "+i)
     except:
-        print "Cannot remove %s from environment."%i
+        print("Cannot remove %s from environment."%i)
         pass
 ##################################################
-print "################################################################"
-print "#                Performing SEXAFS definitions                 #" 
-print "################################################################"
+print("################################################################")
+print("#                Performing SEXAFS definitions                 #") 
+print("################################################################")
 
 #print "dcm.sample_at should be at 19.54 when beam in SEXAFS."
 
@@ -50,18 +51,18 @@ try:
     #["inputCountRate00",    "icr_00",    "%9d",    "cts"]]
     mca1=dxmap("d091-1-cx2/dt/dtc-mca_xmap.1")
     mca2=None
-    print GREEN+"mca1 --> DxMap card"+RESET
-except Exception, tmp:
-    print tmp
-    print RED+"Failure defining dxmap: d09-1-cx2/dt/dtc-mca_xmap.1"+RESET
+    print(GREEN+"mca1 --> DxMap card"+RESET)
+except Exception as tmp:
+    print(tmp)
+    print(RED+"Failure defining dxmap: d09-1-cx2/dt/dtc-mca_xmap.1"+RESET)
 
 #ct
 try:
     cpt=pseudo_counter(masters=[cpt0,])
     ct=pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,],slaves=[])
 except:
-    print "Failure defining ct speclike_syntax command"
-    print "Defaulting to cpt... ct=cpt... pysamba survival kit... is XIA dead?"
+    print("Failure defining ct speclike_syntax command")
+    print("Defaulting to cpt... ct=cpt... pysamba survival kit... is XIA dead?")
     ct=cpt
 
 #def setSTEP(mode="MCA", config="STEP"):
@@ -91,10 +92,10 @@ for i in __tmp:
             __cmdstring=__fmtstring%tuple([i,]+__tmp[i])
             exec(__cmdstring)
             __allmotors.append(__IP.user_ns[i])
-        except Exception, tmp:
-            print RED+"Failed"+RESET+" defining: %s/%s as %s"%tuple(__tmp[i][0:2]+[i,])
-            print RED+"-->"+RESET,tmp
-            print UNDERLINE+__cmdstring+RESET
+        except Exception as tmp:
+            print(RED+"Failed"+RESET+" defining: %s/%s as %s"%tuple(__tmp[i][0:2]+[i,]))
+            print(RED+"-->"+RESET,tmp)
+            print(UNDERLINE+__cmdstring+RESET)
                                                                             
 ###
 ### Define aliases below
@@ -112,7 +113,7 @@ for i in aliases:
         try:
             __IP.user_ns[aliases[i]]=__IP.user_ns[i]
         except:
-            print "Error defining ",aliases[i]," as alias for ",i
+            print("Error defining ",aliases[i]," as alias for ",i)
 
 
 ##-------------------------------------------------------------------------------------

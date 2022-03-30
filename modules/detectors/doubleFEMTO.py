@@ -1,3 +1,4 @@
+from __future__ import print_function
 from moveable import moveable
 
 class doubleFEMTO:
@@ -17,7 +18,7 @@ class doubleFEMTO:
         return self.mov1.__repr__() + self.mov2.__repr__()
         
     def __call__(self,x=None):
-        print self.__repr__()
+        print(self.__repr__())
         return self.pos()
 
     def pos(self,x=None,wait=True):
@@ -26,8 +27,8 @@ class doubleFEMTO:
         return self.mov1.pos()
         
     def lm(self):
-        print "MOV1:", self.mov1.lm()
-        print "MOV2:", self.mov2.lm()
+        print("MOV1:", self.mov1.lm())
+        print("MOV2:", self.mov2.lm())
         return self.mov1.lm()
 
     def lmset(self, min_value = None , max_value = None):

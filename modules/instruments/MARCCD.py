@@ -1,9 +1,10 @@
+from __future__ import print_function
 #Macro to define the MARCCD instrument:
 
 ##################################################
-print "################################################################"
-print "#                Performing MARCCD  definitions                #" 
-print "################################################################"
+print("################################################################")
+print("#                Performing MARCCD  definitions                #") 
+print("################################################################")
 
 
 ##--------------------------------------------------------------------------------------
@@ -14,8 +15,8 @@ try:
        import simple_MARCCD
        marccd = simple_MARCCD.ccdmar("d09-1/dt/marccd.1","image")
        snap_marccd = marccd.snap
-       print "\nMARCCD loaded as marccd\n"
-except Exception, tmp:
-       print tmp
+       print("\nMARCCD loaded as marccd\n")
+except Exception as tmp:
+       print(tmp)
        pass
 

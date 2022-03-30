@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+from builtins import range
 from time import sleep
 
-print
-print "################################################################"
-print "#                Executing user config.                        #" 
-print "################################################################"
+print()
+print("################################################################")
+print("#                Executing user config.                        #") 
+print("################################################################")
 
 
 #To mantain syntax compatibility with this old file:
@@ -38,9 +40,9 @@ try:
     ["counter7",    "Clock",    "%5.2f",    "s"]
     ]
     cpt0=counter("d09-1-c00/ca/cpt.1",user_readconfig=user_readconfig, clock_channel=6)
-except Exception, tmp:
-    print "I cannot define counter master."
-    print tmp
+except Exception as tmp:
+    print("I cannot define counter master.")
+    print(tmp)
 
 #dxmap
 try:
@@ -262,16 +264,16 @@ try:
 #    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",FTPclient="d09-1-c00/ca/ftpclientxia.2",FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/nfs/srv5/spool1/xia2")
     def setroi(ch1, ch2):
         """Set roi an ALL channels between ch1 and ch2. Works on mca1 and mca2"""
-        if mca1 <> None:
+        if mca1 != None:
             mca1.DP.set_timeout_millis(30000)
             mca1.setROIs(ch1, ch2)
-        if mca2 <> None:
+        if mca2 != None:
             mca2.DP.set_timeout_millis(30000)
             mca2.setROIs(ch1, ch2)
         return 
-except Exception, tmp:
-    print "Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.1"
-    print "Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.2"
+except Exception as tmp:
+    print("Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.1")
+    print("Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.2")
 
     
 #ct
@@ -290,25 +292,25 @@ try:
     ct = pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[], posts= ctPosts)
     #ct = pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,],slaves=[], posts= ctPosts)
     #ct = pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca2,],slaves=[], posts= ctPosts)
-except Exception, tmp:
-    print "Failure defining ct "
-    print "Defaulting to cpt... ct=cpt... "
+except Exception as tmp:
+    print("Failure defining ct ")
+    print("Defaulting to cpt... ct=cpt... ")
     ct=cpt
-    print tmp
+    print(tmp)
 
 #HV power supplies
 try:
     HV_I0    =NHQ_HVsupply("d09-1-cx1/ex/mi_cio-hvps.1","A")
     HV_I1    =NHQ_HVsupply("d09-1-cx1/ex/mi_cio-hvps.1","B")
-except Exception, tmp:
+except Exception as tmp:
     #print tmp
-    print "Error on defining NHQ module 1 SHV of chambers I0 and I1"
+    print("Error on defining NHQ module 1 SHV of chambers I0 and I1")
 try:
     HV_I2    =NHQ_HVsupply("d09-1-cx1/ex/mi_cio-hvps.2","B")
     HV_xbpm    =NHQ_HVsupply("d09-1-cx1/ex/mi_cio-hvps.2","A")
-except Exception, tmp:
+except Exception as tmp:
     #print tmp
-    print "Error on defining NHQ module 2 SHV of chambers I2 and xbpm"
+    print("Error on defining NHQ module 2 SHV of chambers I2 and xbpm")
 
 
 ##--------------------------------------------------------------------------------------
@@ -335,12 +337,12 @@ except Exception, tmp:
 # MOSTAB (home made python controller)
 try:
     from MOSTAB import MOSTAB_tango as MOSTAB
-    print "MOSTAB unit :",
+    print("MOSTAB unit :", end=' ')
     mostab=MOSTAB("d09-1-cx1/ca/moco2.1",init_file = __IP.user_ns["__pySamba_root"] + "/config/mostab.cfg", forceOutBeam="OUTBEAM VOLT NORM UNIP 10 NOAUTO")
     def itune(*args,**kwargs):
         #Multipiled by 4 on 18/11/2015
         opr = 3.56/(0.10 * dcm.pos() * 1e-3 - 0.16) * 0.9 *4
-        if "oprange" in kwargs.keys():
+        if "oprange" in list(kwargs.keys()):
             return mostab.tune(*args,**kwargs)
         else:
             kwargs["oprange"] = opr
@@ -348,9 +350,9 @@ try:
     #itune=mostab.tune
     #print i200.currents()
     #print i200.status()
-except Exception, tmp:
-    print "Error initializing mostab unit..."
-    print tmp
+except Exception as tmp:
+    print("Error initializing mostab unit...")
+    print(tmp)
     
 #ACE Avalanche Photodiode Controller (home made python controller)
 #try:
@@ -451,10 +453,10 @@ for i in __tmp:
         __cmdstring=__fmtstring%tuple([i,]+__tmp[i])
         exec(__cmdstring)
         __allmotors.append(__IP.user_ns[i])
-    except Exception, tmp:
-        print RED+"Failed"+RESET+" defining: %s/%s as %s"%tuple(__tmp[i][0:2]+[i,])
-        print RED+"-->"+RESET,tmp
-        print UNDERLINE+__cmdstring+RESET
+    except Exception as tmp:
+        print(RED+"Failed"+RESET+" defining: %s/%s as %s"%tuple(__tmp[i][0:2]+[i,]))
+        print(RED+"-->"+RESET,tmp)
+        print(UNDERLINE+__cmdstring+RESET)
 
 #############################################################
 # DOUBLE FEMTO
@@ -492,7 +494,7 @@ __tmp={
 #"cryo4temp2" :["d09-1-cx1/ex/cryo4.1-ctrl","temperature2"],
 }                                                
 
-__ll=__tmp.keys()
+__ll=list(__tmp.keys())
 __ll.sort()
 for i in __ll:
     try:
@@ -503,10 +505,10 @@ for i in __ll:
         __cmdstring=__fmtstring%tuple([i,]+__tmp[i])
         exec(__cmdstring)
         __vacuum.append(i)
-    except Exception, tmp:
-        print RED+"Failed"+RESET+" defining: %s/%s as %s"%tuple(__tmp[i][0:2]+[i,])
-        print RED+"-->"+RESET,tmp
-        print UNDERLINE+__cmdstring+RESET
+    except Exception as tmp:
+        print(RED+"Failed"+RESET+" defining: %s/%s as %s"%tuple(__tmp[i][0:2]+[i,]))
+        print(RED+"-->"+RESET,tmp)
+        print(UNDERLINE+__cmdstring+RESET)
 del __tmp,__ll
 
 ##################################################################
@@ -579,9 +581,9 @@ for i in __tmp:
     try:
         __IP.user_ns[i]=motor_slit(__tmp[i][0],__tmp[i][1],__tmp[i][2],__tmp[i][3])
         __allmotors+=[__IP.user_ns[i],]
-    except Exception, tmp:
-        print tmp
-        print RED+"Cannot define"+RESET+" %s =motor(%s)"%(i,__tmp[i])
+    except Exception as tmp:
+        print(tmp)
+        print(RED+"Cannot define"+RESET+" %s =motor(%s)"%(i,__tmp[i]))
 
 
 ###
@@ -602,9 +604,9 @@ for i in aliases:
     if i in __IP.user_ns:
         try:
             __IP.user_ns[aliases[i]]=__IP.user_ns[i]
-        except Exception, tmp:
-            print tmp
-            print "Error defining ",aliases[i]," as alias for ",i
+        except Exception as tmp:
+            print(tmp)
+            print("Error defining ",aliases[i]," as alias for ",i)
 
 
 ##-------------------------------------------------------------------------------------
@@ -624,8 +626,8 @@ try:
     FE=FrontEnd("tdl-d09-1/vi/tdl.1")
     obxg=PSS.obx("d09-1-c06/vi/obxg.1")
     obx=PSS.obx("d09-1-c07/ex/obx.1")
-except Exception, tmp:
-    print tmp
+except Exception as tmp:
+    print(tmp)
 ##--------------------------------------------------------------------------------------
 ##VALVES
 ##--------------------------------------------------------------------------------------
@@ -651,17 +653,17 @@ for i in __tmp:
             __IP.user_ns[i]=valve(__tmp[i])
         __valves+=[__IP.user_ns[i],]
         __vacuum+=[i,]
-    except Exception, tmp:
-        print tmp
-        print "Cannot define %s =valve(%s)"%(i,__tmp[i])
+    except Exception as tmp:
+        print(tmp)
+        print("Cannot define %s =valve(%s)"%(i,__tmp[i]))
 del __tmp
 
 #attenuateur 
 try:
     att=absorbing_system("d09-1-c01/ex/att.1")
-except Exception, tmp:
-    print tmp
-    print "Cannot configure d09-1-c01/ex/att.1"
+except Exception as tmp:
+    print(tmp)
+    print("Cannot configure d09-1-c01/ex/att.1")
 
 #Fast shutter
 try:
@@ -670,9 +672,9 @@ try:
     sh_fast=pseudo_valve(label="d09-1-c00/ca/dio_0.1",channel="G",delay=0.1,deadtime=0.,timeout=0,reverse=True)
     fc = sh_fast.close
     fo = sh_fast.open
-except Exception, tmp:
-    print tmp
-    print "No fast shutter defined!"
+except Exception as tmp:
+    print(tmp)
+    print("No fast shutter defined!")
 
 
 ###
@@ -698,9 +700,9 @@ try:
     def tablescan(p1,p2,dp=0.25,dt=0.25,channel=0,returndata=False):
         """Calls the samplescan with default channel=0 instead of 1. Just a shortcut. """
         return ascan(po3,p1,p2,dp,dt,channel,returndata=False)
-except Exception, tmp:
-    print "error defining tablescan"
-    print tmp
+except Exception as tmp:
+    print("error defining tablescan")
+    print(tmp)
 
 
 
@@ -711,44 +713,44 @@ except Exception, tmp:
 try:
     #in the right order...
     __allshutters=[FE, obxg, obx]
-except Exception, tmp:
-    print tmp
-    print "Check state of shutters... something wrong in script..."
+except Exception as tmp:
+    print(tmp)
+    print("Check state of shutters... something wrong in script...")
 
 
 def shopen(level=1):
     """Open shutters up to level specified starting from lower level"""
     for i in range(level+1):
         if "frontEndStateValue" in __allshutters[i].DP.get_attribute_list() and __allshutters[i].DP.frontEndStateValue == 2:
-            print "Front End is locked by Machine Operator"
-            print "I will wait for electron beam injection..."
+            print("Front End is locked by Machine Operator")
+            print("I will wait for electron beam injection...")
             wait_injection()
         if "beamLineOccInterlock" in __allshutters[i].DP.get_attribute_list() and __allshutters[i].DP.beamlineoccinterlock:
-                print "Front End is beam line locked: calling wait_injection()"
+                print("Front End is beam line locked: calling wait_injection()")
                 wait_injection(FE,__allshutters[:level+1])
                 #raise Exception("Front End locked, verify PSS or try again later.")
         if "beamLinePSSInterlock" in __allshutters[i].DP.get_attribute_list() and __allshutters[i].DP.beamlinepssinterlock:
-                print "Front End is beam line locked: calling wait_injection()"
+                print("Front End is beam line locked: calling wait_injection()")
                 wait_injection()
                 #raise Exception("Front End locked, verify PSS or try again later.")
         if "isInterlocked" in __allshutters[i].DP.get_attribute_list() and __allshutters[i].DP.isInterlocked:
                 #raise Exception("Shutter locked, verify PSS or try again later.")
                 while(__allshutters[i].DP.isInterlocked):
-                    print "Waiting for PSS permission to open shutter... " + asctime() + "\r",
+                    print("Waiting for PSS permission to open shutter... " + asctime() + "\r", end=' ')
                     sys.stdout.flush()
                     sleep(1)
-        print ""
+        print("")
         __allshutters[i].open()
         try:
             __allshutters[i].DP.automaticMode = True
         except:
             pass
-        print __allshutters[i].label," ",__allshutters[i].state()
+        print(__allshutters[i].label," ",__allshutters[i].state())
     if level >= 1:
         try:
             sleep(0.2)
             mostab.start()
-            print "mostab: start executed"
+            print("mostab: start executed")
         except:
             pass
     return __allshutters[level].state()
@@ -757,12 +759,12 @@ def shclose(level=1):
     """Close shutters down to level specified starting from maximum level"""
     try:
         mostab.stop()
-        print "mostab: stop executed"
+        print("mostab: stop executed")
     except:
         pass
     for i in range(len(__allshutters)-1,level-1,-1):
         __allshutters[i].close()
-    print __allshutters[i].label," ",__allshutters[i].state()
+    print(__allshutters[i].label," ",__allshutters[i].state())
     return __allshutters[level].state()
 
 def shstate():
@@ -772,12 +774,12 @@ def shstate():
     1 means level 1 open 
     2 means level 2 open ..."""
     for i in range(len(__allshutters)):
-        if __allshutters[i].state() <> DevState.OPEN:
+        if __allshutters[i].state() != DevState.OPEN:
             break
     if i == 0:
-        print "Beamline is closed"
+        print("Beamline is closed")
     else:
-        print "Beamline is open up to level:", i - 1
+        print("Beamline is open up to level:", i - 1)
     return i - 1
 
 ##
@@ -795,10 +797,10 @@ try:
         return wait_functions.checkTDL(TDL)
     def interlockTDL(TDL=FE):
         return wait_functions.interlockTDL(FE)
-except Exception, tmp:
-    print "wait_functions.py module is in error."
-    print tmp
-    print "Ignoring..."
+except Exception as tmp:
+    print("wait_functions.py module is in error.")
+    print(tmp)
+    print("Ignoring...")
 
 
 ##############################
@@ -813,9 +815,9 @@ except Exception, tmp:
 try:
     vg_x=sensor("d09-1-cx1/dt/vg2-basler-analyzer","ChamberXProjFitCenter")
     vg_y=sensor("d09-1-cx1/dt/vg2-basler-analyzer","ChamberYProjFitCenter")
-except Exception, tmp:
-    print tmp
-    print "videograbber d09-1-cx1/dt/vg2-basler-analyzer error!"
+except Exception as tmp:
+    print(tmp)
+    print("videograbber d09-1-cx1/dt/vg2-basler-analyzer error!")
 
 
 #try:

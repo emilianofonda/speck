@@ -1,9 +1,10 @@
+from __future__ import print_function
 #Macro to define the PI Hexapode instrument:
 
 ##################################################
-print "################################################################"
-print "#                Performing PI HEXA definitions                #" 
-print "################################################################"
+print("################################################################")
+print("#                Performing PI HEXA definitions                #") 
+print("################################################################")
 
 
 ##--------------------------------------------------------------------------------------
@@ -19,11 +20,11 @@ try:
        hv=moveable("d09-1-cx1/ex/hexa.1","v")
        hw=moveable("d09-1-cx1/ex/hexa.1","w")
 except:
-       print RED+"Hexapode"+RESET+"not responding or error initializing moveable classes"
+       print(RED+"Hexapode"+RESET+"not responding or error initializing moveable classes")
        pass
 
-print
-print "HEXAPODE PI loaded"
-print "New motors: hu,hv,hw for rotations hx,hy,hz for translations" 
-print
+print()
+print("HEXAPODE PI loaded")
+print("New motors: hu,hv,hw for rotations hx,hy,hz for translations") 
+print()
 

@@ -1,3 +1,5 @@
+from __future__ import division
+from past.utils import old_div
 def char2bin(c):
 	"""Converts ONE char to a string representing its binary form"""
 	cv=ord(c)
@@ -8,7 +10,7 @@ def char2bin(c):
 	i=7
 	s=""
 	while(cv>=1):
-		if cv/2**i:
+		if old_div(cv,2**i):
 			s+="1"
 			cv=cv-2**i
 		else:

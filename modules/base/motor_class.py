@@ -1,121 +1,17 @@
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
+from builtins import object
 from mycurses import *
-from string import lower
 import PyTango
 from PyTango import DeviceProxy, DevState
 from time import sleep,time
-import exceptions
-from exceptions import KeyboardInterrupt,SystemExit,SyntaxError, NotImplementedError, Exception
 from numpy import mean,std,mod, nan, inf
-import thread
+import _thread
 
-#def move_motor(*motor):
-#    """Move one or more motors. Support motor lists or just a motor object. 
-#    Syntax move_motor(motor1,1,motor2,123.2,motor3,12). 
-#    Only an even number of parameters is acceptable.
-#    """
-#    motors=[]
-#    if mod(len(motor),2)<>0 : raise exceptions.SyntaxError("odd number of parameters!")
-#    #print map(lambda i: "%s at %g"%(whois(i),i.pos()), x)
-#    try:
-#        for i in range(0,len(motor),2):
-#            motor[i].go(motor[i+1])
-#            motors.append(motor[i])
-#        return wait_motor(motors)
-#    except (KeyboardInterrupt,SystemExit), tmp:
-#        for i in motors:
-#            i.stop()
-#        raise tmp
-#    except PyTango.DevFailed, tmp:
-#        for i in motors:
-#            i.stop()
-#        raise tmp
-#    except Exception, tmp:
-#        print "Unhandled error... raising exception"
-#        raise tmp
-
-#def go_motor(*motor):
-#    """Move one or more motors. Support motor lists or just a motor object. 
-#    Syntax move_motor(motor1,1,motor2,123.2,motor3,12). 
-#    Only an even number of parameters is acceptable.
-#    Tested a little."""
-#    motors=[]
-#    if mod(len(motor),2)<>0 : raise exceptions.SyntaxError("odd number of parameters!")
-#    try:
-#        for i in range(0,len(motor),2):
-#            motor[i].go(motor[i+1])
-#            motors.append(motor[i])
-#        return
-#    except (KeyboardInterrupt,SystemExit), tmp:
-#        for i in motors:
-#            i.stop()
-#        raise tmp
-#    except PyTango.DevFailed, tmp:
-#        for i in motors:
-#            i.stop()
-#        raise tmp
-#    except Exception, tmp:
-#        print "Unhandled error... raising exception"
-#        raise tmp
-#
-#def wait_motor(motor, deadtime=0.025, timeout=-0.05, delay=None, verbose=True):
-#    """Wait for a motor to move and stop. Support motor lists or just a motor object. 
-#    To be used inside the class as a general wait procedure and as a 
-#    support for multimotor movements through multi motor.go commands."""
-#    argument_type=type(motor)
-#    if (not(argument_type in [tuple,list])): 
-#        motor_list=(motor,)
-#    else:
-#        motor_list=motor
-#    #Now the argument IS a list, anyway.
-#    if delay==None:
-#        delay=0.
-#        for i in motor_list:
-#            try:
-#                if i.delay>delay: delay=i.delay
-#            except:
-#                pass
-#    try:
-#        condition=True
-#        t=0.
-#        while(condition and (t<timeout)):
-#            sleep(deadtime)
-#            condition=False
-#            for i in motor_list:
-#                if(i.state()==DevState.MOVING):
-#                    condition=False
-#                    break    
-#            t+=deadtime
-#        condition=True
-#        if verbose:
-#            for i in map(lambda x: (x.label,x.pos()), motor_list):
-#                print " " * 40 + "\r",
-#                print "%s    %+8.6e" % (i[0], i[1])
-#        while(condition):
-#            sleep(deadtime)
-#            condition = (DevState.MOVING in map(lambda x: x.state(), motor_list))
-#            if verbose:
-#                print "\033[%iA" % (len(motor_list)),
-#                for i in map(lambda x: (x.label, x.pos()), motor_list):
-#                    print " " * 40 + "\r",
-#                    print "%s    %+8.6e"%(i[0], i[1])
-#
-#        if verbose: print ""
-#        sleep(delay)
-#        if len(motor_list) == 1:
-#            return motor_list[0].pos()
-#        else:
-#            return map(lambda x: x.pos(), motor_list)
-#    except (KeyboardInterrupt,SystemExit), tmp:
-#        for i in motor_list:
-#            i.stop()
-#        raise tmp
-#    except PyTango.DevFailed, tmp:
-#        raise tmp
-#    except Exception, tmp:
-#        print "Unhandled error, raising exception..."
-#        raise tmp
-        
-class motor:
+       
+class motor(object):
     """Define a motor in terms of a DeviceProxy. You provide a correct nomenclature and you got
     a motor object that have the following functions: pos, go, state, status, speed,accel and decel.
     timeout is used before moving, deadtime for polling and delay after moving.
@@ -135,9 +31,9 @@ class motor:
             #    except:
             #        print "Cannot initialize motor"
             #        raise PyTango.DevFailed
-        except PyTango.DevFailed, tmp:
-            print "Error when defining :",motorname," as a motor.\n"
-            print tmp.args
+        except PyTango.DevFailed as tmp:
+            print("Error when defining :",motorname," as a motor.\n")
+            print(tmp.args)
             raise tmp
         self.deadtime = deadtime
         self.delay = delay
@@ -215,16 +111,16 @@ class motor:
         try:
             value=float(value)        
         except:
-            print "Position value is not valid."
+            print("Position value is not valid.")
             raise SyntaxError
         if (self.state()==DevState.OFF):
             raise Exception("Cannot initialize on a motor that is OFF!")
         try:
             self.command("DefinePosition",value)
-        except PyTango.DevFailed, tmp:
+        except PyTango.DevFailed as tmp:
                 raise tmp
         except:
-            print "Cannot define position for an unknown reason"
+            print("Cannot define position for an unknown reason")
             raise NotImplementedError
         return self.pos()
         
@@ -241,25 +137,25 @@ class motor:
             #self.state()
             self.command("InitializeReferencePosition")
             t=0.
-            if self.state()<>DevState.MOVING:
-                while((self.state()<>DevState.MOVING) and (t<self.timeout)):
+            if self.state()!=DevState.MOVING:
+                while((self.state()!=DevState.MOVING) and (t<self.timeout)):
                     sleep(self.deadtime)
                     t+=self.deadtime
             while(self.state()==DevState.MOVING):
-                if self.verbose: print "%8.6f\r"%(self.pos()),
+                if self.verbose: print("%8.6f\r"%(self.pos()), end=' ')
                 sleep(self.deadtime)
-        except PyTango.DevFailed, tmp:
+        except PyTango.DevFailed as tmp:
             self.stop()
-            print "Error. Verify the following :\n"
-            print "properties for initializereference have not been correctly set."
+            print("Error. Verify the following :\n")
+            print("properties for initializereference have not been correctly set.")
             raise tmp
-        except (KeyboardInterrupt,SystemExit), tmp:
+        except (KeyboardInterrupt,SystemExit) as tmp:
             self.stop()
-            print "Stop on user request."
+            print("Stop on user request.")
             raise tmp
         except:
             self.stop()
-            print "Cannot initialize position for an unknown reason"
+            print("Cannot initialize position for an unknown reason")
             raise NotImplementedError
         sleep(self.delay)
         #...speed bug workaround
@@ -288,19 +184,19 @@ class motor:
             if(not(wait)):
                 return dest
             t=0.
-            if self.state()<>DevState.MOVING:
-                while((self.state()<>DevState.MOVING) and (t<self.timeout)):
+            if self.state()!=DevState.MOVING:
+                while((self.state()!=DevState.MOVING) and (t<self.timeout)):
                     sleep(self.deadtime)
                     t+=self.deadtime
             while(self.state()==DevState.MOVING):
-                if self.verbose: print "%8.6f\r"%(self.pos()),
+                if self.verbose: print("%8.6f\r"%(self.pos()), end=' ')
                 sleep(self.deadtime)
             sleep(self.delay)
             return self.pos()
-        except (KeyboardInterrupt,SystemExit), tmp:
+        except (KeyboardInterrupt,SystemExit) as tmp:
             self.stop()
             raise tmp
-        except PyTango.DevFailed, tmp:
+        except PyTango.DevFailed as tmp:
             self.stop()
             raise tmp
         #except :
@@ -327,11 +223,11 @@ class motor:
             except:    
                 raise Exception("Argument must be a number!")
             try:
-                return thread.start_new_thread(self.go,(dest,))
-            except thread.error,tmp:
-                print "Error firing ",self.label,"to ",dest
-                print "Error is :",tmp
-                print "Using a go command instead."
+                return _thread.start_new_thread(self.go,(dest,))
+            except _thread.error as tmp:
+                print("Error firing ",self.label,"to ",dest)
+                print("Error is :",tmp)
+                print("Using a go command instead.")
                 self.go(dest)
                 return None
 
@@ -345,7 +241,7 @@ class motor:
             return self.DP.read_attribute("velocity").value
         else:
             if(self.state()==DevState.MOVING):
-                print "Cannot write on moving motor\n"
+                print("Cannot write on moving motor\n")
                 return self.speed()
             else:
                 self.DP.write_attribute(self.att_speed,dest)
@@ -362,7 +258,7 @@ class motor:
             return self.DP.read_attribute(self.att_accel).value
         else:
             if(self.state()==DevState.MOVING):
-                print "Cannot write on moving motor\n"
+                print("Cannot write on moving motor\n")
                 return self.accel()
             else:
                 self.DP.write_attribute(self.att_accel,dest)
@@ -379,7 +275,7 @@ class motor:
             return self.DP.read_attribute(self.att_decel).value
         else:
             if(self.state()==DevState.MOVING):
-                print "Cannot write on moving motor\n"
+                print("Cannot write on moving motor\n")
                 return self.decel()
             else:
                 self.DP.write_attribute(self.att_decel,dest)
@@ -397,7 +293,7 @@ class motor:
             return self.DP.read_attribute(self.att_offset).value
         else:
             if(self.state()==DevState.MOVING):
-                print "Cannot write on moving motor\n"
+                print("Cannot write on moving motor\n")
                 return self.offset()
             else:
                 self.DP.write_attribute(self.att_offset,dest)
@@ -413,19 +309,19 @@ class motor:
            if(not(wait)):
                return self.pos()
            t=0.
-           while((self.state() <> DevState.MOVING) and (t<self.timeout)):
+           while((self.state() != DevState.MOVING) and (t<self.timeout)):
                sleep(self.deadtime)
                t+=self.deadtime
            while(self.state() == DevState.MOVING):
-               print "%8.6f\r"%(self.pos()),
+               print("%8.6f\r"%(self.pos()), end=' ')
                sleep(self.deadtime)
            sleep(self.delay)
            return self.pos()
        except (KeyboardInterrupt,SystemExit):
            self.stop()
            return self.pos()
-       except PyTango.DevFailed, tmp:
-           print tmp.args
+       except PyTango.DevFailed as tmp:
+           print(tmp.args)
            return self.stop()
            raise tmp
        #except :
@@ -441,11 +337,11 @@ class motor:
            if(not(wait)): 
                return self.pos()
            t=0.
-           while((self.state() <> DevState.MOVING) and (t<self.timeout)):
+           while((self.state() != DevState.MOVING) and (t<self.timeout)):
                sleep(self.deadtime)
                t+=self.deadtime
            while(self.state() == DevState.MOVING):
-               print "%8.6f\r"%(self.pos()),
+               print("%8.6f\r"%(self.pos()), end=' ')
                sleep(self.deadtime)
            sleep(self.delay)
            return self.pos()
@@ -454,13 +350,13 @@ class motor:
            self.stop()
            return self.pos()
            
-       except PyTango.DevFailed, tmp:
-           print tmp.args
+       except PyTango.DevFailed as tmp:
+           print(tmp.args)
            return self.stop()
            raise tmp
 
-       except Exception, tmp:
-           print "Unhandled error, raising exception..."
+       except Exception as tmp:
+           print("Unhandled error, raising exception...")
            self.stop()
            raise tmp
 
@@ -468,14 +364,14 @@ class motor:
         try:
             return self.DP.read_attribute("forwardLimitSwitch").value
         except:
-            print "Error reading forward limit switch..."
+            print("Error reading forward limit switch...")
             return None
     
     def backwardLimitSwitch(self):
         try:
             return self.DP.read_attribute("backwardLimitSwitch").value
         except:
-            print "Error reading backward limit switch..."
+            print("Error reading backward limit switch...")
             return None
             
     def lm(self):
@@ -510,11 +406,11 @@ class motor:
         att_cfg.min_value, att_cfg.max_value = min_value, max_value
         self.DP.set_attribute_config(att_cfg)
         new_limits = self.lm()
-        print "New limits: ", new_limits
+        print("New limits: ", new_limits)
         return new_limits
 
 
-class piezo:
+class piezo(object):
     """Define a motor (piezo) in terms of a DeviceProxy. You provide a correct nomenclature and you got a motor object that have the following functions: pos, go, state, status,... It is not a normal motor. Some functions are missing. The returned position is the feeback position. Is it an option to envisage to return a tuple instead (command, feedback) ?"""
 
     def __init__(self,motorname,deadtime=0.01,delay=0.0,timeout=0.01):
@@ -580,11 +476,11 @@ class piezo:
         return self.pos(dest,wait)
 
     def DefinePosition(self,dest):
-        print "DefinePosition is useless on a generic piezo actuator.\n"
+        print("DefinePosition is useless on a generic piezo actuator.\n")
         return self.pos()
 
     def InitializeReferencePosition(self,dest):
-        print "InitializeReferencePosition is useless on a generic piezo actuator.\n"
+        print("InitializeReferencePosition is useless on a generic piezo actuator.\n")
         return self.pos()
 
 
@@ -603,7 +499,7 @@ class piezo:
             if(not(wait)):
                 return self.pos()
             t=0.
-            while((self.state()<>DevState.MOVING) and (t<self.timeout)):
+            while((self.state()!=DevState.MOVING) and (t<self.timeout)):
                 sleep(self.deadtime)
                 t+=self.deadtime
             while(self.state()==DevState.MOVING):
@@ -630,22 +526,22 @@ class piezo:
             except:    
                 raise Exception("Argument must be a number!")
             try:
-                return thread.start_new_thread(self.go,(dest,))
-            except thread.error,tmp:
-                print "Error firing ",self.label,"to ",dest
-                print "Error is :",tmp
-                print "Using a go command instead."
+                return _thread.start_new_thread(self.go,(dest,))
+            except _thread.error as tmp:
+                print("Error firing ",self.label,"to ",dest)
+                print("Error is :",tmp)
+                print("Using a go command instead.")
                 self.go(dest)
                 return None
 
-class motor_slit:
+class motor_slit(object):
     """Alternative to the slit class: define one of the four pseudo-motors per each slit: pos,gap,Up/In,Down/Out. Each has standard motor attributes and special behaviour with regard to speed and acceleration and so on. You must provide the device address of the slits, of the two motors and the keyword corresponding to the attribute you want to control: pos, gap, up (or) in,down (or) out. To be decommissione in favor of moveables."""
     def __init__(self,slitname,insideUp_name,outsideDown_name,argument="pos",deadtime=.01,timeout=.1,delay=0.1):
         self.DP_slit=DeviceProxy(slitname)
         self.DP_IU=DeviceProxy(insideUp_name);self.mt_IU=motor(insideUp_name)
         self.DP_OD=DeviceProxy(outsideDown_name);self.mt_OD=motor(outsideDown_name)
         if(not(argument in ["pos","gap","in","out","up","down"])):
-            print "Invalid argument keyword!"
+            print("Invalid argument keyword!")
             raise SyntaxError
         if(argument=="pos"):
             self.DP=self.DP_slit
@@ -703,8 +599,8 @@ class motor_slit:
         try:
             self.command_slit("Stop")
         except:
-            print "Cannot stop slits"
-            print self.status()
+            print("Cannot stop slits")
+            print(self.status())
         return self.state()
 
     def command(self,cmdstr,arg=""):
@@ -780,25 +676,25 @@ class motor_slit:
                 return self.pos()
             t=time()
             sleep(self.deadtime)
-            while((self.slit_state()<>DevState.MOVING) and (time()-t<self.timeout)):
+            while((self.slit_state()!=DevState.MOVING) and (time()-t<self.timeout)):
                 sleep(self.deadtime)
             while(self.slit_state()==DevState.MOVING):
-                print "%10.8f\r"%(self.pos()),
+                print("%10.8f\r"%(self.pos()), end=' ')
                 sleep(self.deadtime)
             sleep(self.delay)
             if self.argument in ["gap", "position"]:
                 if (self.mt_IU.backwardLimitSwitch() or self.mt_OD.backwardLimitSwitch()):
-                    print "Backward limit switch attained!"
+                    print("Backward limit switch attained!")
                 if (self.mt_IU.forwardLimitSwitch() or self.mt_OD.forwardLimitSwitch()):
-                    print "Forward  limit switch attained!"
+                    print("Forward  limit switch attained!")
                     return self.pos()
-        except (KeyboardInterrupt,SystemExit), tmp:
+        except (KeyboardInterrupt,SystemExit) as tmp:
             self.stop()
             raise tmp
-        except PyTango.DevFailed, tmp:
+        except PyTango.DevFailed as tmp:
             self.stop()
             raise tmp
-        except PyTango.DevError, tmp:
+        except PyTango.DevError as tmp:
             self.stop()
             raise tmp
         #except :
@@ -830,11 +726,11 @@ class motor_slit:
             except:    
                 raise Exception("Argument must be a number!")
             try:
-                return thread.start_new_thread(self.go,(dest,))
-            except thread.error,tmp:
-                print "Error firing ",self.label,"to ",dest
-                print "Error is :",tmp
-                print "Using a go command instead."
+                return _thread.start_new_thread(self.go,(dest,))
+            except _thread.error as tmp:
+                print("Error firing ",self.label,"to ",dest)
+                print("Error is :",tmp)
+                print("Using a go command instead.")
                 self.go(dest)
                 return None
                           
@@ -868,7 +764,7 @@ class motor_slit:
         try:
             value=float(value)        
         except:
-            print "Position value is not valid."
+            print("Position value is not valid.")
             raise SyntaxError
         if (self.state()==DevState.OFF):
             raise Exception("Cannot initialize on a motor that is OFF!")
@@ -898,7 +794,7 @@ class motor_slit:
                     self.command("DefinePosition",float(value))
                     sleep(self.delay)
                     return self.pos()
-            except PyTango.DevFailed, tmp:
+            except PyTango.DevFailed as tmp:
                 raise tmp
             #except:
             #    print "Cannot define position for an unknown reason"
@@ -930,14 +826,14 @@ class motor_slit:
                     self.mt_OD.InitializeReferencePosition()
                 sleep(0.2)
                 return self.pos()
-        except PyTango.DevFailed, tmp:
+        except PyTango.DevFailed as tmp:
             self.stop()
-            print "Error. Verify the following :\n"
-            print "properties for initializereference have not been correctly set."
+            print("Error. Verify the following :\n")
+            print("properties for initializereference have not been correctly set.")
             raise tmp
-        except (KeyboardInterrupt,SystemExit), tmp:
+        except (KeyboardInterrupt,SystemExit) as tmp:
             self.stop()
-            print "Stop on user request."
+            print("Stop on user request.")
             raise tmp
         #except:
         #    self.stop()
@@ -970,7 +866,7 @@ class motor_slit:
                 return self.DP.read_attribute("velocity").value
         else:
             if((self.state()==DevState.MOVING) or (self.slit_state==DevState.MOVING)):
-                print "Cannot write on moving motor\n"
+                print("Cannot write on moving motor\n")
                 return self.speed() 
                 #...or raise PyTango.DevFailed ???
             else:
@@ -1001,7 +897,7 @@ class motor_slit:
                 return self.DP.read_attribute("acceleration").value
         else:
             if((self.state()==DevState.MOVING) or (self.slit_state==DevState.MOVING)):
-                print "Cannot write on moving motor\n"
+                print("Cannot write on moving motor\n")
                 return self.accel() 
                 #...or raise PyTango.DevFailed ???
             else:
@@ -1032,7 +928,7 @@ class motor_slit:
                 return self.DP.read_attribute("deceleration").value
         else:
             if((self.state()==DevState.MOVING) or (self.slit_state==DevState.MOVING)):
-                print "Cannot write on moving motor\n"
+                print("Cannot write on moving motor\n")
                 return self.decel() 
                 #...or raise PyTango.DevFailed ???
             else:
@@ -1048,7 +944,7 @@ class motor_slit:
 
     def forward(self,wait=True):
         if(self.argument in ["gap","postion"]):
-            print "Cannot execute forward on the ",self.argument," slit motor type."
+            print("Cannot execute forward on the ",self.argument," slit motor type.")
             return self.pos()
         try:
             #state bug workaround
@@ -1063,11 +959,11 @@ class motor_slit:
             if(not(wait)):
                 return self.pos()
             t=0.
-            while((self.state()<>DevState.MOVING) and (t<self.timeout)):
+            while((self.state()!=DevState.MOVING) and (t<self.timeout)):
                 sleep(self.deadtime)
                 t+=self.deadtime
             while(self.state()==DevState.MOVING):
-                print "%8.6f\r"%(self.pos()),
+                print("%8.6f\r"%(self.pos()), end=' ')
                 sleep(self.deadtime)
             sleep(self.delay)
             return self.pos()
@@ -1076,8 +972,8 @@ class motor_slit:
             self.stop()
             return self.pos()
 
-        except PyTango.DevFailed, tmp:
-            print tmp.args
+        except PyTango.DevFailed as tmp:
+            print(tmp.args)
             return self.stop()
             raise tmp
 
@@ -1088,7 +984,7 @@ class motor_slit:
 
     def backward(self,wait=True):
         if(self.argument in ["gap","postion"]):
-            print "Cannot execute backward on the ",self.argument," slit motor type."
+            print("Cannot execute backward on the ",self.argument," slit motor type.")
             return self.pos()
         try:
             #state bug workaround
@@ -1103,11 +999,11 @@ class motor_slit:
             if(not(wait)):
                 return self.pos()
             t=0.
-            while((self.state()<>DevState.MOVING) and (t<self.timeout)):
+            while((self.state()!=DevState.MOVING) and (t<self.timeout)):
                 sleep(self.deadtime)
                 t+=self.deadtime
             while(self.state()==DevState.MOVING):
-                print "%8.6f\r"%(self.pos()),
+                print("%8.6f\r"%(self.pos()), end=' ')
                 sleep(self.deadtime)
             sleep(self.delay)
             return self.pos()
@@ -1116,8 +1012,8 @@ class motor_slit:
             self.stop()
             return self.pos()
 
-        except PyTango.DevFailed, tmp:
-            print tmp.args
+        except PyTango.DevFailed as tmp:
+            print(tmp.args)
             return self.stop()
             raise tmp
 
@@ -1134,7 +1030,7 @@ def Read_AI(cb_data,axis=0,n=1,statistics=False):
         If you want std deviation and mean ask for statistics=True.
     The raw_data should be developped as a specific python controller with all the usual tricks inside the controller... next version?"""
         att_axis=cb_data.read_attribute("axisNumber")
-        if att_axis.value<>axis:
+        if att_axis.value!=axis:
             cb_data.write_attribute("axisNumber",axis)
         y=[]
         if (not(statistics)):

@@ -1,3 +1,4 @@
+from __future__ import print_function
 #and now something completely different...
 import time
 
@@ -52,32 +53,32 @@ class MOSTAB_serial:
 
 
     def init(self):
-        if self.init_file <> "":
+        if self.init_file != "":
             try:
-                ll = file(self.init_file).readlines()
+                ll = open(self.init_file).readlines()
             except:
                 raise Exception("init_file specified not found or not readable: " + self.init_file)
         else:
             raise Exception("No init_file specified")
-        print "Setting setup read from %s on MOSTAB (MoCo2) unit..."%(self.init_file)
+        print("Setting setup read from %s on MOSTAB (MoCo2) unit..."%(self.init_file))
         for i in ll:
             cmd = i.strip()
             if not cmd.startswith("#"):
                 try:
                     self(cmd)
-                except Exception, tmp:
+                except Exception as tmp:
                     raise Exception("Cannot send command to MOSTAB: " + cmd)
-        print "...OK."
-        print self.status()
+        print("...OK.")
+        print(self.status())
         return self()
 
     def __call__(self,arg = None):
-        if arg <> None:
+        if arg != None:
             return self.InOutS(arg)
         max_Vout,gain_mode = self("?OUTBEAM")[self.echo].split()[-2:]
         minp, maxp = self.lm()
-        print "MOSTAB at ", self.pos(),"[%4.2f:%4.2f]"%(minp, maxp)," is in state ",self.state(), "the outbeam signal is at %sV/%sV gain mode is %s"\
-        %(self("?BEAM")[self.echo].split()[1], max_Vout, gain_mode)
+        print("MOSTAB at ", self.pos(),"[%4.2f:%4.2f]"%(minp, maxp)," is in state ",self.state(), "the outbeam signal is at %sV/%sV gain mode is %s"\
+        %(self("?BEAM")[self.echo].split()[1], max_Vout, gain_mode))
         return self.pos()
 
     def state(self):
@@ -118,7 +119,7 @@ class MOSTAB_serial:
             max_value = current_max
         self.InOutS("OPRANGE %4.2f %4.2f %4.2f" % (min_value, max_value, (min_value+max_value)*0.5))
         new_limits = self.lm()
-        print "New limits: ", new_limits
+        print("New limits: ", new_limits)
         return new_limits
         
         ss = self.InOutS("?OPRANGE")[self.echo]
@@ -133,7 +134,7 @@ class MOSTAB_serial:
         if self.mode("OSCILLATION"):
             self.InOutS("OSCIL ON")
         time.sleep(0.1)
-        print self("?OSCIL")[1]
+        print(self("?OSCIL")[1])
         time.sleep(0.2)
         return
 
@@ -141,7 +142,7 @@ class MOSTAB_serial:
         if self.mode("OSCILLATION"):
             self.InOutS("OSCIL OFF")
         time.sleep(0.1)
-        print self("?OSCIL")[1]
+        print(self("?OSCIL")[1])
         time.sleep(0.2)
         return
     
@@ -149,19 +150,19 @@ class MOSTAB_serial:
         if self.mode("OSCILLATION"):
             self.InOutS("OSCIL ON")
         time.sleep(0.1)
-        print "?OSCIL"
-        print self("?OSCIL")[1]
+        print("?OSCIL")
+        print(self("?OSCIL")[1])
         time.sleep(0.2)
         self.InOutS("GO")
         err = self.error()
-        if err <> "OK":
+        if err != "OK":
             raise Exception("MOSTAB: " + err)
         return self.state()
    
     def stop(self):
         self.InOutS("STOP")
         err = self.error()
-        if err <> "OK":
+        if err != "OK":
             raise Exception("MOSTAB: " + err)
         return self.state()
 
@@ -174,7 +175,7 @@ class MOSTAB_serial:
             return float(self.InOutS("?PIEZO")[self.echo].split(" ")[0])
         self.InOutS("PIEZO %8.6f" % dest)
         err = self.error()
-        if err <> "OK":
+        if err != "OK":
             pmin, pmax = self.lm()
             if dest <= pmin or dest >= pmax:
                 raise Exception("You tried to move MOSTAB out of limits.\n \
@@ -260,7 +261,7 @@ class MOSTAB_serial:
         self.pos(self.lm()[0]+0.05)
         time.sleep(0.1)
         for p in numpy.arange(p1, p2+dp, dp):
-            print self.pos(p)
+            print(self.pos(p))
             time.sleep(0.1)
             #self.InOutS("OSCIL ON")
             #time.sleep(2)
@@ -350,13 +351,13 @@ class MOSTAB_tango(MOSTAB_serial):
 
     def InOutS(self, message, n=None):
         """In the tango_serial version the value of n is not used."""
-        if self.EndOfLine_out <> "":
+        if self.EndOfLine_out != "":
             ll = self.serial.writeread(message).split(self.EndOfLine_out)
         else:
             ll = self.serial.writeread(message).split(self.EndOfLine)
         time.sleep(self.deadtime)
         l = self.serial.read()
-        while(l <> ""):
+        while(l != ""):
             ll[1] += l
             l = self.serial.read()
         return ll

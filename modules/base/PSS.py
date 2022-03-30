@@ -1,19 +1,21 @@
+from __future__ import print_function
 #Should connect to PSS and cover front end, obx and obxg devices.
 #A PSS function should return states of the hutches. Just a small subset of PSS 
 #states and commands
 
 
+from builtins import object
 from PyTango import DeviceProxy, DevState
 from time import sleep
 
-class obx:
+class obx(object):
     """Functions defined are state, status, command, close, open, timeout. Attributes: DP (the device proxy) and deadtime. """
     """Deadtime is used for slowing down the polling and does not belong to the device as timeout."""
     def __init__(self,tangoname,deadtime=0.1):
         try:
             self.DP=DeviceProxy(tangoname)
         except:
-            print "Wrong valve name--> ",tangoname," not defined"
+            print("Wrong valve name--> ",tangoname," not defined")
             return
         self.deadtime=deadtime
         self.label=tangoname

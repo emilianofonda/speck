@@ -1,3 +1,4 @@
+from __future__ import print_function
 from PyTango import DevState
 from mycurses import *
 import time as wtime
@@ -30,11 +31,11 @@ def wait_until(dts,deadtime=1.):
         else:
             sdate=""
             stime=dts[0]
-    print "sdate: %s\nstime: %s"%(sdate,stime)
+    print("sdate: %s\nstime: %s"%(sdate,stime))
     hour=0
     minute=0
     second=0
-    if (stime<>""):
+    if (stime!=""):
         stime=stime.split(":")
         if(len(stime)==3):
             hour,minute,second=float(stime[0]),float(stime[1]),float(stime[2])
@@ -45,7 +46,7 @@ def wait_until(dts,deadtime=1.):
     year=None
     month=None
     day=None
-    if (sdate<>""):
+    if (sdate!=""):
         sdate=sdate.split("/")
         if(len(sdate)==3):
             day,month,year=float(sdate[0]),float(sdate[1]),float(sdate[2])
@@ -61,7 +62,7 @@ def wait_until(dts,deadtime=1.):
     if(second==None): second=0.
     if(day==None): day=t[2]
     if(month==None): month=t[1]
-    print "I will wait until Year,Month,Day,hour,minute,second=",year,month,day,hour,minute,second
+    print("I will wait until Year,Month,Day,hour,minute,second=",year,month,day,hour,minute,second)
     while(year>t[0]):
         t=wtime.strptime(wtime.asctime())
         wtime.sleep(deadtime)
@@ -91,25 +92,25 @@ def wait_injection(TDL=None,ol=[],vs=[],pi=[],maxpressure=1e-5,deadtime=1):
     if ol == []:
         ol = [get_ipython().user_ns["obxg"],] 
     try:
-        print "Stop on mostab... OK"
+        print("Stop on mostab... OK")
     except:
         pass
     permission=False
-    if pi<>[]:
-        print "Checking pressures...."
+    if pi!=[]:
+        print("Checking pressures....")
         permission=False
         while(not permission):
             permission=True
             for i in pi:
                 if i.pos()>maxpressure:
                     permission=False
-                    print "%s has pressure %6.2e mbar higher than fixed limit %6.2e mbar"%(i.label,i.pos(),maxpressure)
+                    print("%s has pressure %6.2e mbar higher than fixed limit %6.2e mbar"%(i.label,i.pos(),maxpressure))
             wtime.sleep(deadtime)
-        print "Pressures OK!"
+        print("Pressures OK!")
         sys.stdout.flush()
-    if vs<>[]:
+    if vs!=[]:
         if permission:
-            print "Opening valves...",
+            print("Opening valves...", end=' ')
             sys.stdout.flush()
             vstates=[]
             for i in vs:
@@ -122,15 +123,15 @@ def wait_injection(TDL=None,ol=[],vs=[],pi=[],maxpressure=1e-5,deadtime=1):
                 vstates.append(i.open())
             wtime.sleep(deadtime)
             if DevState.CLOSE in vstates:
-                print RED+"One valve still closed!"+RESET
-                print RED+BOLD+"Call 9797!"+RESET
+                print(RED+"One valve still closed!"+RESET)
+                print(RED+BOLD+"Call 9797!"+RESET)
                 permission=False
                 raise Exception("Unresolved Vacuum Problem: call 9797 and local contact!")
             else:
                 permission=True
-                print "OK"
+                print("OK")
                 sys.stdout.flush()
-    print "Waiting for injection since ",wtime.asctime(),"\n"
+    print("Waiting for injection since ",wtime.asctime(),"\n")
     sys.stdout.flush()
     if(TDL.state() == DevState.CLOSE): 
         for i in ol: i.close()
@@ -162,7 +163,7 @@ def checkTDL(TDL=FE):
     try:
         s=TDL.state()
     except:
-        print "Device Error: Unknown Front End state"
+        print("Device Error: Unknown Front End state")
         return True
     if(s in [DevState.OPEN,]):
         return True

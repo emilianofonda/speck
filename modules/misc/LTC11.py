@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: latin-1 -*-
 
+from __future__ import print_function
 from PyTango import DeviceProxy, DevState
 from PyTango import AttrQuality, AttrWriteType, DispLevel
 from PyTango.server import Device, attribute, command, DeviceMeta
@@ -164,7 +165,7 @@ class LTC11_toolbox:
             elif chs[1]:
                 return 2
             else:
-                print "No channel selected."
+                print("No channel selected.")
                 return -1
         else:
             raise Exception("Channel must be 1 or 2!")

@@ -1,4 +1,5 @@
 #!/usr/bin/ipython
+from __future__ import print_function
 import os,sys,string,time
 #from ascan import filename2ruche
 #from IPython.core import ipapi
@@ -22,7 +23,7 @@ def backup():
         if __Default_Backup_Folder == "":
            raise Exception("No Backup Folder defined! GoodBye")
         currentDataFolder=os.path.realpath(os.getcwd())
-        print("Data Folder is :",currentDataFolder)
+        print(("Data Folder is :",currentDataFolder))
         if currentDataFolder.startswith(__Default_Data_Folder) and len(currentDataFolder.split(os.sep)) > len(__Default_Data_Folder.split(os.sep)):
             currentBackupFolder=__Default_Backup_Folder+"/"+\
             currentDataFolder.lstrip(__Default_Data_Folder.rstrip("/"))
@@ -31,7 +32,7 @@ def backup():
         else:
             print("No backup!")
             raise Exception("No backup out of predefined data folders")
-        print("Backup Folder is :",currentBackupFolder)
+        print(("Backup Folder is :",currentBackupFolder))
     except (KeyboardInterrupt,SystemExit) as tmp:
         print("Backup halted on user request")
         raise tmp
@@ -48,10 +49,10 @@ def backup():
 def setuser(name=None):
     IPy = get_ipython()
     try:
-        ll=file(IPy.user_ns["__SPECK_CONFIG"]['SPECK_FOLDER'] + "/config/user.cfg","r").readlines()
+        ll=open(IPy.user_ns["__SPECK_CONFIG"]['SPECK_FOLDER'] + "/config/user.cfg","r").readlines()
     except:
-        print "Missing user.cfg file in:",IPy.user_ns["__SPECK_CONFIG"]['SPECK_FOLDER'],"/config/"
-        cfgfile=file(IPy.user_ns["__SPECK_CONFIG"]['SPECK_FOLDER'] + "/config/user.cfg","w")
+        print("Missing user.cfg file in:",IPy.user_ns["__SPECK_CONFIG"]['SPECK_FOLDER'],"/config/")
+        cfgfile=open(IPy.user_ns["__SPECK_CONFIG"]['SPECK_FOLDER'] + "/config/user.cfg","w")
         cfgfile.close()
     
     cfg={}
@@ -60,7 +61,7 @@ def setuser(name=None):
         cfg[_i[0]] = _i[1]
     
     if name == None:
-        if "FOLDER" in cfg.keys():
+        if "FOLDER" in list(cfg.keys()):
             os.chdir( IPy.user_ns["__SPECK_CONFIG"]['TEMPORARY_HOME']+ os.sep + cfg["FOLDER"])
             #Store information in shell SPECK dictionary
             try:
@@ -98,29 +99,29 @@ def setuser(name=None):
         cfg["FOLDER"] = "%4i" % time.localtime()[0] +os.sep + "%4i%02i%02i" % time.localtime()[0:3] + "_%s" % name
         
 
-        print "New folder is: " + cfg["FOLDER"]
+        print("New folder is: " + cfg["FOLDER"])
         try:
             os.makedirs(IPy.user_ns["__SPECK_CONFIG"]['DATA_FOLDER'] + os.sep +cfg["FOLDER"])
-        except Exception, tmp:
-            print tmp
+        except Exception as tmp:
+            print(tmp)
         tmp_home = IPy.user_ns["__SPECK_CONFIG"]['TEMPORARY_HOME'] + os.sep +cfg["FOLDER"]
         try:
             os.makedirs(tmp_home)
-        except Exception, tmp:
-            print tmp
+        except Exception as tmp:
+            print(tmp)
         os.chdir(tmp_home)
         #Store information in shell SPECK dictionary
         IPy.user_global_ns["__SPECK_CONFIG"]["USER_FOLDER"] = tmp_home
        
         #Store information in config file
-        cfgfile=file(IPy.user_ns["__SPECK_CONFIG"]['SPECK_FOLDER'] + "/config/user.cfg","w")
-        for i in cfg.keys():
+        cfgfile=open(IPy.user_ns["__SPECK_CONFIG"]['SPECK_FOLDER'] + "/config/user.cfg","w")
+        for i in list(cfg.keys()):
             cfgfile.write("%s=%s\n" % (i,cfg[i]))
         cfgfile.close()
         try:
             IPy.magic("logstart -ort %s global"%(os.getcwd() + os.sep + "logBook.txt"))
-        except Exception, tmp:
-            print tmp
+        except Exception as tmp:
+            print(tmp)
             pass
     return
 

@@ -1,3 +1,4 @@
+from __future__ import print_function
 from GracePlotter import xplot
 from PyTango import DeviceProxy, DevError
 from e2theta import *
@@ -15,12 +16,12 @@ def quickplot2(qm=DeviceProxy("tmp/qexafs-v1/qexafs_manager_mono2"), curve = -1,
             #    break
         #energy_data = theta2e(dt.value + qm.deltaTheta0 + qm.theta, qm.cristalInterReticularDistance)
         #mux_data = log(1.0 * channel0_Raw.value / channel1_Raw.value)
-    except DevError, tmp:
+    except DevError as tmp:
         if tmp["reason"] == "API_AttrValueNotSet":
-            print "Try later... ni6602 sees no new data..."
+            print("Try later... ni6602 sees no new data...")
         return
-    except Exception, tmp:
-        print tmp
+    except Exception as tmp:
+        print(tmp)
         return
     term1 = len(energy_data)
     if term1 > 10e3:

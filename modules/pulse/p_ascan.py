@@ -175,10 +175,10 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
         if fullmca:
             os.mkdir(dirname,0777)
             for mca_channel in cpt.read_mca().keys():
-                mca_files[mca_channel] = file(dirname + os.sep + current_name[:current_name.rfind(".")]+"_"+mca_channel+".txt","a")
+                mca_files[mca_channel] = open(dirname + os.sep + current_name[:current_name.rfind(".")]+"_"+mca_channel+".txt","a")
                 print dirname + os.sep+name + "." + mca_channel
         ###################### FULL MCA FILES! #####################################
-        f=file(current_name, "w")
+        f=open(current_name, "w")
         print "Saving in file: ",current_name
         shell.logger.log_write("Saving data in: %s\n" % current_name, kind='output') 
         try:
@@ -453,11 +453,11 @@ def stepscan_open(name=None,dt=1,scaler="ct",comment="",fullmca=True):
         if fullmca:
             os.mkdir(dirname,0777)
             for mca_channel in cpt.read_mca().keys():
-                mca_files[mca_channel]=file(dirname+os.sep+name[:name.rfind(".")]+"_"+mca_channel+".txt","a")
+                mca_files[mca_channel]=open(dirname+os.sep+name[:name.rfind(".")]+"_"+mca_channel+".txt","a")
                 #print dirname+os.sep+name+"."+mca_channel
         __stepscan.mca_files=mca_files
     ###################### FULL MCA FILES! #####################################
-    f=file(name,"w")
+    f=open(name,"w")
     __stepscan.datafile=f
     print "Saving in file: ",name
     try:
@@ -520,7 +520,7 @@ def stepscan_close():
 
 #Helpers
 def scanfile_info(name):
-    f=file(name,"r")
+    f=open(name,"r")
     ll=f.readlines()
     f.close()
     head=ll[ll.index("#HEADER\n")+1][1:-1].split("\t")

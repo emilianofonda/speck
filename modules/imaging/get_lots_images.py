@@ -1,5 +1,6 @@
 #!/bin/env python
 
+from __future__ import print_function
 import time
 import sys
 
@@ -21,6 +22,6 @@ for i in range(1,1000):
     title("U20 Gap =%6.2f mm  %s" % (get_U20gap(),time.ctime()))
 
     imshow(VG.get_image_array())
-    print "At %27s saved image %04d for gap %6.2f" % (time.ctime(), i, gap)
+    print("At %27s saved image %04d for gap %6.2f" % (time.ctime(), i, gap))
     savefig("beam_images_30to6/beam_%04d.png" % i)
     

@@ -5,7 +5,6 @@
 from IPython.core.getipython import get_ipython
 from numpy import log, sin, cos, tan, exp, sum,array
 import numpy
-import exceptions
 from time import time, asctime, sleep
 import os, shutil
 import thread
@@ -108,7 +107,7 @@ def move_motor(*motor,**kw):
     verbose=True
     if "verbose" in kw.keys():
         verbose = kw["verbose"]
-    if mod(len(motor),2)<>0 : raise exceptions.SyntaxError("odd number of parameters!")
+    if mod(len(motor),2)<>0 : raise SyntaxError("odd number of parameters!")
     motors=[]
     if verbose:
         textout = map(lambda i: "%s was %g"%(whois(i),i.pos()), motor[::2])
@@ -199,7 +198,7 @@ def go_motor(*motor):
     Only an even number of parameters is acceptable.
     """
     motors=[]
-    if mod(len(motor),2)<>0 : raise exceptions.SyntaxError("odd number of parameters!")
+    if mod(len(motor),2)<>0 : raise SyntaxError("odd number of parameters!")
     try:
         for i in range(0,len(motor),2):
             motor[i].go(motor[i+1])
@@ -315,7 +314,7 @@ def tw(x,step):
                 except:
                     print "What do you mean by? ...",s
                     print "[Ctrl-C to exit] [Press Return to Step] [Type value to change step]"
-    except exceptions.KeyboardInterrupt:
+    except KeyboardInterrupt:
         return x.pos()
 
 def tweak(x,step):

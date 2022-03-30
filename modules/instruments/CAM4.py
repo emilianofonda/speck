@@ -1,3 +1,4 @@
+from __future__ import print_function
 from sensor_group import sensor_group
 __tmp=sensor_group(\
 [
@@ -11,19 +12,19 @@ ct.slaves.append(__tmp)
 ct.reinit()
 cam4_vga = DeviceProxy("d09-1-cx1/dt/vg2-basler-analyzer")
 #Set Up Analysis Parameters
-print "Modifing video grabber parameters"
+print("Modifing video grabber parameters")
 cam4_vga.AutoROIMagFactorX = 3
 cam4_vga.AutoROIMagFactorY = 3
 cam4_vga.EnableUserROI = False
 cam4_vga.EnableAutoROI = True
 cam4_vga.EnableProfiles = True
 cam4_vga.AutoROIThreshold  = 20
-print """
+print("""
 cam4_vga.AutoROIMagFactorX = 3\
 cam4_vga.AutoROIMagFactorY = 3
 cam4_vga.EnableUserROI     = False
 cam4_vga.EnableAutoROI     = True
 cam4_vga.EnableProfiles    = True
 cam4_vga.AutoROIThreshold  = 20
-"""
+""")
 

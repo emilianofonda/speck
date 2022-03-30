@@ -1,3 +1,4 @@
+from __future__ import print_function
 from PyTango import DevState, DeviceProxy
 from motor_class import motor
 import time as pytime
@@ -15,38 +16,38 @@ def quickstart(prefix="",folder="",qm_proxy="",datarecorder_proxy="",cam_amplitu
 	dtr=DeviceProxy(datarecorder_proxy)
 	qm.SavingNexusFile=save
 	qm.set_timeout_millis(int(timeout*1000))
-	print "Parametrs for scan are:"
-	print "Manager says: speed=%6.3f cam_amplitude=%6.3f"%(qm.oscillationVelocity,qm.oscillationAmplitude)
-	print "Motors   say: speed=%6.3f cam_amplitude=%6.3f"%(cam_rotation_motor.speed(),cam_amplitude_motor.pos())
-	print "Sending motors values to Manager...",
+	print("Parametrs for scan are:")
+	print("Manager says: speed=%6.3f cam_amplitude=%6.3f"%(qm.oscillationVelocity,qm.oscillationAmplitude))
+	print("Motors   say: speed=%6.3f cam_amplitude=%6.3f"%(cam_rotation_motor.speed(),cam_amplitude_motor.pos()))
+	print("Sending motors values to Manager...", end=' ')
 	qm.oscillationVelocity=cam_rotation_motor.speed()
 	qm.oscillationAmplitude=cam_amplitude_motor.pos()
 	sleep(0.1)
-	print "OK\n"
-	print "Manager says: speed=%6.3f cam_amplitude=%6.3f\n"%(qm.oscillationVelocity,qm.oscillationAmplitude)
-	print "Setting file name and folder in datarecorder...",
-	if prefix<>"":
+	print("OK\n")
+	print("Manager says: speed=%6.3f cam_amplitude=%6.3f\n"%(qm.oscillationVelocity,qm.oscillationAmplitude))
+	print("Setting file name and folder in datarecorder...", end=' ')
+	if prefix!="":
 		dtr.fileName=prefix+"_[n]"
 	else:
 		dtr.fileName="qexafs_data_"+pytime.strftime("20%2y%2m%2d%2H%2M",pytime.localtime())+"_[n]"
 	year=pytime.strftime("20%2y",pytime.localtime())
-	if folder<>"":
+	if folder!="":
 		dtr.subDirectory=year+os.sep+folder
 	else:
 		__subName=year+os.sep+pytime.strftime("20%2y%2m%2d",pytime.localtime())+\
 		os.sep+pytime.strftime("20%2y%2m%2d%2H%2M",pytime.localtime())
-		if prefix<>"":
+		if prefix!="":
 			__subName+="_"+prefix
 		dtr.subDirectory=__subName
-	print "OK"
-	print dtr.subDirectory
+	print("OK")
+	print(dtr.subDirectory)
 	#
-	print "Let's rock...",
+	print("Let's rock...", end=' ')
 	qm.Start()
 	t0=time()
-	while(qm.state()<>DevState.RUNNING and time()-t0<=timeout):
+	while(qm.state()!=DevState.RUNNING and time()-t0<=timeout):
 		sleep(1)
-	print "rocking!"
+	print("rocking!")
 	return
 	#Following code is really old
 	#NI6602=DeviceProxy("tmp/TEST-QEXAFS/cpt.2")
@@ -82,7 +83,7 @@ def quickstop(qm_proxy="",wait=True,timeout=10,sleeper_time=3):
 		return
 	sleep(sleeper_time)
 	t0=time()
-	while(time()-t0<timeout and qm.state()<>DevState.STANDBY):
+	while(time()-t0<timeout and qm.state()!=DevState.STANDBY):
 		sleep(1)
 	sleep(sleeper_time)
 	while(qm.state()==DevState.ALARM and "PROCESS REMAINING FILES" in qm.status()):

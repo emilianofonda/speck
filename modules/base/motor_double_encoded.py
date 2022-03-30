@@ -1,11 +1,12 @@
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
 from string import lower
 import PyTango
 from PyTango import DeviceProxy, DevState
 from time import sleep,time
-import exceptions
-from exceptions import KeyboardInterrupt,SystemExit,SyntaxError, NotImplementedError, Exception
 from numpy import mean,std,mod
-import thread
+import _thread
 from motor_class import motor
 
 		
@@ -15,9 +16,9 @@ class motor_double_encoded(motor):
 		try:
 			self.DP=DeviceProxy(motorname)
 			self.encoder2=motor(double_encoder)
-		except PyTango.DevFailed, tmp:
-			print "Error when defining :",motorname," as a motor.\n"
-			print tmp.args
+		except PyTango.DevFailed as tmp:
+			print("Error when defining :",motorname," as a motor.\n")
+			print(tmp.args)
 			raise tmp
 		self.deadtime=deadtime
 		self.delay=delay
@@ -38,7 +39,7 @@ class motor_double_encoded(motor):
 		try:
 			value=float(value)		
 		except:
-			print "Position value is not valid."
+			print("Position value is not valid.")
 			raise SyntaxError
 		if (self.state()==DevState.OFF):
 			raise Exception("Cannot initialize on a motor that is OFF!")
@@ -46,10 +47,10 @@ class motor_double_encoded(motor):
 			value=value-self.encoder2.pos()
 			#self.command("DefinePosition","%f"%(value))
 			self.command("DefinePosition",value)
-		except PyTango.DevFailed, tmp:
+		except PyTango.DevFailed as tmp:
 				raise tmp
-		except Exception, tmp:
-			print "Cannot define position for an unknown reason"
+		except Exception as tmp:
+			print("Cannot define position for an unknown reason")
 			raise tmp
 		return self.pos()
 		
@@ -72,21 +73,21 @@ class motor_double_encoded(motor):
 			if(not(wait)):
 				return dest0
 			t=0.
-	   		if self.state()<>DevState.MOVING:
-				while((self.state()<>DevState.MOVING) and (t<self.timeout)):
+	   		if self.state()!=DevState.MOVING:
+				while((self.state()!=DevState.MOVING) and (t<self.timeout)):
 					sleep(self.deadtime)
 					t+=self.deadtime
 			while(self.state()==DevState.MOVING):
-				if self.verbose: print "%8.6f\r"%(self.pos()),
+				if self.verbose: print("%8.6f\r"%(self.pos()), end=' ')
 				sleep(self.deadtime)
 			sleep(self.delay)
-			if self.verbose: print "\n"
+			if self.verbose: print("\n")
 			return self.pos()
 		
-		except (KeyboardInterrupt,SystemExit), tmp:
+		except (KeyboardInterrupt,SystemExit) as tmp:
 			self.stop()
 			raise tmp
-		except PyTango.DevFailed, tmp:
+		except PyTango.DevFailed as tmp:
 			self.stop()
 			raise tmp
 	
@@ -96,9 +97,9 @@ class motor_separate_encoder(motor):
 		try:
 			self.DP=DeviceProxy(motorname)
 			self.encoder=motor(encodername)
-		except PyTango.DevFailed, tmp:
-			print "Error when defining :",motorname," as a motor.\n"
-			print tmp.args
+		except PyTango.DevFailed as tmp:
+			print("Error when defining :",motorname," as a motor.\n")
+			print(tmp.args)
 			raise tmp
 		self.deadtime=deadtime
 		self.delay=delay
@@ -119,17 +120,17 @@ class motor_separate_encoder(motor):
 		try:
 			value=float(value)		
 		except:
-			print "Position value is not valid."
+			print("Position value is not valid.")
 			raise SyntaxError
 		if (self.state()==DevState.OFF):
 			raise Exception("Cannot initialize on a motor that is OFF!")
 		try:
 			self.encoder.command("DefinePosition",value)
 			sleep(0.3)
-		except PyTango.DevFailed, tmp:
+		except PyTango.DevFailed as tmp:
 				raise tmp
 		except:
-			print "Cannot define position for an unknown reason"
+			print("Cannot define position for an unknown reason")
 			raise NotImplementedError
 		return self.encoder.pos()
 		
@@ -152,21 +153,21 @@ class motor_separate_encoder(motor):
 			if(not(wait)):
 				return dest
 			t=0.
-	   		if self.state()<>DevState.MOVING:
-				while((self.state()<>DevState.MOVING) and (t<self.timeout)):
+	   		if self.state()!=DevState.MOVING:
+				while((self.state()!=DevState.MOVING) and (t<self.timeout)):
 					sleep(self.deadtime)
 					t+=self.deadtime
 			while(self.state()==DevState.MOVING):
-				if self.verbose: print "%8.6f\r"%(self.pos()),
+				if self.verbose: print("%8.6f\r"%(self.pos()), end=' ')
 				sleep(self.deadtime)
 			sleep(self.delay)
-			if self.verbose: print "\n"
+			if self.verbose: print("\n")
 			return self.pos()
 		
-		except (KeyboardInterrupt,SystemExit), tmp:
+		except (KeyboardInterrupt,SystemExit) as tmp:
 			self.stop()
 			raise tmp
-		except PyTango.DevFailed, tmp:
+		except PyTango.DevFailed as tmp:
 			self.stop()
 			raise tmp
 	

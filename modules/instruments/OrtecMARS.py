@@ -1,3 +1,4 @@
+from __future__ import print_function
 #Macro to define the SEXAFS instrument:
 __IP = get_ipython()
 ####### REMOVE OBJECTS FROM EXAFS SETUP #############
@@ -16,10 +17,10 @@ __IP = get_ipython()
 try:
     mca1=None
     mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",FTPclient="d09-1-c00/ca/ftpclientxia.2",FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/nfs/srv5/spool1/xia2")
-    print GREEN+"mca2 --> DxMap card"+RESET
-except Exception, tmp:
-    print tmp
-    print RED+"Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.2"+RESET
+    print(GREEN+"mca2 --> DxMap card"+RESET)
+except Exception as tmp:
+    print(tmp)
+    print(RED+"Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.2"+RESET)
 
 #ct
 try:
@@ -32,8 +33,8 @@ try:
     cpt=pseudo_counter(masters=[cpt0,])
     ct=pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca2,],slaves=[], posts= ctPosts)
 except:
-    print "Failure defining ct speclike_syntax command"
-    print "Defaulting to cpt... ct=cpt... pysamba survival kit... is XIA dead?"
+    print("Failure defining ct speclike_syntax command")
+    print("Defaulting to cpt... ct=cpt... pysamba survival kit... is XIA dead?")
     ct=cpt
 
 ##--------------------------------------------------------------------------------------

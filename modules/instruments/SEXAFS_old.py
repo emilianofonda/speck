@@ -1,3 +1,4 @@
+from __future__ import print_function
 #Macro to define the SEXAFS instrument:
 __IP = get_ipython()
 ####### REMOVE OBJECTS FROM EXAFS SETUP #############
@@ -10,14 +11,14 @@ for i in __tmp:
 	try:
 		exec("del "+i)
 	except:
-		print "Cannot remove %s from environment."%i
+		print("Cannot remove %s from environment."%i)
 		pass
 ##################################################
-print "################################################################"
-print "#                Performing SEXAFS definitions                 #" 
-print "################################################################"
+print("################################################################")
+print("#                Performing SEXAFS definitions                 #") 
+print("################################################################")
 
-print "dcm.sample_at should be at 19.54 when beam in SEXAFS."
+print("dcm.sample_at should be at 19.54 when beam in SEXAFS.")
 
 ##-------------------------------------------------------------------------------------
 ##Define ReadOut Electronics Here
@@ -37,9 +38,9 @@ try:
 	["counter7",	"Time",	        "%5.2f",	"s"]
 	]
 	cpt=counter("d09-1-c00/ca/cpt.2",user_readconfig=user_readconfig, clock_channel= 6)
-except Exception, tmp:
-	print RED+"I cannot define the main counter!"+RESET
-	print tmp
+except Exception as tmp:
+	print(RED+"I cannot define the main counter!"+RESET)
+	print(tmp)
 
 #dxmap
 try:
@@ -78,22 +79,22 @@ try:
 	["inputCountRate07",	"icr_07",	"%9d",	"cts"]]
 	mca1=dxmap("d09-1-cx2/dt/dtc-mca_xmap.3",user_readconfig=user_readconfig1)
 	mca2=None
-	print GREEN+"mca1 --> DxMap card"+RESET
+	print(GREEN+"mca1 --> DxMap card"+RESET)
 except:
-	print RED+"Failure defining dxmap: d09-1-cx2/dt/dtc-mca_xmap.3"+RESET
+	print(RED+"Failure defining dxmap: d09-1-cx2/dt/dtc-mca_xmap.3"+RESET)
 
 try:
     __tmp = sensor_group([["d09-1-c00/ex/tangoparser.2",["smuf"]]])
 except:
-    print "Error defining tangoparser"
+    print("Error defining tangoparser")
 
 #ct
 try:
 	cpt=pseudo_counter(masters=[cpt,])
 	ct=pseudo_counter(masters=[cpt,],slaves2arm2stop=[mca1,],slaves=[__tmp,])
 except:
-	print "Failure defining ct speclike_syntax command"
-	print "Defaulting to cpt... ct=cpt... pysamba survival kit... is XIA dead?"
+	print("Failure defining ct speclike_syntax command")
+	print("Defaulting to cpt... ct=cpt... pysamba survival kit... is XIA dead?")
 	ct=cpt
 
 ##--------------------------------------------------------------------------------------
@@ -117,10 +118,10 @@ for i in __tmp:
 		__cmdstring=__fmtstring%tuple([i,]+__tmp[i])
 		exec(__cmdstring)
 		__allmotors.append(__IP.user_ns[i])
-	except Exception, tmp:
-		print RED+"Failed"+RESET+" defining: %s/%s as %s"%tuple(__tmp[i][0:2]+[i,])
-		print RED+"-->"+RESET,tmp
-		print UNDERLINE+__cmdstring+RESET
+	except Exception as tmp:
+		print(RED+"Failed"+RESET+" defining: %s/%s as %s"%tuple(__tmp[i][0:2]+[i,]))
+		print(RED+"-->"+RESET,tmp)
+		print(UNDERLINE+__cmdstring+RESET)
 																			
 ###
 ### Define aliases below
@@ -138,7 +139,7 @@ for i in aliases:
 		try:
 			__IP.user_ns[aliases[i]]=__IP.user_ns[i]
 		except:
-			print "Error defining ",aliases[i]," as alias for ",i
+			print("Error defining ",aliases[i]," as alias for ",i)
 
 
 ##-------------------------------------------------------------------------------------
@@ -175,9 +176,9 @@ try:
     1 : [I1_gain, 0., 0., 0., 0., 0., 0., 0.],
     2 : [I2_gain, 0., 0., 0., 0., 0., 0., 0.]
     }
-except Exception, tmp:
-    print "Error defining dark current values... maybe amplifiers have not been defined..."
-    print tmp
+except Exception as tmp:
+    print("Error defining dark current values... maybe amplifiers have not been defined...")
+    print(tmp)
 
 
 

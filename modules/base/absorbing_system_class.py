@@ -1,19 +1,21 @@
+from __future__ import print_function
 #24/04/2007 EF:written from scratch
 #A wait loop should be inserted in the extract/insert functions to wait for a change in the set values.
 #Timeout should be introduced in the init function to this purpose.
 
 
+from builtins import object
 import PyTango
 from PyTango import DeviceProxy, DevState
 from time import sleep
 from numpy import nan
 
-class absorbing_system:
+class absorbing_system(object):
     def __init__(self, tangoname, deadtime = 8, timeout =2):
         try:
             self.DP=DeviceProxy(tangoname)
         except:
-            print "Wrong  attenuator --> ",tangoname," not defined"
+            print("Wrong  attenuator --> ",tangoname," not defined")
             return
         self.deadtime = deadtime
         self.timeout = timeout
@@ -61,10 +63,10 @@ class absorbing_system:
                 self.DP.noElementInserted = elements[0] 
                 self.DP.firstElementInserted = elements[1] 
                 self.DP.secondElementInserted = elements[2] 
-            except PyTango.DevFailed, tmp:
-                print type(tmp)
-                print "Arguments must be of the type [True/False,True/False,True/False]\n"
-                print elements,"\n"
+            except PyTango.DevFailed as tmp:
+                print(type(tmp))
+                print("Arguments must be of the type [True/False,True/False,True/False]\n")
+                print(elements,"\n")
                 raise tmp
         return
     

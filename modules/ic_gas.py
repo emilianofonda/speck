@@ -1,4 +1,3 @@
-import exceptions
 from pymucal import muro,atomic_data
 import math
 __icgases=["He","N2","Ne","Ar","Kr"]
@@ -27,7 +26,7 @@ def gas_mux(energy,gas,pressure,temperature=294.,l=1.):
 		gab=muro(gas,energy)*polyatomic
 		gdata=atomic_data(gas)
 	else:
-		raise exceptions.Exception("Unknown Chamber Gas")
+		raise Exception("Unknown Chamber Gas")
 	return gab*pressure*__mbar_conv/(__gas_constant*temperature)*gdata.weight*l
 
 def xbpm_abs(energy=9000.,gas1="N2",p1=100.,gas2="He",p2=None,l=10.,T=294.,):

@@ -1,3 +1,4 @@
+from __future__ import print_function
 from numpy import arange
 from time import sleep
 class voltage_controller:
@@ -38,11 +39,11 @@ class voltage_controller:
 					self.inverter.pos(0)
 				#print "Voltage=%+06.3f\r"%self.pos(),
 				sleep(self.deadtime)
-		except (KeyboardInterrupt,SystemExit), tmp:
+		except (KeyboardInterrupt,SystemExit) as tmp:
 			raise tmp
-		except Exception, tmp:
+		except Exception as tmp:
 			raise tmp
-		print "\n"
+		print("\n")
 		return self.pos()
 
 		

@@ -152,13 +152,13 @@ class detector:
         return
 
     def read(self):
-        "returns a list of data like in the order of userReadConfig
-        attributes from self.channels. Should subtract dark."
+        """returns a list of data like in the order of userReadConfig
+        attributes from self.channels. Should subtract dark."""
         return
 
     def readBuffer(self):
-        "returns buffered data: list of arrays of values like in userReadConfig
-        attributes from self.bufferedChannels. Should subtract dark."
+        """returns buffered data: list of arrays of values like in userReadConfig
+        attributes from self.bufferedChannels. Should subtract dark."""
         return 
 
     def computeRois(self):

@@ -1,16 +1,18 @@
+from __future__ import print_function
 #Last bug fix on 8/10/2007
 
+from builtins import object
 from PyTango import DeviceProxy, DevState
 from time import sleep
 
-class valve:
+class valve(object):
     """Functions defined are state, status, command, close, open, timeout. Attributes: DP (the device proxy) and deadtime. """
     """Deadtime is used for slowing down the polling and does not belong to the device as timeout."""
     def __init__(self,tangoname,deadtime=0.1):
         try:
             self.DP=DeviceProxy(tangoname)
         except:
-            print "Wrong valve name--> ",tangoname," not defined"
+            print("Wrong valve name--> ",tangoname," not defined")
             return
         self.deadtime=deadtime
         self.label=tangoname
@@ -54,7 +56,7 @@ class valve:
             return self.state()
         self.command("Open")
         t=0.
-        while(self.state()<>DevState.OPEN and t<=self.timeout):
+        while(self.state()!=DevState.OPEN and t<=self.timeout):
             sleep(self.deadtime)
             t+=self.deadtime
         return self.state()

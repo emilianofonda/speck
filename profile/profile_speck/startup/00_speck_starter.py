@@ -1,4 +1,7 @@
 from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
 print("Starting speck...")
 import time
 import os
@@ -57,7 +60,7 @@ print("Loading Periodic Table: usage type Fe or other chemical symbol for inform
 print('\x1b[32;01m', end=' ')
 print("help(pymucal) or help(atomic_data) for more details")
 print('\x1b[0m')
-for i in pymucal.atomic_data.atoms.keys():
+for i in list(pymucal.atomic_data.atoms.keys()):
         exec("%s=pymucal.atomic_data(i)"%(i))
 
 #Import Control Related (PyTango related) modules
@@ -68,11 +71,11 @@ from PyTango import DeviceProxy, DevState
 # BEEP #
 ########
 try:
-    import Tkinter
+    import tkinter
     def wakemeup():
         """Uses Tkinter to alert user that the run is finished... just in case he was sleeping..."""
         try:
-            a=Tkinter.Tk()
+            a=tkinter.Tk()
             for j in range(5):
                 for i in range(3):
                     a.bell()

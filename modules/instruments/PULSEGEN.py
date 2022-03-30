@@ -1,3 +1,4 @@
+from __future__ import print_function
 #This instrument set up the beamline for 
 #PulseGen master on CX1
 #Xspress card as a slave as well as sai0
@@ -18,8 +19,8 @@ try:
     x3mca = xspress3mini(label = "xspress3/xspress3/xspress3.1", timeout=30,deadtime=0.1,
     spoolMountPoint="/nfs/srv5/spool1/xsp3",specificDevice="xspress3/xspress3/xspress3.1-specific",\
     config=config,identifier="x3_")
-except Exception, tmp:
-    print tmp
+except Exception as tmp:
+    print(tmp)
 
 from sai import sai
 
@@ -30,8 +31,8 @@ config = {"configurationId":3,"frequency":10000,"integrationTime":1,"nexusFileGe
 try:
     sai0 = sai("d09-1-c00/ca/sai.1", timeout=10., deadtime=0.1, spoolMountPoint="/nfs/srv5/spool1/sai",\
     config=config, identifier="sai0_",GateDownTime=2.)
-except Exception, tmp:
-    print tmp
+except Exception as tmp:
+    print(tmp)
 
 from bufferedCounter import bufferedCounter
 
@@ -62,7 +63,7 @@ try:
     #Remember to set the cpt3 card from master to slave mode and modify BNC cable position from OUT to GATE
     #ct=pseudo_counter(masters=[pulseGen0,],slaves2arm=[sai0,x3mca,cpt3],slaves2arm2stop=[],slaves=[], posts= ctPosts)
 
-except Exception, tmp:
-    print tmp
-    print "Failure defining ct command"
+except Exception as tmp:
+    print(tmp)
+    print("Failure defining ct command")
 

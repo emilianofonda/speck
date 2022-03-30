@@ -1,8 +1,9 @@
+from __future__ import print_function
+from builtins import object
 from mycurses import *
 from time import time,sleep
 from PyTango import DeviceProxy,DevState
 from numpy import nan, inf
-from exceptions import KeyboardInterrupt,SystemExit,SyntaxError, NotImplementedError, Exception
 
 #The following function should be moved to spec_syntax
 def speckit(name,classname,*args,**kwargs):
@@ -14,10 +15,10 @@ def speckit(name,classname,*args,**kwargs):
         pass
     return
 
-class moveable:
+class moveable(object):
     def __init__(self,label="",attribute="",moving_state=DevState.MOVING,stop_command="",deadtime=0.01,timeout=0.1,delay=0.):
         self.DP=DeviceProxy(label)
-        cmds=map(lambda x:x.cmd_name, self.DP.command_list_query())
+        cmds=[x.cmd_name for x in self.DP.command_list_query()]
         self.device_command_list=cmds
         if("MotorON" in cmds):
             self.powerup_command="MotorON"
@@ -94,7 +95,7 @@ class moveable:
             return fmt_g % (self.ac.label, self.pos(), lmts[0], lmts[1], self.ac.unit, self.state())
     
     def __call__(self,x=None):
-        print self.__repr__()
+        print(self.__repr__())
         return self.pos()
 
     def pos(self,x=None,wait=True):
@@ -109,20 +110,20 @@ class moveable:
             if self.moving_state == None:
                 sleep(self.deadtime)
             elif wait:
-                if self.moving_state<>None:
+                if self.moving_state!=None:
                     t0=time()
-                    while(self.state()<>self.moving_state and time()-t0<self.timeout):
+                    while(self.state()!=self.moving_state and time()-t0<self.timeout):
                         sleep(self.deadtime)
                     while(self.state() == self.moving_state):
                         sleep(self.deadtime)
                     sleep(self.delay)
                 else:
                     sleep(self.deadtime)
-        except (KeyboardInterrupt,SystemExit), tmp:
+        except (KeyboardInterrupt,SystemExit) as tmp:
             self.stop()
-            print self.__repr__()
+            print(self.__repr__())
             raise tmp
-        except Exception, tmp:
+        except Exception as tmp:
             self.stop()
             raise tmp            
         return self.pos()
@@ -161,33 +162,33 @@ class moveable:
         att_cfg.min_value, att_cfg.max_value = min_value, max_value 
         self.DP.set_attribute_config(att_cfg)
         new_limits = self.lm()
-        print "New limits: ", new_limits 
+        print("New limits: ", new_limits) 
         return new_limits
 
     def go(self,x=None,wait=False):
         return self.pos(x,wait)
 
     def stop(self):
-        if self.stop_command<>"": self.DP.command_inout(self.stop_command)
+        if self.stop_command!="": self.DP.command_inout(self.stop_command)
         return self.state()
 
     def on(self):
-        if self.powerup_command<>"": 
+        if self.powerup_command!="": 
             if self.state() == DevState.DISABLE:
                 self.init()
             self.DP.command_inout(self.powerup_command)
         else:
-            print "on is "+RED+"not"+RESET+" a supported command on %s"%(self.label)
+            print("on is "+RED+"not"+RESET+" a supported command on %s"%(self.label))
         sleep(0.1)
         return self.state()
         
     def off(self):
-        if self.powerdown_command<>"": 
+        if self.powerdown_command!="": 
             if self.state() == DevState.DISABLE:
                 self.init()
             self.DP.command_inout(self.powerdown_command)
         else:
-            print "off is " + RED + "not" + RESET + " a supported command on %s" % (self.label)
+            print("off is " + RED + "not" + RESET + " a supported command on %s" % (self.label))
         sleep(0.1)
         return self.state()
 
@@ -195,7 +196,7 @@ class moveable:
         return eval("self.DP."+att)
     
     def __setattr__(self,att,value):
-        if not self.__dict__.has_key("init_is_over"):
+        if "init_is_over" not in self.__dict__:
             self.__dict__[att]=value
             return
         else:
@@ -211,7 +212,7 @@ class moveable:
                 sleep(self.deadtime)
                 return self.pos()
             else:
-                print "DefinePosition "+RED+"not"+RESET+" defined on %s"%self.label
+                print("DefinePosition "+RED+"not"+RESET+" defined on %s"%self.label)
                 return self.pos()
 
     def state(self):

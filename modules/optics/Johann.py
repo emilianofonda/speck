@@ -1,3 +1,4 @@
+from __future__ import print_function
 #Johann geometry, "Scheinhost type": crystal is located in the XY plane as the incoming beam and the sample. 
 
 #Crystal analyzer has radius R
@@ -44,8 +45,8 @@ class JohannAnalyzer:
                 self.beamsize = beamsize
                 self.alpha=alpha
                 self.h, self.k, self.l, self.order = h,k,l,order
-                print "Angle Min:  %4.2f    Energy Max: %5.1f   Resolution: %3.1f"%(self.angleMin,self.theta2e(self.angleMin),self.resolution(self.theta2e(self.angleMin)))
-                print "Angle Max:  %4.2f    Energy Min: %5.1f   Resolution: %3.1f"%(self.angleMax,self.theta2e(self.angleMax),self.resolution(self.theta2e(self.angleMax)))
+                print("Angle Min:  %4.2f    Energy Max: %5.1f   Resolution: %3.1f"%(self.angleMin,self.theta2e(self.angleMin),self.resolution(self.theta2e(self.angleMin))))
+                print("Angle Max:  %4.2f    Energy Min: %5.1f   Resolution: %3.1f"%(self.angleMax,self.theta2e(self.angleMax),self.resolution(self.theta2e(self.angleMax))))
         else:
             print("#extinction rules:\n Allowed:\n H,K,L all odd\n H,K,L all even and H+K+L = 4n")
             print("Forbidden reflection: extinction rules apply!")
@@ -236,14 +237,14 @@ class JohannSpectro:
     
     def status(self):
         for i in self.motors.keys():
-            print "%s at %6.4f"%(i,self.motors[i].pos())
+            print("%s at %6.4f"%(i,self.motors[i].pos()))
         if self.mode == 0:
             return "Mode = 0 ==> Analyzer Move in Angular Mode"
         elif self.mode == 1:
             return "Mode = 1 ==> Analyzer Move in Energy  Mode"
         else:
-            print "Bad mode selected. mode can be 0 (angle) or 1 (energy) only."
-        print "Analyzer Crystal Theta Offset = %6.4f"%(self.offset_crystal_theta)
+            print("Bad mode selected. mode can be 0 (angle) or 1 (energy) only.")
+        print("Analyzer Crystal Theta Offset = %6.4f"%(self.offset_crystal_theta))
     def __call__(self):
         Geometry=self.Geometry
         if self.mode == 0:
@@ -310,7 +311,7 @@ class JohannSpectro:
         elif self.mode == 1:
             thC = self.Analyzer.e2theta(position) - self.offset_crystal_theta
         else:
-            print "Bad mode defined, I will not move. Modes are 0 for angle and 1 for energy"
+            print("Bad mode defined, I will not move. Modes are 0 for angle and 1 for energy")
             return
         if self.state() not in [DevState.ALARM, DevState.STANDBY]:
             raise Exception("Cannot move if state is %s"%self.state())
@@ -336,7 +337,7 @@ class JohannSpectro:
         elif self.mode == 1:
             thC = self.Analyzer.e2theta(position) - self.offset_crystal_theta
         else:
-            print "Bad mode defined, I will not move. Modes are 0 for angle and 1 for energy"
+            print("Bad mode defined, I will not move. Modes are 0 for angle and 1 for energy")
             return
         xD,zD = self.Analyzer.detectorXY(thC)
         xC,zC = self.Analyzer.crystalXY(thC)

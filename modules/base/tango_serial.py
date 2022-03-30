@@ -1,10 +1,12 @@
+from __future__ import print_function
 #Simple object for input output through the serial line
 #Tested only with the ACE APD
 
+from builtins import object
 from PyTango import DeviceProxy
 from time import sleep
 
-class tango_serial:
+class tango_serial(object):
 	def __init__(self,label="",EndOfLine=[10,13],space=32,deadtime=0.1):
 		self.DP=DeviceProxy(label)
 		self.label=label
@@ -32,14 +34,14 @@ class tango_serial:
 		self.read()
 		CCS_morse=[]
 		for i in CCS:
-			if i<>" ":
+			if i!=" ":
 				CCS_morse.append(ord(i))
 			else:
 				CCS_morse.append(32)
 		charsent=self.DP.command_inout("DevSerWriteChar",CCS_morse+self.EndOfLine)
-		if charsent<>len(CCS_morse+self.EndOfLine): 
-			print "Serial line ",self.label," error writing data."
-			print "Number of bytes sent is not corresponding to string length!"
+		if charsent!=len(CCS_morse+self.EndOfLine): 
+			print("Serial line ",self.label," error writing data.")
+			print("Number of bytes sent is not corresponding to string length!")
 		return
 
 	def read(self):

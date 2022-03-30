@@ -1,3 +1,4 @@
+from __future__ import print_function
 #Short function to use the MAR345
 
 try:
@@ -10,7 +11,7 @@ try:
         #outName = "ruche" + os.sep + findNextFileName(filename,"tiff")[2:]
         outName = findNextFileName("./ruche"+os.sep+filename,"tiff")
         #mar345.root=filename
-        if energy <> None:
+        if energy != None:
             mv(dcm,energy)
         shopen()
         sleep(dt)
@@ -19,7 +20,7 @@ try:
         sleep(120)
         while(mar345.state()==DevState.RUNNING):
             sleep(2)
-        print "Saving file in %s" % outName
+        print("Saving file in %s" % outName)
         #print "I am copying the file now...",
         #Maybe, wait one minute more to be sure...
         sleep(10)
@@ -29,10 +30,10 @@ try:
         #savetxt(filename,marimage)
         #os.system("rsync --ignore-existing -auv --temp-dir=/tmp -r detecteur@dt-pcmar1.samba.rcl:/usr/MARHOME/data/samba /nfs/ruche-samba/samba-soleil/com-samba/MAR345")
         #os.system("rsync --ignore-existing -auv --temp-dir=/tmp -r detecteur@dt-pcmar1.samba.rcl:/usr/MARHOME/data/samba /nfs/ruche-samba/share-temp/SAMBA/MAR345")
-        print "OK"
+        print("OK")
         return
-except Exception, tmp:
-    print "Error initializing MAR345"
-    print tmp
+except Exception as tmp:
+    print("Error initializing MAR345")
+    print(tmp)
 
 

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import PyTango
 from PyTango import DevState, DeviceProxy,DevFailed
 from time import sleep
@@ -34,7 +35,7 @@ class camera:
         return sel.read()
                     
     def __call__(self,x=None):
-        print self.__repr__()
+        print(self.__repr__())
         return self.state()                              
 
     def state(self):
@@ -45,14 +46,14 @@ class camera:
         
     def start(self,dt=0):
         if dt == 0:
-            if self.state()<>DevState.RUNNING:
+            if self.state()!=DevState.RUNNING:
                 self.DP.command_inout("Start")
             else:
                 raise Exception("Camera already in RUNNING state. Stop it first.")
             return self.state()
         elif dt > 0:
-            if self.state()<>DevState.RUNNING:
-                if self.DP.exposureTime <> dt * 1000:
+            if self.state()!=DevState.RUNNING:
+                if self.DP.exposureTime != dt * 1000:
                     self.DP.exposureTime = dt * 1000
                     sleep(self.deadtime)
                 self.DP.command_inout("snap")
@@ -90,23 +91,23 @@ class camera:
             while(self.state()==DevState.RUNNING):
                 sleep(self.deadtime)
             return self.read()
-        except PyTango.DevFailed, tmp:
-            print self.label,": error in camera class: command count. Device returns DevFailed."
+        except PyTango.DevFailed as tmp:
+            print(self.label,": error in camera class: command count. Device returns DevFailed.")
             raise tmp
-        except PyTango.CommunicationFailed, tmp:
-            print "Communication Failed... waiting 3 sec more..."
+        except PyTango.CommunicationFailed as tmp:
+            print("Communication Failed... waiting 3 sec more...")
             sleep(3.)
-        except (KeyboardInterrupt,SystemExit), tmp:
+        except (KeyboardInterrupt,SystemExit) as tmp:
             try:
                 self.stop()
             except:
                 try:
                     self.stop()
                 except:
-                    print self.label,": cannot stop camera..."
+                    print(self.label,": cannot stop camera...")
             raise tmp
-        except Exception, tmp:    
-            print self.label,": error in counter class: command count." 
+        except Exception as tmp:    
+            print(self.label,": error in counter class: command count.") 
             raise tmp
         return self.read()
 
@@ -115,20 +116,20 @@ class camera:
             while(self.state()==DevState.RUNNING):
                 sleep(self.deadtime)
             return
-        except PyTango.DevFailed, tmp:
-            print self.label,": error in camera class: command wait (state). Device returns DevFailed."
+        except PyTango.DevFailed as tmp:
+            print(self.label,": error in camera class: command wait (state). Device returns DevFailed.")
             raise tmp
-        except (KeyboardInterrupt,SystemExit), tmp:
+        except (KeyboardInterrupt,SystemExit) as tmp:
             try:
                 self.stop()
             except:
                 try:
                     self.stop()
                 except:
-                    print self.label,": cannot stop camera..."
+                    print(self.label,": cannot stop camera...")
             raise tmp
-        except Exception, tmp:
-            print self.label,": error in camera class: command count." 
+        except Exception as tmp:
+            print(self.label,": error in camera class: command count.") 
             raise tmp
         return
         

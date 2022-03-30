@@ -1,3 +1,4 @@
+from __future__ import print_function
 #Interviewer:  Good evening. Well, we have in the studio tonight a man who says things
 #              in a very roundabout way. Isn't that so, Mr Pudifoot?
 #Mr. Pudifoot: Yes.
@@ -10,7 +11,6 @@
 #Import world modules
 import time
 import os
-import exceptions as exc
 import multiprocessing
 
 import scipy
@@ -66,12 +66,12 @@ def mergeFiles(fileNames,xcol=0,ycol=1,delta=0.5):
                 eMax = xmu[0][-1]
                 xTotal = xmu * 1.
             else:
-                if xmu[0][0] <> eMin or xmu[0][-1] <> eMax:
+                if xmu[0][0] != eMin or xmu[0][-1] != eMax:
                     xmu = interpolate(xmu,eMin,eMax,delta,interp_order=1)
                 xTotal += xmu
             nOK += 1
         except:
-            print "Corrupt file: %s" % cName
+            print("Corrupt file: %s" % cName)
     return  xTotal / nOK
 
 def mergeXASFiles(output="",fileNames=[],delta=0.5, checkColumn=-1):
@@ -111,11 +111,11 @@ def mergeXASFiles(output="",fileNames=[],delta=0.5, checkColumn=-1):
                     iNewMax = xTotal[0].searchsorted(xmu[0][-1])
                     xTotal = xTotal[:,iNewMin:iNewMax]
                     eMin, eMax = xTotal[0][0], xTotal[0][-1]
-                    print "File %s reduces range to [%6.2f:%6.2f] eV"%(cName, xTotal[0][0], xTotal[0][-1])
+                    print("File %s reduces range to [%6.2f:%6.2f] eV"%(cName, xTotal[0][0], xTotal[0][-1]))
                 xTotal[1:] += array([ intp.interp1d(xmu[0], i, 1, bounds_error=False, fill_value=0.)(xTotal[0]) for i in xmu[1:] ])
             nOK += 1
-        except Exception, tmp:
-            print "Corrupt file: %s" % cName
+        except Exception as tmp:
+            print("Corrupt file: %s" % cName)
     xTotal[1:] = xTotal[1:] / nOK
     if output == "":
         return  xTotal
@@ -147,11 +147,11 @@ def averageXASFiles(output="",fileNames=[], checkColumn=-1, kind = "slinear"):
             eMin = xTotal[0][0]
             eMax = xTotal[0][-1]
             break
-        except Exception, tmp:
+        except Exception as tmp:
             if cName == fileNames[-1]:
                 raise Exception("No valid files to average!")
             else:
-                print tmp
+                print(tmp)
                 pass
 
     for cName in fileNames:
@@ -167,16 +167,16 @@ def averageXASFiles(output="",fileNames=[], checkColumn=-1, kind = "slinear"):
                 iNewMax = xTotal[0].searchsorted(xmu[0][-1])
                 xTotal = xTotal[:,iNewMin:iNewMax]
                 eMin, eMax = xTotal[0][0], xTotal[0][-1]
-                print "File %s reduces range to [%6.2f:%6.2f] eV"%(cName, xTotal[0][0], xTotal[0][-1])
+                print("File %s reduces range to [%6.2f:%6.2f] eV"%(cName, xTotal[0][0], xTotal[0][-1]))
             try:
                 #xTotal[1:] += array([ intp.interp1d(xmu[0], i, kind = kind, bounds_error=False, fill_value=0., assume_sorted=True)(xTotal[0]) for i in xmu[1:] ])
                 xTotal[1:] += intp.interp1d(xmu[0], xmu[1:], kind = kind, bounds_error=False, fill_value=0., assume_sorted=True)(xTotal[0])
-            except Exception, tmp:
-                print tmp
+            except Exception as tmp:
+                print(tmp)
             nOK += 1
-        except Exception, tmp:
-            print "Corrupt file: %s" % cName
-            print tmp
+        except Exception as tmp:
+            print("Corrupt file: %s" % cName)
+            print(tmp)
     xTotal[1:] = xTotal[1:] / nOK
     if output == "":
         return  xTotal
@@ -197,7 +197,7 @@ def SavitzkyGolay(y, window_size, order, deriv=0, rate=1):
     try:
         window_size = npy.abs(npy.int(window_size))
         order = npy.abs(npy.int(order))
-    except ValueError, msg:
+    except ValueError as msg:
         raise ValueError("window_size and order have to be of type int")
     if window_size % 2 != 1 or window_size < 1:
         raise TypeError("window_size size must be a positive odd number")
@@ -313,7 +313,7 @@ kw=1, tau=2, np=1024, kaiser=True, nidp=1):
     #
     if int(ftw * 100) > 0:
         epsr = epsdat / sqrt( pi * (2. * kw + 1.)/(dk * (k2 ** (2 * kw + 1.) - k1 ** (2 * kw + 1.))))
-        print "epsr=",epsr
+        print("epsr=",epsr)
         chi1r, chi2r = ft(chi1, k1, k2, kw, tau, np, kaiser),ft(chi2, k1, k2, kw, tau, np, kaiser)
         winr = npy.ones( len(chi1r[0]) )
         winr[ (chi1r[0] < r1) + (chi1r[0] > r2) ]=0.
@@ -322,7 +322,7 @@ kw=1, tau=2, np=1024, kaiser=True, nidp=1):
         sum(winr * (chi1r[1].real - chi2r[1].real) ** 2)) / (epsr ** 2 * nwinr)*nidp
         diff2 = sum(wink * (chi1[1][i1k1:i1k2] * chi1[0][i1k1:i1k2] **kw\
         - chi2[1][i2k1:i2k2] * chi2[0][i2k1:i2k2] ** kw) ** 2) / (epsdat ** 2 * nwink)
-        print "r-chi2 =",diff2r,"k-chi2=",diff2
+        print("r-chi2 =",diff2r,"k-chi2=",diff2)
         return diff2 * (1. - ftw) + diff2r * ftw
     else:
         diff2 = sum(wink * (chi1[1][i1k1:i1k2] - chi2[1][i2k1:i2k2]) ** 2)/(epsdat ** 2 * nwink)
@@ -383,7 +383,7 @@ class FEFFcalculation:
         "RMULTIPLIER": 1,
         "AFOLP":None,
         "INTERSTITIAL":[]}
-        if folder <> "":
+        if folder != "":
             self.folder = folder
         else:
             self.folder = os.getcwd()+ os.sep + "xas_feff"
@@ -395,8 +395,8 @@ class FEFFcalculation:
         if writeInput:
             self.writeInput()
         os.system("cd %s && %s $1>FEFF_CALC.log" % (self.folder, self.executable))
-        if self.config["CONTROL"][-1] <> 0:
-            if self.config["XANES"] <> []:
+        if self.config["CONTROL"][-1] != 0:
+            if self.config["XANES"] != []:
                 return self.readXanes()
             else:
                 return self.readExafs()
@@ -406,9 +406,9 @@ class FEFFcalculation:
         "It writes actual feff.inp file in self.folder."
 
         #Modify or check cards
-        if self.config["XANES"]<>[] and self.config["FMS"] <> []:
+        if self.config["XANES"]!=[] and self.config["FMS"] != []:
             if self.config["RPATH"] > 0.5:
-                print "Warning: FMS active and RPATH > 0.5 ... (intentional ?)"
+                print("Warning: FMS active and RPATH > 0.5 ... (intentional ?)")
 
         #Prepare text for file
         text = []
@@ -417,14 +417,14 @@ class FEFFcalculation:
             ivalue = self.config[i]
             if type(ivalue) == bool and ivalue == True:
                 line = "i"
-            elif type(ivalue) == str and ivalue <> "":
+            elif type(ivalue) == str and ivalue != "":
                 line = i + " " + ivalue
             elif type(ivalue) in [float,int]:
                 line = i + " %g" % ivalue
-            elif type(ivalue) == list and ivalue <> []:
+            elif type(ivalue) == list and ivalue != []:
                 fmtstr = " %g" * len(ivalue)
                 line = i + fmtstr % tuple(ivalue)
-            if line <> "": text.append(line)
+            if line != "": text.append(line)
         
         #FREETEXT
         text.append( self.config["FREETEXT"] )
@@ -447,9 +447,9 @@ class FEFFcalculation:
         #Make Folder
         try:
             os.listdir(self.folder)
-        except OSError, tmp:
+        except OSError as tmp:
             os.makedirs(self.folder)
-        f = file(self.folder + os.sep + "feff.inp", "w")
+        f = open(self.folder + os.sep + "feff.inp", "w")
         for i in text:
             f.write(i + "\n")
         f.close()
@@ -467,7 +467,7 @@ class FEFFcalculation:
             except:
                 time.sleep(0.5)
         if out == []:
-            print os.listdir(self.folder)
+            print(os.listdir(self.folder))
             raise Exception("%s not found!" % (self.folder + os.sep + "chi.dat"))
         return out
 
@@ -481,19 +481,19 @@ class FEFFcalculation:
             except:
                 time.sleep(0.5)
         if out == []:
-            print os.listdir(self.folder)
+            print(os.listdir(self.folder))
             raise Exception("%s not found!" % (self.folder + os.sep + "chi.dat"))
         return out
 
     def cleanup(self):
         """wipe off calculation folder"""
         if self.folder == "":
-            print "No folder to clean"
+            print("No folder to clean")
         else:
             try:
                 os.rmdir( self.folder )
-            except exc.OSError:
-                print "xas.feff_calculation.cleanup: Folder cannot be removed."
+            except OSError:
+                print("xas.feff_calculation.cleanup: Folder cannot be removed.")
         return
 
     def verifyPotentials(self):
@@ -503,8 +503,8 @@ class FEFFcalculation:
             ipots.append(i[0])
         for i in self.config["ATOMS"]:
             if not (i[1] in ipots):
-                print "Error checking for ipots! One potential has not been defined!"
-                print "Using auto potentials instead!"
+                print("Error checking for ipots! One potential has not been defined!")
+                print("Using auto potentials instead!")
                 self.autoPotentials()
                 return
         return
@@ -565,7 +565,7 @@ class FEFFcalculation:
         #Read control keys
         i = ""
         i_split = []
-        while(i<>"ATOMS"):
+        while(i!="ATOMS"):
             try:
                 i = il.next().strip()
             except StopIteration:
@@ -611,7 +611,7 @@ class FEFFcalculation:
                     raise Exception("Unrecognized keyword parsing file: "\
                     + filename)
         #Start reading atom coordinates
-        while(i<>"END"):
+        while(i!="END"):
             try:
                 i=il.next().strip()
             except StopIteration:
@@ -758,7 +758,7 @@ def computeXAS(model, axis = None, absorber = None, feff_config = None, periodic
         extended_model = copy.deepcopy(model)
     lista_calcoli = []  
     calcolo_index = 0
-    if tmpdir <> None:
+    if tmpdir != None:
         _feff_dir = tmpdir
     else:
         _feff_dir = os.getcwd()
@@ -779,8 +779,8 @@ def computeXAS(model, axis = None, absorber = None, feff_config = None, periodic
 
     np = min(multiprocessing.cpu_count(), np)
     feff_pool = multiprocessing.Pool(np)
-    print "Using  %i processess over %i available cores for %i calculations." %\
-    (np, multiprocessing.cpu_count(), len(lista_calcoli))
+    print("Using  %i processess over %i available cores for %i calculations." %\
+    (np, multiprocessing.cpu_count(), len(lista_calcoli)))
 
     results_basket = feff_pool.map(runSingleFEFF, lista_calcoli)
     feff_pool.close()
@@ -819,13 +819,13 @@ def computeXASlist(model, absorber="", absorberList = [], feff_config = None, mo
     #Check absorbers
     absorbers_in_model = []
     for i in absorberList:
-        if model["atoms"][i] <> absorber:
+        if model["atoms"][i] != absorber:
             raise Exception("Absorber is not what expected at site: %i" % i)
 
     lista_calcoli = []  
 
     calcolo_index = 0
-    if tmpdir <> None:
+    if tmpdir != None:
         _feff_dir = tmpdir
     else:
         _feff_dir = os.getcwd()
@@ -846,8 +846,8 @@ def computeXASlist(model, absorber="", absorberList = [], feff_config = None, mo
 
     np = min(multiprocessing.cpu_count(), np)
     feff_pool = multiprocessing.Pool(np)
-    print "Using  %i processess over %i available cores for %i calculations." %\
-    (np, multiprocessing.cpu_count(), len(lista_calcoli))
+    print("Using  %i processess over %i available cores for %i calculations." %\
+    (np, multiprocessing.cpu_count(), len(lista_calcoli)))
 
     results_basket = feff_pool.map(runSingleFEFF, lista_calcoli)
     feff_pool.close()

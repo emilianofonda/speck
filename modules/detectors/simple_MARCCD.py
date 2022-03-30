@@ -1,3 +1,4 @@
+from __future__ import print_function
 import PyTango
 from PyTango import DevState, DeviceProxy,DevFailed
 from time import sleep
@@ -16,30 +17,30 @@ class ccdmar(sensor):
 		return repr
 					
       	def __call__(self, x=None):
-      		print self.__repr__()
+      		print(self.__repr__())
       		return self.state()						      
 
 	def snap(self, dt=1, filename = "ccdmar_image",folder=".", filetype=0, shutter="d09-1-c06/vi/obxg.1"):
 		"""filetype = 0 corresponds to marccd (.mccd) files,
 		filetype = 1 to nxs files"""
-		if shutter <> "":
+		if shutter != "":
 			shutter_valve=valve(shutter)
-		if self.state() <> DevState.STANDBY:
+		if self.state() != DevState.STANDBY:
 			raise Exception("ccdmar: cannot snap if device not in STANDBY state.")
-		if self.DP.read_attribute("exposureTime").value / 1000 <> dt + 3.:
+		if self.DP.read_attribute("exposureTime").value / 1000 != dt + 3.:
 			self.DP.write_attribute("exposureTime",(dt + 3.) * 1000)
-		if shutter <> "":
+		if shutter != "":
 			shutter_valve.open()
 		sleep(1)
 		self.DP.command_inout("Snap")
 		sleep(dt)
-		if shutter <> "":
+		if shutter != "":
 			shutter_valve.close()
 		timeout = 3. + self.DP.latencyTime/1000. + time.time() + 10.
-		while self.state() <> DevState.STANDBY:
+		while self.state() != DevState.STANDBY:
 			sleep(0.1)
 			if time.time() > timeout:
-				print time.time(), timeout
+				print(time.time(), timeout)
 				raise Exception("ccdmar: timeout while performing a snap!!!")
 		if self.DP.fileGeneration:
 			#Which file?
@@ -68,11 +69,11 @@ class ccdmar(sensor):
 			elif filetype == 0:
 				destination = findNextFileName(folder + os.sep + filename,"mccd")
 			os.system("mv " + sourcefile +" "+destination)
-			print "Data saved in :", destination
+			print("Data saved in :", destination)
 		tmp=self.stats()
-		print "Minimum Intensity = ", tmp[0]
-		print "Maximum Intensity = ", tmp[1]
-		print "Average Intensity = ", tmp[2]
+		print("Minimum Intensity = ", tmp[0])
+		print("Maximum Intensity = ", tmp[1])
+		print("Average Intensity = ", tmp[2])
 		return
 		
 	def stop(self):

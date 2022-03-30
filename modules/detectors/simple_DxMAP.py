@@ -1,3 +1,4 @@
+from __future__ import print_function
 import PyTango
 from PyTango import DevState, DeviceProxy,DevFailed
 from time import sleep
@@ -9,16 +10,16 @@ class dxmap:
         self.label=label
         self.DP=DeviceProxy(label)
         failure=False
-        if FTPclient <> "":
+        if FTPclient != "":
             self.FTPclient = DeviceProxy(FTPclient)
         else:
             self.FTPclient = None
-        if FTPserver <> "":
+        if FTPserver != "":
             self.FTPserver = DeviceProxy(FTPserver)
         else:
             self.FTPserver = None
         self.spoolMountPoint=spoolMountPoint
-        if self.init_user_readconfig<>[]:
+        if self.init_user_readconfig!=[]:
             for i in self.init_user_readconfig:
                 #ac=self.DP.get_attribute_config_ex([i[0],])[0]
                 try:
@@ -31,7 +32,7 @@ class dxmap:
                 except:
                     failure=True
                     pass
-        if failure: print self.label+": Failed setting one or more user_readconfig!"
+        if failure: print(self.label+": Failed setting one or more user_readconfig!")
         self.rois,self.ocrs,self.icrs,self.dts=[],[],[],[]
         self.channels=[]
         self.channels_labels=[]
@@ -66,7 +67,7 @@ class dxmap:
     def reinit(self):
         for prova in range(5):
             try:
-                if self.init_user_readconfig<>[]: 
+                if self.init_user_readconfig!=[]: 
                     for i in self.init_user_readconfig:
                         #ac=self.DP.get_attribute_config_ex([i[0],])[0]
                         ac=self.DP.get_attribute_config([i[0],])[0]
@@ -120,7 +121,7 @@ class dxmap:
         return repr
                     
     def __call__(self,x=None):
-        print self.__repr__()
+        print(self.__repr__())
         return self.state()                              
 
     def state(self):
@@ -131,7 +132,7 @@ class dxmap:
         
     def startFTP(self):
         if self.FTPclient:
-            if self.FTPserver and self.FTPserver.state() <> DevState.RUNNING:
+            if self.FTPserver and self.FTPserver.state() != DevState.RUNNING:
                 raise Exception("FTP server %s is not running. Starting client is useless. Please start it and retry.")%self.FTPserver.name
             return self.FTPclient.start()
         else:
@@ -144,16 +145,16 @@ class dxmap:
             raise Exception("%s: You should define an FTP client first."%self.DP.name)
 
     def start(self,dt=1):
-        if self.state()<>DevState.RUNNING:
-            if self.FTPclient and self.DP.currentMODE=="MAPPING" and self.FTPclient.state()<>DevState.RUNNING:
+        if self.state()!=DevState.RUNNING:
+            if self.FTPclient and self.DP.currentMODE=="MAPPING" and self.FTPclient.state()!=DevState.RUNNING:
                 self.FTPclient.start()
             try:
                 self.DP.command_inout("Snap")
             except:
                 try:
                     self.DP.command_inout("Start")
-                except Exception, tmp:
-                    print "Cannot Start"
+                except Exception as tmp:
+                    print("Cannot Start")
                     raise tmp
         else:
             raise Exception("Trying to start %s when already in RUNNING state"%self.label)
@@ -180,15 +181,15 @@ class dxmap:
             mca=self.DP.read_attributes(channels)
             mca=map(lambda x: x.value, mca)
             if (None in mca) and auto:
-                print "Reiniting mca"
+                print("Reiniting mca")
                 self.reinit()
                 mca=self.DP.read_attributes(channels)
                 mca=map(lambda x: x.value, mca)
             elif None in mca:
                 raise Exception("Wrong channel")
-        except DevFailed, tmp:
+        except DevFailed as tmp:
             if tmp.args[0].reason=='API_AttrNotFound':
-                print "Reiniting mca"
+                print("Reiniting mca")
                 self.reinit()
                 mca=self.DP.read_attributes(channels)
                 mca=map(lambda x: x.value, mca)
@@ -201,16 +202,16 @@ class dxmap:
             out=self.DP.read_attributes(self.rois+self.icrs+self.ocrs+self.dts)
             out=map(lambda x: x.value, out)
             if None in out:
-                print "MCA modified... reinit required...",
+                print("MCA modified... reinit required...", end=' ')
                 self.reinit()
-                print "OK"
+                print("OK")
                 out=self.DP.read_attributes(self.rois+self.icrs+self.ocrs+self.dts)
                 out=map(lambda x: x.value, out)
-        except DevFailed, tmp:
+        except DevFailed as tmp:
             if tmp.args[0].reason=='API_AttrNotFound':
-                print "MCA modified... reinit required...",
+                print("MCA modified... reinit required...", end=' ')
                 self.reinit()
-                print "OK"
+                print("OK")
                 out=self.DP.read_attributes(self.rois+self.icrs+self.ocrs+self.dts)
                 out=map(lambda x: x.value, out)
             else:
@@ -259,14 +260,14 @@ class dxmap:
         try:
             gottenROIS = map(int, self.DP.get_property(["SPECK_roi"])["SPECK_roi"])
         except:
-            print "Cannot get ROI from SPECK property. Loading from device...",
+            print("Cannot get ROI from SPECK property. Loading from device...", end=' ')
             for i in self.DP.getrois():
                 Ch = i.split(";")
                 gottenROIS[ "channel%02i" % int(Ch[0]) ] = map(int, Ch[1:])
-            print "set SPECK property from last gotten values..."
+            print("set SPECK property from last gotten values...")
             self.DP.put_property({"SPECK_roi":[int(Ch[1]), int(Ch[2])]})
             gottenROIS = [int(Ch[1]), int(Ch[2])]
-            print "OK"
+            print("OK")
         return gottenROIS
         
         

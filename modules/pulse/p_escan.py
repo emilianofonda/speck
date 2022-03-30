@@ -5,7 +5,6 @@ import numpy
 from numpy import cos, sin, pi, log, mod, array, zeros, mean, float32,float64, float16, sqrt, average, arange
 import PyTango
 from PyTango import DeviceProxy, DevState
-import exceptions
 #import thread
 import IPython
 import Gnuplot
@@ -78,9 +77,9 @@ def ReadScanForm(filename):
     #
     #
     try: 
-        f=file(filename,'r')
+        f=open(filename,'r')
     except:
-        raise exceptions.Exception("File: "+filename+" not found!")
+        raise Exception("File: "+filename+" not found!")
     raw=[]
     raw=f.readlines()
     res=[]
@@ -190,7 +189,7 @@ def ReadScanForm(filename):
             #    try:
             #        degree=int(float(j[1]))
             #    except:
-            #        exceptions.SyntaxError("Tuning points number not understandable",i)
+            #        SyntaxError("Tuning points number not understandable",i)
         elif(i.startswith("e0")):
             j=i.replace("="," ")
             j=j.split()
@@ -200,7 +199,7 @@ def ReadScanForm(filename):
                 try:
                     e0=float(j[1])
                 except:
-                    exceptions.SyntaxError("E0 value is not understandable",i)
+                    SyntaxError("E0 value is not understandable",i)
         elif(i.startswith("roll")):
             j=i.replace("="," ")
             j=i.replace(","," ")
@@ -258,7 +257,7 @@ def ReadScanForm(filename):
                 try:
                     detune=float(j[1])
                 except:
-                    exceptions.SyntaxError("detune value not understandable",i)
+                    SyntaxError("detune value not understandable",i)
         elif(i.startswith("settling")):
             j=i.replace("="," ")
             j=j.split()
@@ -268,7 +267,7 @@ def ReadScanForm(filename):
                 try:
                     SettlingTime=float(j[1])
                 except:
-                    exceptions.SyntaxError("settling value not understandable",i)
+                    SyntaxError("settling value not understandable",i)
                     SettlingTime=defaultSettlingTime
         elif(i.startswith("kscan")):
             j=i.replace("="," ")
@@ -328,7 +327,7 @@ def ReadScanForm(filename):
                 
         if(tmp<>[]): res.append(tmp)
     if len(res)<2:
-        raise exceptions.SyntaxError("Too few usefull lines. Error in input file. Abort.")
+        raise SyntaxError("Too few usefull lines. Error in input file. Abort.")
     res.sort()
     #print "Second pass on data:"
     #for i in res: print i
@@ -344,7 +343,7 @@ def ReadScanForm(filename):
         if (len(i)>=3):
             res.append(i[0:3])
     if len(res)<2:
-        raise exceptions.SyntaxError("Too few usefull lines. Error in input file. Abort.")
+        raise SyntaxError("Too few usefull lines. Error in input file. Abort.")
     #print "Truncation on data:"
     print "Scan over:"
     for i in res: print i
@@ -365,7 +364,7 @@ class escan_class:
     def __init__(self,scan_form="",\
     Ts2_Moves=False,amplis=None):
         if(scan_form==""):
-            raise exceptions.Exception("Missing scan file! Please provide one.")
+            raise Exception("Missing scan file! Please provide one.")
         shell = get_ipython()
         self.dcm = shell.user_ns["energy"]
         cpt = shell.user_ns["ct"]
@@ -423,7 +422,7 @@ class escan_class:
             print RED + "Cannot define a device proxy for the machinestatus ans/ca/machinestatus"+RESET
         ###
         thisform = ReadScanForm(scan_form)
-        f = file(scan_form,"r")
+        f = open(scan_form,"r")
         self.formtext = f.readlines()
         f.close()
         #
@@ -454,7 +453,7 @@ class escan_class:
         elif(self.TUNING == True):
             self.tuningdegree = degree
         else:
-            raise exceptions.Exception("The tuning flag is not properly set. Verify scan file.",self.TUNING)
+            raise Exception("The tuning flag is not properly set. Verify scan file.",self.TUNING)
         #Pitch correction (Explicit, deactivates the tuning)
         self.ServoPitchParameters=thisform["ServoPitchParameters"]
         if self.ServoPitchParameters <> []:
@@ -505,7 +504,7 @@ class escan_class:
         if(bend==None):
             self.BENDER=None
         elif(not(bend in [False, True])):
-            raise exceptions.Exception("The bender flag is not properly set. Verify scan file.")
+            raise Exception("The bender flag is not properly set. Verify scan file.")
         else:
             self.BENDER=bend
         ######################################################################
@@ -567,7 +566,7 @@ class escan_class:
                 try:
                     en=float(kscan_energy.next())
                     tmeasure=float(kscan_time.next())
-                except exceptions.StopIteration, tmp:
+                except StopIteration, tmp:
                     break
                 self.trajectory["energy"].append(en)
                 self.trajectory["time"].append(tmeasure)
@@ -717,7 +716,7 @@ class escan_class:
             self.BENDER=flag
             return self.BENDER
         else:
-            raise exceptions.SyntaxError("Wrong value for usebender")
+            raise SyntaxError("Wrong value for usebender")
   
     def lin_interp(self,x,points=[[0.,],[0.,]]):
         return (points[1][1] - points[1][0]) / (points[0][1] - points[0][0]) * (x - points[0][0]) + points[1][0]
@@ -1366,15 +1365,15 @@ class escan_class:
             fnameFull = fdir + os.sep + fnameFull
             fname = fdir + os.sep + fname
             dirname = fdir + os.sep + dirname
-            fullFile = file(fnameFull,"a")
-            shortFile  = file(fname,"a")
+            fullFile = open(fnameFull,"a")
+            shortFile  = open(fname,"a")
             
             ###################### FULL MCA FILES! #####################################
             self.mca_files={}
             if self.fullmca:
                 os.mkdir(dirname,0777)
                 for mca_channel in self.cpt.read_mca().keys():
-                    self.mca_files[mca_channel]=file(dirname+os.sep+fnameFull+"."+mca_channel,"a")
+                    self.mca_files[mca_channel]=open(dirname+os.sep+fnameFull+"."+mca_channel,"a")
             ###################### FULL MCA FILES! #####################################
             
             ##

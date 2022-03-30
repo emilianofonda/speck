@@ -1,3 +1,4 @@
+from __future__ import print_function
 from time import sleep
 from PyTango import DeviceProxy,DevState
 from tango_serial import tango_serial
@@ -26,8 +27,8 @@ class ACE_APD:
 		self.space=space
 		self.EndOfLine=EndOfLine
 		#self.user_readconfig=["ACE-APD","counts"]
-		print self.writeread("NOECHO")
-		print self.writeread("")
+		print(self.writeread("NOECHO"))
+		print(self.writeread(""))
 		return
 
 	def state(self):
@@ -67,7 +68,7 @@ class ACE_APD:
 
 	def __call__(self):
 		"Nice for interactive use: shows the setup. But it returns nothing..."
-		print self.status()
+		print(self.status())
 		return
 
 	def __repr__(self):
@@ -182,7 +183,7 @@ class ACE_APD:
 		else:
 			ws="%g"%winSize
 			ll=self.writeread("?SCA").split()
-			if ll[0]<>"WIN": self.__throw_exception("window size is accepted only in WIN mode")
+			if ll[0]!="WIN": self.__throw_exception("window size is accepted only in WIN mode")
 			self.writeread("SCA "+ll[0]+" "+ll[1]+" "+ws)
 			sleep(self.deadtime)
 			return self.ws()

@@ -1,4 +1,5 @@
-print "Loading Vortex_SDD4 version pulse under XIA: preparing."
+from __future__ import print_function
+print("Loading Vortex_SDD4 version pulse under XIA: preparing.")
 
 try:
     #Recognized detector names:
@@ -11,12 +12,12 @@ try:
     cx1xia1_sdd4=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",FTPclient="d09-1-c00/ca/ftpclientxia.1",identifier = "fluo01",timeout=90.,\
     FTPserver="d09-1-c00/ca/ftpserverxia.1",spoolMountPoint="/nfs/srv5/spool1/xia1", config=config,detector_details = detector_details)
     
-    print GREEN+"cx1xia1_sdd4 --> DxMap card"+RESET
+    print(GREEN+"cx1xia1_sdd4 --> DxMap card"+RESET)
     
     mca1=cx1xia1_sdd4
 
-except Exception, tmp:
-    print tmp
+except Exception as tmp:
+    print(tmp)
 
 #The following post format is very heavy with large array detectors.
 #A simplification could be provided if detectors provided already computed averages or corrected counts, but it is tricky 
@@ -75,9 +76,9 @@ try:
 
     ct_sdd4=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cx1xia1_sdd4,cpt3],posts=ctPosts, postDictionary=XAS_dictionary)
 
-except Exception, tmp:
-    print tmp
-    print "Failure defining ct0 config"
+except Exception as tmp:
+    print(tmp)
+    print("Failure defining ct0 config")
 
 ct=ct_sdd4
 ct.reinit()

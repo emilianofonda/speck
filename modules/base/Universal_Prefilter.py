@@ -6,11 +6,14 @@ EX.: <wm motor> will be parsed into <wm('motor')>
 
 Contributors E. Fonda, S. Stanescu..."""
 from __future__ import print_function
+from __future__ import division
 
 ####
 #### Import the function/modules as specified in hooks.py by Fernando Perez
 ####
 
+from builtins import range
+from past.utils import old_div
 import os
 from time import asctime,time
 from distutils.version import StrictVersion
@@ -122,14 +125,14 @@ def universal_lineparser(line):
             frontspaces = thisline[:thisline.find(thisline.lstrip())]
             ls_thisline = thisline.lstrip()
             parts = ls_thisline.split()
-            if len(parts) > 0 and parts[0] in __Universal_Syntax_Keywords.keys():
+            if len(parts) > 0 and parts[0] in list(__Universal_Syntax_Keywords.keys()):
                 if len(__Universal_Syntax_Keywords[parts[0]]) > 0 and type(__Universal_Syntax_Keywords[parts[0]][0]) == list:
                     unit_length = __Universal_Syntax_Keywords[parts[0]][0][0] 
-                    units = len(parts[1:]) / unit_length
+                    units = old_div(len(parts[1:]), unit_length)
                     #If the number of arguments does not correspond what should we do ? force it ? raise exception ? print error on screen?
                     need_guimet_extended = []
                     for i in range(units):
-                        need_guimet_extended += map(lambda x: x + i * unit_length, __Universal_Syntax_Keywords[parts[0]][0][1:])
+                        need_guimet_extended += [x + i * unit_length for x in __Universal_Syntax_Keywords[parts[0]][0][1:]]
                     for need_guimet in need_guimet_extended :
                         if not(parts[need_guimet].startswith("\"") or parts[need_guimet].startswith("\'")):
                             parts[need_guimet] = "\"" + parts[need_guimet] + "\""
@@ -160,10 +163,10 @@ def universal_lineparser(line):
 def fileparser(filename_in,filename_out):
     """Use the myparser to convert the file in a new file with a standard syntax.
     It is used by the domacro function to execute pyHermes code with spec like syntax."""
-    fin=file(filename_in,"r")
+    fin=open(filename_in,"r")
     linesin=fin.readlines()
     fin.close()
-    fout=file(filename_out,"w")
+    fout=open(filename_out,"w")
     for lin in linesin:
         lin=lin.rstrip('\n')
         lout=universal_lineparser(lin)

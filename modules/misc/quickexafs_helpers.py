@@ -1,10 +1,11 @@
+from __future__ import print_function
 import IPython
 import numpy
 from GracePlotter import xplot
 try:
     from quickstart import *
-except Exception, tmp:
-    print tmp
+except Exception as tmp:
+    print(tmp)
 
 #Quick and dirty plot of quickexafs
 try:
@@ -12,9 +13,9 @@ try:
     qm3 = DeviceProxy("tmp/qexafs-v1/qexafs_manager_mono3")
     #qm=DeviceProxy("d09-1-cx1/dt/qexafs_manager")
     #from quickplot_v2 import *
-except Exception, tmp:
-    print tmp
-    print "No quickexafs manager"
+except Exception as tmp:
+    print(tmp)
+    print("No quickexafs manager")
 
 def quickplot2():
     x,y=qm2.read_attributes(["energySpectrum","muxSpectrum"])
@@ -49,8 +50,8 @@ try:
     def quickstop3(wait=True,timeout=6):
 #        return quickstop("d09-1-cx1/dt/qexafs_manager_mono3",wait,timeout)
         return quickstop("tmp/qexafs-v1/QEXAFS_MANAGER_MONO3",wait,timeout)
-except Exception, tmp:
-    print tmp
+except Exception as tmp:
+    print(tmp)
 def q2_scan(e1,e2,de,dt,name="q2_scan",delay=0.25):
     return ascan(q2_energy,e1,e2,de,dt,name=name,delay=delay)
 def q3_scan(e1,e2,de,dt,name="q3_scan",delay=0.25):

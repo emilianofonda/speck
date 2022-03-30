@@ -3,8 +3,6 @@ from time import sleep
 import time as wtime
 import PyTango
 from PyTango import DevState,DeviceProxy
-from exceptions import NotImplementedError
-import exceptions
 import thread
 import numpy
 from numpy import array, round
@@ -34,7 +32,7 @@ class counter:
             (ErrorType,ErrorValue,ErrorTB)=sys.exc_info()
             print sys.exc_info()
             traceback.print_exc(ErrorTB)
-            raise exceptions.Exception(sys.exc_info)
+            raise Exception(sys.exc_info)
         try:
             self.time=self.DP.read_attribute("integrationTime")
             self.int_time=self.time.value

@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: latin-1 -*-
+from __future__ import print_function
 import sys,os
 import numpy as npy
 from numpy import array, pi, sin, cos, sqrt, sort
@@ -78,7 +79,7 @@ def makeModel(groups, occupancy, axis = [1, 1, 1, 90., 90., 90.], na = 1, nb = 1
 def drawModel(model, radius_type = "covalent", r_factor = 0.6, temporary_file_name = "./temp.in.bs"):
     if not(radius_type in ["covalent", "vanderwaals"]):
         raise Exception("draw model error: radius_type can be covalent or vanderwaals only.")
-    temporary_file = file(temporary_file_name, "w")
+    temporary_file = open(temporary_file_name, "w")
     atom_types = []
     for i in xrange(len(model["atoms"])):
         if not(model["atoms"][i] in atom_types):
@@ -114,7 +115,7 @@ def saveModel(filename, model, superaxis=[], other_stuff={}):
     f=open(filename,"w")
 
     f.write("#AXIS\n")
-    if superaxis <> []:
+    if superaxis != []:
         f.write("%g\t%g\t%g\t%g\t%g\t%g\n" % tuple(superaxis))
     elif not(model["axis"].all()):
         f.write("%g\t%g\t%g\t%g\t%g\t%g\n" % tuple(superaxis))
@@ -162,8 +163,8 @@ def loadModel(filename):
                 i += 1
                 other_stuff[ll[i-1][1:].split()[0]] = ll[i]
             except:
-                print "Error parsing line :"
-                print ll[i]
+                print("Error parsing line :")
+                print(ll[i])
         i += 1
     #print "Axis = ",axis
     model["axis"] = array(axis, "f")
@@ -245,7 +246,7 @@ ovl=1., index=False):
                                 idx.append(idx_i) 
                         idx_i += 1
                     else:
-                        print "OVERLAP!"
+                        print("OVERLAP!")
     if index:
         return out,idx
     else:
@@ -493,7 +494,7 @@ def makeNeighEntry(idx, model, rmax=3.6):
     neighs = npy.where(dd2 <rmax**2)[0].tolist()
     neighs.remove(idx)
     if len(npy.where(dd2 < 0.1)[0])>1:
-        print "Atoms too close, check model!"
+        print("Atoms too close, check model!")
     return neighs
 
 #Check neighbours. Functions essentials for speeding up calculations on models.

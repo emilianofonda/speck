@@ -1,3 +1,4 @@
+from __future__ import print_function
 #trigger modes can be internal_trigger or external_gate
 from xspress3 import xspress3mini
 
@@ -10,8 +11,8 @@ try:
     x3mca = xspress3mini(label = "xspress3/xspress3/xspress3.1", timeout=30,deadtime=0.1,
     spoolMountPoint="/nfs/srv5/spool1/xsp3",specificDevice="xspress3/xspress3/xspress3.1-specific",\
     config=config,identifier="x3_")
-except Exception, tmp:
-    print tmp
+except Exception as tmp:
+    print(tmp)
 
 try:
     ctPosts=[\
@@ -23,6 +24,6 @@ try:
     cpt=pseudo_counter(masters=[cpt0,])
     ct=pseudo_counter(masters=[cpt0,x3mca],slaves2arm2stop=[mca1,],slaves2arm=[], posts= ctPosts)
 
-except Exception, tmp:
-    print tmp
+except Exception as tmp:
+    print(tmp)
 

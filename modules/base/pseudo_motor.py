@@ -1,10 +1,12 @@
+from __future__ import print_function
+from builtins import zip
+from builtins import object
 import PyTango
 from PyTango import DevState
 from time import time,sleep
 import motor_class
-from exceptions import KeyboardInterrupt, SystemExit, Exception
 
-class pseudo_motor:
+class pseudo_motor(object):
     """This class allows the definition of a pseudo motor: a motor that is a read write 
     function of a combination of other motors, even other pseudo motors. 
     You have to provide a list of motors. Keep the same order of the list for the writefunction results!
@@ -81,13 +83,13 @@ class pseudo_motor:
             for i in zip(self.motorslist,tupledest):
                     i[0].go(i[1])
             motor_class.wait_motor(self.motorslist,deadtime=self.deadtime,timeout=self.timeout,delay=0.)
-            if self.postmove_function<>None:
+            if self.postmove_function!=None:
                 self.postmove_function()
-        except (PyTango.DevFailed,PyTango.DevError), tmp:
+        except (PyTango.DevFailed,PyTango.DevError) as tmp:
             self.stop()
             self.pseudostate=DevState.ALARM
             raise tmp
-        except (SystemExit,KeyboardInterrupt), tmp:
+        except (SystemExit,KeyboardInterrupt) as tmp:
             self.stop()
             self.pseudostate=DevState.ALARM
             raise tmp
@@ -103,7 +105,7 @@ class pseudo_motor:
             try:
                 i.stop()
             except:
-                print "Error stopping :",i
+                print("Error stopping :",i)
                 stoppedWell=False
         self.pseudostate=None
         return stoppedWell

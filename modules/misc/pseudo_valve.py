@@ -48,14 +48,14 @@ class pseudo_valve:
 
 	def open(self):
 		pos=self.DP.read_attribute(self.channel).value
-		if pos<>self.open_value:
+		if pos!=self.open_value:
 			self.DP.write_attribute(self.channel,self.open_value)
 			sleep(self.delay)
 		return DevState.OPEN
 		
 	def close(self):
 		pos=self.DP.read_attribute(self.channel).value
-		if pos<>self.close_value:
+		if pos!=self.close_value:
 			self.DP.write_attribute(self.channel,self.close_value)
 			sleep(self.delay)
 		return DevState.CLOSE

@@ -1,3 +1,4 @@
+from __future__ import print_function
 #EF 19/5/2011
 #The following functions have been derived from the calibration made on 27/1/2010 and that of 11/9/2007.
 #If something change, just modify the following equations. Theta is the pitch of the first mirror.
@@ -31,10 +32,10 @@ def __Parabola(Points):
     
     c=y1-a*x1*x1-b*x1
     
-    print "y=a*x**2+b*x+c"
-    print "a=",a
-    print "b=",b
-    print"c=",c
+    print("y=a*x**2+b*x+c")
+    print("a=",a)
+    print("b=",b)
+    print("c=",c)
     return a,b,c
 
 def __Parabolix(x,Points):
@@ -180,11 +181,11 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
         previous_vgap1 = vgap1.pos()
         festate = FE.state()
         if festate == DevState.OPEN:
-            print "Closing front End"
+            print("Closing front End")
             if FE.close() == DevState.CLOSE:
-                print "Front End closed"
+                print("Front End closed")
             else:
-                raise "Close on front end failed. Please close front end."
+                raise Exception("Close on front end failed. Please close front end.")
         #Turn on the girders motors
         po1.on()
         po2.on()
@@ -210,10 +211,10 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
         mir1_c, __m1bender(theta,hgap), mir2_c, mir2_c_target )
         mv(mir1_roll, __m1Roll(theta), mir2_roll, __m2Roll(theta))
         mv(mir1_z, __m1Z(theta), mir2_z, __m2Z(theta))
-    except Exception, tmp:
-        if tpp_aknowledge()<>0:
-            print "TPP_security active... tring to continue..."
-            print "Trying...",
+    except Exception as tmp:
+        if tpp_aknowledge()!=0:
+            print("TPP_security active... tring to continue...")
+            print("Trying...", end=' ')
             tpp_aknowledge(0)
             sleep(2.)
             mir1_c.go(__m1bender(theta,hgap))
@@ -225,7 +226,7 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
             mir2_roll.pos(__m2Roll(theta))
             mir2_z.pos(__m2Z(theta))
             wait_motor([po1,po2,po3,po4,po5])
-            print " OK!"
+            print(" OK!")
         else:
             mir1_pitch.stop()
             mir2_pitch.stop()
@@ -236,8 +237,8 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
             po5.stop()
             mir1_c.stop()
             mir2_c.stop()
-            print "Stopping over error. Hint: Verify Security of tpp."
-            print "After restoring alignement, verify primary slits! they can be closed."
+            print("Stopping over error. Hint: Verify Security of tpp.")
+            print("After restoring alignement, verify primary slits! they can be closed.")
             raise tmp
     if (previous_vgap1>theta): 
         if theta<1e-2:
@@ -259,9 +260,9 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
 #        vgap2.pos(min(6,theta+2.))
     #Moved down of 1mm on 8/11/2016
     vpos2.pos(get_ipython().user_ns["dcm"].H() - 25. -0.25)
-    print "Primary   vertical slits aperture: vgap1 = %6.4f mm"%(vgap1.pos())
-    print "Secondary vertical slits aperture: vgap2 = %6.4f mm"%(vgap2.pos())
-    print "Secondary vertical slits position: vpos2 = %6.4f mm"%(vpos2.pos())
+    print("Primary   vertical slits aperture: vgap1 = %6.4f mm"%(vgap1.pos()))
+    print("Secondary vertical slits aperture: vgap2 = %6.4f mm"%(vgap2.pos()))
+    print("Secondary vertical slits position: vpos2 = %6.4f mm"%(vpos2.pos()))
     #Turn off the servo motors and less used steppers 
     po1.off()
     po2.off()
@@ -269,18 +270,18 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
     po4.off()
     po5.off()
     if festate==DevState.OPEN:
-        print "Opening back front end...",
+        print("Opening back front end...", end=' ')
         sleep(5)
         FE.open()
         if FE.state()==DevState.OPEN: 
-            print "OK!"
+            print("OK!")
         else:
-            print "Front End did not open? Check Front End and interlocks please..."
+            print("Front End did not open? Check Front End and interlocks please...")
     #print "Now: \n1)find beam by scanning po3\n2)tune dcm (if using dcm)\n3)scan po3 again\n4)if necessary tune dcm again.\n"
     if theta < 0.1:
-        print ""
-        print "po1 set. If you want to set po1 precisely at 0 for alignement, do it manually."
-        print "If necessary, check po1 position with Iref after SetAngle 0."
-        print ""
+        print("")
+        print("po1 set. If you want to set po1 precisely at 0 for alignement, do it manually.")
+        print("If necessary, check po1 position with Iref after SetAngle 0.")
+        print("")
     return mir1_pitch.pos()
 

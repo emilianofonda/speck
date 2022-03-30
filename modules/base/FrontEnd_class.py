@@ -1,17 +1,20 @@
+from __future__ import print_function
 #Made on 17/10/2007
 
+from builtins import range
+from builtins import object
 from PyTango import DeviceProxy, DevState
 from time import sleep
 import time as wtime
 
-class FrontEnd:
+class FrontEnd(object):
     """Functions defined are state, status, command, close, open, timeout. Attributes: DP (the device proxy) and deadtime. 
     Deadtime is used for slowing down the polling and does not belong to the device as timeout."""
     def __init__(self,tangoname,deadtime=0.1):
         try:
             self.DP=DeviceProxy(tangoname)
         except:
-            print "Wrong valve name--> ",tangoname," not defined"
+            print("Wrong valve name--> ",tangoname," not defined")
             return
         self.deadtime=deadtime
         self.label=tangoname
@@ -48,7 +51,7 @@ class FrontEnd:
             state = self.DP.state()
             state = self.StateValue()[1]
         except:
-            print "Front End issue... "
+            print("Front End issue... ")
             return DevState.UNKNOWN
         return state
 
@@ -69,7 +72,7 @@ class FrontEnd:
                 il=self.DP.read_attribute("frontEndStateValue").value
                 break
             except:
-                print "Warning: cannot read Front End state Value."
+                print("Warning: cannot read Front End state Value.")
         sleep(0.1)
         if i == 4:
             raise Exception("Cannot Read Front End state Value after 5 Retrials. STOP")
@@ -82,9 +85,9 @@ class FrontEnd:
         try:    
             il=self.DP.read_attribute("frontEndStateValue").value
         except:
-            print "Warning: cannot read Front End state Value."
+            print("Warning: cannot read Front End state Value.")
             return self.StateTable[5]
-        if il in self.StateTable.keys():
+        if il in list(self.StateTable.keys()):
             return self.StateTable[il]
         else:
             raise Exception("frontEndStateValue not recognized! Call Local Contact.")
@@ -93,9 +96,9 @@ class FrontEnd:
         try:
             self.command("Close")
         except:
-            print "Cannot close"
+            print("Cannot close")
         t=0
-        while(self.state()<>DevState.CLOSE and t<=self.timeout):
+        while(self.state()!=DevState.CLOSE and t<=self.timeout):
             sleep(self.deadtime)
             t+=self.deadtime
         return self.state()
@@ -104,9 +107,9 @@ class FrontEnd:
         try:
             self.command("Open")
         except:
-            print "Cannot open"
+            print("Cannot open")
         t=0.
-        while(self.state()<>DevState.OPEN and t<=self.timeout):
+        while(self.state()!=DevState.OPEN and t<=self.timeout):
             sleep(self.deadtime)
             t+=self.deadtime
         return self.state()
