@@ -1,3 +1,5 @@
+from __future__ import division
+from past.utils import old_div
 def stepSAI(m,p1,p2,dp,dt=0.1,delay=0.,filename="stepSAI"):
     fName = findNextFileName(filename,"txt")
     cardAI.stop()
@@ -31,6 +33,6 @@ def XBPMscan(m,p1,p2,dp,dt=0.1,delay=0.,filename="XBPM"):
     plot(dataMat[0],dataMat[4],label="2")
     legend()
     subplot(1,2,2)
-    plot(dataMat[0],(dataMat[4]-dataMat[3])/(dataMat[4]+dataMat[3]),label="XBPM")
+    plot(dataMat[0],old_div((dataMat[4]-dataMat[3]),(dataMat[4]+dataMat[3])),label="XBPM")
     legend()
     return dataMat

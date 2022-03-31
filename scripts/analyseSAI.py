@@ -1,3 +1,5 @@
+from __future__ import division
+from past.utils import old_div
 from numpy import fft
 import tables
 
@@ -12,7 +14,7 @@ def make_fft(buffer, sampling, it=1):
     return f, ft_module, ft.imag, ft.real 
 
 def plot_fft(freq, ft_module, label=""):
-    plot(freq[1:len(freq)/2], ft_module[1:len(freq)/2], label=label)
+    plot(freq[1:old_div(len(freq),2)], ft_module[1:old_div(len(freq),2)], label=label)
     return
 
 def load_sai_channel(name,branch="root.entry.scan_data.channel",channel=0, dataInRuche = True):
@@ -36,7 +38,7 @@ def makeFTfigure(filename, sampling, integration_time, figN=1, channel=0, branch
         plot_fft(ftdata[0], ftdata[1] + yoff)
         yoff += max(ftdata[1][1:-1])*0.04
     title(filename)
-    xlim(xmax = fmax/5)
+    xlim(xmax = old_div(fmax,5))
     if ymax <> None: ylim(ymax = ymax)
     xlabel("Hz")
     ylabel("I0 FFT modulus")
@@ -70,7 +72,7 @@ def compareFTfigure(fileList, sampling, integration_time, figN=1, channel=0, bra
         ftdata=array(ftdata)
         ftdata = mean(ftdata, axis=0)
         plot_fft(ftdata[0], ftdata[1], label= filename)
-        xlim(xmax = fmax/5)
+        xlim(xmax = old_div(fmax,5))
         if ymax <> None: ylim(ymax = ymax)
         xlabel("Hz")
         ylabel("I0 FFT modulus")

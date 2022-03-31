@@ -1,4 +1,6 @@
+from __future__ import division
 #Need the cardAI to be defined in the global namespace
+from past.utils import old_div
 domacro("analyseSAI.py")
 
 def fftI0(name="fftI0", freq = 10000, figN=10, spool="/nfs/srv5/spool1/sai"):
@@ -44,15 +46,15 @@ def fftI0(name="fftI0", freq = 10000, figN=10, spool="/nfs/srv5/spool1/sai"):
     savetxt(txtOut, array(thisFT).transpose())
     fig=figure(figN)
     fig.clear()
-    halflen = len(thisFT[0])/2
+    halflen = old_div(len(thisFT[0]),2)
     title(txtOut)
     subplot(2,1,1)
-    plot(thisFT[0][1:halflen/10],log10(thisFT[1][1:halflen/10]),label="")
+    plot(thisFT[0][1:old_div(halflen,10)],log10(thisFT[1][1:old_div(halflen,10)]),label="")
     xlabel("")
     ylabel("log10(|FT|)")
     #legend(fontsize="x-small")
     subplot(2,1,2)
-    plot(thisFT[0][1:halflen/10],(thisFT[1][1:halflen/10]),label="")
+    plot(thisFT[0][1:old_div(halflen,10)],(thisFT[1][1:old_div(halflen,10)]),label="")
     del thisFT
     #legend(fontsize="x-small")
     xlabel("Hz")

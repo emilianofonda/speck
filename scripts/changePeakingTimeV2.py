@@ -4,6 +4,8 @@
 #Employs the global object ct to retrieve the list of mca units
 
 
+from builtins import next
+from builtins import zip
 from PyTango import DevState, DeviceProxy
 from time import sleep
 
@@ -14,7 +16,7 @@ def XIAgetConfigFiles():
 def XIAviewConfigFiles():
     labels = iter([whois(i) for i in get_ipython().user_ns["ct"].mca_units])
     for cfg in XIAgetConfigFiles():
-        print "\n%s:"%labels.next()
+        print "\n%s:"%next(labels)
         for i in cfg:
             i3 = i.split(";")
             print "Label = %6s Mode = %8s\n    File = %s"%tuple(i3)
