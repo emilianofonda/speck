@@ -96,7 +96,7 @@ class qbpm(object):
                 return self.DP.command_inout(cmdstr,arg)
             return
     
-    def initf):
+    def init(self):
         self.state()
         self.command("Init")
         return

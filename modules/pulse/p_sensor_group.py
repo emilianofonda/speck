@@ -1,3 +1,4 @@
+from __future__ import print_function
 import PyTango
 from numpy import nan
 from time import sleep
@@ -18,7 +19,7 @@ class sensor_group:
             try:
                 self.DPS[i[0]]=PyTango.DeviceProxy(i[0])
             except:
-                print "Device Proxy: %s does not exist or it is not connected."%i
+                print("Device Proxy: %s does not exist or it is not connected."%i)
         self.user_readconfig=[]
         for i in self.dev_atts:
         #for j in i[1]:
@@ -48,12 +49,12 @@ class sensor_group:
                 try:
                     retour += map(lambda x:x.value, self.DPS[i[0]].read_attributes(i[1]))
                     again = False
-                except Exception, tmp:
+                except Exception as tmp:
                     if againN < 3:
                         againN += 1
                         sleep(0.1)
                     else:
-                        print "Maximum retrial exceeded, original exception follows"
+                        print("Maximum retrial exceeded, original exception follows")
                         raise tmp
         return retour
 

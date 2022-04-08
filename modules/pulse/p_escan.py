@@ -1,3 +1,4 @@
+from __future__ import print_function
 #General modules
 import os,sys
 from time import clock,sleep,asctime,time
@@ -20,7 +21,7 @@ try:
     import Tkinter
     NoTk=False
 except:
-    print "Warning from escan: Tkinter not installed."
+    print("Warning from escan: Tkinter not installed.")
     NoTk=True
 
 import grace_np
@@ -91,7 +92,7 @@ def ReadScanForm(filename):
         if(not(tmp.startswith("#"))):
             if(tmp.find("#")==-1):
                 res.append(tmp.lower())
-            elif(tmp<>""): 
+            elif(tmp!=""): 
                 res.append(tmp.lower()[:tmp.find("#")])
     #print "Cleaned data:"
     #for i in res: print i
@@ -141,9 +142,9 @@ def ReadScanForm(filename):
             backup=True
         elif(i.startswith("fast")):
             scanMode="fast"
-            print RED + "Scan Mode fast has changed! this is a step mode with counting time = 0.2 s/point"  + RESET
+            print(RED + "Scan Mode fast has changed! this is a step mode with counting time = 0.2 s/point"  + RESET)
         elif(i.startswith("almostfast")):
-            print RED + "Scan Mode almostfast has been removed! this will be treated ad a step mode"  + RESET
+            print(RED + "Scan Mode almostfast has been removed! this will be treated ad a step mode"  + RESET)
             scanMode="step"
         elif(i.startswith("notz2")):
             j=i.replace("="," ")
@@ -153,7 +154,7 @@ def ReadScanForm(filename):
             else:
                 try:
                     notz2_auto_limit=float(j[1])
-                    print "Auto Limit for tz2 set to %g"%(notz2_auto_limit)
+                    print("Auto Limit for tz2 set to %g"%(notz2_auto_limit))
                 except:
                     raise Exception("Error parsing line:\n %s\n"%i)
         elif(i.startswith("noplot")):
@@ -171,8 +172,8 @@ def ReadScanForm(filename):
                     plotSetting="average"
                 else:
                         plotSetting=defaultPlotSetting
-                        print "Unknown plot mode :",j[1]
-                        print "Plot modes are kinetic (kin) or average (ave)"
+                        print("Unknown plot mode :",j[1])
+                        print("Plot modes are kinetic (kin) or average (ave)")
         elif(i.startswith("nobend")):
             usebender=False
         elif(i.startswith("tun")):
@@ -182,7 +183,7 @@ def ReadScanForm(filename):
             #Default degree is 1 and no modification is allowed
             degree=defaultDegree
             if len(j)>=1: 
-                print "No options allowed for tuning. Refer to the new handbook."
+                print("No options allowed for tuning. Refer to the new handbook.")
             #if(len(j)==1):
             #    degree=defaultDegree
             #else:
@@ -204,29 +205,29 @@ def ReadScanForm(filename):
             j=i.replace("="," ")
             j=i.replace(","," ")
             j=j.split()
-            print "Roll parameters are:",j[1:]
-            if(len(j)<>5):
+            print("Roll parameters are:",j[1:])
+            if(len(j)!=5):
                 ServoRollParameters=defaultServoRollParameters
-                print "Error specifying roll parameters! Defaulting to no roll correction!"
+                print("Error specifying roll parameters! Defaulting to no roll correction!")
             else:
                 try:
                     for i in j[1:]: ServoRollParameters.append(float(i))
                 except:
-                    print "Error specifying roll parameters! Defaulting to no roll correction!"
+                    print("Error specifying roll parameters! Defaulting to no roll correction!")
                     ServoRollParameters=defaultServoRollParameters
         elif(i.startswith("pitch")):
             j=i.replace("="," ")
             j=i.replace(","," ")
             j=j.split()
-            print "Pitch parameters are:",j[1:]
-            if(len(j)<>5):
+            print("Pitch parameters are:",j[1:])
+            if(len(j)!=5):
                 ServoPitchParameters=defaultServoPitchParameters
-                print "Error specifying pitch parameters! Defaulting to no pitch correction!"
+                print("Error specifying pitch parameters! Defaulting to no pitch correction!")
             else:
                 try:
                     for i in j[1:]: ServoPitchParameters.append(float(i))
                 except:
-                    print "Error specifying pitch parameters! Defaulting to no pitch correction!"
+                    print("Error specifying pitch parameters! Defaulting to no pitch correction!")
                     ServoPitchParameters=defaultServoPitchParameters
                     
         elif(i.startswith("notun")):
@@ -246,7 +247,7 @@ def ReadScanForm(filename):
                 except:
                     roi=[]
                 roi.append(float(__chk))
-            if mod(len(roi),2)<>0:
+            if mod(len(roi),2)!=0:
                 raise Exception("Wrong number of parameters for ROI!",roi)
         elif(i.startswith("detune")):
             j=i.replace("="," ")
@@ -280,27 +281,27 @@ def ReadScanForm(filename):
             kgrid=kk+kgrid[len(kk):]
         elif(i.startswith("fullmca")):
             fullmca=True
-    if plotSetting<>None:
-        print "Plotter:",plotSetting
+    if plotSetting!=None:
+        print("Plotter:",plotSetting)
     else:
-        print "Plotter: no graphic output."
-    print "Using bender=",usebender
-    if(tuning): print "Tuning degree is ",degree
+        print("Plotter: no graphic output.")
+    print("Using bender=",usebender)
+    if(tuning): print("Tuning degree is ",degree)
     if(detune==None): 
         detune=defaultDetune
-    print "Detuning crystals at ",detune,"*maximum" 
+    print("Detuning crystals at ",detune,"*maximum") 
     if detectionMode==None: detectionMode=defaultDetectionMode
-    print "Detection mode: ",detectionMode
-    print "SettlingTime (movement-->SettlingTime-->counts)=",SettlingTime
+    print("Detection mode: ",detectionMode)
+    print("SettlingTime (movement-->SettlingTime-->counts)=",SettlingTime)
     if kscan: 
-        print "kscan active: parameters are kmax, deltak, t0, t1, kweight"
-        print "kscan :",kgrid
+        print("kscan active: parameters are kmax, deltak, t0, t1, kweight")
+        print("kscan :",kgrid)
     res=raw
     raw=[]
     for i in res:
         not_key=True
         for j in keys:
-            if(i.find(j)<>-1): 
+            if(i.find(j)!=-1): 
                 not_key=False
                 break
         if(not_key): 
@@ -322,10 +323,10 @@ def ReadScanForm(filename):
             try:
                 tmp.append(float(j))
             except:
-                print "Spurious characters on line!"
-                print "Line ---> ",j
+                print("Spurious characters on line!")
+                print("Line ---> ",j)
                 
-        if(tmp<>[]): res.append(tmp)
+        if(tmp!=[]): res.append(tmp)
     if len(res)<2:
         raise SyntaxError("Too few usefull lines. Error in input file. Abort.")
     res.sort()
@@ -345,11 +346,11 @@ def ReadScanForm(filename):
     if len(res)<2:
         raise SyntaxError("Too few usefull lines. Error in input file. Abort.")
     #print "Truncation on data:"
-    print "Scan over:"
-    for i in res: print i
+    print("Scan over:")
+    for i in res: print(i)
     if kscan==True:
         if e0==None: e0=0.5*(res[-1][0]+res[-2][0])
-        print "E0=",e0
+        print("E0=",e0)
     #print "################### End Truncation on data ######################"    
     return {"usebender":usebender,"tuning":tuning,"degree":degree,"res":res,\
     "detune":detune,"detectionMode":detectionMode,"e0":e0,"kgrid":kgrid,"kscan":kscan,"SettlingTime":SettlingTime,\
@@ -394,22 +395,22 @@ class escan_class:
             __Default_Data_Folder = get_ipython().user_ns["__Default_Data_Folder"]
             __Default_Backup_Folder = get_ipython().user_ns["__Default_Backup_Folder"]
             self.currentDataFolder=os.getcwd()
-            print "Data Folder is :",self.currentDataFolder
-            if self.currentDataFolder.startswith(__Default_Data_Folder.rstrip("/")) and __Default_Backup_Folder <> "":
+            print("Data Folder is :",self.currentDataFolder)
+            if self.currentDataFolder.startswith(__Default_Data_Folder.rstrip("/")) and __Default_Backup_Folder != "":
                 self.currentBackupFolder=__Default_Backup_Folder+"/"+\
                 self.currentDataFolder.lstrip(__Default_Data_Folder.rstrip("/"))
                 cbf=self.currentBackupFolder
                 self.currentBackupFolder=cbf[:cbf.rstrip("/").rfind("/")]
             else:
                 self.currentBackupFolder=None
-            print "Backup Folder is :",self.currentBackupFolder
+            print("Backup Folder is :",self.currentBackupFolder)
         except:
-            print RED,
-            print "--------------------------------------------------------------------"
-            print "WARNING:"
-            print "Error defining backup folders... please, backup data files manually."
-            print "--------------------------------------------------------------------"
-            print RESET,
+            print(RED, end=' ')
+            print("--------------------------------------------------------------------")
+            print("WARNING:")
+            print("Error defining backup folders... please, backup data files manually.")
+            print("--------------------------------------------------------------------")
+            print(RESET, end=' ')
             self.currentBackupFolder=None
         #
         #Setup avec scan file
@@ -419,7 +420,7 @@ class escan_class:
         try:
             self.ms = DeviceProxy("ans/ca/machinestatus")
         except:
-            print RED + "Cannot define a device proxy for the machinestatus ans/ca/machinestatus"+RESET
+            print(RED + "Cannot define a device proxy for the machinestatus ans/ca/machinestatus"+RESET)
         ###
         thisform = ReadScanForm(scan_form)
         f = open(scan_form,"r")
@@ -434,8 +435,8 @@ class escan_class:
                 self.attributes.append(
                 [PyTango.AttributeProxy(i[0]),i[1]]
                 )
-            except Exception, tmp:
-                print "\n\nError while defining the AttributeProxy for an additional attribute, verify config file or attribute address.\n\n"
+            except Exception as tmp:
+                print("\n\nError while defining the AttributeProxy for an additional attribute, verify config file or attribute address.\n\n")
                 raise tmp
         del attributes
         self.backup=thisform["backup"]
@@ -444,7 +445,7 @@ class escan_class:
         degree = thisform["degree"]
         self.grid = thisform["res"]
         self.TUNING = tuning
-        print "Tuning is set to :",self.TUNING
+        print("Tuning is set to :",self.TUNING)
         if(self.TUNING == None): 
             self.TUNING = True
             self.tuningdegree = 1
@@ -456,22 +457,22 @@ class escan_class:
             raise Exception("The tuning flag is not properly set. Verify scan file.",self.TUNING)
         #Pitch correction (Explicit, deactivates the tuning)
         self.ServoPitchParameters=thisform["ServoPitchParameters"]
-        if self.ServoPitchParameters <> []:
+        if self.ServoPitchParameters != []:
             self.PitchCorrection = True
             self.TUNING = False
-            print RED + "Pitch correction explicitly specified: deactivating auto tuning of piezo." + RESET
+            print(RED + "Pitch correction explicitly specified: deactivating auto tuning of piezo." + RESET)
         else:
             self.PitchCorrection=False
         #Roll correction
         self.ServoRollParameters = thisform["ServoRollParameters"]
-        if self.ServoRollParameters <> []:
+        if self.ServoRollParameters != []:
             self.RollCorrection = True
         else:
             self.RollCorrection = False
         #
         self.notz2 = thisform["notz2"]
         if self.notz2:
-            print "notz2: TZ2 will not be used."
+            print("notz2: TZ2 will not be used.")
         self.notz2_auto_limit = thisform["notz2_auto_limit"]
         self.detune = thisform["detune"]
         self.detectionMode = thisform["detectionMode"]
@@ -494,7 +495,7 @@ class escan_class:
         self.plotSetting=thisform["plotSetting"]
         self.roi=thisform["roi"]
         self.scanMode=thisform["scanMode"]
-        print BLUE+"Scan Mode is :"+RESET,self.scanMode
+        print(BLUE+"Scan Mode is :"+RESET,self.scanMode)
         self.almostMode=False
         #if self.scanMode=="almostfast":
         #    self.almostMode=True
@@ -564,9 +565,9 @@ class escan_class:
                 self.trajectory["time"].append(tmeasure)
             elif self.kscan:
                 try:
-                    en=float(kscan_energy.next())
-                    tmeasure=float(kscan_time.next())
-                except StopIteration, tmp:
+                    en=float(next(kscan_energy))
+                    tmeasure=float(next(kscan_time))
+                except StopIteration as tmp:
                     break
                 self.trajectory["energy"].append(en)
                 self.trajectory["time"].append(tmeasure)
@@ -574,31 +575,31 @@ class escan_class:
         self.scanNumberOfPoints=len(self.trajectory["energy"])
         IntegrationTime=sum(self.trajectory["time"])
         MovingTime=self.scanNumberOfPoints*0.75
-        print "---------------------------------------------"
+        print("---------------------------------------------")
         #print "Extimated Scan Time: please, consider only the moving time in fast mode."
-        print "Following values are calculated for ONE scan."
-        print "---------------------------------------------"
-        print "Extimated Moving time (minutes)    :",MovingTime/60.
-        print "Integration Time (minutes)         :",IntegrationTime/60.
+        print("Following values are calculated for ONE scan.")
+        print("---------------------------------------------")
+        print("Extimated Moving time (minutes)    :",MovingTime/60.)
+        print("Integration Time (minutes)         :",IntegrationTime/60.)
         #print "Extimated Settling Time (minutes)  :", self.SettlingTime*self.scanNumberOfPoints/60.
         #print "Extimated Total (minutes)          :",(MovingTime+IntegrationTime + self.SettlingTime*self.scanNumberOfPoints)/60.
-        print "Extimated Total (minutes)          :",(MovingTime+IntegrationTime)/60.
-        print "Number of points                   :",self.scanNumberOfPoints
-        print "Tuning could take 2 minutes if enabled"
-        print "---------------------------------------------"
+        print("Extimated Total (minutes)          :",(MovingTime+IntegrationTime)/60.)
+        print("Number of points                   :",self.scanNumberOfPoints)
+        print("Tuning could take 2 minutes if enabled")
+        print("---------------------------------------------")
         ##############################################################
         #Calculate if TZ2 should move or not: TZ2 is calculated in mm
         if abs(self.dcm.tz2(self.dcm.e2theta(self.e1))-self.dcm.tz2(self.dcm.e2theta(self.e2)))<self.notz2_auto_limit:
             self.notz2=True
-            print GREEN,
-            print "############################ NEW FEATURE #################################################"
-            print RESET,
-            print "Auto limiting TZ2!"
-            print "tz2 movement is below %4.2f mm."%(self.notz2_auto_limit)
-            print "If you want to use tz2 even for smaller tz2 ranges set: notz2 -1 in the parameter file."
-            print GREEN,
-            print "##########################################################################################"
-            print RESET
+            print(GREEN, end=' ')
+            print("############################ NEW FEATURE #################################################")
+            print(RESET, end=' ')
+            print("Auto limiting TZ2!")
+            print("tz2 movement is below %4.2f mm."%(self.notz2_auto_limit))
+            print("If you want to use tz2 even for smaller tz2 ranges set: notz2 -1 in the parameter file.")
+            print(GREEN, end=' ')
+            print("##########################################################################################")
+            print(RESET)
         #
         #if self.notz2:
         #    self.previous_dcm_tz2_setting=self.dcm.DP.enabledtz2
@@ -614,7 +615,7 @@ class escan_class:
             self.cpt_header+=i.label+"\t"
             if i.label.startswith("fluo") and ("roi" in i.label): self.auto_fluo_channels.append(col)
             col+=1
-        print "Number of fluo channels="+RED+"%i"%(len(self.auto_fluo_channels))+RESET
+        print("Number of fluo channels="+RED+"%i"%(len(self.auto_fluo_channels))+RESET)
         del col
         self.auto_fluo_mask=zeros(len(self.cpt.user_readconfig))
         for i in self.auto_fluo_channels:
@@ -627,12 +628,12 @@ class escan_class:
             try:
                 self.temperature_DP=DeviceProxy("d09-1-cx2/ex/tc.1")
             except:
-                print "No thermocouple readings... error on d09-1-cx2/ex/tc.1"
+                print("No thermocouple readings... error on d09-1-cx2/ex/tc.1")
         else:
             try:
                 self.temperature_DP=DeviceProxy("D09-1-CX1/EX/TC.1")
             except:
-                print "No thermocouple readings... error on D09-1-CX1/EX/TC.1"
+                print("No thermocouple readings... error on D09-1-CX1/EX/TC.1")
         #Graphic properties and variables:
         self.gracewins={}
         return
@@ -667,7 +668,7 @@ class escan_class:
             de=max(self.trajectory["energy"][1]-self.trajectory["energy"][0],1.)
         #points=array(self.__fibonacci(dummypoints+2)[-1:1:-1])*(-de)+energy
         points=numpy.arange(self.trajectory["energy"][0] - de * dummypoints, self.trajectory["energy"][0], de)
-        print "Performing backlash recovery over: ",points
+        print("Performing backlash recovery over: ",points)
         self.dcm.pos(points[0])
         #Go back to dcm cruise speed
         sleep(0.25)
@@ -700,13 +701,13 @@ class escan_class:
             #self.backlash_recovery(self.tuning_points[0][i])
             #
             self.dcm.pos(self.tuning_points[0][i])
-            print "Tuning point at E=",self.dcm.pos()
+            print("Tuning point at E=",self.dcm.pos())
             if self.detune==1:
                 self.tuning_points[1][i]=self.dcm.tune()
             else:
                 self.tuning_points[1][i]=self.dcm.detune(self.detune)
-                print "Detuned of ",self.detune*100,"%"
-            print " "
+                print("Detuned of ",self.detune*100,"%")
+            print(" ")
         return self.tuning_points
 
     def usebender(self,flag=None):
@@ -767,7 +768,7 @@ class escan_class:
         #!
         try:
             #if self.detectionMode<>"sexafs":
-            if self.detectionMode<>None:       
+            if self.detectionMode!=None:       
                 if self.detectionMode in ["fluo","sexafs","tey"]:
                     #Start gracewin3: fluo
                     gracewin3=grace_np.GraceProcess()
@@ -1023,10 +1024,10 @@ class escan_class:
             
                 self.gracewins={"sexafs_1":gracewin4,\
                         "sexafs_2":gracewin5}
-        except Exception, tmp:
-            print "Error starting Grace processes: no plotting. Scan will continue."
+        except Exception as tmp:
+            print("Error starting Grace processes: no plotting. Scan will continue.")
             self.plotSetting=None
-            print tmp
+            print(tmp)
         return
 
 #    def GPlot(self,gw,graph,curve,x,y,legend=None,color=1,noredraw=False):
@@ -1097,7 +1098,7 @@ class escan_class:
         pipe_string+=('xaxis tick major %g\n'%(majortick))
         majortick=(gw.viewport["graph%02i"%graph]["ymax"]-gw.viewport["graph%02i"%graph]["ymin"])*0.1
         pipe_string+=('yaxis tick major %g\n'%(majortick))
-        if legend<>None:
+        if legend!=None:
             pipe_string+='g%i.s%i legend "%s"\n'%(graph,curve,legend)
         if color>0:
             pipe_string+="g%i.s%i LINE COLOR %i\n"%(graph,curve,mod(color,24)+1)
@@ -1117,10 +1118,10 @@ class escan_class:
         for i in self.gracewins:
             try:
                 os.kill(self.gracewins[i].pid,15)
-            except KeyboardInterrupt, tmp:
+            except KeyboardInterrupt as tmp:
                 raise tmp
             except:
-                print "restart_grace_processes: cannot kill pid=",self.gracewins[i]," by signal 15"
+                print("restart_grace_processes: cannot kill pid=",self.gracewins[i]," by signal 15")
         #Restart them
         self.start_grace_processes()
         return
@@ -1145,7 +1146,7 @@ class escan_class:
                 try:
                     self.restart_grace_processes()
                 except:
-                    print "Graphics cannot be restarted. Scan will continue without..."
+                    print("Graphics cannot be restarted. Scan will continue without...")
                     self.GRAPHICS_RESTART_NEEDED=True
         try:
             if self.detectionMode in ["absorption","fluo","tey","sexafs"]:
@@ -1210,24 +1211,24 @@ class escan_class:
                 #
             else:
                 pass
-        except KeyboardInterrupt, tmp:
+        except KeyboardInterrupt as tmp:
             raise tmp
         except grace_np.Disconnected:
-            print "One or more grace windows have been disconnected or closed !"
-            print "Restarting windows...",
+            print("One or more grace windows have been disconnected or closed !")
+            print("Restarting windows...", end=' ')
             self.restart_grace_processes()
-            print "OK"
-        except Exception, tmp:
+            print("OK")
+        except Exception as tmp:
             for i in gws:
                 if not(gws[i].is_open()):
-                    print "Restarting windows...",
+                    print("Restarting windows...", end=' ')
                     self.restart_grace_processes()
-                    print "OK"
+                    print("OK")
                     return
             self.plotSetting=None
-            print "Unknown error in update_grace_windows... no more plotting in grace"
-            print tmp
-            print tmp.args
+            print("Unknown error in update_grace_windows... no more plotting in grace")
+            print(tmp)
+            print(tmp.args)
         #cleanup namespace and then returns
         del gws,gp,gd,en        
         return
@@ -1255,9 +1256,9 @@ class escan_class:
                 command="rsync --ignore-existing  -auv --temp-dir=/tmp '"+self.currentDataFolder+"' '"+self.currentBackupFolder+"'"
                 os.system(command)
             else:
-                print "Please do a manual backup of data files."
+                print("Please do a manual backup of data files.")
         except:
-            print "Cannot make backup to ruche... do it manually!"
+            print("Cannot make backup to ruche... do it manually!")
         return
 
     def start(self,filename="",nscans=1,nowait=False):
@@ -1348,11 +1349,11 @@ class escan_class:
             #Prepare correct filename to avoid overwriting
             #
             psep=filename.find(os.sep)
-            if(psep<>-1): 
+            if(psep!=-1): 
                 fdir=filename[:psep]
             else:
                 fdir="."
-            if(psep<>-1): filename=filename[psep+1:]
+            if(psep!=-1): filename=filename[psep+1:]
             fnameFull = filename+"_"+("%4i"%(file_index)).replace(" ","0") + "." + extensionFull
             fname = filename+"_"+("%4i"%(file_index)).replace(" ","0") + "." + extension
             dirname=filename+"_"+("%4i"%(file_index)).replace(" ","0")+".d"
@@ -1371,7 +1372,7 @@ class escan_class:
             ###################### FULL MCA FILES! #####################################
             self.mca_files={}
             if self.fullmca:
-                os.mkdir(dirname,0777)
+                os.mkdir(dirname,0o777)
                 for mca_channel in self.cpt.read_mca().keys():
                     self.mca_files[mca_channel]=open(dirname+os.sep+fnameFull+"."+mca_channel,"a")
             ###################### FULL MCA FILES! #####################################
@@ -1409,7 +1410,7 @@ class escan_class:
             #   shortHeader += "\t" + H
             shortFile.write("#HEADER\n"+"#"+shortHeader+"\n")
             file_index+=1
-            print "Scanning file :",fname
+            print("Scanning file :",fname)
             shell.logger.log_write("Saving data in: %s\n" % fname, kind='output')
             self.time_spent_for_scan=time()
             #
@@ -1459,34 +1460,34 @@ class escan_class:
                         try:
                             self.dcm.m_rx2fine.go(self.calculate_pitch(en))
                             motors_to_wait.append(self.dcm.m_rx2fine)
-                        except KeyboardInterrupt, tmp:
+                        except KeyboardInterrupt as tmp:
                             raise tmp
                         except:
-                            print "Exception when moving RX2Fine"
+                            print("Exception when moving RX2Fine")
                     if self.RollCorrection: 
                         try:
                             self.dcm.m_rs2.go(self.calculate_roll(en))
                             motors_to_wait.append(self.dcm.m_rs2)
-                        except KeyboardInterrupt, tmp:
+                        except KeyboardInterrupt as tmp:
                             raise tmp
                         except:
-                            print "Exception when moving RS2"
+                            print("Exception when moving RS2")
                     #if self.scanMode == "fast":
                     #    if self.almostMode:
                     #        self.cpt.start(tmeasure)
                     #    else:
                     #        self.cpt.start(10)
                     actual = self.dcm.pos(en)
-                    if motors_to_wait <>[]:
+                    if motors_to_wait !=[]:
                         wait_motor(motors_to_wait, verbose=False)
                     actual = self.dcm.pos()
                     if self.SettlingTime >0:
                         sleep(self.SettlingTime)
                     tmove = time() - t0
                     if en <= self.grid[-1][0]:
-                        print "%8.2f\r"%(actual),
+                        print("%8.2f\r"%(actual), end=' ')
                     elif self.kscan:
-                        print "En=%8.2f k=%5.2f\r"%(actual, sqrt(0.2624 * (actual - self.kscan_e0))),
+                        print("En=%8.2f k=%5.2f\r"%(actual, sqrt(0.2624 * (actual - self.kscan_e0))), end=' ')
                     sys.stdout.flush()
                     #Read mono position BEFORE counting (step mode)
                     theta = self.dcm.m_rx1.pos()
@@ -1516,9 +1517,9 @@ class escan_class:
                     try:
                         for i in range(len(self.auto_fluo_channels)):
                             fluopoint[i+1] = cnts[self.auto_fluo_channels[i]]
-                    except Exception, tmp:
-                        print "No fluorescence channels!!!!!"
-                        print tmp
+                    except Exception as tmp:
+                        print("No fluorescence channels!!!!!")
+                        print(tmp)
                     #Assertions valid for specific modes
                     if self.detectionMode in ["absorption","fluo"]:
                         if i1 * i0 > 0 :
@@ -1526,18 +1527,18 @@ class escan_class:
                         else:
                             mu = 0.
                     elif self.detectionMode == "tey":
-                        if i0 <> 0:
+                        if i0 != 0:
                             mu = cnts[3]/i0
                         else:
                             mu = 0.
                     if self.detectionMode in ["fluo","tey"]:
-                        if i0 <> 0:
+                        if i0 != 0:
                             try:
                                 fluopoint[0] = average(fluopoint[1:]) / i0
-                            except Exception, tmp:
+                            except Exception as tmp:
                                 fluopoint[0] = 0.
-                                print "Error calculating fluopoint[0]"
-                                print tmp
+                                print("Error calculating fluopoint[0]")
+                                print(tmp)
                         else:
                             fluopoint[0] = 0.
                     elif self.detectionMode == "sexafs":
@@ -1553,19 +1554,19 @@ class escan_class:
                                 else:
                                     mus = 0.
                             except:
-                                print "Error calculating fluopoint[0]"
+                                print("Error calculating fluopoint[0]")
                                 pass
                         else:
                             fluopoint[0] = 0.
                             mu = 0.
                             mus = 0.
                     else:
-                        if i0 * i1 <> 0:
+                        if i0 * i1 != 0:
                             mu = log(abs(i0/i1))
                         else: 
                             mu = 0.
-                    if self.detectionMode<>"sexafs":
-                        if i2 * i1 <> 0:
+                    if self.detectionMode!="sexafs":
+                        if i2 * i1 != 0:
                             mus = log(abs(i1 / i2))
                         else:
                             mus = 0.
@@ -1590,7 +1591,7 @@ class escan_class:
                     try:
                         temperature=self.temperature_DP.read_attribute("temperature").value
                         if temperature.__repr__() == 'nan': temperature = -1000.
-                    except KeyboardInterrupt, tmp:
+                    except KeyboardInterrupt as tmp:
                         raise tmp
                     except:
                         #print "Invalid temperature reading..."
@@ -1616,9 +1617,9 @@ class escan_class:
                     for i in self.attributes:
                         try:
                             line_buffer += "\t%g" % (i[0].read().value)
-                        except Exception, tmp:
+                        except Exception as tmp:
                             line_buffer += "\t%g" % (0)
-                            print tmp
+                            print(tmp)
                     #Add newline
                     line_buffer += "\n"
                     shortLineBuffer += "\n"
@@ -1635,11 +1636,11 @@ class escan_class:
                         shortLineBuffer=""
                         ###If, at the end of a scan, a line_buffer is not empty, it means it must be added to
                         ###the file_buffer.
-                    except KeyboardInterrupt, tmp:
+                    except KeyboardInterrupt as tmp:
                         raise tmp
                     except:
-                        print "Cannot write to file!!!!!!"
-                        print "If this problem occurs often, call the Local Contact Please..."
+                        print("Cannot write to file!!!!!!")
+                        print("If this problem occurs often, call the Local Contact Please...")
                     pointIndex += 1
                     try:
                         if waitflush == __FLUSH_TO_DISK_EVERY:
@@ -1647,10 +1648,10 @@ class escan_class:
                             waitflush = 0
                         else:
                             waitflush += 1
-                    except KeyboardInterrupt, tmp:
+                    except KeyboardInterrupt as tmp:
                         raise tmp
                     except:
-                        print "Cannot flush this data point to file ..."
+                        print("Cannot flush this data point to file ...")
                     ######################################################################################
                     #            Write to Full MCA files
                     ######################################################################################
@@ -1667,7 +1668,7 @@ class escan_class:
                     self.graph_data["mux"].append(mu)
                     self.graph_data["mux_ref"].append(mus)
                     t_nor = 1.
-                    if self.cpt.clock_channel > -1 and cnts[self.cpt.clock_channel] <>0:
+                    if self.cpt.clock_channel > -1 and cnts[self.cpt.clock_channel] !=0:
                         t_nor = float(cnts[self.cpt.clock_channel])
                     if self.detectionMode == "sexafs":
                         self.graph_data["i0"].append(cnts[0] / t_nor)
@@ -1710,7 +1711,7 @@ class escan_class:
                     #!
                     #!Call the graphics (thread) here 
                     #!
-                    if self.plotSetting<>None:
+                    if self.plotSetting!=None:
                         if self.GRAPHICS_RESTART_NEEDED == False:
                             if mod(waitplot,_UPDATE_GRAPHICS_EVERY) == 0:
                                 waitplot = 0
@@ -1723,22 +1724,22 @@ class escan_class:
                     #
                     #END OF A SCAN CYCLE
                     #
-                except (KeyboardInterrupt,SystemExit), tmp:
+                except (KeyboardInterrupt,SystemExit) as tmp:
                     self.cpt.stop()
                     if tmp.__class__==KeyboardInterrupt:
-                        print "Welcome on the Samba answering machine:"
-                        print "---------------------------------------"
-                        print "Type 1 to end this scan"
-                        print "Type 2 to end at the end of this scan"
-                        print "Type 3 to change the total number of scans"
-                        print "Type 4 if you want to continue..."
-                        print ""
+                        print("Welcome on the Samba answering machine:")
+                        print("---------------------------------------")
+                        print("Type 1 to end this scan")
+                        print("Type 2 to end at the end of this scan")
+                        print("Type 3 to change the total number of scans")
+                        print("Type 4 if you want to continue...")
+                        print("")
                         mychoice=input("-->")
                         if mychoice=="" or type(mychoice)==str:
-                            print "I ignore your command, sir."
+                            print("I ignore your command, sir.")
                             mychoice=4
                         if mychoice==1:
-                            print "Ending this can, sir"
+                            print("Ending this can, sir")
                             self.dcm.stop()
                             if line_buffer:
                                 file_buffer.append(line_buffer)
@@ -1749,7 +1750,7 @@ class escan_class:
                             self.after_scan(shortFile,fullFile,nowait,iscan,nscans,file_buffer,fname,fnameFull)
                             shortFile.close()
                             fullFile.close()
-                            print "Scan finished on user request."
+                            print("Scan finished on user request.")
                             try:
                                 self.update_grace_windows(iscan)
                             except:
@@ -1762,30 +1763,30 @@ class escan_class:
                             raise tmp
                         if mychoice==2:
                             #Repeat last point... maybe this is idiot
-                            if line_buffer<>"":
+                            if line_buffer!="":
                                 line_buffer=""
                             pointIndex-=1
                             __WANT_TO_STOP="EndOfScan"
                             self.GRAPHICS_RESTART_NEEDED=True
                         if mychoice==3:
-                            print "Current scan is :",iscan
-                            print "Total number of scans:",nscans
-                            print "New total number of scans:",
+                            print("Current scan is :",iscan)
+                            print("Total number of scans:",nscans)
+                            print("New total number of scans:", end=' ')
                             new_nscans=input()
                             nscans=int(new_nscans)
-                            print "Got new total number of scans:",nscans
+                            print("Got new total number of scans:",nscans)
                             #Repeat last point... maybe this is idiot
-                            if line_buffer<>"":
+                            if line_buffer!="":
                                 line_buffer=""
                             pointIndex-=1
-                            print "I am going back to work, sir"
+                            print("I am going back to work, sir")
                             self.GRAPHICS_RESTART_NEEDED=True
                         if mychoice==4:
                             #Repeat last point... maybe this is idiot
-                            if line_buffer<>"":
+                            if line_buffer!="":
                                 line_buffer=""
                             pointIndex-=1
-                            print "I am going back to work, sir"
+                            print("I am going back to work, sir")
                             self.GRAPHICS_RESTART_NEEDED=True
                     else:
                         self.dcm.stop()
@@ -1798,12 +1799,12 @@ class escan_class:
                         self.after_scan(shortFile,fullFile,nowait,iscan,nscans,file_buffer,fname,fnameFull)
                         shortFile.close()
 			fullFile.close()
-                        print "Scan finished on user request."
+                        print("Scan finished on user request.")
                         raise tmp
-                except PyTango.DevFailed, tmp:
+                except PyTango.DevFailed as tmp:
                     raise tmp
-                except Exception, tmp: 
-                    print "Error during scan! trying to end well..."
+                except Exception as tmp: 
+                    print("Error during scan! trying to end well...")
                     self.dcm.stop()
                     #Setting to False the TUNING option prevent the after_scan hook
                     #to perform a useless and time consuming scan_tuning
@@ -1824,7 +1825,7 @@ class escan_class:
             #!
             #!Call the graphics update for the last few points 
             #!
-            if self.plotSetting <> None:
+            if self.plotSetting != None:
                 self.update_grace_windows(iscan)
                 #thread.start_new_thread(self.update_grace_windows,(iscan,))
             #
@@ -1841,12 +1842,12 @@ class escan_class:
             #fullFile.close()
             #shortFile.close()
             file_buffer = []
-            print "Scan ",iscan+1,"out of ",nscans," scans finished."
+            print("Scan ",iscan+1,"out of ",nscans," scans finished.")
             
             mux_list.append(None)
             std_list.append(None)
             if __WANT_TO_STOP == "EndOfScan": 
-                print "WARNING: User requested to stop the run at the end of this scan.\n Run ends now."
+                print("WARNING: User requested to stop the run at the end of this scan.\n Run ends now.")
                 break
         
         ##
@@ -1854,7 +1855,7 @@ class escan_class:
         ##
         self.after_run(handler=shortFile,handlerFull=fullFile, nowait=nowait)
         #Hello world!
-        print "Series of scans finished, may the python be with you! :-)"
+        print("Series of scans finished, may the python be with you! :-)")
         return
     
     def pre_run(self,nowait=False):
@@ -1896,7 +1897,7 @@ class escan_class:
             try:
                 self.dcm.m_rs2.pos(self.calculate_roll(self.e1-4))
             except:
-                print "pre_scan: Error while moving dcm.m_rs2 to first point"
+                print("pre_scan: Error while moving dcm.m_rs2 to first point")
         #Set dcm speed at 10eV/s and mode 1
         try:
             self.dcm.mode(1)
@@ -1918,7 +1919,7 @@ class escan_class:
             #The backlash has been perfomed few lines above
             if self.TUNING and self.iscan>=1:
 #            if self.TUNING:
-                print "Retuning first point..."
+                print("Retuning first point...")
                 self.dcm.pos(self.tuning_points[0][0])
                 if self.RollCorrection:
                     self.dcm.m_rs2.pos(self.calculate_roll(self.tuning_points[0][0]))
@@ -1928,7 +1929,7 @@ class escan_class:
                     self.tuning_points[1][0]=self.dcm.tune()
                 else:
                     self.tuning_points[1][0]=self.dcm.detune(self.detune)
-                    print "Detuned of ",self.detune*100,"%"
+                    print("Detuned of ",self.detune*100,"%")
         buffer=[]
         buffer.append("#"+handlerFull.name+"\n")
         buffer.append("#Scan parameters follow:\n")
@@ -1938,9 +1939,9 @@ class escan_class:
             GetPositions(verbose=0)
             for i in wa(verbose=False,returns=True):
                 buffer.append("#"+i+"\n")
-        except Exception, tmp:
-            print "Error when getting motors positions!"
-            print tmp
+        except Exception as tmp:
+            print("Error when getting motors positions!")
+            print(tmp)
         buffer.append("#dcm is focusing at %6.3f m\n"%(self.dcm.sample_at()))
         buffer.append("#dcm  2d spacing is %8.6f m\n"%(self.dcm.d()*2.))
         buffer.append("#2d spacing for common crystals [A]: 2d[Si(111)]=6.2712 2d[Si(220)]=3.8403 2d[Si(311)]=3.2749\n")
@@ -1961,11 +1962,11 @@ class escan_class:
                 pass
             if currentTooLow:
                 self.FE.close()
-                print RED + BOLD + "Beam Loss: current is below 8mA !" + RESET
-                print "Waiting two minutes before checking Front End state: ",
+                print(RED + BOLD + "Beam Loss: current is below 8mA !" + RESET)
+                print("Waiting two minutes before checking Front End state: ", end=' ')
                 sys.stdout.flush()
                 sleep(2*60.)
-                print "done."
+                print("done.")
             if(not(checkTDL(self.FE)) or currentTooLow):
                 wait_injection(self.FE,self.stoppersList)
                 self.AFTER_INJECTION=True
@@ -1975,7 +1976,7 @@ class escan_class:
     def after_scan(self,handler=None,handlerFull=None,nowait=False,iscan=1,nscans=1,file_buffer=None,fname=None, fnameFull=None):
         """After scan will perform a series of operations and finally CLOSE the data file and 
         request its backup."""
-        print "WARNING: Ending scan operations, please, do not stop now."
+        print("WARNING: Ending scan operations, please, do not stop now.")
         try:
             ll=["#Machine Current = %g\n"%(self.ms.read_attribute("current").value),]
         except:
@@ -1985,9 +1986,9 @@ class escan_class:
             GetPositions(verbose=0)
             for i in wa(verbose=False,returns=True):
                 ll.append("#"+i+"\n")
-        except Exception, tmp:
-            print "Error when getting motors positions!"
-            print tmp
+        except Exception as tmp:
+            print("Error when getting motors positions!")
+            print(tmp)
         handlerFull.writelines(ll)
         if iscan < nscans - 1:
             if(not(nowait)):
@@ -1998,7 +1999,7 @@ class escan_class:
             #    self.scan_tuning(self.tuningdegree)
             #Below we retune only the last point
             if self.TUNING:
-                print "Retuning last point..."
+                print("Retuning last point...")
                 #print "Tuning at Energy=",self.tuning_points[0][-1]
                 #self.dcm.pos(self.tuning_points[0][-1], Ts2_Moves=self.Ts2_Moves)
                 self.tuning_points[0][-1]=self.dcm.pos()
@@ -2008,7 +2009,7 @@ class escan_class:
                     self.tuning_points[1][-1]=self.dcm.tune()
                 else:
                     self.tuning_points[1][-1]=self.dcm.detune(self.detune)
-                    print "Detuned of ",self.detune*100,"%"
+                    print("Detuned of ",self.detune*100,"%")
         #Close file before backup
         handler.close()
         handlerFull.close()
@@ -2016,9 +2017,9 @@ class escan_class:
         #thread.start_new_thread(self.backup_data,())
         self.backup_data()
         #
-        print "OK, end of scan operations over."
+        print("OK, end of scan operations over.")
         self.time_spent_for_scan=time()-self.time_spent_for_scan
-        print "Time spent for the scan: %6.0fs or %6.2fmin"%(self.time_spent_for_scan,self.time_spent_for_scan/60.)
+        print("Time spent for the scan: %6.0fs or %6.2fmin"%(self.time_spent_for_scan,self.time_spent_for_scan/60.))
         return
         
     def after_run(self, handler=None, handlerFull=None, nowait=False):
@@ -2027,10 +2028,10 @@ class escan_class:
         #    self.dcm.usetz2(self.previous_dcm_tz2_setting)
         #if(self.BENDER):
         #    self.dcm.usebender(self.__previous_dcm_bender_state)
-        print "Setting speed of monochromator at 60 eV/s for setup...",
+        print("Setting speed of monochromator at 60 eV/s for setup...", end=' ')
         sleep(1)
         self.dcm.velocity(60)
-        print "OK"
+        print("OK")
         self.EndOfRunAlert()        
         return
     
@@ -2053,8 +2054,8 @@ class escan_class:
                 sleep(0.35)
             a.destroy()
         except:
-            print "WARNING: Error alerting for end of scan... no Tkinter?\n"
-            print "BUT: Ignore this message if escan is working well,\n just report this to your local contact\n"
+            print("WARNING: Error alerting for end of scan... no Tkinter?\n")
+            print("BUT: Ignore this message if escan is working well,\n just report this to your local contact\n")
         return
 
 def escan(filename="",form="",n=1,nowait=False):
@@ -2073,17 +2074,17 @@ def escan(filename="",form="",n=1,nowait=False):
     if(n<1):
         return "No scans to do."
     if(form==""): 
-        print "Missing parameter filename!"
+        print("Missing parameter filename!")
         return 
     if(filename==""):
-        print "Missing data filename!"
+        print("Missing data filename!")
         return
     try:
         shell = get_ipython()
         if "setSTEP" in shell.user_ns.keys():
             shell.user_ns["setSTEP"]()
     except:
-        print "setSTEP does not work?"
+        print("setSTEP does not work?")
     es=escan_class(form)
     es.start(filename,n,nowait=nowait)
     del es

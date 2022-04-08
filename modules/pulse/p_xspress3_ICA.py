@@ -1,3 +1,4 @@
+from __future__ import print_function
 import PyTango
 from PyTango import DevState, DeviceProxy,DevFailed
 from time import sleep
@@ -57,11 +58,11 @@ class xspress3:
         self.identifier=identifier
         self.detector_details=detector_details
 
-        if FTPclient <> "":
+        if FTPclient != "":
             self.FTPclient = DeviceProxy(FTPclient)
         else:
             self.FTPclient = None
-        if FTPserver <> "":
+        if FTPserver != "":
             self.FTPserver = DeviceProxy(FTPserver)
         else:
             self.FTPserver = None
@@ -150,7 +151,7 @@ class xspress3:
         return repr
                     
     def __call__(self,x=None):
-        print self.__repr__()
+        print(self.__repr__())
         return self.state()                              
 
     def state(self):
@@ -165,7 +166,7 @@ class xspress3:
         
     def startFTP(self):
         if self.FTPclient:
-            if self.FTPserver and self.FTPserver.state() <> DevState.RUNNING:
+            if self.FTPserver and self.FTPserver.state() != DevState.RUNNING:
                 raise Exception("FTP server %s is not running. Starting client is useless. Please start it and retry.")%self.FTPserver.name
             return self.FTPclient.start()
         else:
@@ -203,7 +204,7 @@ class xspress3:
         if nexusFileGeneration:
             self.config["saving_mode"]="Auto_Frame"
             #Auto delete remaining files!!! this avoids aborting, but it is a potential risk.
-            if [i for i in os.listdir(self.spoolMountPoint) if i.endswith(self.DP.saving_suffix)] <> []:
+            if [i for i in os.listdir(self.spoolMountPoint) if i.endswith(self.DP.saving_suffix)] != []:
                 os.system("rm %s/*%s"%(self.spoolMountPoint,self.DP.saving_suffix))
         else:
             self.config["saving_mode"]="Manual"
@@ -212,7 +213,7 @@ class xspress3:
         #self.config["exposureTime"]=dt
         
         self.DP.write_attribute("saving_next_number",0)
-        for i in [k for k in cKeys if self.config[k]<>self.DP.read_attribute(k).value]:
+        for i in [k for k in cKeys if self.config[k]!=self.DP.read_attribute(k).value]:
             self.DP.write_attribute(i,self.config[i])
         self.DP.prepareAcq()
         #self.DP.prepare()
@@ -220,15 +221,15 @@ class xspress3:
         return self.start()
 
     def start(self,dt=1):
-        if self.state()<>DevState.RUNNING:
-            if self.FTPclient and self.FTPclient.state()<>DevState.RUNNING:
+        if self.state()!=DevState.RUNNING:
+            if self.FTPclient and self.FTPclient.state()!=DevState.RUNNING:
                 self.FTPclient.start()
             self.DP.command_inout("startAcq")
             #self.DP.command_inout("snap")
         else:
             raise Exception("Trying to start %s when already in RUNNING state"%self.label)
         t0 = time.time()
-        while(self.state() <> DevState.RUNNING and time.time()-t0 < self.timeout):
+        while(self.state() != DevState.RUNNING and time.time()-t0 < self.timeout):
             sleep(self.deadtime)
         return self.state()
         
@@ -349,12 +350,12 @@ class xspress3:
         """This implementation is very limited: only one roi for the whole card"""
         gottenROIS = map(int, self.DP.get_property(["SPECK_roi"])["SPECK_roi"])
         if gottenROIS == []:
-            print "Cannot get ROI from SPECK property. Defaulting to full range",
+            print("Cannot get ROI from SPECK property. Defaulting to full range", end=' ')
             Ch1 = 0
             Ch2 = self.DP.image_width-10 #This is a trick of xspress3: last points of the image line are used for scalers (10 of them)
             self.DP.put_property({"SPECK_roi":[int(Ch1), int(Ch2)]})
             gottenROIS = [int(Ch1), int(Ch2)]
-            print "OK"
+            print("OK")
         return gottenROIS
         
     def prepareHDF(self, handler, HDFfilters = tables.Filters(complevel = 1, complib='zlib'),upperIndex=()):
@@ -439,7 +440,7 @@ class xspress3:
                 and i.endswith(self.DP.saving_suffix)]
                 sleep(self.deadtime)
         files2read.sort()
-        print "xsp3 files to read:", files2read
+        print("xsp3 files to read:", files2read)
 #One after the other: open, transfert data, close and delete
         for Nfile in xrange(len(files2read)):
             sourceFile = tables.open_file(self.spoolMountPoint + os.sep + files2read[Nfile], "r")

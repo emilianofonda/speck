@@ -1,3 +1,4 @@
+from __future__ import print_function
 import xas
 import dentist
 import os
@@ -17,7 +18,7 @@ def averageThis(forename, name="", e0= 0,mode="t", exclude=[],checkColumn=-1):
     these are quite useful syntaxes.
     """
     ll = xas.makeFileList(prefix = forename,exclude=exclude)
-    print ll
+    print(ll)
     if name == "":
         name = forename+"_average.txt"
     if not name.endswith(".txt"):
@@ -27,7 +28,7 @@ def averageThis(forename, name="", e0= 0,mode="t", exclude=[],checkColumn=-1):
     try:
         os.system("cp %s ./ruche" % name)
     except:
-        print "Cannot backup average to ruche"
+        print("Cannot backup average to ruche")
     if e0 > 0 :
         dentist.dentist(name, e0=e0, mode=mode)
     return

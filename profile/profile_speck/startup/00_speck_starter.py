@@ -9,7 +9,7 @@ from IPython.terminal.prompts import Prompts,Token
 
 class MyPrompt(Prompts):
     def in_prompt_tokens(self,cli=None):
-        return[(Token, os.getcwd()+"\nSPECK3"),(Token.Prompt,' >')]
+        return[(Token, os.getcwd()+"\n"+"SPECK3"),(Token.Prompt,' >')]
 
 ip=get_ipython()
 ip.prompts=MyPrompt(ip)
@@ -49,7 +49,7 @@ from Universal_Prefilter import *
 import pymucal
 from GracePlotter import *
 try:
-    import Gnuplot
+    from pygnuplot import gnuplot as Gnuplot
 except Exception as tmp:
     print("Cannot import Gnuplot")
 from mycurses import *
@@ -110,7 +110,7 @@ __pySamba_scans=__pySamba_root+"/modules/scans/"
 
 imp_mdls = ["galil_multiaxis", "xbpm_class", "PSS"]
 
-from_mdls = {"ascan":"*","GetPositions":"*","e2theta":"*", "motor_class":"*", "mono1d":"*", "counter_class":"*", "valve_class":"valve", "pressure_gauge_class":"pressure_gauge", "thermocouple_class":"temperature_gauge", "mirror_class":"mirror", "absorbing_system_class":"*", "FrontEnd_class":"FrontEnd", "ic_gas":"xbpm_abs,  ic_abs", "NHQ_HVsupply_class":"NHQ_HVsupply", "rontec_MCA":"rontec_MCA", "mm4005":"mm4005_motor", "channel_cut":"channel_cut", "simple_DxMAP":"dxmap", "moveable":"moveable, sensor","beamline_alignement":"*","escan_class":"escan, escan_class", "spec_syntax":"*","setuser":"*"}
+from_mdls = {"GetPositions":"*","e2theta":"*", "motor_class":"*",  "valve_class":"valve", "pressure_gauge_class":"pressure_gauge", "thermocouple_class":"temperature_gauge", "mirror_class":"mirror", "absorbing_system_class":"*", "FrontEnd_class":"FrontEnd", "ic_gas":"xbpm_abs,  ic_abs", "NHQ_HVsupply_class":"NHQ_HVsupply",  "channel_cut":"channel_cut", "moveable":"moveable, sensor","beamline_alignement":"*", "p_spec_syntax":"*","setuser":"*"}
 
 
 for i in imp_mdls:

@@ -1,4 +1,5 @@
 from __future__ import division
+from __future__ import print_function
 #Need the cardAI to be defined in the global namespace
 from past.utils import old_div
 domacro("analyseSAI.py")
@@ -33,7 +34,7 @@ def fftI0(name="fftI0", freq = 10000, figN=10, spool="/nfs/srv5/spool1/sai"):
     ll.sort()
     lastfile = ll[-1]
 
-    print lastfile
+    print(lastfile)
     txtOut = findNextFileName(filename2ruche(name),"txt")
     nxsOut = findNextFileName(filename2ruche(name),"nxs")
     pngOut = findNextFileName(filename2ruche(name),"png")

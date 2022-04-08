@@ -1,3 +1,4 @@
+from __future__ import print_function
 import PyTango
 from PyTango import DevState, DeviceProxy,DevFailed
 from time import sleep
@@ -51,11 +52,11 @@ class bufferedCounter:
         self.DP=DeviceProxy(label)
         self.identifier = identifier
         self.GateDownTime=GateDownTime
-        if FTPclient <> "":
+        if FTPclient != "":
             self.FTPclient = DeviceProxy(FTPclient)
         else:
             self.FTPclient = None
-        if FTPserver <> "":
+        if FTPserver != "":
             self.FTPserver = DeviceProxy(FTPserver)
         else:
             self.FTPserver = None
@@ -91,7 +92,7 @@ class bufferedCounter:
         return repr
                     
     def __call__(self,x=None):
-        print self.__repr__()
+        print(self.__repr__())
         return self.state()                              
 
     def state(self):
@@ -102,7 +103,7 @@ class bufferedCounter:
         
     def startFTP(self):
         if self.FTPclient:
-            if self.FTPserver and self.FTPserver.state() <> DevState.RUNNING:
+            if self.FTPserver and self.FTPserver.state() != DevState.RUNNING:
                 raise Exception("FTP server %s is not running. Starting client is useless. Please start it and retry.")%self.FTPserver.name
             return self.FTPclient.start()
         else:
@@ -122,7 +123,7 @@ class bufferedCounter:
             self.DP.init()
         cKeys = self.config.keys()
 #Force card to buffered mode if necessary.
-        if self.DP.acquisitionMode <> "BUFFERED":
+        if self.DP.acquisitionMode != "BUFFERED":
             self.DP.write_attribute("acquisitionMode","BUFFERED")
         self.wait()
         #if nexusFileGeneration:
@@ -144,14 +145,14 @@ class bufferedCounter:
         reloadAtts = self.DP.get_attribute_list()
 #Some Attributes doesn't exist or exist depending on mode or external/internal time base
 #So we protect checking the actual Atts list
-        for kk in [i for i in cKeys if i<> "acquisitionMode" and i in reloadAtts and self.config[i]<>self.DP.read_attribute(i).value]:
+        for kk in [i for i in cKeys if i!= "acquisitionMode" and i in reloadAtts and self.config[i]!=self.DP.read_attribute(i).value]:
             self.DP.write_attribute(kk,self.config[kk])
 
         return self.start()
 
     def start(self,dt=1):
-        if self.state()<>DevState.RUNNING:
-            if self.FTPclient and self.FTPclient.state()<>DevState.RUNNING:
+        if self.state()!=DevState.RUNNING:
+            if self.FTPclient and self.FTPclient.state()!=DevState.RUNNING:
                 self.FTPclient.start()
             self.DP.command_inout("Start")
         else:

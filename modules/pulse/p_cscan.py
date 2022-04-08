@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 import thread
 import tables
 import os,sys
@@ -17,10 +18,10 @@ try:
     import Tkinter
     NoTk=False
 except:
-    print "Warning from escan: Tkinter not installed."
+    print("Warning from escan: Tkinter not installed.")
     NoTk=True
 
-print mycurses.PINK+"Using alpha version of cscan"+mycurses.RESET
+print(mycurses.PINK+"Using alpha version of cscan"+mycurses.RESET)
 
 
 def stop_cscan(shutter=False,cmot=None,cmot_previous_velocity=None):
@@ -31,7 +32,7 @@ def stop_cscan(shutter=False,cmot=None,cmot_previous_velocity=None):
             sh_fast.close()
     except:
         pass
-    print "Wait... Stopping Devices...",
+    print("Wait... Stopping Devices...", end=' ')
     sys.stdout.flush()
     ct.stop()
     try:
@@ -41,7 +42,7 @@ def stop_cscan(shutter=False,cmot=None,cmot_previous_velocity=None):
     cmot.stop()
     myTime.sleep(3)
     cmot.velocity = cmot_previous_velocity
-    print "Scan Stopped: OK"
+    print("Scan Stopped: OK")
     sys.stdout.flush()
     return
 
@@ -64,16 +65,16 @@ def cscan(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beamCheck
             #Previous speed to restore
     except KeyboardInterrupt:
         shell.logger.log_write("ecscan halted on user request: Ctrl-C\n", kind='output')
-        print "Halting on user request."
+        print("Halting on user request.")
         sys.stdout.flush()
         stop_cscan(shutter, cmot, cmot_previous_velocity)
-        print "ecscan halted. OK."
-        print "Raising KeyboardInterrupt as requested."
+        print("ecscan halted. OK.")
+        print("Raising KeyboardInterrupt as requested.")
         sys.stdout.flush()
         raise KeyboardInterrupt
     except Exception as tmp:
         shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp, kind='output')
-        print tmp
+        print(tmp)
         stop_cscan(shutter, cmot, cmot_previous_velocity)
         raise tmp
     return 
@@ -109,11 +110,11 @@ def cscanActor(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beam
     delta_time_acceleration = float(0.5 * velocity / cmot.acceleration + 0.5 * velocity / cmot.deceleration)
     
     TotalTime = float(abs(p2-p1)) / velocity + delta_time_acceleration
-    print "Expected time = %g s" % TotalTime
+    print("Expected time = %g s" % TotalTime)
     
     NumberOfPoints =  int(TotalTime / dt + 1)
-    print "Number of points: ",NumberOfPoints
-    print "One point every %8.6f motor units." % (velocity * dt)
+    print("Number of points: ",NumberOfPoints)
+    print("One point every %8.6f motor units." % (velocity * dt))
     
     if beamCheck and not(checkTDL(FE)):
         wait_injection(FE,[obxg,])
@@ -126,9 +127,9 @@ def cscanActor(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beam
     #Send motor to start position
     cmot.pos(p1)
     #Prepare recording (and acquire first point position... this prevents preparing AND moving)
-    print "Preparing acquisition ... ",
+    print("Preparing acquisition ... ", end=' ')
     ct.prepare(dt=dt,NbFrames = NumberOfPoints, nexusFileGeneration = True)
-    print "OK"
+    print("OK")
     handler = ct.openHDFfile(filename)
 #Warning: using the handler out of ct and directly has to be avoided, problems arise when scans are aborted and resumed. 
     #Create coordinates links and arrays in file
@@ -140,7 +141,7 @@ def cscanActor(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beam
     timeAtStart = asctime()
     #Start acquisition?
        #Print Name:
-    print "Measuring : %s\n"%ct.handler.filename
+    print("Measuring : %s\n"%ct.handler.filename)
     try:
         pass
         if shutter:
@@ -237,12 +238,12 @@ def cscanActor(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beam
         pylab.legend(frameon=False)    
         pylab.draw()
     except Exception as tmp:
-        print "No Plot! Bad Luck!"
-        print tmp
+        print("No Plot! Bad Luck!")
+        print(tmp)
     finally:
         f.close()
     shell.logger.log_write("Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime), kind='output')
-    print "Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime) 
+    print("Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime)) 
     AlarmBeep()
     cmot.velocity = cmot_previous_velocity
     return
@@ -261,16 +262,16 @@ def dcscan(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beamChec
     
     except KeyboardInterrupt:
         shell.logger.log_write("ecscan halted on user request: Ctrl-C\n", kind='output')
-        print "Halting on user request."
+        print("Halting on user request.")
         sys.stdout.flush()
         stop_cscan(shutter, cmot, cmot_previous_velocity)
-        print "ecscan halted. OK."
-        print "Raising KeyboardInterrupt as requested."
+        print("ecscan halted. OK.")
+        print("Raising KeyboardInterrupt as requested.")
         sys.stdout.flush()
         raise KeyboardInterrupt
     except Exception as tmp:
         shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp, kind='output')
-        print tmp
+        print(tmp)
         stop_cscan(shutter, cmot, cmot_previous_velocity)
     finally:
         cmot.pos(cmot_previous_position)
@@ -310,10 +311,10 @@ def c2scan(cmot,p1,p2,velocity,mot2,p21,p22,dp2,n=1,dt=0.1, channel=1,shutter=Fa
         dp2 = -abs(dp2)
     else:
         dp2 = abs(dp2)
-    print "Expected time = %g s" % (TotalTime * NumberOfLines)
-    print "Number of points: ",NumberOfPoints
-    print "Number of lines : ",NumberOfLines
-    print "One point every %8.6f motor units." % (velocity * dt)
+    print("Expected time = %g s" % (TotalTime * NumberOfLines))
+    print("Number of points: ",NumberOfPoints)
+    print("Number of lines : ",NumberOfLines)
+    print("One point every %8.6f motor units." % (velocity * dt))
     
     if beamCheck and not(checkTDL(FE)):
         wait_injection(FE,[obxg,])
@@ -326,14 +327,14 @@ def c2scan(cmot,p1,p2,velocity,mot2,p21,p22,dp2,n=1,dt=0.1, channel=1,shutter=Fa
     #Send motor to start position
     move_motor(cmot, p1, mot2, p21)
     #Prepare recording (and acquire first point position... this prevents preparing AND moving)
-    print "Preparing acquisition ... ",
+    print("Preparing acquisition ... ", end=' ')
     ct.prepare(dt=dt, NbFrames = NumberOfPoints, nexusFileGeneration = True, upperDimensions=(NumberOfLines,))
-    print "OK"
+    print("OK")
     handler = ct.openHDFfile(filename)
 #Create coordinates soft links and arrays in file
     handler.create_soft_link('/coordinates', 'X1', target='/data/'+cmot.DP.associated_counter.replace(".","/"))
 #Create a soft link for a continuously encoded motor or an actaul matrix for a standard motor
-    if "associated_counter" in dir(mot2.DP) and mot2.DP.associated_counter<>"":
+    if "associated_counter" in dir(mot2.DP) and mot2.DP.associated_counter!="":
         handler.create_soft_link('/coordinates', 'X2', target='/data/'+mot2.DP.associated_counter.replace(".","/"))
     else:
         mot2_fake = np.array([arange(NumberOfLines,dtype="float32")*dp2 + p21]*NumberOfPoints,dtype="float32")
@@ -347,13 +348,13 @@ def c2scan(cmot,p1,p2,velocity,mot2,p21,p22,dp2,n=1,dt=0.1, channel=1,shutter=Fa
     cmot.velocity = velocity
     myTime.sleep(0.1)
     timeAtStart = asctime()
-    print "Measuring : %s\n"%handler.filename
+    print("Measuring : %s\n"%handler.filename)
     for lineNumber in range(NumberOfLines): 
         mot2.pos(p21 + dp2 * lineNumber)
-        print "                                                                       "
-        print mycurses.UPNLINES%2
-        print "Progress = %2i\%  mot2 at %6.4f" % (float(lineNumber)/NumberOfLines*100.,mot2.pos())
-        print mycurses.UPNLINES%2
+        print("                                                                       ")
+        print(mycurses.UPNLINES%2)
+        print("Progress = %2i\%  mot2 at %6.4f" % (float(lineNumber)/NumberOfLines*100.,mot2.pos()))
+        print(mycurses.UPNLINES%2)
         if mod(lineNumber,2):
             zigzag = -1
         else:
@@ -405,7 +406,7 @@ def c2scan(cmot,p1,p2,velocity,mot2,p21,p22,dp2,n=1,dt=0.1, channel=1,shutter=Fa
     timeAtStop = asctime()
     timeout0 = time()
     shell.logger.log_write("Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime), kind='output')
-    print "Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime) 
+    print("Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime)) 
     AlarmBeep()
     cmot.velocity = cmot_previous_velocity
     return
@@ -432,8 +433,8 @@ def AlarmBeep():
             a.destroy()
         except:
             pass
-        print "WARNING: Error alerting for end of scan... no Tkinter?\n"
-        print "BUT: Ignore this message if escan is working well,\n just report this to your local contact\n"
+        print("WARNING: Error alerting for end of scan... no Tkinter?\n")
+        print("BUT: Ignore this message if escan is working well,\n just report this to your local contact\n")
     return
 
 

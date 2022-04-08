@@ -1,3 +1,4 @@
+from __future__ import print_function
 #Defines the DCM as controlled by Delta TAU Power Brick 
 #Monochromator1
 
@@ -8,9 +9,9 @@ try:
     rx2fine=piezo("d09-1-c03/op/mono1-mt_rx_fine.2")
     __allpiezos+=[rx2fine]
     #rx2fine = mostab
-except Exception, tmp:
+except Exception as tmp:
     #print tmp
-    print "I could not define ",__m ,"of the monochromator!"
+    print("I could not define ",__m ,"of the monochromator!")
 #End of legacy
                         
 __tmp={
@@ -35,10 +36,10 @@ for i in __tmp:
         __cmdstring=__fmtstring%tuple([i,]+__tmp[i])
         exec(__cmdstring)
         __allmotors.append(__IP.user_ns[i])
-    except Exception, tmp:
-        print RED+"Failed"+RESET+" defining: %s/%s as %s"%tuple(__tmp[i][0:2]+[i,])
-        print RED+"-->"+RESET,tmp
-        print UNDERLINE+__cmdstring+RESET
+    except Exception as tmp:
+        print(RED+"Failed"+RESET+" defining: %s/%s as %s"%tuple(__tmp[i][0:2]+[i,]))
+        print(RED+"-->"+RESET,tmp)
+        print(UNDERLINE+__cmdstring+RESET)
 
 
 try:
@@ -55,10 +56,10 @@ try:
 
     __allmotors+=[bender.c1,bender.c2]
 except:
-    print "Cannot define Power Brick Bender"
+    print("Cannot define Power Brick Bender")
 
 try:
-    print "Defining dcm...",
+    print("Defining dcm...", end=' ')
     from mono1PBR import mono1
     dcm = mono1(monoName="d09-1-c03/op/ENERGY", DataViewer="d09-1-c03/op/DATAVIEWER",\
     rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, bender=bender,\
@@ -71,10 +72,10 @@ try:
     energy=dcm
     seten=dcm.seten
     tune=dcm.tune
-    print "OK!"
-except Exception, tmp:
-    print tmp
-    print "Cannot define dcm (monochromator not set)."
+    print("OK!")
+except Exception as tmp:
+    print(tmp)
+    print("Cannot define dcm (monochromator not set).")
 
 
 

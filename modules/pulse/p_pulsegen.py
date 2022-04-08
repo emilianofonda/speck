@@ -1,3 +1,4 @@
+from __future__ import print_function
 import PyTango
 from PyTango import DevState, DeviceProxy,DevFailed
 from time import sleep
@@ -63,7 +64,7 @@ class pulseGen:
         return repr
                     
     def __call__(self,x=None):
-        print self.__repr__()
+        print(self.__repr__())
         return self.state()                              
 
     def state(self):
@@ -85,7 +86,7 @@ class pulseGen:
         #Protect illegal writes, in fact it can happen that enables are not set and we would like to set a value for that counter
         for i in cKeys:
             try:
-                if i in cKeys and self.config[i]<>self.DP.read_attribute(i).value:
+                if i in cKeys and self.config[i]!=self.DP.read_attribute(i).value:
                     self.DP.write_attribute(i,self.config[i])
             except:
                 raise
@@ -105,7 +106,7 @@ class pulseGen:
 
 
     def start(self,dt=1):
-        if self.state()<>DevState.RUNNING:
+        if self.state()!=DevState.RUNNING:
             self.DP.command_inout("Start")
         else:
             raise Exception("Trying to start %s when already in RUNNING state"%self.label)
@@ -118,7 +119,7 @@ class pulseGen:
 
     def wait(self):
         t0=time.time()
-        while self.state() <> DevState.RUNNING and time.time()-t0<self.timeout:
+        while self.state() != DevState.RUNNING and time.time()-t0<self.timeout:
             sleep(self.deadtime)
         while self.state() == DevState.RUNNING:
             sleep(self.deadtime)

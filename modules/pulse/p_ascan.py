@@ -1,3 +1,4 @@
+from __future__ import print_function
 from time import strftime,gmtime,sleep,localtime,asctime
 from time import time as cputime
 from numpy import round, array, sum, mean, loadtxt, savetxt
@@ -9,9 +10,9 @@ from PyTango import DeviceProxy
 from GetPositions import GetPositions
 from GracePlotter import *
 try:
-    import Gnuplot
-except Exception, tmp:
-    print "Cannot import Gnuplot"
+    from pygnuplot import gnuplot as Gnuplot
+except Exception as tmp:
+    print("Cannot import Gnuplot")
 
 #THIS MODULE HAS TO BE COMPLETELY REWRITTEN:
 #   Data must be saved in temporary folder in hdf and THEN moved to ruche avoiding home folder
@@ -44,7 +45,7 @@ class __scanstats:
         l=dir(self)
         for i in l:
             if not(i.startswith("_")):
-                print i+"=",eval("self."+i)
+                print(i+"=",eval("self."+i))
         return
 
 ScanStats=__scanstats()
@@ -58,14 +59,14 @@ def ascan_statistics(x,y,glob):
     x, y = array(x), array(y)
     #Calculate baricenter
     sumay = sum(abs(y))
-    if sumay <> 0:
+    if sumay != 0:
         stats.baricenter=sum(x * abs(y)) / sumay
     else:
         stats.baricenter = 0.5 * (min(x) + max(x))
     #Calculate_baseline substracted baricenter
     miny=min(y)
     sumay = sum(abs(y - miny))
-    if sumay <> 0:
+    if sumay != 0:
         stats.baricenter_scaled=sum(x * abs(y - miny)) / sumay
     else:
         stats.baricenter_scaled = 0.5 * (min(x) + max(x))
@@ -90,7 +91,7 @@ def __backup_data():
         __Default_Data_Folder = __IPy.user_ns["__SPECK_CONFIG"]["TEMPORARY_HOME"]
         __Default_Backup_Folder = __IPy.user_ns["__SPECK_CONFIG"]["DATA_FOLDER"]
         if __Default_Backup_Folder == "":
-            print "No backup/ruche folder defined."
+            print("No backup/ruche folder defined.")
             return
 #The following line is risky. Now setuser is the only way to change temporary home and saving points
         #currentDataFolder=os.path.realpath(os.getcwd())
@@ -98,7 +99,7 @@ def __backup_data():
         currentDataFolder=__IPy.user_ns["__SPECK_CONFIG"]["USER_FOLDER"]
 #
         currentDataFolder=os.path.realpath(os.getcwd())
-        print "Data Folder is :",currentDataFolder
+        print("Data Folder is :",currentDataFolder)
         if currentDataFolder.startswith(__Default_Data_Folder) and\
         len(currentDataFolder.split(os.sep))>len(__Default_Data_Folder.split(os.sep)):
             currentBackupFolder=__Default_Backup_Folder+"/"+\
@@ -106,17 +107,17 @@ def __backup_data():
             cbf=currentBackupFolder
             currentBackupFolder=cbf[:cbf.rstrip("/").rfind("/")]
         else:
-            print "No backup!"
+            print("No backup!")
             return
-        print "Backup Folder is :",currentBackupFolder
-    except (KeyboardInterrupt,SystemExit), tmp:
-        print "Backup halted on user request"
+        print("Backup Folder is :",currentBackupFolder)
+    except (KeyboardInterrupt,SystemExit) as tmp:
+        print("Backup halted on user request")
         raise tmp
     except:
-        print "--------------------------------------------------------------------"
-        print "WARNING:"
-        print "Error defining backup folders... please, backup data files manually."
-        print "--------------------------------------------------------------------"
+        print("--------------------------------------------------------------------")
+        print("WARNING:")
+        print("Error defining backup folders... please, backup data files manually.")
+        print("--------------------------------------------------------------------")
         return
         #NOTA:  This version make an integral backup of folder content
         # another strategy could be just to copy current data file.
@@ -125,11 +126,11 @@ def __backup_data():
     try:
         command="rsync --ignore-existing -auv --temp-dir=/tmp '"+currentDataFolder+"' '"+currentBackupFolder+"'"
         os.system(command)
-    except (KeyboardInterrupt,SystemExit), tmp:
-        print "Backup halted on user request"
+    except (KeyboardInterrupt,SystemExit) as tmp:
+        print("Backup halted on user request")
         raise tmp
     except:
-        print "Experimental feature error: Cannot make backup to ruche... do it manually!"
+        print("Experimental feature error: Cannot make backup to ruche... do it manually!")
     return
 
 def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,name=None,delay=0.,delay0=0.,\
@@ -173,35 +174,35 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
             dirname = current_name[:current_name.rfind(".")]+".d"
             mca_files = {}
         if fullmca:
-            os.mkdir(dirname,0777)
+            os.mkdir(dirname,0o777)
             for mca_channel in cpt.read_mca().keys():
                 mca_files[mca_channel] = open(dirname + os.sep + current_name[:current_name.rfind(".")]+"_"+mca_channel+".txt","a")
-                print dirname + os.sep+name + "." + mca_channel
+                print(dirname + os.sep+name + "." + mca_channel)
         ###################### FULL MCA FILES! #####################################
         f=open(current_name, "w")
-        print "Saving in file: ",current_name
+        print("Saving in file: ",current_name)
         shell.logger.log_write("Saving data in: %s\n" % current_name, kind='output') 
         try:
             if "label" in dir(mot):    f.write("#ascan over motor: "+mot.label+"\n")
-        except (KeyboardInterrupt,SystemExit), tmp:
-            print "Scan finished on user request"
+        except (KeyboardInterrupt,SystemExit) as tmp:
+            print("Scan finished on user request")
             raise tmp
         except:
             pass
         try:
-            if mot <> cputime:
+            if mot != cputime:
                 motname = whois(mot)
-                print "motor name is : ", motname
+                print("motor name is : ", motname)
                 f.write("#mot=%s p1=%g p2=%g dp=%g dt=%g\n"%(motname, p1, p2, dp, dt))
                 if graph >=0:
                     w("set xlabel '" + motname + "'")
             else:
                 time_scan = True
                 motname = "time"
-                print "motor name is : time"
+                print("motor name is : time")
                 f.write("#mot=%s p1=%g p2=%g dp=%g dt=%g\n" % (motname, p1, p2, dp, dt))
-        except (KeyboardInterrupt,SystemExit), tmp:
-            print "Scan finished on user request"
+        except (KeyboardInterrupt,SystemExit) as tmp:
+            print("Scan finished on user request")
             f.close()
             __backup_data()
             raise tmp
@@ -264,13 +265,13 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
                     f.flush()
             if graph >= 0:
                 w.plot(Gnuplot.Data(x,y))
-        except (KeyboardInterrupt,SystemExit), tmp:
-            print "Scan finished on user request"
+        except (KeyboardInterrupt,SystemExit) as tmp:
+            print("Scan finished on user request")
             cpt.stop()
             f.close()
             __backup_data()
             raise tmp
-        except Exception, tmp:
+        except Exception as tmp:
             f.close()
             raise tmp
         f.close()
@@ -282,8 +283,8 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
 
         try:
             __backup_data()
-        except (KeyboardInterrupt,SystemExit), tmp:
-            print "Scan finished on user request"
+        except (KeyboardInterrupt,SystemExit) as tmp:
+            print("Scan finished on user request")
             raise tmp
         except:
             pass
@@ -292,23 +293,23 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
         try:
             if graph >= 0 :
                 xplot(x[:ml],y[:ml],graph=graph)
-        except (KeyboardInterrupt,SystemExit), tmp:
-            print "Scan finished on user request"
+        except (KeyboardInterrupt,SystemExit) as tmp:
+            print("Scan finished on user request")
             raise tmp
-        except Exception, tmp:
-            print "xplot error!"
-            print tmp
+        except Exception as tmp:
+            print("xplot error!")
+            print(tmp)
             pass
-        print "Elapsed Time: %8.6fs" % (cputime() - __time_at_start)
+        print("Elapsed Time: %8.6fs" % (cputime() - __time_at_start))
     #
     #Call statistisc calculation
     if "ScanStats" in glob: 
         ascan_statistics(x[:ml], y[:ml], glob)
-        print BOLD + "\nScanStats:\n---------------------------" + RESET
-        print glob["ScanStats"]()
-        print ""
+        print(BOLD + "\nScanStats:\n---------------------------" + RESET)
+        print(glob["ScanStats"]())
+        print("")
     #
-    print "Total Elapsed Time: %8.6fs" % (cputime() - __time_at_start)
+    print("Total Elapsed Time: %8.6fs" % (cputime() - __time_at_start))
     #
     if returndata == True:
         if fulldata:
@@ -323,12 +324,12 @@ def dscan(mot,p1,p2,dp=0.1,dt=0.1,channel=1,returndata=False,fulldata=False,name
     if name == None:
         name = "dscan_out"
     previous_pos=mot.pos()
-    print "motor %s was at %g"%(whois(mot),mot.pos())
+    print("motor %s was at %g"%(whois(mot),mot.pos()))
     abs_p1=previous_pos+p1
     abs_p2=previous_pos+p2
     results=ascan(mot,abs_p1,abs_p2,dp,dt,channel,returndata,fulldata,name,delay=delay,delay0=delay0,scaler=scaler,fullmca=fullmca,graph=graph)
     mot.pos(previous_pos)
-    if results <> None:
+    if results != None:
         return results
     else:
         return
@@ -351,21 +352,21 @@ def mapscan(mot1,p11,p12,dp1,mot2,p21,p22,dp2,dt=0.1,channel=1,returndata=False,
     ext="d"
     Dname=findNextFileName(name,ext,file_index=1)
     os.mkdir(Dname)
-    print "Saving in folder: ",name
+    print("Saving in folder: ",name)
     motname1=whois(mot1)
     try:
         for i in arange(p11,p12+dp1,dp1):
             mot1.pos(i)
             sleep(delay)
             #x.append(mot1.pos())
-            print Dname+"/"+name
+            print(Dname+"/"+name)
             #y0,z0=ascan(mot2,p21,p22,dp2,dt,channel,True,False,Dname+"/"+name,delay,glob,scaler,comment=motname1+"=%9.6f"%(mot1.pos()))
             y0,z0=ascan(mot2,p21,p22,dp2,dt,channel,True,False,Dname+"/"+name,delay,delay0,scaler,comment=motname1+"=%9.6f"%(mot1.pos()))
             #y.append(y0)
             z.append(z0)
-    except (KeyboardInterrupt,SystemExit), tmp:
-        print "MapScan finished on user request"
-    except Exception, tmp:
+    except (KeyboardInterrupt,SystemExit) as tmp:
+        print("MapScan finished on user request")
+    except Exception as tmp:
         raise tmp
     try:
         __backup_data()
@@ -374,9 +375,9 @@ def mapscan(mot1,p11,p12,dp1,mot2,p21,p22,dp2,dt=0.1,channel=1,returndata=False,
     z=array(z)
     try:
         matshow(z)
-    except Exception, tmp:
-        print "matshow error"
-        print tmp
+    except Exception as tmp:
+        print("matshow error")
+        print(tmp)
     return
 
 def pre_scan(handler=None):
@@ -387,15 +388,15 @@ def pre_scan(handler=None):
         GetPositions(verbose=0)
         for i in wa(verbose=False,returns=True):
             buffer.append("#"+i+"\n")
-    except Exception, tmp:
-        print tmp
-        print "ascan: pre_scan: Error when getting motors positions!"
+    except Exception as tmp:
+        print(tmp)
+        print("ascan: pre_scan: Error when getting motors positions!")
         pass
     try:
         buffer.append("#Machine Current = %g\n" % ( DeviceProxy("ans/ca/machinestatus").read_attribute("current").value) )
-    except Exception, tmp:
+    except Exception as tmp:
         buffer.append("#Machine Current = nan\n")
-        print tmp
+        print(tmp)
     buffer.append("#"+asctime()+"\n")
     handler.writelines(buffer)
     return 
@@ -451,7 +452,7 @@ def stepscan_open(name=None,dt=1,scaler="ct",comment="",fullmca=True):
         dirname=name+".d"
         mca_files={}
         if fullmca:
-            os.mkdir(dirname,0777)
+            os.mkdir(dirname,0o777)
             for mca_channel in cpt.read_mca().keys():
                 mca_files[mca_channel]=open(dirname+os.sep+name[:name.rfind(".")]+"_"+mca_channel+".txt","a")
                 #print dirname+os.sep+name+"."+mca_channel
@@ -459,7 +460,7 @@ def stepscan_open(name=None,dt=1,scaler="ct",comment="",fullmca=True):
     ###################### FULL MCA FILES! #####################################
     f=open(name,"w")
     __stepscan.datafile=f
-    print "Saving in file: ",name
+    print("Saving in file: ",name)
     try:
         f.write("#stepscan\n")
         f.write("#dt=%g\n"%(dt))
@@ -526,20 +527,20 @@ def scanfile_info(name):
     head=ll[ll.index("#HEADER\n")+1][1:-1].split("\t")
     header=[]
     for i in head:
-        if i<>"": header.append(i)
-    print GREEN+"File contains %i columns"%len(header)
-    print RED+"Column\t"+BLUE+"Label"+RESET
+        if i!="": header.append(i)
+    print(GREEN+"File contains %i columns"%len(header))
+    print(RED+"Column\t"+BLUE+"Label"+RESET)
     i2=0
     for i in range(len(header)):
         i2+=1
         formats=RED+" %03i :"+BLUE+" %-20s   "+RESET
-        print formats%(i+1,header[i]),
-        if i2>0 and mod(i2,3)==0: print ""
+        print(formats%(i+1,header[i]), end=' ')
+        if i2>0 and mod(i2,3)==0: print("")
     return 
 
 def scanfile_xplot(name,col1=None,col2=None):
     if col1==None:
-        print RED+"\n----------->Please select columns for x and y!\n"+RESET
+        print(RED+"\n----------->Please select columns for x and y!\n"+RESET)
         scanfile_info(name)
         return
     m=loadtxt(name).transpose()

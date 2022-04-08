@@ -53,12 +53,12 @@ class VideoIntensityMonitor:
         self.devName = device_name
         self.DP = DeviceProxy(device_name)
         #self.DP.ping()
-	self.attribute_name = attribute_name
+        self.attribute_name = attribute_name
         self.ROIOrig, self.ROISize = ROIdef
         
         # Uses a dummy integration time of 0.05 ms (theoritical for 20 frams per/sec)
-	self.it = Dummy()
-	self.it.value = 0.2
+        self.it = Dummy()
+        self.it.value = 0.2
         self.counter = False
         
         # Set the ROI

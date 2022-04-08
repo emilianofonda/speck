@@ -1,3 +1,4 @@
+from __future__ import print_function
 #Spec like commands created on 3/12/2007
 
 #Imports section
@@ -7,7 +8,7 @@ from numpy import log, sin, cos, tan, exp, sum,array
 import numpy
 from time import time, asctime, sleep
 import os, shutil
-import thread
+#import thread
 import tables
 import copy
 
@@ -70,7 +71,7 @@ def wa(returns = False, verbose = True):
     lm.sort()
     outout=[]
     if verbose:
-        print "Motors:"
+        print("Motors:")
     color=RED
     for i in lm:
         if color==RED:
@@ -81,7 +82,7 @@ def wa(returns = False, verbose = True):
             outoutline="%18s is %32s at %g"%(i[0],i[1].label,i[1].pos())
         except:
             outoutline="%18s is %32s at %s"%(i[0],i[1].label,"nan")
-        if verbose: print color+outoutline+RESET
+        if verbose: print(color+outoutline+RESET)
         if returns: outout.append(outoutline)
     if returns:
         return outout 
@@ -92,7 +93,7 @@ def wm(x):
     if type(x) in [tuple, list]:
         out = map(lambda i: (whois(i), i.pos()), x)
         for i in out:
-            print "%s at %g" % (i[0],i[1])
+            print("%s at %g" % (i[0],i[1]))
     else:
         return x.pos()
 
@@ -107,27 +108,27 @@ def move_motor(*motor,**kw):
     verbose=True
     if "verbose" in kw.keys():
         verbose = kw["verbose"]
-    if mod(len(motor),2)<>0 : raise SyntaxError("odd number of parameters!")
+    if mod(len(motor),2)!=0 : raise SyntaxError("odd number of parameters!")
     motors=[]
     if verbose:
         textout = map(lambda i: "%s was %g"%(whois(i),i.pos()), motor[::2])
         for i in textout:
-            print i
+            print(i)
     try:
         for i in range(0,len(motor),2):
             motor[i].go(motor[i+1])
             motors.append(motor[i])
         return wait_motor(motors, verbose=verbose)
-    except (KeyboardInterrupt,SystemExit), tmp:
+    except (KeyboardInterrupt,SystemExit) as tmp:
         for i in motors:
             i.stop()
         raise tmp
-    except PyTango.DevFailed, tmp:
+    except PyTango.DevFailed as tmp:
         for i in motors:
             i.stop()
         raise tmp
-    except Exception, tmp:
-        print "Unhandled error... raising exception"
+    except Exception as tmp:
+        print("Unhandled error... raising exception")
         raise tmp
 
 def wait_motor(motor, deadtime=0.025, timeout=-0.05, delay=None, verbose=True):
@@ -165,31 +166,31 @@ def wait_motor(motor, deadtime=0.025, timeout=-0.05, delay=None, verbose=True):
         condition=True
         if verbose:
             for i in map(lambda x: (x.label,x.pos()), motor_list):
-                print " " * 40 + "\r",
-                print "%s    %+8.6e" % (i[0], i[1])
+                print(" " * 40 + "\r", end=' ')
+                print("%s    %+8.6e" % (i[0], i[1]))
         while(condition):
             sleep(deadtime)
             condition = (DevState.MOVING in map(lambda x: x.state(), motor_list))
             if verbose:
-                print "\033[%iA" % (len(motor_list)),
+                print("\033[%iA" % (len(motor_list)), end=' ')
                 for i in map(lambda x: (label_list[x], x.pos()), motor_list):
-                    print " " * 40 + "\r",
-                    print "%s    %+8.6e"%(i[0], i[1])
+                    print(" " * 40 + "\r", end=' ')
+                    print("%s    %+8.6e"%(i[0], i[1]))
 
-        if verbose: print ""
+        if verbose: print("")
         sleep(delay)
         if len(motor_list) == 1:
             return motor_list[0].pos()
         else:
             return [x.pos() for x in  motor_list]
-    except (KeyboardInterrupt,SystemExit), tmp:
+    except (KeyboardInterrupt,SystemExit) as tmp:
         for i in motor_list:
             i.stop()
         raise tmp
-    except PyTango.DevFailed, tmp:
+    except PyTango.DevFailed as tmp:
         raise tmp
-    except Exception, tmp:
-        print "Unhandled error, raising exception..."
+    except Exception as tmp:
+        print("Unhandled error, raising exception...")
         raise tmp
 
 def go_motor(*motor):
@@ -198,22 +199,22 @@ def go_motor(*motor):
     Only an even number of parameters is acceptable.
     """
     motors=[]
-    if mod(len(motor),2)<>0 : raise SyntaxError("odd number of parameters!")
+    if mod(len(motor),2)!=0 : raise SyntaxError("odd number of parameters!")
     try:
         for i in range(0,len(motor),2):
             motor[i].go(motor[i+1])
             motors.append(motor[i])
         return
-    except (KeyboardInterrupt,SystemExit), tmp:
+    except (KeyboardInterrupt,SystemExit) as tmp:
         for i in motors:
             i.stop()
         raise tmp
-    except PyTango.DevFailed, tmp:
+    except PyTango.DevFailed as tmp:
         for i in motors:
             i.stop()
         raise tmp
-    except Exception, tmp:
-        print "Unhandled error... raising exception"
+    except Exception as tmp:
+        print("Unhandled error... raising exception")
         raise tmp
 
 
@@ -235,22 +236,22 @@ def mv(*args):
 def lm(x):
     try:
         return x.lm()
-    except Exception, tmp:
-        print tmp
+    except Exception as tmp:
+        print(tmp)
         return None
 
 def lmunset(x):
     try:
         return x.lmset(None, None)
-    except Exception, tmp:
-        print tmp
+    except Exception as tmp:
+        print(tmp)
         return None
 
 def lmset(x,min_pos = None, max_pos = None):
     try:
         return x.lmset(min_pos, max_pos)
-    except Exception, tmp:
-        print tmp
+    except Exception as tmp:
+        print(tmp)
         return x.lm()
 
 def mvr(*args):
@@ -273,9 +274,9 @@ def Iref(x):
         elif "InitReferencePosition" in x.device_command_list:
             x.InitReferencePosition()
         else:
-             print Exception("Cannot Execute Initialize Reference Position on motor")
+             print(Exception("Cannot Execute Initialize Reference Position on motor"))
     except:
-        print "Cannot Execute Initialize Reference Position on motor"
+        print("Cannot Execute Initialize Reference Position on motor")
     sleep(0.2)
     wait_motor(x)
     sleep(0.2)
@@ -289,31 +290,31 @@ def Dpos(*args):
         try:
             args[i].DefinePosition(args[i+1])
             wait_motor(args[i])
-        except Exception, tmp:
-            print tmp
-            print "Cannot Execute Initialize Reference Position on motor"
+        except Exception as tmp:
+            print(tmp)
+            print("Cannot Execute Initialize Reference Position on motor")
     for i in args[::2]:
         try:
-            print i.label, " set at ", i.pos()
+            print(i.label, " set at ", i.pos())
         except:
             pass
     return map(lambda i: i.pos(), args[0::2])
    
 def tw(x,step):
     try:
-        print "[Ctrl-C to exit] [Press Return to Step] [Type value to change step]\nPosition is (%g) Step is (%g) "%(x.pos(),step)
+        print("[Ctrl-C to exit] [Press Return to Step] [Type value to change step]\nPosition is (%g) Step is (%g) "%(x.pos(),step))
         while(True):
             s=raw_input()
             if s=="":
                 x.pos(x.pos()+step),"\r",
-                print x.pos()
+                print(x.pos())
             else:
                 try:
                     step=float(s)
-                    print "Position is (%g) Step is (%g)"%(x.pos(),step)
+                    print("Position is (%g) Step is (%g)"%(x.pos(),step))
                 except:
-                    print "What do you mean by? ...",s
-                    print "[Ctrl-C to exit] [Press Return to Step] [Type value to change step]"
+                    print("What do you mean by? ...",s)
+                    print("[Ctrl-C to exit] [Press Return to Step] [Type value to change step]")
     except KeyboardInterrupt:
         return x.pos()
 
@@ -332,14 +333,14 @@ def stop(*args):
                 i.DP.stop()
             else:
                 if label in dir(i):
-                    print i.label," has no method stop defined."
+                    print(i.label," has no method stop defined.")
         wait_motor(*args)
-    except Exception, tmp:
+    except Exception as tmp:
         for i in args:
             try:
                 i.stop()
-            except Exception, tmp2:
-                print tmp2
+            except Exception as tmp2:
+                print(tmp2)
                 pass
         raise tmp
 
@@ -350,12 +351,12 @@ def fw(*args):
         for i in args:
             i.forward()
         wait_motor(args)
-    except Exception, tmp:
+    except Exception as tmp:
         for i in args:
             try:
                 i.stop()
-            except Exception, tmp2:
-                print tmp2
+            except Exception as tmp2:
+                print(tmp2)
                 pass
         raise tmp
 
@@ -366,12 +367,12 @@ def bw(*args):
         for i in args:
             i.backward()
         wait_motor(args)
-    except Exception, tmp:
+    except Exception as tmp:
         for i in args:
             try:
                 i.stop()
-            except Exception, tmp2:
-                print tmp2
+            except Exception as tmp2:
+                print(tmp2)
                 pass
         raise tmp
             
@@ -388,11 +389,11 @@ def init(*x):
             try:
                 i.init()
                 States[i]=i.state()
-            except Exception, tmp:
+            except Exception as tmp:
                 try:
-                    print "Init on ",i.label,"failed"
+                    print("Init on ",i.label,"failed")
                 except:
-                    print "Failure!"
+                    print("Failure!")
                 raise tmp
         return States
     else:
@@ -408,11 +409,11 @@ def start(*x):
             try:
                 i.start()
                 States[i]=i.state()
-            except Exception, tmp:
+            except Exception as tmp:
                 try:
-                    print "Start on ",i.label,"failed"
+                    print("Start on ",i.label,"failed")
                 except:
-                    print "Failure!"
+                    print("Failure!")
                 raise tmp
         return States
     else:
@@ -428,11 +429,11 @@ def stop(*x):
             try:
                 i.stop()
                 States[i]=i.state()
-            except Exception, tmp:
+            except Exception as tmp:
                 try:
-                    print "Stop on ",i.label,"failed"
+                    print("Stop on ",i.label,"failed")
                 except:
-                    print "Failure!"
+                    print("Failure!")
                 raise tmp
         return States
     else:
@@ -447,21 +448,21 @@ def off(*x):
         for i in x:
             try:
                 i.off()
-            except Exception, tmp:
+            except Exception as tmp:
                 try:
-                    print "OFF on ",i.label,"failed"
+                    print("OFF on ",i.label,"failed")
                 except:
-                    print "Failure!"
+                    print("Failure!")
                 raise tmp
         sleep(0.2)
         for i in x:
             try:
                 States[i]=i.state()
-            except Exception, tmp:
+            except Exception as tmp:
                 try:
-                    print "State on ",i.label,"failed"
+                    print("State on ",i.label,"failed")
                 except:
-                    print "Failure!"
+                    print("Failure!")
                 raise tmp
         return States
     else:
@@ -476,21 +477,21 @@ def on(*x):
         for i in x:
             try:
                 i.on()
-            except Exception, tmp:
+            except Exception as tmp:
                 try:
-                    print "ON on ",i.label,"failed"
+                    print("ON on ",i.label,"failed")
                 except:
-                    print "Failure!"
+                    print("Failure!")
                 raise tmp
         sleep(0.2)
         for i in x:
             try:
                 States[i]=i.state()
-            except Exception, tmp:
+            except Exception as tmp:
                 try:
-                    print "State on ",i.label,"failed"
+                    print("State on ",i.label,"failed")
                 except:
-                    print "Failure!"
+                    print("Failure!")
                 raise tmp
         return States
     else:
@@ -508,11 +509,11 @@ def Open(*x):
             try:
                 i.open()
                 States[i]=i.state()
-            except Exception, tmp:
+            except Exception as tmp:
                 try:
-                    print "Open on ",i.label,"failed"
+                    print("Open on ",i.label,"failed")
                 except:
-                    print "Failure!"
+                    print("Failure!")
                 raise tmp
         return States
     else:
@@ -531,11 +532,11 @@ def Close(*x):
             try:
                 i.close()
                 States[i]=i.state()
-            except Exception, tmp:
+            except Exception as tmp:
                 try:
-                    print "Close on ",i.label,"failed"
+                    print("Close on ",i.label,"failed")
                 except:
-                    print "Failure!"
+                    print("Failure!")
                 raise tmp
         return States
     else:
@@ -549,7 +550,7 @@ def ps(x):
 
 def status(x):
     """ print the status of x to screen"""
-    print x.status()
+    print(x.status())
     return
 
 def lsruche():
@@ -565,8 +566,8 @@ def editmacro(macrofilename):
         if not macrofilename[-3:] in [".py","txt"]:
             macrofilename += ".py"
         os.system("nedit " + macrofilename)
-    except Exception, tmp:
-        print tmp
+    except Exception as tmp:
+        print(tmp)
     return filepath + os.sep + macrofilename
 
 def domacro(macrofilename, n=1):
@@ -579,7 +580,8 @@ def domacro(macrofilename, n=1):
             macrofilename = shell.user_ns["__pySamba_root"] + "/scripts/" + macrofilename
         elif macrofilename + ".py" in os.listdir(shell.user_ns["__pySamba_root"] + "/scripts"):
             macrofilename = shell.user_ns["__pySamba_root"] + "/scripts/" + macrofilename + ".py"
-    return shell.user_ns["Universal_Prefilter"].process_macro_file(macrofilename,shell.user_ns,n)
+    return Universal_Prefilter.process_macro_file(macrofilename,shell.user_global_ns,n)
+
 #    return SyntaxPrefilter.process_macro_file(macrofilename,__IP.user_ns)
 
 def dark(dt=10):
@@ -600,7 +602,7 @@ def dark(dt=10):
         ct.count(dt)
         ct.writeDark()
         shopen(previous)
-    print ct.readDark()
+    print(ct.readDark())
     return
 
 class pseudo_counter:
@@ -743,21 +745,21 @@ class pseudo_counter:
                         + "%9s" % (self.user_readconfig[i+j].format % (tmp[i+j]))+" % -8s " % self.user_readconfig[i+j].unit + " "
                         s += BOLD + "%03i " % (i + j) + RED + "% -25s" % self.user_readconfig[i+j].label + ":" + RESET\
                         + "%9s" % (self.user_readconfig[i+j].format % (tmp[i+j]))+" % -8s " % self.user_readconfig[i+j].unit + " "
-            print s
-            print "User Defined Post Calculations:"
+            print(s)
+            print("User Defined Post Calculations:")
             nchan = ltmp
             for i in self.posts:
                 try:
-                    print BOLD + "%03i " % (nchan) + RED + "% -10s" % i["name"] + ":" + RESET + i["format"] % tmp[nchan] + i["units"]
-                except Exception, CatchedExc:
-                    print CatchedExc
+                    print(BOLD + "%03i " % (nchan) + RED + "% -10s" % i["name"] + ":" + RESET + i["format"] % tmp[nchan] + i["units"])
+                except Exception as CatchedExc:
+                    print(CatchedExc)
                 nchan = nchan + 1
             shell = get_ipython()
             shell.logger.log_write(plainS+"\n", kind='output')
         else:
-            print "Time scan finished."
+            print("Time scan finished.")
             if not nexusFileGeneration:
-                print "Data not saved since nexusFileGeneration is not active."
+                print("Data not saved since nexusFileGeneration is not active.")
         return
 
     def state(self):
@@ -876,7 +878,7 @@ class pseudo_counter:
             while(self.state() == DevState.RUNNING):
                 sleep(self.deadtime)
             return
-        except Exception, tmp:
+        except Exception as tmp:
             self.stop()
             raise tmp
 
@@ -885,7 +887,7 @@ class pseudo_counter:
         counts=[]
         for i in self.all:
             counts += i.read()
-        if len(counts) <> len(self.user_readconfig):
+        if len(counts) != len(self.user_readconfig):
             self.reinit()
         #Use counts for calculating posts (duplicate values for security of original counts)
         ch = [] + counts
@@ -893,9 +895,9 @@ class pseudo_counter:
         for i in self.posts:
             try:
                 cposts.append(eval(i["formula"]))
-            except Exception, catchExc:
+            except Exception as catchExc:
                 cposts.append(numpy.nan)
-                print catchExc,":",i["name"], "=", i["formula"]
+                print(catchExc,":",i["name"], "=", i["formula"])
         return counts + cposts
 
     def read_mca(self):
@@ -921,7 +923,7 @@ class pseudo_counter:
     def wait(self):
         try: 
             t0=time()
-            while(self.masters_state() <> DevState.RUNNING and time() - t0 < self.timeout):
+            while(self.masters_state() != DevState.RUNNING and time() - t0 < self.timeout):
                 sleep(self.deadtime)
             while(self.masters_state() == DevState.RUNNING):
                 sleep(self.deadtime) 
@@ -929,21 +931,21 @@ class pseudo_counter:
                 i.postCount()
             self.timestamp_stop=[asctime(),"%f"%time()]
             return
-        except (KeyboardInterrupt, SystemExit), tmp:
+        except (KeyboardInterrupt, SystemExit) as tmp:
             self.stop()
             raise tmp
 
     def waitMasters(self):
         try: 
             t0=time()
-            while(self.masters_state() <> DevState.RUNNING and time() - t0 < self.timeout):
+            while(self.masters_state() != DevState.RUNNING and time() - t0 < self.timeout):
                 sleep(self.deadtime)
             while(self.masters_state() == DevState.RUNNING):
                 sleep(self.deadtime) 
 #            for i in self.postCountList:
 #                i.postCount()
             return
-        except (KeyboardInterrupt, SystemExit), tmp:
+        except (KeyboardInterrupt, SystemExit) as tmp:
             self.stop()
             raise tmp
 
@@ -960,7 +962,7 @@ class pseudo_counter:
                     handler = self.openHDFfile("ascan_out", HDFfilters = HDFfilters)
                 else:
                     handler = self.openHDFfile(fileName, HDFfilters = HDFfilters)
-                print "Saving data into %s" % handler.filename
+                print("Saving data into %s" % handler.filename)
             self.start(dt=dt)
             self.wait()
             if nexusFileGeneration:
@@ -1122,7 +1124,7 @@ class pseudo_counter:
             else:
                 outGroup = self.handler.getNode("/" + domain + "/" + group)
         except:
-            if group <> "":
+            if group != "":
                 self.handler.createGroup("/" + domain, group)
                 outGroup = self.handler.getNode("/" + domain + "/" + group)
             else:
@@ -1131,7 +1133,7 @@ class pseudo_counter:
         self.handler.createCArray(outGroup, name, title = name,\
         shape = value_shape, atom = value_atom, filters = HDFfilters)
 #Point to node
-        if group <> "":
+        if group != "":
             outNode = self.handler.getNode("/" + domain + "/" + group + "/" + name)
         else:
             outNode = self.handler.getNode("/" + domain + "/" + name)
@@ -1170,11 +1172,11 @@ def FileNameFactory(prefix,ext,number=1,pad_to=4):
     fmt='%0'+"%i"%pad_to+'i'
 
     psep=prefix.rfind(os.sep)
-    if(psep<>-1): 
+    if(psep!=-1): 
         fdir=prefix[:psep]
     else:
         fdir="."
-    if(psep<>-1): prefix=prefix[psep+1:]
+    if(psep!=-1): prefix=prefix[psep+1:]
     
     len_name = len(ext) + 1 + len(prefix) + pad_to
     ldir = os.listdir(fdir)
@@ -1187,14 +1189,14 @@ def FileNameFactory(prefix,ext,number=1,pad_to=4):
     
     
     
-    if ext<>"":
+    if ext!="":
         fname=prefix+"_"+ fmt%(file_index)+"."+ext
     else:
         fname=prefix+"_" + fmt%(file_index)
     _dir=os.listdir(fdir)
     while(fname in _dir):
         file_index += 1
-        if ext<>"":
+        if ext!="":
             fname = prefix + "_" + fmt%(file_index) + "." + ext
         else:
             fname = prefix + "_" + fmt%(file_index)
@@ -1206,19 +1208,19 @@ def findNextFileName(prefix,ext,file_index=1):
     #Prepare correct filename to avoid overwriting
     #
     psep=prefix.rfind(os.sep)
-    if(psep<>-1): 
+    if(psep!=-1): 
         fdir=prefix[:psep]
     else:
         fdir="."
-    if(psep<>-1): prefix=prefix[psep+1:]
-    if ext<>"":
+    if(psep!=-1): prefix=prefix[psep+1:]
+    if ext!="":
         fname=prefix+"_"+"%04i"%(file_index)+"."+ext
     else:
         fname=prefix+"_"+"%04i"%(file_index)
     _dir=os.listdir(fdir)
     while(fname in _dir):
         file_index += 1
-        if ext<>"":
+        if ext!="":
             fname = prefix + "_" + "%04i"%(file_index) + "." + ext
         else:
             fname = prefix + "_" + "%04i"%(file_index)
@@ -1231,19 +1233,19 @@ def findNextFileIndex(prefix,ext,file_index=1):
     #Prepare correct filename to avoid overwriting
     #
     psep=prefix.rfind(os.sep)
-    if(psep<>-1): 
+    if(psep!=-1): 
         fdir=prefix[:psep]
     else:
         fdir="."
-    if(psep<>-1): prefix=prefix[psep+1:]
-    if ext<>"":
+    if(psep!=-1): prefix=prefix[psep+1:]
+    if ext!="":
         fname=prefix+"_"+"%04i"%(file_index)+"."+ext
     else:
         fname=prefix+"_"+"%04i"%(file_index)
     _dir=os.listdir(fdir)
     while(fname in _dir):
         file_index+=1
-        if ext<>"":
+        if ext!="":
             fname=prefix+"_"+"%04i"%(file_index)+"."+ext
         else:
             fname=prefix+"_"+"%04i"%(file_index)
@@ -1260,7 +1262,7 @@ def filename2ruche(filename):
     __Default_Data_Folder = __IPy.user_ns["__SPECK_CONFIG"]["TEMPORARY_HOME"]
     __Default_Backup_Folder = __IPy.user_ns["__SPECK_CONFIG"]["DATA_FOLDER"]
     if __Default_Backup_Folder == "":
-        print "No backup/ruche folder defined."
+        print("No backup/ruche folder defined.")
         return
 #The following line is risky. Now setuser is the only way to change temporary home and saving points
     #currentDataFolder=os.path.realpath(os.getcwd())

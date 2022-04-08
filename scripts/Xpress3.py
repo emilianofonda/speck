@@ -1,3 +1,4 @@
+from __future__ import print_function
 #ssh -X xspress3@172.19.9.17
 # Xspress3 Test 1
 # No file saving
@@ -67,11 +68,11 @@ def X3ct(dt=1, n=1,deadtime =0.1,trigger="",saveData=False):
             #        print "Frame", lastFrame, "allevent" ,data[3],"allgood",data[4], "dt%", data[9], "dtf", data[10]
             #    #hdata = X3dev.command_inout("ReadHistogram",[lastFrame, channel])
             #    #print "hist data ",hdata
-        except (KeyboardInterrupt, SystemExit), tmp:
-            print "Stopped on user request"
+        except (KeyboardInterrupt, SystemExit) as tmp:
+            print("Stopped on user request")
             X3lima.command_inout("stopAcq")
             raise tmp
-        except Exception, tmp:
-            print tmp
+        except Exception as tmp:
+            print(tmp)
             
-    print "Last Frame is ",lastFrame
+    print("Last Frame is ",lastFrame)

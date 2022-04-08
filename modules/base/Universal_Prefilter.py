@@ -22,24 +22,13 @@ import IPython
 #from IPython.core.ipapi import get as get_ipython
 from IPython.core.getipython import get_ipython
 
-ipy_version = StrictVersion(IPython.__version__)
-ipy_zeroten = StrictVersion('0.10')
-
-#Get version as put by speck into environment
-#ver=float(os.getenv("VERSION"))
-
-#The following is a workaround method that should work with ipython>0.10
-
-#if ipy_version > ipy_zeroten:
 shell = get_ipython()
 old_run_cell = shell.run_cell
 
 def myparser(cell):
-    #return mylineparser(cell)
     return universal_lineparser(cell)
 
 def new_run_cell(cell, *args, **kwargs):
-    #new_cell = mylineparser(cell)
     new_cell = universal_lineparser(cell)
     return old_run_cell(new_cell, *args, **kwargs)
 
@@ -175,14 +164,14 @@ def fileparser(filename_in,filename_out):
     return
 
 def process_macro_file(filename,uns, n=1):
-    """This command open your macro convert it to standard language in macro.tmp file and the execute it.
-    n may be used to repeat the macro n times."""
-    macro_tmp_file="macro_%07.4f.tmp" %time()
+    """This command open your macro convert it to standard language in macro.tmp file and then execute it.
+    Parameter n may be used to repeat the macro n times."""
+    macro_tmp_file="macro_%07.4f.tmp"%time()
     #print "Parsing macro ",filename," into temporary file ",macro_tmp_file
     fileparser(filename,macro_tmp_file)
     #print "Executing file ",macro_tmp_file
     for __repeat_this_macro in range(n):
-        exec(open(macro_tmp_file,"r").read())
+        exec(open(macro_tmp_file,"r").read(),uns)
     #print "Removing temporary file ",macro_tmp_file
     os.remove(macro_tmp_file)
     return

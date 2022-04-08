@@ -1,3 +1,4 @@
+from __future__ import print_function
 #This is a macro that depends on the SAMBA environment defined in speck_config...
 #This code works on global objects like mca1 and mca2, it is strictly... volatile... but essential!!!!
 
@@ -16,10 +17,10 @@ def XIAgetConfigFiles():
 def XIAviewConfigFiles():
     labels = iter([whois(i) for i in get_ipython().user_ns["ct"].mca_units])
     for cfg in XIAgetConfigFiles():
-        print "\n%s:"%next(labels)
+        print("\n%s:"%next(labels))
         for i in cfg:
             i3 = i.split(";")
-            print "Label = %6s Mode = %8s\n    File = %s"%tuple(i3)
+            print("Label = %6s Mode = %8s\n    File = %s"%tuple(i3))
     return
 
 def XIAgetConfigNumber():
@@ -64,20 +65,20 @@ def setMODE(recursive = 0, mode=""):
         while(True in [i.state() in [DevState.DISABLE,DevState.UNKNOWN] for i in mca_units]):
             sleep(1)
     try:
-        changeMode = True in [i.DP.currentMode <> cMode for i in mca_units] or \
-        True in [i[0].DP.currentAlias <> i[1] for i in zip(mca_units,configs)]
+        changeMode = True in [i.DP.currentMode != cMode for i in mca_units] or \
+        True in [i[0].DP.currentAlias != i[1] for i in zip(mca_units,configs)]
     except:
         changeMode = True
         fault = True
-        print RED + "Fault: mode" + RESET
+        print(RED + "Fault: mode" + RESET)
     if changeMode:
         try:
             #Only one roi is set for all... this is not really OK... but...
             roi1,roi2 = mca_units[0].getROIs()
         except:
-            print RED + "Fault: rois" + RESET
+            print(RED + "Fault: rois" + RESET)
             fault = True
-        print "Setting %s  mode" % mode
+        print("Setting %s  mode" % mode)
         if fault:
             for i in mca_units:
                 i.init()

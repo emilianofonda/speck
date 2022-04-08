@@ -1,4 +1,5 @@
 from __future__ import division
+from __future__ import print_function
 from past.utils import old_div
 from numpy import fft
 import tables
@@ -39,7 +40,7 @@ def makeFTfigure(filename, sampling, integration_time, figN=1, channel=0, branch
         yoff += max(ftdata[1][1:-1])*0.04
     title(filename)
     xlim(xmax = old_div(fmax,5))
-    if ymax <> None: ylim(ymax = ymax)
+    if ymax != None: ylim(ymax = ymax)
     xlabel("Hz")
     ylabel("I0 FFT modulus")
     grid()
@@ -73,7 +74,7 @@ def compareFTfigure(fileList, sampling, integration_time, figN=1, channel=0, bra
         ftdata = mean(ftdata, axis=0)
         plot_fft(ftdata[0], ftdata[1], label= filename)
         xlim(xmax = old_div(fmax,5))
-        if ymax <> None: ylim(ymax = ymax)
+        if ymax != None: ylim(ymax = ymax)
         xlabel("Hz")
         ylabel("I0 FFT modulus")
         grid()
@@ -122,7 +123,7 @@ def single_shot(filename="sai", card="sai"):
     sai.nexusFileGeneration = True
     sai.start()
     sleep(0.5)
-    while(sai.state() <> DevState.STANDBY):
+    while(sai.state() != DevState.STANDBY):
         sleep(0.1)
     sleep(1)
     ll=[]
@@ -133,6 +134,6 @@ def single_shot(filename="sai", card="sai"):
     for i in ll:
         totoFile = findNextFileName(filename2ruche(filename),"nxs")
         os.system("cp /nfs/srv5/spool1/sai/%s "%i + totoFile + "&& rm /nfs/srv5/spool1/sai/%s"%i )
-    print "Saving data in: ", totoFile
+    print(("Saving data in: ", totoFile))
     return
 

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import tables, numpy
 
 class dataBlock:
@@ -66,7 +67,7 @@ class dataBlock:
                 outNode = self.HDFfile.getNode("/" + self.domain +"/" + i)
                 outNode[:] = value
                 del value
-            except Exception, tmp:
+            except Exception as tmp:
                 print("post calculation error: %s = %s"%(i, self.dictionary["formulas"][i]))
                 print(tmp.message)
         try:
@@ -91,7 +92,7 @@ def test():
     }
     dada = dataBlock(XAS_dictionary)
     dada.evaluate()
-    print dada.computed
+    print(dada.computed)
     return
 
 

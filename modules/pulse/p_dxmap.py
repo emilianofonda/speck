@@ -1,3 +1,4 @@
+from __future__ import print_function
 import PyTango
 from PyTango import DevState, DeviceProxy,DevFailed,AttributeInfoEx
 from time import sleep
@@ -29,11 +30,11 @@ class dxmap:
 
         self.init_user_readconfig=user_readconfig
         failure=False
-        if FTPclient <> "":
+        if FTPclient != "":
             self.FTPclient = DeviceProxy(FTPclient)
         else:
             self.FTPclient = None
-        if FTPserver <> "":
+        if FTPserver != "":
             self.FTPserver = DeviceProxy(FTPserver)
         else:
             self.FTPserver = None
@@ -42,14 +43,14 @@ class dxmap:
         if self.state() == DevState.FAULT:
             self.DP.init()
             t0 = time.time()
-            while(self.state() <> Devstate.OFF or time.time()-t0 < self.timeout):
+            while(self.state() != Devstate.OFF or time.time()-t0 < self.timeout):
                 sleep(1)
 
         if self.state() == DevState.OFF:
             self.setMode(self.config["mode"])
 
 
-        if self.init_user_readconfig<>[]:
+        if self.init_user_readconfig!=[]:
             for i in self.init_user_readconfig:
                 #ac=self.DP.get_attribute_config_ex([i[0],])[0]
                 try:
@@ -62,7 +63,7 @@ class dxmap:
                 except:
                     failure=True
                     pass
-        if failure: print self.label+": Failed setting one or more user_readconfig!"
+        if failure: print(self.label+": Failed setting one or more user_readconfig!")
         self.rois,self.ocrs,self.icrs,self.dts=[],[],[],[]
         self.channels=[]
         self.channels_labels=[]
@@ -173,7 +174,7 @@ class dxmap:
         return repr
                     
     def __call__(self,x=None):
-        print self.__repr__()
+        print(self.__repr__())
         return self.state()                              
 
     def state(self):
@@ -187,8 +188,8 @@ class dxmap:
             try:
                 self.FTPclient.DeleteRemainingFiles()
             except:
-                print "%s : Cannot delete remaining files." % self.label
-            if self.FTPserver and self.FTPserver.state() <> DevState.RUNNING:
+                print("%s : Cannot delete remaining files." % self.label)
+            if self.FTPserver and self.FTPserver.state() != DevState.RUNNING:
                 raise Exception("FTP server %s is not running. Starting client is useless. Please start it and retry.")%self.FTPserver.name
             return self.FTPclient.start()
         else:
@@ -208,7 +209,7 @@ class dxmap:
     def setMode(self, mode=""):
         """The mode is a string to be passed to the device for the command loadConfigFile """
         try:
-            if self.DP.currentAlias <> mode:
+            if self.DP.currentAlias != mode:
                 gotROIs = True
                 try:
                     rois = self.getROIs()
@@ -240,7 +241,7 @@ class dxmap:
         self.NbFrames = NbFrames
         self.config["nbpixels"] = NbFrames
         try:
-            if self.DP.currentAlias <> self.config["mode"]:
+            if self.DP.currentAlias != self.config["mode"]:
                 self.setMode(self.config["mode"])
         except:
             self.DP.command_inout("Init")
@@ -256,13 +257,13 @@ class dxmap:
             #self.DP.write_attribute("nbpixelsperbuffer",1)
         else:
             dontTouch = ["mode"]
-        for i in [k for k in cKeys if (not k in dontTouch) and (self.config[k] <> self.DP.read_attribute(k).value)]:
+        for i in [k for k in cKeys if (not k in dontTouch) and (self.config[k] != self.DP.read_attribute(k).value)]:
             try:
                 #attValues.append((i,self.config[i]))
                 self.DP.write_attribute(i,self.config[i])
                 #print i,self.config[i]
-            except Exception, tmp:
-                print tmp
+            except Exception as tmp:
+                print(tmp)
         if nexusFileGeneration:
             #Auto delete remaining files!!! this avoids aborting, but it is a potential risk.
             sleep(self.deadtime)
@@ -278,21 +279,21 @@ class dxmap:
         return self.start()
 
     def start(self,dt=1):
-        if self.state()<>DevState.RUNNING:
-            if self.FTPclient and self.DP.currentMODE=="MAPPING" and self.FTPclient.state()<>DevState.RUNNING:
+        if self.state()!=DevState.RUNNING:
+            if self.FTPclient and self.DP.currentMODE=="MAPPING" and self.FTPclient.state()!=DevState.RUNNING:
                 self.FTPclient.start()
             try:
                 self.DP.command_inout("Snap")
             except:
                 try:
                     self.DP.command_inout("Start")
-                except Exception, tmp:
-                    print "Cannot Start"
+                except Exception as tmp:
+                    print("Cannot Start")
                     raise tmp
         else:
             raise Exception("Trying to start %s when already in RUNNING state"%self.label)
         t0 = time.time()
-        while(self.state() <> DevState.RUNNING and time.time()-t0 < self.timeout):
+        while(self.state() != DevState.RUNNING and time.time()-t0 < self.timeout):
             sleep(self.deadtime)
         return self.state()
         
@@ -322,17 +323,17 @@ class dxmap:
             #out=map(lambda x: x.value, out)
             out=map(lambda x: x.value, out)+self.posts()
             if None in out:
-                print "MCA modified... reinit required...",
+                print("MCA modified... reinit required...", end=' ')
                 self.reinit()
-                print "OK"
+                print("OK")
                 out=self.DP.read_attributes(self.rois+self.icrs+self.ocrs+self.dts)
                 #out=map(lambda x: x.value, out)
                 out=map(lambda x: x.value, out)+self.posts()
-        except DevFailed, tmp:
+        except DevFailed as tmp:
             if tmp.args[0].reason=='API_AttrNotFound':
-                print "MCA modified... reinit required...",
+                print("MCA modified... reinit required...", end=' ')
                 self.reinit()
-                print "OK"
+                print("OK")
                 out=self.DP.read_attributes(self.rois+self.icrs+self.ocrs+self.dts)
                 out=map(lambda x: x.value, out)+self.posts()
             else:
@@ -361,9 +362,9 @@ class dxmap:
 #               mca=map(lambda x: x.value, mca)
 #           elif None in mca:
 #               raise Exception("Wrong channel")
-        except DevFailed, tmp:
+        except DevFailed as tmp:
             if tmp.args[0].reason=='API_AttrNotFound':
-                print "Reiniting mca"
+                print("Reiniting mca")
                 self.reinit()
                 mca=self.DP.read_attributes(channels)
                 mca=map(lambda x: x.value, mca)
@@ -422,14 +423,14 @@ class dxmap:
         try:
             gottenROIS = map(int, self.DP.get_property(["SPECK_roi"])["SPECK_roi"])
         except:
-            print "Cannot get ROI from SPECK property. Loading from device...",
+            print("Cannot get ROI from SPECK property. Loading from device...", end=' ')
             for i in self.DP.getrois():
                 Ch = i.split(";")
                 gottenROIS[ "channel%02i" % int(Ch[0]) ] = map(int, Ch[1:])
-            print "set SPECK property from last gotten values..."
+            print("set SPECK property from last gotten values...")
             self.DP.put_property({"SPECK_roi":[int(Ch[1]), int(Ch[2])]})
             gottenROIS = [int(Ch[1]), int(Ch[2])]
-            print "OK"
+            print("OK")
         return gottenROIS
         
         
@@ -574,7 +575,7 @@ class dxmap:
                             100.*(1.-eval("sourceFile.root.entry.scan_data.ocr%02i" % i)[::reverse]\
                             /eval("sourceFile.root.entry.scan_data.icr%02i" % i)[::reverse])\
                             )
-            except Exception, tmp:
+            except Exception as tmp:
                 print("Error saving data from file %s"%sourceFile.name)
                 print(tmp)
                 raise
@@ -589,7 +590,7 @@ class dxmap:
         try:
             sleep(0.3)
             self.FTPclient.deleteremainingfiles()
-        except Exception, tmp:
+        except Exception as tmp:
             #print(tmp)
             print("Timeout ==> Retry Once")
             sleep(10)

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import PyTango
 from PyTango import DevState, DeviceProxy,DevFailed
 from time import sleep
@@ -53,16 +54,16 @@ class sai:
         self.init_user_readconfig=user_readconfig
         self.label=label
         self.DP=DeviceProxy(label)
-        if identifier <> "":
+        if identifier != "":
             self.identifier = identifier
         else:
             self.identifier = "ADC"
         self.GateDownTime=GateDownTime
-        if FTPclient <> "":
+        if FTPclient != "":
             self.FTPclient = DeviceProxy(FTPclient)
         else:
             self.FTPclient = None
-        if FTPserver <> "":
+        if FTPserver != "":
             self.FTPserver = DeviceProxy(FTPserver)
         else:
             self.FTPserver = None
@@ -105,7 +106,7 @@ class sai:
         return repr
                     
     def __call__(self,x=None):
-        print self.__repr__()
+        print(self.__repr__())
         return self.state()                              
 
     def state(self):
@@ -116,7 +117,7 @@ class sai:
         
     def startFTP(self):
         if self.FTPclient:
-            if self.FTPserver and self.FTPserver.state() <> DevState.RUNNING:
+            if self.FTPserver and self.FTPserver.state() != DevState.RUNNING:
                 raise Exception("FTP server %s is not running. Starting client is useless. Please start it and retry.")%self.FTPserver.name
             self.FTPclient.DeleteRemainingFiles()
             return self.FTPclient.start()
@@ -132,7 +133,7 @@ class sai:
     def prepare(self,dt=1,NbFrames=1,nexusFileGeneration=False,stepMode=False,upperDimensions=()):
         self.upperDimensions = upperDimensions
         cKeys = self.config.keys()
-        if self.DP.configurationId <> self.config["configurationId"]:
+        if self.DP.configurationId != self.config["configurationId"]:
             self.DP.write_attribute("configurationId",self.config["configurationId"])
             sleep(3) #This operation is blocking and takes long time
         self.wait()
@@ -167,13 +168,13 @@ class sai:
             self.stored_frequency = self.config["frequency"]
             self.config["frequency"] = 1.0e5/dt
         reloadAtts = self.DP.get_attribute_list()
-        for kk in [i for i in cKeys if i<> "configurationId" and i in reloadAtts and self.config[i]<>self.DP.read_attribute(i).value]:
+        for kk in [i for i in cKeys if i!= "configurationId" and i in reloadAtts and self.config[i]!=self.DP.read_attribute(i).value]:
             self.DP.write_attribute(kk,self.config[kk])
         self.start()
         return
 
     def start(self,dt=1):
-        if self.state() <> DevState.RUNNING:
+        if self.state() != DevState.RUNNING:
             if self.FTPclient:
                 self.FTPclient.stop()
                 self.FTPclient.deleteRemainingFiles()
@@ -208,7 +209,7 @@ class sai:
         return self.state()
     
     def preCount(self, dt=1):
-        if self.DP.integrationTime <> dt * 1000 - self.GateDownTime:
+        if self.DP.integrationTime != dt * 1000 - self.GateDownTime:
             self.DP.integrationTime = dt * 1000 - self.GateDownTime
         return
 
@@ -236,7 +237,7 @@ class sai:
         self.start()
         self.wait()
         for i in zip(self.user_readconfig,self.read()):
-            print i[0].name+"="+i[0].format%i[1]
+            print(i[0].name+"="+i[0].format%i[1])
         return
 
     def writeDark(self):
@@ -255,10 +256,10 @@ class sai:
             self.DP.put_property({'SPECK_DARK_VALUES':['0',] * len(self.user_readconfig)})
             dark = ['0',] * len(self.user_readconfig)
         elif len(dark) > len(self.user_readconfig):
-            print "%s WARNING: dark current stored in device has wrong length: tail is cut."%self.label
+            print("%s WARNING: dark current stored in device has wrong length: tail is cut."%self.label)
             dark = dark[:len(self.user_readconfig)]
         elif len(dark) < len(self.user_readconfig):
-            print "%s WARNING: dark current stored in device has wrong length: adding zeros."%self.label
+            print("%s WARNING: dark current stored in device has wrong length: adding zeros."%self.label)
             dark = dark + ['0',] * (len(self.user_readconfig)-len(dark))
         elif len(dark) == len(self.user_readconfig):
             pass

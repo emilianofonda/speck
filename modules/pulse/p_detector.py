@@ -1,3 +1,4 @@
+from __future__ import print_function
 import PyTango
 from PyTango import DevState, DeviceProxy,DevFailed
 from time import sleep
@@ -27,21 +28,21 @@ class detector:
         self.init_user_readconfig=user_readconfig
         self.label=label
         self.DP=DeviceProxy(label)
-        if self.DPspecific <> "":
+        if self.DPspecific != "":
             self.DPspecific = DeviceProxy(specificDevice)
         self.numChan = self.DPspecific.numChan
         self.identifier = identifier
         failure=False
-        if FTPclient <> "":
+        if FTPclient != "":
             self.FTPclient = DeviceProxy(FTPclient)
         else:
             self.FTPclient = None
-        if FTPserver <> "":
+        if FTPserver != "":
             self.FTPserver = DeviceProxy(FTPserver)
         else:
             self.FTPserver = None
         self.spoolMountPoint=spoolMountPoint
-        if failure: print self.label+": Failed setting one or more user_readconfig!"
+        if failure: print(self.label+": Failed setting one or more user_readconfig!")
         self.rois,self.ocrs,self.icrs,self.dts=[],[],[],[]
         self.channels=[]
         self.channels_labels=[]
@@ -94,7 +95,7 @@ class detector:
         return repr
                     
     def __call__(self,x=None):
-        print self.__repr__()
+        print(self.__repr__())
         return self.state()                              
 
     def state(self):
@@ -105,7 +106,7 @@ class detector:
         
     def startFTP(self):
         if self.FTPclient:
-            if self.FTPserver and self.FTPserver.state() <> DevState.RUNNING:
+            if self.FTPserver and self.FTPserver.state() != DevState.RUNNING:
                 raise Exception("FTP server %s is not running. Starting client is useless. Please start it and retry.")%self.FTPserver.name
             return self.FTPclient.start()
         else:
@@ -119,14 +120,14 @@ class detector:
 
     def prepare(self,dt=1,NbFrames=1,nexusFileGeneration=False):
         cKeys = self.config.keys()
-        for i in [k for k in cKeys if self.config[k]<>self.DP.read_attribute(k).value]:
+        for i in [k for k in cKeys if self.config[k]!=self.DP.read_attribute(k).value]:
             self.DP.write_attribute(i,self.config[i])
         sleep(self.deadtime)
         return
 
     def start(self,dt=1):
-        if self.state()<>DevState.RUNNING:
-            if self.FTPclient and self.FTPclient.state()<>DevState.RUNNING:
+        if self.state()!=DevState.RUNNING:
+            if self.FTPclient and self.FTPclient.state()!=DevState.RUNNING:
                 self.FTPclient.start()
             self.DP.command_inout("start")
         else:
@@ -178,7 +179,7 @@ class detector:
         self.start()
         self.wait()
         for i in zip(self.user_readconfig,self.read()):
-            print i[0].name+"="+i[0].format%i[1] + "%s"%i[0].display_unit
+            print(i[0].name+"="+i[0].format%i[1] + "%s"%i[0].display_unit)
         return
 
     def setROIs(self,*args):
@@ -191,12 +192,12 @@ class detector:
         """This implementation is very limited: only one roi for the whole card"""
         gottenROIS = map(int, self.DP.get_property(["SPECK_roi"])["SPECK_roi"])
         if gottenROIS == []:
-            print "Cannot get ROI from SPECK property. Defaulting to full range",
+            print("Cannot get ROI from SPECK property. Defaulting to full range", end=' ')
             Ch1 = 0
             Ch2 = self.DP.image_width-9 #This is a trick of xspress3: last points of the image line are used for scalers (9 of them)
             self.DP.put_property({"SPECK_roi":[int(Ch1), int(Ch2)]})
             gottenROIS = [int(Ch1), int(Ch2)]
-            print "OK"
+            print("OK")
         return gottenROIS
         
 

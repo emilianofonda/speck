@@ -1,10 +1,9 @@
+from __future__ import print_function
 #This is a macro that depends on the SAMBA environment defined in speck_config...
 #This code works on global objects like mca1 and mca2, it is strictly... volatile... but essential!!!!
 
 #Employs the global object ct to retrieve the list of mca units
 
-from builtins import next
-from builtins import zip
 def XIAgetConfigFiles():
     return [i.DP.get_property("ConfigurationFiles")["ConfigurationFiles"] 
     for i in get_ipython().user_ns["ct"].mca_units]
@@ -12,10 +11,10 @@ def XIAgetConfigFiles():
 def XIAviewConfigFiles():
     labels = iter([whois(i) for i in ct.mca_units])
     for cfg in XIAgetConfigFiles():
-        print "\n%s:"%next(labels)
+        print("\n%s:"%next(labels))
         for i in cfg:
             i3 = i.split(";")
-            print "Label = %6s Mode = %8s\n    File = %s"%tuple(i3)
+            print("Label = %6s Mode = %8s\n    File = %s"%tuple(i3))
     return
 
 def XIAgetConfigNumber():
@@ -60,12 +59,12 @@ def setMODE(recursive = 0, mode=""):
         while(True in [i.state() in [DevState.DISABLE,DevState.UNKNOWN] for i in ct.mca_units]):
             sleep(1)
     try:
-        changeMode = True in [i.DP.currentMode <> cMode for i in ct.mca_units] or \
-        True in [i[0].DP.currentAlias <> i[1] for i in zip(ct.mca_units,configs)]
+        changeMode = True in [i.DP.currentMode != cMode for i in ct.mca_units] or \
+        True in [i[0].DP.currentAlias != i[1] for i in zip(ct.mca_units,configs)]
     except:
         changeMode = True
         fault = True
-        print RED + "Fault: mode" + RESET
+        print(RED + "Fault: mode" + RESET)
         #print RED + "Cannot retrieve current XIA mode. Note: ROIs will not be transferred from STEP to MAP." + RESET
     if changeMode:
         try:
@@ -73,10 +72,10 @@ def setMODE(recursive = 0, mode=""):
             roi1,roi2 = ct.mca_units[0].getROIs()
             #print roi1, roi2
         except:
-            print RED + "Fault: rois" + RESET
+            print(RED + "Fault: rois" + RESET)
             #print RED + "Cannot retrieve ROIs. Note: ROIs will not be transferred from STEP to MAP." + RESET
             fault = True
-        print "Setting %s  mode" % mode
+        print("Setting %s  mode" % mode)
         if fault:
             for i in ct.mca_units:
                 i.init()

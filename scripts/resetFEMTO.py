@@ -1,3 +1,4 @@
+from __future__ import print_function
 #Macro to reset the femtos amplifiers of SAMBA
 def resetFEMTO():
     """Procedure to reset FEMTO amplifiers after computer reboot"""
@@ -15,7 +16,7 @@ def resetFEMTO():
             i.coupling = False
             i.coupling = True
         except:
-            print "Failed on FEMTO %i"%(__ListOfFemtos.index(i))
+            print("Failed on FEMTO %i"%(__ListOfFemtos.index(i)))
             pass
     return
 

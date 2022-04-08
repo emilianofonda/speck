@@ -5,10 +5,10 @@ from PyTango import DeviceProxy, DevState
 import numpy, scipy
 from numpy import sin,cos,tan,arcsin,pi,arange,sign,array,nan,sqrt
 from scipy import interpolate
-import thread
+#import thread
 
-from motor_class import *
-from counter_class import counter
+#from motor_class import *
+#from counter_class import counter
 import moveable
 from spec_syntax import move_motor
 import mycurses
@@ -257,7 +257,7 @@ class mono1:
         tz1=None,\
         bender=None,\
         timeout=.00,deadtime=0.01,delay=0.0,
-        counter_label="d09-1-c00/ca/cpt.1",
+        counter_label="ct",
         counter_channel=0,\
         emin=None,emax=None):
         """Experimental version that mixes galil and powerBrick moveables"""
@@ -266,10 +266,9 @@ class mono1:
         self.label = monoName
         self.bender = bender
         try:
-            self.counter=counter(counter_label)
+            self.counter=eval(counter_label,globals=get_ipython().user_golbal_ns)
         except:
             self.counter=None
-            print("No usable counter: no tuning possible")
         self.counter_channel=counter_channel
         self.bender=bender
         self.timeout=timeout

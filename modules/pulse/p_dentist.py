@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy
 import xas
 import pylab
@@ -102,7 +103,7 @@ mode="t", figN=1, overlap=False,out=False):
     
     Step = pylab.polyval(norPoly, e0) - pylab.polyval(preEdge, e0)
     
-    print "Edge Step = ",Step
+    print("Edge Step = ",Step)
     
     chi = xmu[ipoly1:ipoly2]
     chiE = ene[ipoly1:ipoly2]

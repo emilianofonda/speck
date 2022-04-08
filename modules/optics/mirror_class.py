@@ -151,27 +151,27 @@ class mirror:
 
 
     def state(self):
-                """No arguments, return the state as a string"""
+        """No arguments, return the state as a string"""
         return self.DP.command_inout("State")
 
     def status(self):
-                """No arguments, return the status as a string"""
+        """No arguments, return the status as a string"""
         return self.DP.command_inout("Status")
 
     def tpp_state(self):
-                """No arguments, return the state as a string"""
+        """No arguments, return the state as a string"""
         return self.DP_tpp.command_inout("State")
 
     def tpp_status(self):
-                """No arguments, return the status as a string"""
+        """No arguments, return the status as a string"""
         return self.DP_tpp.command_inout("Status")
         
     def bender_state(self):
-                """No arguments, return the state as a string"""
+        """No arguments, return the state as a string"""
         return self.DP_bender.command_inout("State")
 
     def bender_status(self):
-                """No arguments, return the status as a string"""
+        """No arguments, return the status as a string"""
         return self.DP_bender.command_inout("Status")
 
     def theta(self,dest=inf): 

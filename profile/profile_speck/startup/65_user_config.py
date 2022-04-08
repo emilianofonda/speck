@@ -2,6 +2,7 @@
 from __future__ import print_function
 from builtins import range
 from time import sleep
+from p_spec_syntax import *
 
 print()
 print("################################################################")
@@ -28,299 +29,26 @@ __samplePos=13.95
 # The commented version refers to the old way of having separate counters defined and a counter master.
 # Now a single counter is the master AND virtually includes the others.
 
-#NI6602
-try:
-    user_readconfig=[
-    ["counter1",    "I0",         "%d",    "cts"],
-    ["counter2",    "I1",         "%d",    "cts"],
-    ["counter3",    "I2",         "%d",    "cts"],
-    ["counter4",    "I3",         "%d",    "cts"],
-    ["counter5",    "Empty01",    "%d",    "cts"],
-    ["counter6",    "Empty02",    "%d",    "cts"],
-    ["counter7",    "Clock",    "%5.2f",    "s"]
-    ]
-    cpt0=counter("d09-1-c00/ca/cpt.1",user_readconfig=user_readconfig, clock_channel=6)
-except Exception as tmp:
-    print("I cannot define counter master.")
-    print(tmp)
-
-#dxmap
-try:
-    user_readconfig0=[
-    ["channel00",    "mca_00",    "%9d",    "cts"],
-    ["channel01",    "mca_01",    "%9d",    "cts"],
-    ["channel02",    "mca_02",    "%9d",    "cts"],
-    ["channel03",    "mca_03",    "%9d",    "cts"],
-    ["channel04",    "mca_04",    "%9d",    "cts"],
-    ["channel05",    "mca_05",    "%9d",    "cts"],
-    ["channel06",    "mca_06",    "%9d",    "cts"],
-    ["channel07",    "mca_07",    "%9d",    "cts"],    
-    ["deadTime00",    "DT_00",    "%9d",    "%"],
-    ["deadTime01",    "DT_01",    "%9d",    "%"],
-    ["deadTime02",    "DT_02",    "%9d",    "%"],
-    ["deadTime03",    "DT_03",    "%9d",    "%"],
-    ["deadTime04",    "DT_04",    "%9d",    "%"],
-    ["deadTime05",    "DT_05",    "%9d",    "%"],
-    ["deadTime06",    "DT_06",    "%9d",    "%"],
-    ["deadTime07",    "DT_07",    "%9d",    "%"],
-    ["inputCountRate00",    "icr_00",    "%9d",    "cps"],
-    ["inputCountRate01",    "icr_01",    "%9d",    "cps"],
-    ["inputCountRate02",    "icr_02",    "%9d",    "cps"],
-    ["inputCountRate03",    "icr_03",    "%9d",    "cps"],
-    ["inputCountRate04",    "icr_04",    "%9d",    "cps"],
-    ["inputCountRate05",    "icr_05",    "%9d",    "cps"],
-    ["inputCountRate06",    "icr_06",    "%9d",    "cps"],
-    ["inputCountRate07",    "icr_07",    "%9d",    "cps"]]
-    user_readconfig1=[
-    ["channel00",    "mca_00",    "%9d",    "cts"],
-    ["channel01",    "mca_01",    "%9d",    "cts"],
-    ["channel02",    "mca_02",    "%9d",    "cts"],
-    ["channel03",    "mca_03",    "%9d",    "cts"],
-    ["channel04",    "mca_04",    "%9d",    "cts"],
-    ["channel05",    "mca_05",    "%9d",    "cts"],
-    ["channel06",    "mca_06",    "%9d",    "cts"],
-    ["channel07",    "mca_07",    "%9d",    "cts"],    
-    ["channel08",    "mca_08",    "%9d",    "cts"],
-    ["channel09",    "mca_09",    "%9d",    "cts"],
-    ["channel10",    "mca_10",    "%9d",    "cts"],
-    ["channel11",    "mca_11",    "%9d",    "cts"],
-    ["channel12",    "mca_12",    "%9d",    "cts"],
-    ["channel13",    "mca_13",    "%9d",    "cts"],
-    ["channel14",    "mca_14",    "%9d",    "cts"],
-    ["channel15",    "mca_15",    "%9d",    "cts"],
-    ["channel16",    "mca_16",    "%9d",    "cts"],
-    ["channel17",    "mca_17",    "%9d",    "cts"],
-    ["channel18",    "mca_18",    "%9d",    "cts"],
-    ["channel19",    "mca_19",    "%9d",    "cts"],    
-    ["roi00_01",    "roi_00_1",    "%9d",    "cts"],
-    ["roi01_01",    "roi_01_1",    "%9d",    "cts"],
-    ["roi02_01",    "roi_02_1",    "%9d",    "cts"],
-    ["roi03_01",    "roi_03_1",    "%9d",    "cts"],
-    ["roi04_01",    "roi_04_1",    "%9d",    "cts"],
-    ["roi05_01",    "roi_05_1",    "%9d",    "cts"],
-    ["roi06_01",    "roi_06_1",    "%9d",    "cts"],
-    ["roi07_01",    "roi_07_1",    "%9d",    "cts"],    
-    ["roi08_01",    "roi_08_1",    "%9d",    "cts"],
-    ["roi09_01",    "roi_09_1",    "%9d",    "cts"],
-    ["roi10_01",    "roi_10_1",    "%9d",    "cts"],
-    ["roi11_01",    "roi_11_1",    "%9d",    "cts"],
-    ["roi12_01",    "roi_12_1",    "%9d",    "cts"],
-    ["roi13_01",    "roi_13_1",    "%9d",    "cts"],
-    ["roi14_01",    "roi_14_1",    "%9d",    "cts"],
-    ["roi15_01",    "roi_15_1",    "%9d",    "cts"],
-    ["roi16_01",    "roi_16_1",    "%9d",    "cts"],
-    ["roi17_01",    "roi_17_1",    "%9d",    "cts"],
-    ["roi18_01",    "roi_18_1",    "%9d",    "cts"],
-    ["roi19_01",    "roi_19_1",    "%9d",    "cts"],
-    ["deadTime00",    "DT_00",    "%9d",    "%"],
-    ["deadTime01",    "DT_01",    "%9d",    "%"],
-    ["deadTime02",    "DT_02",    "%9d",    "%"],
-    ["deadTime03",    "DT_03",    "%9d",    "%"],
-    ["deadTime04",    "DT_04",    "%9d",    "%"],
-    ["deadTime05",    "DT_05",    "%9d",    "%"],
-    ["deadTime06",    "DT_06",    "%9d",    "%"],
-    ["deadTime07",    "DT_07",    "%9d",    "%"],
-    ["deadTime08",    "DT_08",    "%9d",    "%"],
-    ["deadTime09",    "DT_09",    "%9d",    "%"],
-    ["deadTime10",    "DT_10",    "%9d",    "%"],
-    ["deadTime11",    "DT_11",    "%9d",    "%"],
-    ["deadTime12",    "DT_12",    "%9d",    "%"],
-    ["deadTime13",    "DT_13",    "%9d",    "%"],
-    ["deadTime14",    "DT_14",    "%9d",    "%"],
-    ["deadTime15",    "DT_15",    "%9d",    "%"],
-    ["deadTime16",    "DT_16",    "%9d",    "%"],
-    ["deadTime17",    "DT_17",    "%9d",    "%"],
-    ["deadTime18",    "DT_18",    "%9d",    "%"],
-    ["deadTime19",    "DT_19",    "%9d",    "%"],
-    ["inputCountRate00",    "icr_00",    "%9d",    "cps"],
-    ["inputCountRate01",    "icr_01",    "%9d",    "cps"],
-    ["inputCountRate02",    "icr_02",    "%9d",    "cps"],
-    ["inputCountRate03",    "icr_03",    "%9d",    "cps"],
-    ["inputCountRate04",    "icr_04",    "%9d",    "cps"],
-    ["inputCountRate05",    "icr_05",    "%9d",    "cps"],
-    ["inputCountRate06",    "icr_06",    "%9d",    "cps"],
-    ["inputCountRate07",    "icr_07",    "%9d",    "cps"],
-    ["inputCountRate08",    "icr_08",    "%9d",    "cps"],
-    ["inputCountRate09",    "icr_09",    "%9d",    "cps"],
-    ["inputCountRate10",    "icr_10",    "%9d",    "cps"],
-    ["inputCountRate11",    "icr_11",    "%9d",    "cps"],
-    ["inputCountRate12",    "icr_12",    "%9d",    "cps"],
-    ["inputCountRate13",    "icr_13",    "%9d",    "cps"],
-    ["inputCountRate14",    "icr_14",    "%9d",    "cps"],
-    ["inputCountRate15",    "icr_15",    "%9d",    "cps"],
-    ["inputCountRate16",    "icr_16",    "%9d",    "cps"],
-    ["inputCountRate17",    "icr_17",    "%9d",    "cps"],
-    ["inputCountRate18",    "icr_18",    "%9d",    "cps"],
-    ["inputCountRate19",    "icr_19",    "%9d",    "cps"],
-    ["outputCountRate00",   "ocr_00",    "%9d",    "cps"],
-    ["outputCountRate01",   "ocr_01",    "%9d",    "cps"],
-    ["outputCountRate02",   "ocr_02",    "%9d",    "cps"],
-    ["outputCountRate03",   "ocr_03",    "%9d",    "cps"],
-    ["outputCountRate04",   "ocr_04",    "%9d",    "cps"],
-    ["outputCountRate05",   "ocr_05",    "%9d",    "cps"],
-    ["outputCountRate06",   "ocr_06",    "%9d",    "cps"],
-    ["outputCountRate07",   "ocr_07",    "%9d",    "cps"],
-    ["outputCountRate08",   "ocr_08",    "%9d",    "cps"],
-    ["outputCountRate09",   "ocr_09",    "%9d",    "cps"],
-    ["outputCountRate10",   "ocr_10",    "%9d",    "cps"],
-    ["outputCountRate11",   "ocr_11",    "%9d",    "cps"],
-    ["outputCountRate12",   "ocr_12",    "%9d",    "cps"],
-    ["outputCountRate13",   "ocr_13",    "%9d",    "cps"],
-    ["outputCountRate14",   "ocr_14",    "%9d",    "cps"],
-    ["outputCountRate15",   "ocr_15",    "%9d",    "cps"],
-    ["outputCountRate16",   "ocr_16",    "%9d",    "cps"],
-    ["outputCountRate17",   "ocr_17",    "%9d",    "cps"],
-    ["outputCountRate18",   "ocr_18",    "%9d",    "cps"],
-    ["outputCountRate19",   "ocr_19",    "%9d",    "cps"]]
-    user_readconfig2=[
-    ["channel00",    "mca_20",    "%9d",    "cts"],
-    ["channel01",    "mca_21",    "%9d",    "cts"],
-    ["channel02",    "mca_22",    "%9d",    "cts"],
-    ["channel03",    "mca_23",    "%9d",    "cts"],
-    ["channel04",    "mca_24",    "%9d",    "cts"],
-    ["channel05",    "mca_25",    "%9d",    "cts"],
-    ["channel06",    "mca_26",    "%9d",    "cts"],
-    ["channel07",    "mca_27",    "%9d",    "cts"],    
-    ["channel08",    "mca_28",    "%9d",    "cts"],
-    ["channel09",    "mca_29",    "%9d",    "cts"],
-    ["channel10",    "mca_30",    "%9d",    "cts"],
-    ["channel11",    "mca_31",    "%9d",    "cts"],
-    ["channel12",    "mca_32",    "%9d",    "cts"],
-    ["channel13",    "mca_33",    "%9d",    "cts"],
-    ["channel14",    "mca_34",    "%9d",    "cts"],
-    ["channel15",    "mca_35",    "%9d",    "cts"],
-    ["roi00_01",    "roi_20_1",    "%9d",    "cts"],
-    ["roi01_01",    "roi_21_1",    "%9d",    "cts"],
-    ["roi02_01",    "roi_22_1",    "%9d",    "cts"],
-    ["roi03_01",    "roi_23_1",    "%9d",    "cts"],
-    ["roi04_01",    "roi_24_1",    "%9d",    "cts"],
-    ["roi05_01",    "roi_25_1",    "%9d",    "cts"],
-    ["roi06_01",    "roi_26_1",    "%9d",    "cts"],
-    ["roi07_01",    "roi_27_1",    "%9d",    "cts"],    
-    ["roi08_01",    "roi_28_1",    "%9d",    "cts"],
-    ["roi09_01",    "roi_29_1",    "%9d",    "cts"],
-    ["roi10_01",    "roi_30_1",    "%9d",    "cts"],
-    ["roi11_01",    "roi_31_1",    "%9d",    "cts"],
-    ["roi12_01",    "roi_32_1",    "%9d",    "cts"],
-    ["roi13_01",    "roi_33_1",    "%9d",    "cts"],
-    ["roi14_01",    "roi_34_1",    "%9d",    "cts"],
-    ["roi15_01",    "roi_35_1",    "%9d",    "cts"],
-    ["deadTime00",   "DT_20",    "%9d",    "%"],
-    ["deadTime01",   "DT_21",    "%9d",    "%"],
-    ["deadTime02",   "DT_22",    "%9d",    "%"],
-    ["deadTime03",   "DT_23",    "%9d",    "%"],
-    ["deadTime04",   "DT_24",    "%9d",    "%"],
-    ["deadTime05",   "DT_25",    "%9d",    "%"],
-    ["deadTime06",   "DT_26",    "%9d",    "%"],
-    ["deadTime07",   "DT_27",    "%9d",    "%"],
-    ["deadTime08",   "DT_28",    "%9d",    "%"],
-    ["deadTime09",   "DT_29",    "%9d",    "%"],
-    ["deadTime10",   "DT_30",    "%9d",    "%"],
-    ["deadTime11",   "DT_31",    "%9d",    "%"],
-    ["deadTime12",   "DT_32",    "%9d",    "%"],
-    ["deadTime13",   "DT_33",    "%9d",    "%"],
-    ["deadTime14",   "DT_34",    "%9d",    "%"],
-    ["deadTime15",   "DT_35",    "%9d",    "%"],
-    ["inputCountRate00",    "icr_20",    "%9d",    "cps"],
-    ["inputCountRate01",    "icr_21",    "%9d",    "cps"],
-    ["inputCountRate02",    "icr_22",    "%9d",    "cps"],
-    ["inputCountRate03",    "icr_23",    "%9d",    "cps"],
-    ["inputCountRate04",    "icr_24",    "%9d",    "cps"],
-    ["inputCountRate05",    "icr_25",    "%9d",    "cps"],
-    ["inputCountRate06",    "icr_26",    "%9d",    "cps"],
-    ["inputCountRate07",    "icr_27",    "%9d",    "cps"],
-    ["inputCountRate08",    "icr_28",    "%9d",    "cps"],
-    ["inputCountRate09",    "icr_29",    "%9d",    "cps"],
-    ["inputCountRate10",    "icr_30",    "%9d",    "cps"],
-    ["inputCountRate11",    "icr_31",    "%9d",    "cps"],
-    ["inputCountRate12",    "icr_32",    "%9d",    "cps"],
-    ["inputCountRate13",    "icr_33",    "%9d",    "cps"],
-    ["inputCountRate14",    "icr_34",    "%9d",    "cps"],
-    ["inputCountRate15",    "icr_35",    "%9d",    "cps"],
-    ["outputCountRate00",   "ocr_20",    "%9d",    "cps"],
-    ["outputCountRate01",   "ocr_21",    "%9d",    "cps"],
-    ["outputCountRate02",   "ocr_22",    "%9d",    "cps"],
-    ["outputCountRate03",   "ocr_23",    "%9d",    "cps"],
-    ["outputCountRate04",   "ocr_24",    "%9d",    "cps"],
-    ["outputCountRate05",   "ocr_25",    "%9d",    "cps"],
-    ["outputCountRate06",   "ocr_26",    "%9d",    "cps"],
-    ["outputCountRate07",   "ocr_27",    "%9d",    "cps"],
-    ["outputCountRate08",   "ocr_28",    "%9d",    "cps"],
-    ["outputCountRate09",   "ocr_29",    "%9d",    "cps"],
-    ["outputCountRate10",   "ocr_30",    "%9d",    "cps"],
-    ["outputCountRate11",   "ocr_31",    "%9d",    "cps"],
-    ["outputCountRate12",   "ocr_32",    "%9d",    "cps"],
-    ["outputCountRate13",   "ocr_33",    "%9d",    "cps"],
-    ["outputCountRate14",   "ocr_34",    "%9d",    "cps"],
-    ["outputCountRate15",   "ocr_35",    "%9d",    "cps"]
-
-    ]
-    user_readconfig1=None
-    user_readconfig2=None
-
-    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",user_readconfig=user_readconfig1,FTPclient="d09-1-c00/ca/ftpclientxia.1",FTPserver="d09-1-c00/ca/ftpserverxia.1",spoolMountPoint="/nfs/srv5/spool1/xia1")
-    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",user_readconfig=user_readconfig2,FTPclient="d09-1-c00/ca/ftpclientxia.2",FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/nfs/srv5/spool1/xia2")
-#    mca1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",FTPclient="d09-1-c00/ca/ftpclientxia.1",FTPserver="d09-1-c00/ca/ftpserverxia.1",spoolMountPoint="/nfs/srv5/spool1/xia1")
-#    mca2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",FTPclient="d09-1-c00/ca/ftpclientxia.2",FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/nfs/srv5/spool1/xia2")
-    def setroi(ch1, ch2):
-        """Set roi an ALL channels between ch1 and ch2. Works on mca1 and mca2"""
-        if mca1 != None:
-            mca1.DP.set_timeout_millis(30000)
-            mca1.setROIs(ch1, ch2)
-        if mca2 != None:
-            mca2.DP.set_timeout_millis(30000)
-            mca2.setROIs(ch1, ch2)
-        return 
-except Exception as tmp:
-    print("Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.1")
-    print("Failure defining dxmap: d09-1-cx1/dt/dtc-mca_xmap.2")
 
     
 #ct
-try:
-    cpt = pseudo_counter(masters=[cpt0,],slaves=[])
-
-    ctPosts=[
-    {"name":"MUX","formula":"log(float(ch[0])/ch[1])","units":"","format":"%9.7f"},
-    {"name":"MUS","formula":"log(float(ch[1])/ch[2])","units":"","format":"%9.7f"},
-    {"name":"I1Norm","formula":"float(ch[1])/ch[0]","units":"","format":"%9.7e"},
-    #{"name":"MUF","formula":"float(sum(ch[7:26] + ch[67:82]))/ch[0]","units":"","format":"%9.7e"},
-    {"name":"MUF","formula":"float(sum(ch[7:11]))/ch[0]","units":"","format":"%9.7e"},
-    #{"name":"DeadTime","formula":"100.-100.* numpy.average(numpy.array(ch[48:66] + ch[99:114],'f') / numpy.array(ch[28:46] + ch[83:98],'f'))",
-    #"units":"%","format":"%6.4f"},
-    ]
-    ct = pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,mca2],slaves=[], posts= ctPosts)
-    #ct = pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca1,],slaves=[], posts= ctPosts)
-    #ct = pseudo_counter(masters=[cpt0,],slaves2arm2stop=[mca2,],slaves=[], posts= ctPosts)
-except Exception as tmp:
-    print("Failure defining ct ")
-    print("Defaulting to cpt... ct=cpt... ")
-    ct=cpt
-    print(tmp)
 
 #HV power supplies
 try:
     HV_I0    =NHQ_HVsupply("d09-1-cx1/ex/mi_cio-hvps.1","A")
     HV_I1    =NHQ_HVsupply("d09-1-cx1/ex/mi_cio-hvps.1","B")
 except Exception as tmp:
-    #print tmp
     print("Error on defining NHQ module 1 SHV of chambers I0 and I1")
 try:
     HV_I2    =NHQ_HVsupply("d09-1-cx1/ex/mi_cio-hvps.2","B")
     HV_xbpm    =NHQ_HVsupply("d09-1-cx1/ex/mi_cio-hvps.2","A")
 except Exception as tmp:
-    #print tmp
     print("Error on defining NHQ module 2 SHV of chambers I2 and xbpm")
 
 
 ##--------------------------------------------------------------------------------------
 ##RS232 controlled custom equipment
 ##--------------------------------------------------------------------------------------
-## RONTEC MCA
-#try:
-#    rontec=rontec_MCA("d09-1-cx1/dt/dtc_sdd-mca_rontec.1")
-#except:
-#    print "No rontec available"
 
 # I200 (home made python controller)
 #try:
@@ -347,9 +75,7 @@ try:
         else:
             kwargs["oprange"] = opr
             return mostab.tune(*args,**kwargs)
-    #itune=mostab.tune
-    #print i200.currents()
-    #print i200.status()
+    print("OK")
 except Exception as tmp:
     print("Error initializing mostab unit...")
     print(tmp)
@@ -511,33 +237,6 @@ for i in __ll:
         print(UNDERLINE+__cmdstring+RESET)
 del __tmp,__ll
 
-##################################################################
-
-#MM4005 motors:
-#__tmp={
-#"mm1":"d09-1-c00/ca/gpib.0-02:1",
-#"mm2":"d09-1-c00/ca/gpib.0-02:2",
-#"mm3":"d09-1-c00/ca/gpib.0-02:3"}
-#
-#try:
-#    from mm4005 import mm4005_motor
-#    for i in __tmp:
-#        try:
-#            if type(__tmp[i]) in [tuple,list]:
-#                __exstr="mm4005_motor(\""+__tmp[i][0]+"\","
-#                for j in range(1,len(__tmp[i])-1): __exstr+=__tmp[i][j]
-#                __exstr+=")"
-#                __IP.user_ns[i]=eval(__exstr)
-#                del __exstr
-#            else:
-#                __IP.user_ns[i]=mm4005_motor(__tmp[i])
-#            __allmotors+=[__IP.user_ns[i],]
-#        except:
-#            print "Cannot define %s =mm4005_motor(%s)"%(i,__tmp[i])
-#except:
-#    print "Cannot import mm4005_motor from mm4005 module" 
-#    
-
 #Slits 
 
 __tmp={
@@ -587,7 +286,7 @@ for i in __tmp:
 
 
 ###
-### Define \es below
+### Define alises below
 ###
 
 aliases={
@@ -636,10 +335,10 @@ for i in __tmp:
         __cmdstring=__fmtstring%tuple([i,]+__tmp[i])
         exec(__cmdstring)
         __allmotors.append(__IP.user_ns[i])
-    except Exception, tmp:
-        print RED+"Failed"+RESET+" defining: %s/%s as %s"%tuple(__tmp[i][0:2]+[i,])
-        print RED+"-->"+RESET,tmp
-        print UNDERLINE+__cmdstring+RESET
+    except Exception as tmp:
+        print(RED+"Failed"+RESET+" defining: %s/%s as %s"%tuple(__tmp[i][0:2]+[i,]))
+        print(RED+"-->"+RESET,tmp)
+        print(UNDERLINE+__cmdstring+RESET)
 
 
 try:
@@ -655,11 +354,11 @@ except:
     print("Cannot define Power Brick Bender")
 
 try:
-    print "Defining dcm...",
+    print("Defining dcm...",)
     from mono1PBR import mono1
     dcm = mono1(monoName="d09-1-c03/op/ENERGY", DataViewer="d09-1-c03/op/DATAVIEWER",\
-    rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=rx2fine,rz2=rz2, bender=bender,\
-    counter_label="d09-1-c00/ca/cpt.1", counter_channel=0,\
+    rx1=rx1,tz2=tz2,ts2=ts2,rx2=rx2,rs2=rs2,rx2fine=None,rz2=rz2, bender=bender,\
+    counter_label="", counter_channel=0,\
     delay=0.0, emin=5250.,emax=43000.)
     dcm.deadtime = 0.05
     dcm.timeout = 3.0
@@ -749,18 +448,7 @@ except Exception as tmp:
 #Include non permanent function declarations or actions here below       #
 ##########################################################################
 
-#try:
-#    execfile(__pySamba_root+"/modules/qexafs_functions.py")
-#except:
-#    print "Error in QEXAFS file try to execute it by hand"
 
-try:
-    def tablescan(p1,p2,dp=0.25,dt=0.25,channel=0,returndata=False):
-        """Calls the samplescan with default channel=0 instead of 1. Just a shortcut. """
-        return ascan(po3,p1,p2,dp,dt,channel,returndata=False)
-except Exception as tmp:
-    print("error defining tablescan")
-    print(tmp)
 
 
 
@@ -878,23 +566,6 @@ except Exception as tmp:
     print("videograbber d09-1-cx1/dt/vg2-basler-analyzer error!")
 
 
-#try:
-#    domacro("LoadMeshScan.py")
-#    print 'mesh(motor, debut, fin, n, motor2, debut2, fin2, n2, dt=1.0, timeBases=["d09-1-c00/ca/cpt.1"], delay=0.0)'
-#except Exception, tmp:
-#    print tmp
-
-#try:
-#    import diffscan as diffscan_class
-#    def diffscan(filename,trajectory,dicro_motor,UpDownValues,Repetitions,Integration,WaitDCM=0,WaitDicro=0,dcm=dcm,ct=ct):
-#        this_scan=diffscan_class.diffscan_class(trajectory,dicro_motor,UpDownValues,Repetitions,Integration,WaitDCM,WaitDicro,dcm,ct)
-#        return    this_scan.start(filename)
-#    import voltage_controller
-#    dicro=voltage_controller.voltage_controller(dac0,ttlF,-5,5,10,0.02)
-#except Exception, tmp:
-#    print "Error loading diffscan"
-#    print tmp
-
 
 #print "Instruments: default is"+RED+" EXAFS"+RESET+". Type "+RED+"SEXAFS"+RESET+" to use the second experimental hutch."
 
@@ -925,9 +596,9 @@ domacro("changePeakingTime")
 
 #Load Energy Continuous Scan
 #domacro("ecscanFTP")
-domacro("ecscanFTP_covid")
-domacro("ecscanXP")
-domacro("averageThis")
+#domacro("ecscanFTP_covid")
+#domacro("ecscanXP")
+#domacro("averageThis")
 domacro("resetFEMTO")
 domacro("fftI0")
 

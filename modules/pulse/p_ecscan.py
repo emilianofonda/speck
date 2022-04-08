@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 import dentist
 import thread
 import tables
@@ -16,10 +17,10 @@ try:
     import Tkinter
     NoTk=False
 except:
-    print "Warning from escan: Tkinter not installed."
+    print("Warning from escan: Tkinter not installed.")
     NoTk=True
 
-print mycurses.RED+"Using pulse ecscan"+mycurses.RESET
+print(mycurses.RED+"Using pulse ecscan"+mycurses.RESET)
 
 
 # WARNING This script version uses the global object ct from speck to import XIA cards.
@@ -40,7 +41,7 @@ def stopscan(shutter=False):
             sh_fast.close()
     except:
         pass
-    print "Wait... Stopping Devices...",
+    print("Wait... Stopping Devices...", end=' ')
     sys.stdout.flush()
     ct.stop()
     dcm.stop()
@@ -49,7 +50,7 @@ def stopscan(shutter=False):
     #while(DevState.RUNNING in [i.state() for i in cardXIA]):
     #    myTime.sleep(2)
     wait_motor(dcm)
-    print "Scan Stopped: OK"
+    print("Scan Stopped: OK")
     sys.stdout.flush()
     return
 
@@ -66,15 +67,15 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
 	        ecscanActor(fileName=fileName,e1=e1,e2=e2,dt=dt,velocity=velocity, e0=e0, mode=mode,shutter=shutter, beamCheck=beamCheck, n=1)
     except KeyboardInterrupt:
         shell.logger.log_write("ecscan halted on user request: Ctrl-C\n", kind='output')
-        print "Halting on user request."
+        print("Halting on user request.")
         sys.stdout.flush()
         stopscan(shutter)
-        print "ecscan halted. OK."
-        print "Raising KeyboardInterrupt as requested."
+        print("ecscan halted. OK.")
+        print("Raising KeyboardInterrupt as requested.")
         sys.stdout.flush()
         raise KeyboardInterrupt
-    except Exception, tmp:
-        print tmp.message
+    except Exception as tmp:
+        print(tmp.message)
         shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp.message, kind='output')
         stopscan(shutter)
         #raise
@@ -109,10 +110,10 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     
     #Configure cards
     TotalTime = float(abs(e2-e1)) / velocity
-    print "Expected time = %g s" % TotalTime
+    print("Expected time = %g s" % TotalTime)
     NumberOfPoints = int (float(abs(e2-e1)) / velocity / dt)
-    print "Number of points: ",NumberOfPoints
-    print "One point every %4.2feV." % (velocity * dt)
+    print("Number of points: ",NumberOfPoints)
+    print("One point every %4.2feV." % (velocity * dt))
     
     for i in range(5):
         try:
@@ -151,13 +152,13 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             wa_before = wa(verbose=False,returns=True)
             #
             #Start acquisition?
-            print "Preparing acquisition ... ",
+            print("Preparing acquisition ... ", end=' ')
             ct.prepare(dt=dt,NbFrames = NumberOfPoints, nexusFileGeneration = True)
-            print "OK"
+            print("OK")
 #It is dangerous to address the handler out of the ct context
             handler = ct.openHDFfile(fileName)
             #Print Name:
-            print "Measuring : %s\n"%handler.filename
+            print("Measuring : %s\n"%handler.filename)
             try:
                 pass
                 if shutter:
@@ -279,7 +280,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 ax4.xaxis.set_major_formatter(FormatStrFormatter('%.1f')) 
                 legend(frameon=False)    
                 pylab.draw()
-            except Exception, tmp:
+            except Exception as tmp:
                 print("No Plot! Bad Luck!")
                 print(tmp)
             finally:
@@ -299,7 +300,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             pass
         raise tmp
     shell.logger.log_write("Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime), kind='output')
-    print "Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime) 
+    print("Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime)) 
     AlarmBeep()
     return
     
@@ -325,8 +326,8 @@ def AlarmBeep():
             a.destroy()
         except:
             pass
-        print "WARNING: Error alerting for end of scan... no Tkinter?\n"
-        print "BUT: Ignore this message if escan is working well,\n just report this to your local contact\n"
+        print("WARNING: Error alerting for end of scan... no Tkinter?\n")
+        print("BUT: Ignore this message if escan is working well,\n just report this to your local contact\n")
     return
 
 
