@@ -47,11 +47,6 @@ __SPECK_CONFIG["TEMPORARY_FOLDER"] = SPECK_TEMPORARY_FOLDER
 #Import generic speck modules
 from Universal_Prefilter import *
 import pymucal
-from GracePlotter import *
-try:
-    from pygnuplot import gnuplot as Gnuplot
-except Exception as tmp:
-    print("Cannot import Gnuplot")
 from mycurses import *
 
 #Import Periodic Table

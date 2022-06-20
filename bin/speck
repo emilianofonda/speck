@@ -14,11 +14,13 @@ else:
 dn = os.path.dirname(os.path.realpath(__file__))
 dn=dn[:dn.rfind(os.sep)]
 
+#print(args)
+
 for i in args:
-    if i.startswith("--setup="):
+    if i.startswith("setup="):
         SPECK_SETUP = i[i.rfind("=")+1:]
         print("SPECK_SETUP = ", SPECK_SETUP)
-        args.pop(args.index("--setup="+SPECK_SETUP))
+        args.pop(args.index("setup="+SPECK_SETUP))
         break
     else:
         SPECK_SETUP = ""

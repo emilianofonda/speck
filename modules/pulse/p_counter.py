@@ -1,5 +1,4 @@
 from __future__ import print_function
-from string import lower
 from time import sleep
 import time as wtime
 import PyTango

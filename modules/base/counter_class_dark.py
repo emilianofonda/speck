@@ -7,7 +7,6 @@ from builtins import map
 from builtins import range
 from builtins import object
 from past.utils import old_div
-from string import lower
 from time import sleep
 import time as wtime
 import PyTango

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
-import thread
 import tables
 import os,sys
 import numpy as np

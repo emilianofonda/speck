@@ -1,4 +1,7 @@
-print "CX1_pulse: preparing."
+from __future__ import print_function
+from past.builtins import execfile
+from builtins import range
+print("CX1_pulse: preparing.")
 
 from p_escan import *
 from p_spec_syntax import *
@@ -15,7 +18,7 @@ try:
     cx1xia1=dxmap("d09-1-cx1/dt/dtc-mca_xmap.1",FTPclient="d09-1-c00/ca/ftpclientxia.1",identifier = "fluo01",timeout=90.,\
     FTPserver="d09-1-c00/ca/ftpserverxia.1",spoolMountPoint="/nfs/srv5/spool1/xia1", config=config,detector_details = detector_details)
     
-    print GREEN+"cx1xia1 --> DxMap card"+RESET
+    print(GREEN+"cx1xia1 --> DxMap card"+RESET)
     
     detector_details={"detector_name":"Canberra_Ge36","real_pixels_list":"20,21,22,23,24,25,26,27,28,29,30,31,32,33,35,36","comment":"Canberra 36 pixels HPGe installed in CX1"}
     
@@ -25,13 +28,13 @@ try:
     cx1xia2=dxmap("d09-1-cx1/dt/dtc-mca_xmap.2",FTPclient="d09-1-c00/ca/ftpclientxia.2",identifier = "fluo02",timeout=90.,\
     FTPserver="d09-1-c00/ca/ftpserverxia.2",spoolMountPoint="/nfs/srv5/spool1/xia2", config=config,detector_details = detector_details)
     
-    print GREEN+"cx1xia2 --> DxMap card"+RESET
+    print(GREEN+"cx1xia2 --> DxMap card"+RESET)
     
     mca1=cx1xia1
     mca2=cx1xia2
 
-except Exception, tmp:
-    print tmp
+except Exception as tmp:
+    print(tmp)
 
 #EXSPRESS3
 #trigger modes can be internal_trigger or external_gate  
@@ -54,8 +57,8 @@ try:
     x3mca = xspress3(label = "lima/limaccd/1", timeout=30,deadtime=0.1,
     spoolMountPoint="/nfs/srv5/spool1/x3x",specificDevice="lima/xspress3/1",\
     config=config,identifier="fluo03")
-except Exception, tmp:
-    print tmp
+except Exception as tmp:
+    print(tmp)
 
 #SAI
 
@@ -71,8 +74,8 @@ try:
     FTPclient="",FTPserver="",
     config=config, identifier="cx1sai1",GateDownTime=1.)
 
-except Exception, tmp:
-    print tmp
+except Exception as tmp:
+    print(tmp)
 
 #bufferedCounter (Theta)
 
@@ -137,8 +140,8 @@ try:
             "FLUO_DIODE":"I3[:]/I0[:]",
             },
     }
-    __cx1xia1_channels=range(0,20)
-    __cx1xia2_channels=range(0,16)
+    __cx1xia1_channels=list(range(0,20))
+    __cx1xia2_channels=list(range(0,16))
     __FLUO="("
     __FLUO_RAW="("
     for i in __cx1xia1_channels:
@@ -173,9 +176,9 @@ try:
     #ct=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cx1xia1,cx1xia2,cpt3])
     ct0=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cx1xia1,cx1xia2,cpt3],posts=ctPosts, postDictionary=XAS_dictionary)
 
-except Exception, tmp:
-    print tmp
-    print "Failure defining ct0 config"
+except Exception as tmp:
+    print(tmp)
+    print("Failure defining ct0 config")
 
 try:
     ctPosts_1=[\
@@ -206,7 +209,7 @@ try:
             "FLUO_DIODE":"I3[:]/I0[:]",
             },
     }
-    __x3x_channels=range(0,13)
+    __x3x_channels=list(range(0,13))
     __x3xid = x3mca.identifier
     __FLUO="("
     __FLUO_RAW="("
@@ -226,9 +229,9 @@ try:
     ct1=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cpt3,x3mca],posts=ctPosts_1, postDictionary=XAS_dictionary_1)
 
     #ct=ct1
-except Exception, tmp:
-    print tmp
-    print "Failure defining ct1 config"
+except Exception as tmp:
+    print(tmp)
+    print("Failure defining ct1 config")
 
 #     Definition of ct_xp for ecscan_xp
 
@@ -263,9 +266,9 @@ try:
  
     ct_xp=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cpt3],posts = ctPosts_xp, postDictionary = XAS_dictionary_xp)
 
-except Exception, tmp:
-    print tmp
-    print "Failure defining ct_xp config"
+except Exception as tmp:
+    print(tmp)
+    print("Failure defining ct_xp config")
 
 mostab.scaler="ct_xp"
 

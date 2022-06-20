@@ -9,7 +9,6 @@ from future import standard_library
 standard_library.install_aliases()
 from builtins import str
 from builtins import object
-from string import lower
 import PyTango
 from PyTango import DeviceProxy, DevState
 from time import sleep,time

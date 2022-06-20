@@ -10,7 +10,7 @@ from scipy import interpolate
 #from motor_class import *
 #from counter_class import counter
 import moveable
-from spec_syntax import move_motor
+from p_spec_syntax import move_motor
 import mycurses
 
 class sagittal_bender:
@@ -359,7 +359,7 @@ class mono1:
                 self.LocalTable[i] = array([],"f")
             self.useLocalTable = False
             return
-        for i in xrange(noPars): 
+        for i in range(noPars): 
             self.LocalTable[lt[i * (np + 1) + 1]] = array(lt[i * (np+1) + 2:(np+1) * (i+1) + 1],"f")
         #print self.LocalTable
         if np == 1:
@@ -367,7 +367,7 @@ class mono1:
             return
         if write2controller:
              if tmp_p != pp:
-                 for i in xrange(5):
+                 for i in range(5):
                      try:
                          self.sample_at(pp)
                          break
@@ -798,7 +798,7 @@ class mono1:
                 self.mode(mm)
                 sleep(0.1)
                 print("OK!")
-            for i in xrange(5):
+            for i in range(5):
                 try:
                     St = self.state()
                     self.DP.Energy = energy

@@ -8,11 +8,6 @@ import IPython
 from PyTango import DeviceProxy
 
 from GetPositions import GetPositions
-from GracePlotter import *
-try:
-    from pygnuplot import gnuplot as Gnuplot
-except Exception as tmp:
-    print("Cannot import Gnuplot")
 
 #THIS MODULE HAS TO BE COMPLETELY REWRITTEN:
 #   Data must be saved in temporary folder in hdf and THEN moved to ruche avoiding home folder
@@ -23,6 +18,8 @@ from mycurses import *
 
 from p_spec_syntax import mv, wa, whois, findNextFileName, findNextFileIndex, filename2ruche
 
+import speck_plot
+
 #The following line is commented out
 #from spec_syntax import whois
 #The right way to import whois is to define it globally by executing the spec_syntax file
@@ -31,6 +28,7 @@ from p_spec_syntax import mv, wa, whois, findNextFileName, findNextFileIndex, fi
 
 #ScanStats instance of __scanstats must exist in globals to allow ascan to
 #write into it statistics results of scan
+
 class __scanstats:
     """This is a special object that should be instantiated with the name ScanStats in globals
     it is used to pass post scan staistics to the user or to be used during a script"""
@@ -49,7 +47,6 @@ class __scanstats:
         return
 
 ScanStats=__scanstats()
-
 
 def ascan_statistics(x,y,glob):
     try:
@@ -93,8 +90,6 @@ def __backup_data():
         if __Default_Backup_Folder == "":
             print("No backup/ruche folder defined.")
             return
-#The following line is risky. Now setuser is the only way to change temporary home and saving points
-        #currentDataFolder=os.path.realpath(os.getcwd())
 #the folder is set via the config:
         currentDataFolder=__IPy.user_ns["__SPECK_CONFIG"]["USER_FOLDER"]
 #
@@ -134,11 +129,9 @@ def __backup_data():
     return
 
 def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,name=None,delay=0.,delay0=0.,\
-scaler="ct",comment="",fullmca=False,graph=0, n = 1):
+scaler="ct",comment="",fullmca=False,graph=1, n = 1):
     """Scan mot from p1 to p2 with step dp, reads ct for dt seconds. The default timebase is named ct."""
-    #glob=globals()
     glob  = get_ipython().user_ns
-    #shell = IPython.core.ipapi.get()
     shell = IPython.core.getipython.get_ipython()
     if "setSTEP" in glob.keys():
         glob["setSTEP"]()
@@ -157,13 +150,8 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
     if name == None:
         name = "ascan_out"
     ext = "txt"
-    #w=Gnuplot.Gnuplot(persist=1)
     if graph >=0:
-        w=Gnuplot.Gnuplot()
-        w('set data style linespoints')
-        w("set grid")
-        w("set title '"+name+"'")
-        w("set ylabel 'channel=%i'"%(channel))
+        w = speck_plot.speck_figure(fign=graph, title=name, grid=(1,1))
     for scan_number in xrange(__no_scans):
         x = []
         y = []
@@ -195,12 +183,14 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
                 print("motor name is : ", motname)
                 f.write("#mot=%s p1=%g p2=%g dp=%g dt=%g\n"%(motname, p1, p2, dp, dt))
                 if graph >=0:
-                    w("set xlabel '" + motname + "'")
+                    w.set_axis_label(motname,"ct[%i]"%channel,0)
             else:
                 time_scan = True
                 motname = "time"
                 print("motor name is : time")
                 f.write("#mot=%s p1=%g p2=%g dp=%g dt=%g\n" % (motname, p1, p2, dp, dt))
+                if graph >=0:
+                    w.set_axis_label(motname,"ct[%i]"%channel,0)
         except (KeyboardInterrupt,SystemExit) as tmp:
             print("Scan finished on user request")
             f.close()
@@ -260,11 +250,10 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
                         mca_files[mca_channel].write(__fullmca_line_format%tuple(__fullmca_line))
                 ######################################################################################
                 if graph >=0 and len(mod(x,5)==0):
-                    w.plot(Gnuplot.Data(x,y))
-                    #xplot(x,y)
-                    f.flush()
+                    w.plot(x,y,curve=0,update=True,marker="x",linestyle="--",linewidth=2,color="b")
             if graph >= 0:
-                w.plot(Gnuplot.Data(x,y))
+                w.plot(x,y,curve=0,update=True,marker="x",linestyle="--",linewidth=2,color="b")
+
         except (KeyboardInterrupt,SystemExit) as tmp:
             print("Scan finished on user request")
             cpt.stop()
@@ -289,17 +278,6 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
         except:
             pass
         #You could use this if persist=1 does not work:
-        ml=min(len(x),len(y))
-        try:
-            if graph >= 0 :
-                xplot(x[:ml],y[:ml],graph=graph)
-        except (KeyboardInterrupt,SystemExit) as tmp:
-            print("Scan finished on user request")
-            raise tmp
-        except Exception as tmp:
-            print("xplot error!")
-            print(tmp)
-            pass
         print("Elapsed Time: %8.6fs" % (cputime() - __time_at_start))
     #
     #Call statistisc calculation
@@ -311,6 +289,7 @@ scaler="ct",comment="",fullmca=False,graph=0, n = 1):
     #
     print("Total Elapsed Time: %8.6fs" % (cputime() - __time_at_start))
     #
+    ml=min(len(x),len(y))
     if returndata == True:
         if fulldata:
             full = array(full[:ml])
@@ -520,6 +499,7 @@ def stepscan_close():
 
 
 #Helpers
+#scanfile_info is useless within pulse or should work in the future with HDF files.
 def scanfile_info(name):
     f=open(name,"r")
     ll=f.readlines()
@@ -544,7 +524,8 @@ def scanfile_xplot(name,col1=None,col2=None):
         scanfile_info(name)
         return
     m=loadtxt(name).transpose()
-    xplot(m[col1-1],m[col2-1])
+    f = speck_plot.figure(fign=0, title=name, grid=(1,1))
+    f.plot(m[col1-1],m[col2-1])
     del m
     return 
 

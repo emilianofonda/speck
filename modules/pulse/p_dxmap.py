@@ -7,7 +7,6 @@ import tables
 import numpy
 import numpy as np
 import os
-from string import lower
 
 
 class dxmap:
@@ -233,7 +232,7 @@ class dxmap:
     def prepare(self, dt=1., NbFrames=1, nexusFileGeneration=False,stepMode=False, upperDimensions=()):
         self.upperDimensions = upperDimensions
 #Verify stream items
-        self.stream_items = [lower(i) for i in self.DP.get_property("StreamItems")["StreamItems"]]
+        self.stream_items = [i.lower() for i in self.DP.get_property("StreamItems")["StreamItems"]]
 #Order of the following attributes seems to matter!
         cKeys = self.config.keys()
 #The frame numbers is a concept that does not exists in DxMap
@@ -320,22 +319,20 @@ class dxmap:
     def read(self):
         try:
             out=self.DP.read_attributes(self.rois+self.icrs+self.ocrs+self.dts)
-            #out=map(lambda x: x.value, out)
-            out=map(lambda x: x.value, out)+self.posts()
+            out=[x.value for x in out]+self.posts()
             if None in out:
                 print("MCA modified... reinit required...", end=' ')
                 self.reinit()
                 print("OK")
                 out=self.DP.read_attributes(self.rois+self.icrs+self.ocrs+self.dts)
-                #out=map(lambda x: x.value, out)
-                out=map(lambda x: x.value, out)+self.posts()
+                out = [x.value for x in out] + self.posts()
         except DevFailed as tmp:
             if tmp.args[0].reason=='API_AttrNotFound':
                 print("MCA modified... reinit required...", end=' ')
                 self.reinit()
                 print("OK")
                 out=self.DP.read_attributes(self.rois+self.icrs+self.ocrs+self.dts)
-                out=map(lambda x: x.value, out)+self.posts()
+                out = [x.value for i in out] + self.posts()
             else:
                 raise tmp
         return out
@@ -354,7 +351,7 @@ class dxmap:
             auto=False
         try:
             mca=self.DP.read_attributes(channels)
-            mca=map(lambda x: x.value, mca)
+            mca = [x.value for x in mca]
 #           if (None in mca) and auto:
 #               print "Reiniting mca"
 #               self.reinit()
@@ -367,7 +364,7 @@ class dxmap:
                 print("Reiniting mca")
                 self.reinit()
                 mca=self.DP.read_attributes(channels)
-                mca=map(lambda x: x.value, mca)
+                mca = [x.value for x in mca]
             else:
                 raise tmp
         return mca
@@ -421,12 +418,12 @@ class dxmap:
         #        raise Exception("dxmap","roi limits requested for wrong channel","channel="+str(channel))
         #except:
         try:
-            gottenROIS = map(int, self.DP.get_property(["SPECK_roi"])["SPECK_roi"])
+            gottenROIS = [int(i) for i in self.DP.get_property(["SPECK_roi"])["SPECK_roi"]]
         except:
             print("Cannot get ROI from SPECK property. Loading from device...", end=' ')
             for i in self.DP.getrois():
                 Ch = i.split(";")
-                gottenROIS[ "channel%02i" % int(Ch[0]) ] = map(int, Ch[1:])
+                gottenROIS[ "channel%02i" % int(Ch[0]) ] = (int(i) for i in Ch[1:])
             print("set SPECK property from last gotten values...")
             self.DP.put_property({"SPECK_roi":[int(Ch[1]), int(Ch[2])]})
             gottenROIS = [int(Ch[1]), int(Ch[2])]

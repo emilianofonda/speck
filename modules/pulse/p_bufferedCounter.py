@@ -5,7 +5,7 @@ from time import sleep
 import time
 import numpy, tables
 from numpy import array
-from string import lower
+
 
 class bufferedCounter:
     def __init__(self,label="",user_readconfig=[],
@@ -70,7 +70,7 @@ class bufferedCounter:
         countersProp = [self.DP.get_property(i)[i] for i in self.DP.get_property_list("counter*")]
         self.channels=[]
         for i in countersProp:
-            self.channels.append([j.split(":")[-1] for j in i if lower(j).startswith("name")][0])
+            self.channels.append([j.split(":")[-1] for j in i if j.lower().startswith("name")][0])
         return
 
     def init(self):

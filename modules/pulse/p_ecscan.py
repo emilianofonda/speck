@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 import dentist
-import thread
 import tables
 import os
 import numpy

@@ -1,4 +1,6 @@
-print "CX2: preparing."
+from __future__ import print_function
+from past.builtins import execfile
+print("CX2: preparing.")
 #import sys,os
 #sys.path.append(os.getenv("SPECK")+os.sep+"modules"+os.sep+"pulse")
 
@@ -34,10 +36,10 @@ try:
     FTPserver="d09-1-c00/ca/ftpservercx2xia1",spoolMountPoint="/nfs/.autofs/srv5/spool1/cx2xia1", config=config, detector_details=detector_details)
     mca1=cx2xia1
     mca2=None
-    print GREEN+"cx2xia1 --> DxMap card"+RESET
-except Exception, tmp:
-    print tmp
-    print RED+"Failure defining dxmap: d09-1-cx2/dt/dtc-mca_xmap.1"+RESET
+    print(GREEN+"cx2xia1 --> DxMap card"+RESET)
+except Exception as tmp:
+    print(tmp)
+    print(RED+"Failure defining dxmap: d09-1-cx2/dt/dtc-mca_xmap.1"+RESET)
 
 #EXSPRESS3
 #trigger modes can be internal_trigger or external_gate
@@ -76,8 +78,8 @@ try:
     x3mca = xspress3(label = "lima/limaccd/1", timeout=30,deadtime=0.1,
     spoolMountPoint="/nfs/srv5/spool1/x3x",specificDevice="lima/xspress3/1",\
     config=config,identifier="fluo03")
-except Exception, tmp:
-    print tmp
+except Exception as tmp:
+    print(tmp)
 
 
 #SAI
@@ -93,8 +95,8 @@ try:
     sai01 = p_sai("d09-1-cx2/ca/sai.1", timeout=10., deadtime=0.1, spoolMountPoint="/nfs/tempdata/samba/com-samba/cx2sai1",\
     config=config, identifier="sai01",GateDownTime=2.)
 
-except Exception, tmp:
-    print tmp
+except Exception as tmp:
+    print(tmp)
 
 #bufferedCounter (Theta)
 
@@ -162,9 +164,9 @@ try:
     ct=pseudo_counter(masters=[pulseGen0],slaves=[sai01,x3mca,cpt3], posts= ctPosts, postDictionary=XAS_dictionary)
     #Remember to set the cpt3 card from master to slave mode and modify BNC cable position from OUT to GATE
 
-except Exception, tmp:
-    print tmp
-    print "Failure defining ct command"
+except Exception as tmp:
+    print(tmp)
+    print("Failure defining ct command")
 
 mostab.scaler = "ct"
 
@@ -227,4 +229,4 @@ jo.offset_crystal_theta=0.17
 #Si 220 jo.offset_crystal_theta=0.22844905850348596
 del __Johann_Geometry, __Johann_Motors
 
-print "Sample distance from monochromator should be at 19.881"
+print("Sample distance from monochromator should be at 19.881")

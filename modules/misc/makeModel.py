@@ -14,7 +14,7 @@ try:
     from pylab import plot, figure, show
 except:
     pass
-import thread
+#import threading
 
 #Import Emiliano's modules
 
@@ -618,7 +618,7 @@ def runTest(draw = True):
     mext = modelExtend(m, axis, 3, 3, 3, index=False )
     mext = disorderModel(mext,[0.1,0.1,0.1],pbc=True)
 
-    if draw: thread.start_new_thread(drawModel, (mext,))
+    #if draw: threading.start_new_thread(drawModel, (mext,))
     absorber = "Ga"
     feff_config = {"EXCHANGE":[0,0,0],"EXAFS":12,"RPATH":6.,"S02":0,"DEBYE":[80,250]}
     periodic = True

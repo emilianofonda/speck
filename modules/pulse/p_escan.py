@@ -1,3 +1,6 @@
+#DO NOT USE, throw away this module for good if possible.
+
+
 from __future__ import print_function
 #General modules
 import os,sys
@@ -8,7 +11,7 @@ import PyTango
 from PyTango import DeviceProxy, DevState
 #import thread
 import IPython
-import Gnuplot
+import gnuplot as Gnuplot
 
 #Specific modules
 from mycurses import *
@@ -1798,7 +1801,7 @@ class escan_class:
                         self.TUNING=False
                         self.after_scan(shortFile,fullFile,nowait,iscan,nscans,file_buffer,fname,fnameFull)
                         shortFile.close()
-			fullFile.close()
+                        fullFile.close()
                         print("Scan finished on user request.")
                         raise tmp
                 except PyTango.DevFailed as tmp:
@@ -1811,7 +1814,7 @@ class escan_class:
                     self.TUNING=False
                     self.after_scan(shortFile, fullFile, nowait,iscan,nscans,file_buffer,fname, fnameFull)
                     shortFile.close()
-	            fullFile.close()
+                    fullFile.close()
                     ##################### CLOSE MCA FILES ##################
                     for mca_channel in self.mca_files.keys():
                         self.mca_files[mca_channel].close()

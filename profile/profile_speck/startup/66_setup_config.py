@@ -14,9 +14,16 @@ if os.getenv("SPECK_SETUP") != "":
 
     try:
         domacro(__target)
-        c = get_ipython()
-        c.prompt_manager.in_template = u'\w\n \T Speck[\#] %s >'%os.getenv("SPECK_SETUP")
-        del c
+        ip = get_ipython()
+        class MyPrompt(Prompts):
+            def in_prompt_tokens(self,cli=None):
+                return[(Token, os.getcwd()+"\n"+"%s"%os.getenv("SPECK_SETUP")),(Token.Prompt,' >')]
+
+        ip=get_ipython()
+        ip.prompts=MyPrompt(ip)
+
+        #ip.prompt_manager.in_template = u'\w\n \T Speck[\#] %s >'%os.getenv("SPECK_SETUP")
+        del ip
     except Exception as tmp:
         print(mycurses.RED+"Fault executing %s in folder %s."%( os.getenv("SPECK_SETUP"),__setupDir) +mycurses.RESET)
         raise tmp
