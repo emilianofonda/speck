@@ -10,7 +10,7 @@ from string import lower
 
 
 class dxmap:
-    def __init__(self,label="",channels=None,user_readconfig=[],timeout=90.,deadtime=0.05, FTPclient="",FTPserver="",spoolMountPoint="",
+    def __init__(self,label="",channels=None,user_readconfig=[],timeout=600.,deadtime=0.05, FTPclient="",FTPserver="",spoolMountPoint="",
     specificDevice="",config={},identifier="",detector_details={"detector_name":"","real_pixels_list":"","comment":""}):
        
         self.DP=DeviceProxy(label)

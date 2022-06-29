@@ -121,7 +121,9 @@ class JohannAnalyzer:
     def resolutionBeamSize(self,theta):
         """theta is the Bragg angle in degrees
         """
-        return (self.beamsize/(self.R*npy.sin((theta-self.alpha)/180.*npy.pi)))**2
+        #return (self.beamsize/(self.R*npy.sin((theta-self.alpha)/180.*npy.pi)))
+        ###To be corrected following paper Kavcic 2012
+        return npy.sqrt(self.beamsize**2/(8*(2*self.R*npy.sin(theta/180.*npy.pi))**2)*npy.tan(theta/180.*npy.pi)**2)
     
     def resolutionJohannAberration(self,theta):
         """theta is the Bragg angle in degrees
@@ -169,7 +171,7 @@ class JohannAnalyzer:
         return __tmp 
 
     def airTransmission(self,energy):
-        """Gives the approximate resolution of the crystal analyzer at a given energy in eV)"""
+        """Gives the approximate absorption on the beam path for a ray of energy in eV. Diffusion is not taken into consideration."""
         if type(energy) in [list,tuple,npy.ndarray]:
             out=[]
             for ee in energy:
@@ -214,25 +216,35 @@ class JohannSpectro:
         #for i in motors.keys():
         #    if i in ["crystal_theta","crystal_x","detector_theta","detector_x","detector_z"]:
         #        setattr(self,i,motors[i])
-        self.Geometry={"atom":"Si","hkl":[1,1,1],"order":1,"R":1,"A":0.05,"alpha":0.,"detectorsize":0.3,"beamsize":3e-4,"angleMax":85,"angleMin":55.}
-        for i in Geometry.keys():
-            if i in ["atom","hkl","order","R","A","alpha","detectorsize","beamsize","angleMax","angleMin"]:
-                self.Geometry[i]=Geometry[i]
-        for i in self.Geometry.keys():
-                setattr(self,i,self.Geometry[i])
-        self.Analyzer=JohannAnalyzer(atom=self.atom,h=self.hkl[0],k=self.hkl[1],l=self.hkl[2],
-        order=self.order,R=self.R,A=self.A,alpha=self.alpha,detectorsize=self.detectorsize,beamsize=self.beamsize,
-        angleMax=self.angleMax,angleMin=self.angleMin)
+        #self.Geometry={"atom":"Si","hkl":[1,1,1],"order":1,"R":1,"A":0.05,"alpha":0.,"detectorsize":0.3,"beamsize":3e-4,"angleMax":85,"angleMin":55.}
+        #for i in Geometry.keys():
+        #    if i in ["atom","hkl","order","R","A","alpha","detectorsize","beamsize","angleMax","angleMin"]:
+        #        self.Geometry[i]=Geometry[i]
+        #for i in self.Geometry.keys():
+        #        setattr(self,i,self.Geometry[i])
+        self.Analyzer=JohannAnalyzer(
+        atom=Geometry["atom"],
+        h=Geometry["hkl"][0],
+        k=Geometry["hkl"][1],
+        l=Geometry["hkl"][2],
+        order=Geometry["order"],
+        R=Geometry["R"],
+        A=Geometry["A"],
+        alpha=Geometry["alpha"],
+        detectorsize=Geometry["detectorsize"],
+        beamsize=Geometry["beamsize"],
+        angleMax=Geometry["angleMax"],
+        angleMin=Geometry["angleMin"])
         return
 
-    def reinit(self):
-        #for i in self.Geometry.keys():
-        #    if i in ["atom","hkl","order","R","A","alpha","detectorsize","beamsize","angleMax","angleMin"]:
-        #        setattr(self,i,self.Geometry[i])
-        self.Analyzer=JohannAnalyzer(atom=self.atom,h=self.hkl[0],k=self.hkl[1],l=self.hkl[2],
-        order=self.order,R=self.R,A=self.A,alpha=self.alpha,detectorsize=self.detectorsize,beamsize=self.beamsize,
-        angleMax=self.angleMax,angleMin=self.angleMin)
-        return
+#    def reinit(self):
+#        #for i in self.Geometry.keys():
+#        #    if i in ["atom","hkl","order","R","A","alpha","detectorsize","beamsize","angleMax","angleMin"]:
+#        #        setattr(self,i,self.Geometry[i])
+#        self.Analyzer=JohannAnalyzer(atom=self.atom,h=self.hkl[0],k=self.hkl[1],l=self.hkl[2],
+#        order=self.order,R=self.R,A=self.A,alpha=self.alpha,detectorsize=self.detectorsize,beamsize=self.beamsize,
+#        angleMax=self.angleMax,angleMin=self.angleMin)
+#        return
     
     def status(self):
         for i in self.motors.keys():
@@ -289,10 +301,11 @@ class JohannSpectro:
         """The set_R function is an handy way to modify the geometrical parameter R
         and immediately move the optics accordingly."""
         if value == None:
-            return self.Geometry["R"]
+            return self.Analyzer.R
         else:
-            self.R = value
-            self.reinit()
+            self.Analyzer.R = value
+            #self.reinit()
+            #self.Geometry["R"]=value
             return self.pos(self.pos())
         
     def pos(self,position=None,wait=True):

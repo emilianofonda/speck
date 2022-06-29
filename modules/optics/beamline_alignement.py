@@ -142,7 +142,7 @@ def __obxgZ(theta):
 
 
 #Do the full job:
-def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
+def SetAngle(theta = None,hgap = 20.,SEXAFS = False, bender2 = None):
     """Close the vertical primary slits, align everything, open the primary slits back to the previous value.
     If the previous gap value in mm exceeds the mir1_pitch (mrad) the mir1_pitch (mrad) is taken as slit gap in mm.
     WARNING: uses global variables of the shell as the following:
@@ -190,7 +190,8 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
         po2.on()
         po3.on()
         po4.on()
-        po5.on()
+        if SEXAFS: 
+            po5.on()
         #
         #Wait two Galil cycles just in case...
         sleep(0.2)
@@ -204,10 +205,17 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = True, bender2 = None):
         else:
             mir2_c_target = bender2
             
-        mv(mir1_pitch, theta, mir2_pitch, __m2theta(theta), \
-        po1, __girder(theta), po2, __obxgZ(theta), po3, __exafsZ(theta),\
-        po4, __exafsZ(theta), po5, __exafsZ(theta),\
-        mir1_c, __m1bender(theta,hgap), mir2_c, mir2_c_target )
+        if SEXAFS:
+            mv(mir1_pitch, theta, mir2_pitch, __m2theta(theta), \
+            po1, __girder(theta), po2, __obxgZ(theta), po3, __exafsZ(theta),\
+            po4, __exafsZ(theta), po5, __exafsZ(theta),\
+            mir1_c, __m1bender(theta,hgap), mir2_c, mir2_c_target )
+        else:
+            mv(mir1_pitch, theta, mir2_pitch, __m2theta(theta), \
+            po1, __girder(theta), po2, __obxgZ(theta), po3, __exafsZ(theta),\
+            po4, __exafsZ(theta),\
+            mir1_c, __m1bender(theta,hgap), mir2_c, mir2_c_target )
+
         mv(mir1_roll, __m1Roll(theta), mir2_roll, __m2Roll(theta))
         mv(mir1_z, __m1Z(theta), mir2_z, __m2Z(theta))
     except Exception, tmp:
