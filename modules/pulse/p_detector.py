@@ -50,7 +50,7 @@ class detector:
         self.deadtime=deadtime
         self.timeout=timeout
         self.DP.set_timeout_millis(int(self.timeout*1000))
-        for i in xrange(self.numChan):
+        for i in range(self.numChan):
             self.channels.append("channel%i"%i)
             self.channels_labels.append(self.identifier+"channel%i"%i)
             self.rois.append(identifier+"roi%i"%i)
