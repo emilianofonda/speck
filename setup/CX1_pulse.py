@@ -8,7 +8,7 @@ from p_spec_syntax import *
 from p_dxmap import dxmap
 
 try:
-    #Recognized detector names:
+    #Fastosh recognized detector names:
     #CdTe, Canberra_Ge36, Canberra_Ge7, Vortex_SDD4, Vortex_SDD1, Canberra_SDD13
     detector_details={"detector_name":"Canberra_Ge36","real_pixels_list":"nan,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19","comment":"Canberra 36 pixels HPGe installed in CX1"}
 
@@ -56,7 +56,7 @@ try:
 
     x3mca = xspress3(label = "lima/limaccd/1", timeout=30,deadtime=0.1,
     spoolMountPoint="/nfs/srv5/spool1/x3x",specificDevice="lima/xspress3/1",\
-    config=config,identifier="fluo03")
+    config=config,identifier="fluo03",detector_details = detector_details)
 except Exception as tmp:
     print(tmp)
 
@@ -180,15 +180,20 @@ except Exception as tmp:
     print(tmp)
     print("Failure defining ct0 config")
 
+
+###########################################
+# Post definitions for xspress3x ct_x3mca #
+###########################################
+
 try:
-    ctPosts_1=[\
+    ctPosts_x3mca = [\
     {"name":"MUX","formula":"log(float(ch[0])/ch[1])","units":"","format":"%9.7f"},\
     {"name":"MUS","formula":"log(float(ch[1])/ch[2])","units":"","format":"%9.7f"},\
     {"name":"I1Norm","formula":"float(ch[1])/ch[0]","units":"","format":"%9.7e"},\
     {"name":"FLUO_RAW","formula":"float(sum(ch[4:17]))/ch[0]","units":"","format":"%9.7e"},
     ]  
     #>>>>>>>>>>>>>>>> Remember only formulas are saved to file <<<<<<<<<<<<<<<<<<<<<<<<
-    XAS_dictionary_1 = {
+    XAS_dictionary_x3mca = {
         "addresses":{
             "I0":"cx1sai1.I0",
             "I1":"cx1sai1.I1",
@@ -209,29 +214,30 @@ try:
             "FLUO_DIODE":"I3[:]/I0[:]",
             },
     }
-    __x3x_channels=list(range(0,13))
-    __x3xid = x3mca.identifier
+    __x3mca_id = x3mca.identifier
+    __x3mca_channels=list(range(0,13))
     __FLUO="("
     __FLUO_RAW="("
-    for i in __x3x_channels:
-        XAS_dictionary_1["addresses"]["ROI%02i"%i] = __x3xid + ".roi%02i"%i
-        XAS_dictionary_1["addresses"]["ICR%02i"%i] = __x3xid + ".icr%02i"%i
-        XAS_dictionary_1["addresses"]["OCR%02i"%i] = __x3xid + ".ocr%02i"%i
+    for i in __x3mca_channels:
+        XAS_dictionary_x3mca["addresses"]["ROI%02i"%i] = __x3mca_id + ".roi%02i"%i
+        XAS_dictionary_x3mca["addresses"]["ICR%02i"%i] = __x3mca_id + ".icr%02i"%i
+        XAS_dictionary_x3mca["addresses"]["OCR%02i"%i] = __x3mca_id + ".ocr%02i"%i
         __FLUO+="+numpy.nan_to_num(ROI%02i[:]/OCR%02i[:]*ICR%02i[:])"%(i,i,i)
         __FLUO_RAW+="+ROI%02i[:]"%(i)
     __FLUO+=")/numpy.array(I0[:],'f')"
     __FLUO_RAW+=")/numpy.array(I0[:],'f')"
-    XAS_dictionary_1["formulas"]["FLUO"] = __FLUO
-    XAS_dictionary_1["formulas"]["FLUO_RAW"] = __FLUO_RAW
+    XAS_dictionary_x3mca["formulas"]["FLUO"] = __FLUO
+    XAS_dictionary_x3mca["formulas"]["FLUO_RAW"] = __FLUO_RAW
     del __FLUO
     del __FLUO_RAW
- 
-    ct1=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cpt3,x3mca],posts=ctPosts_1, postDictionary=XAS_dictionary_1)
+#These Posts should be modified each time when changing detectors.
+    from p_spec_syntax import pseudo_counter
 
-    #ct=ct1
+    ct_x3mca=pseudo_counter(masters=[pulseGen0],slaves=[cx1sai,x3mca,cpt3], posts= ctPosts_x3mca, postDictionary=XAS_dictionary_x3mca)
+
 except Exception as tmp:
     print(tmp)
-    print("Failure defining ct1 config")
+    print("Failure defining ct0 config")
 
 #     Definition of ct_xp for ecscan_xp
 
@@ -277,7 +283,9 @@ execfile(__pySamba_root+"/modules/pulse/p_ascan.py")
 execfile(__pySamba_root+"/modules/pulse/p_cscan.py")
 execfile(__pySamba_root+"/modules/pulse/p_ecscan.py")
 
-ct=ct0
+#ct=ct_xp
+#ct=ct0
+ct=ct_x3mca
 
 #define ecscan_xp on the base of ecscan
 def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10,e0=-1,mode="t",shutter=False,beamCheck=True):

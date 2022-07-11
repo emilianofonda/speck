@@ -71,7 +71,7 @@ class xspress3:
         self.channels=[]
         self.channels_labels=[]
         self.DP.set_timeout_millis(int(self.timeout*1000))
-        for i in xrange(self.numChan):
+        for i in range(self.numChan):
             self.channels.append("channel%i"%i)
             self.channels_labels.append(self.identifier+"channel%i"%i)
             self.rois.append(self.identifier+"roi%i"%i)
@@ -115,7 +115,7 @@ class xspress3:
         self.rois,self.ocrs,self.icrs,self.dts=[],[],[],[]
         self.channels=[]
         self.channels_labels=[]
-        for i in xrange(self.numChan):
+        for i in range(self.numChan):
             self.channels.append("channel%i"%i)
             self.channels_labels.append(self.identifier+"_channel%i"%i)
             self.rois.append(self.identifier+"_roi%i"%i)
@@ -272,18 +272,18 @@ class xspress3:
         for i in range(5):
             try:
                 lastFrame = self.DP.last_image_ready
-                return [self.DPspecific.readHistogram([lastFrame,i]) for i in xrange(self.numChan)]
+                return [self.DPspecific.readHistogram([lastFrame,i]) for i in range(self.numChan)]
                 break
             except Exception as tmp:
                 print(tmp)
                 sleep(0.1)
-        return [self.DPspecific.readHistogram([lastFrame,i]) for i in xrange(self.numChan)]
+        return [self.DPspecific.readHistogram([lastFrame,i]) for i in range(self.numChan)]
 
 #       if self.state() == DevState.ON:
 #read histogram needs (frame,channel) to read, the frame is intended to be the last one
 #the last one is specified by the last_image_ready attribute
 #           lastFrame = self.DP.last_image_ready
-#           return [self.DPspecific.readHistogram([lastFrame,i]) for i in xrange(self.numChan)]
+#           return [self.DPspecific.readHistogram([lastFrame,i]) for i in range(self.numChan)]
 #       else:
 #           raise Exception("%s: attempt to read histogram data when not in ON state"%self.DP.name)
 
@@ -310,7 +310,7 @@ class xspress3:
         for i in range(5):
             try:
                 lastFrame = self.DP.last_image_ready
-                reads = array([self.DPspecific.readscalers([lastFrame,i]) for i in xrange(self.numChan)])
+                reads = array([self.DPspecific.readscalers([lastFrame,i]) for i in range(self.numChan)])
                 break
             except Exception as tmp:
                 print(tmp)
@@ -322,7 +322,7 @@ class xspress3:
 #           #The order matters: rois, icrs, ocrs, dts
 #           #out=self.DP.read_attributes(self.rois+self.icrs+self.ocrs+self.dts)
 #           lastFrame = self.DP.last_image_ready
-#           reads = array([self.DPspecific.readscalers([lastFrame,i]) for i in xrange(self.numChan)])
+#           reads = array([self.DPspecific.readscalers([lastFrame,i]) for i in range(self.numChan)])
 #           return self.computeRois() + list(reads[:,3]) + list(reads[:,4]) + list(reads[:,9])
 #       else:
 #           raise Exception("%s: attempt to read scalers data when not in ON state"%self.DP.name)
@@ -367,11 +367,11 @@ class xspress3:
         handler.createGroup("/data/", self.identifier)
         outNode = handler.getNode("/data/" + self.identifier)
 
-        for i in xrange(self.numChan):
+        for i in range(self.numChan):
             handler.createCArray(outNode, "mca%02i" % i, title = "mca%02i" % i,\
             shape = ShapeMatrices, atom = tables.UInt32Atom(), filters = HDFfilters)
 
-        for i in xrange(self.numChan):
+        for i in range(self.numChan):
             handler.createCArray(outNode, "icr%02i" % i, title = "icr%02i" % i,\
             shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
             handler.createCArray(outNode, "ocr%02i" % i, title = "ocr%02i" % i,\
@@ -443,12 +443,12 @@ class xspress3:
         files2read.sort()
         print("xsp3 files to read:", files2read)
 #One after the other: open, transfert data, close and delete
-        for Nfile in xrange(len(files2read)):
+        for Nfile in range(len(files2read)):
             sourceFile = tables.open_file(self.spoolMountPoint + os.sep + files2read[Nfile], "r")
             try:
                 p0 = self.DP.saving_frame_per_file * Nfile 
                 p1 = self.DP.saving_frame_per_file * (Nfile + 1)
-                for i in xrange(self.numChan):
+                for i in range(self.numChan):
                     outNode = handler.getNode("/data/" + self.identifier + "/mca%02i" % i)
                     p0 = self.DP.saving_frame_per_file * Nfile 
                     p1 = self.DP.saving_frame_per_file * (Nfile + 1)
@@ -457,7 +457,7 @@ class xspress3:
                     else:    
                         outNode[p0:p1][upperIndex] = sourceFile.root.entry_0000.measurement.xspress3.data[::reverse,i,0:nBins+1]
 
-                for i in xrange(self.numChan):
+                for i in range(self.numChan):
                     
                     outNode = handler.getNode("/data/" + self.identifier + "/icr%02i" % i)
                     if upperIndex == ():
@@ -476,7 +476,7 @@ class xspress3:
 
             os.system("rm %s" % (self.spoolMountPoint + os.sep + files2read[Nfile]))
 
-        for i in xrange(self.numChan):
+        for i in range(self.numChan):
             dt = handler.getNode("/data/" + self.identifier + "/deadtime%02i" % i)
             ocr = handler.getNode("/data/" + self.identifier + "/ocr%02i" % i)
             icr = handler.getNode("/data/" + self.identifier + "/icr%02i" % i)
