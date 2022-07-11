@@ -280,7 +280,7 @@ class sai:
             ShapeArrays = (self.DP.dataBufferNumber,)+ tuple(self.upperDimensions)
         handler.createGroup("/data/", self.identifier)
         outNode = handler.getNode("/data/" + self.identifier)
-        for i in xrange(self.numChan):
+        for i in range(self.numChan):
             handler.createCArray(outNode, "I%i" % i, title = "I%i" % i,\
             shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
 #Write down contextual data
@@ -312,7 +312,7 @@ class sai:
         if upperIndex != ():
             fmt = "%i," * len(tuple(upperIndex))
             stringIndex = fmt % tuple(upperIndex)     
-        for i in xrange(self.numChan):
+        for i in range(self.numChan):
             outNode = handler.getNode("/data/" + self.identifier + "/I%i" % i)
             #outNode[:] = buffer[i]
             if upperIndex == ():
