@@ -1,0 +1,3 @@
+#!/bin/sh
+source /etc/pytango3rc
+~/speck3/bin/speck $@
