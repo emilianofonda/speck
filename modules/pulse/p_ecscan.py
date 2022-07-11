@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
+from io import open as file
 import dentist
 import tables
 import os
@@ -120,7 +121,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
         except:
             myTime.sleep(3)
     try:
-         for CurrentScan in xrange(NofScans):
+         for CurrentScan in range(NofScans):
             #Calculate name of last data buffer file to wait (XIA)
             if beamCheck and not(checkTDL(FE)):
                 wait_injection(FE,[obxg,])
