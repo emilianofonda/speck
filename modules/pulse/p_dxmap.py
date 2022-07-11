@@ -394,7 +394,7 @@ class dxmap:
         #except:
         #roi=[]
         #print time.asctime()
-        #for i in xrange(len(self.channels)):
+        #for i in range(len(self.channels)):
         #    fmtS = "%i; " * len(args[1:]) + "%i"
         #    roi.append(fmtS % ((i,) + args[1:]))
         #print roi
@@ -440,11 +440,11 @@ class dxmap:
         outNode = handler.getNode("/data/" + self.identifier)
        
          
-        for i in xrange(self.numChan):
+        for i in range(self.numChan):
             handler.createCArray(outNode, "mca%02i" % i, title = "mca%02i" % i,\
             shape = ShapeMatrices, atom = tables.UInt32Atom(), filters = HDFfilters)
 
-        for i in xrange(self.numChan):
+        for i in range(self.numChan):
             if 'icr' in self.stream_items:
                 handler.createCArray(outNode, "icr%02i" % i, title = "icr%02i" % i,\
                 shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
@@ -522,7 +522,7 @@ class dxmap:
         if reverse not in [-1,1]:
             reverse = 1
 #One after the other: open, transfert data, close and delete
-        for Nfile in xrange(len(files2read)):
+        for Nfile in range(len(files2read)):
             sourceFile = tables.open_file(self.spoolMountPoint + os.sep + files2read[Nfile], "r")
             
             try:
@@ -531,7 +531,7 @@ class dxmap:
 #Get actual file length that can vary depending on number of points in scan
                 actualBlockLen = np.shape(sourceFile.root.entry.scan_data.channel00)[0]
                 p1 = p0 + actualBlockLen
-                for i in xrange(self.numChan):
+                for i in range(self.numChan):
                     outNode = handler.getNode("/data/" + self.identifier + "/mca%02i" % i)
                     #p0 = self.DP.streamnbacqperfile * Nfile 
                     #p1 = self.DP.streamnbacqperfile * (Nfile + 1)
@@ -541,7 +541,7 @@ class dxmap:
                         #exec("outNode[::,%s] = buffer[i][::reverse]"%(stringIndex))
                         outNode[p0:p1][upperIndex] = eval("sourceFile.root.entry.scan_data.channel%02i" % i)[::reverse]
 
-                for i in xrange(self.numChan):
+                for i in range(self.numChan):
                     if 'icr' in self.stream_items:
                         outNode = handler.getNode("/data/" + self.identifier + "/icr%02i" % i)
                         if upperIndex == ():
@@ -580,7 +580,7 @@ class dxmap:
                 sourceFile.close()
             #os.system("rm %s" % (self.spoolMountPoint + os.sep + files2read[Nfile]))
 
-        for i in xrange(self.numChan):
+        for i in range(self.numChan):
             roi = handler.getNode("/data/" + self.identifier + "/roi%02i" % i)
             mca = handler.getNode("/data/" + self.identifier + "/mca%02i" % i)
             roi[:] = np.sum(mca[:,Roi0:Roi1],axis=1)

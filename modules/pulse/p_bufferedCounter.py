@@ -232,7 +232,7 @@ class bufferedCounter:
         if upperIndex != ():
             fmt = "%i," * len(tuple(upperIndex))
             stringIndex = fmt % tuple(upperIndex)
-        for i in xrange(len(buffer)):
+        for i in range(len(buffer)):
             outNode = handler.getNode("/data/" + self.identifier + "/%s" % self.channels[i])
             if upperIndex == ():
                 outNode[:] = buffer[i]
