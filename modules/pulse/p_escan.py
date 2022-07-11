@@ -1,8 +1,8 @@
 #DO NOT USE, throw away this module for good if possible.
 
-
 from __future__ import print_function
 #General modules
+from io import open as file
 import os,sys
 from time import clock,sleep,asctime,time
 import numpy

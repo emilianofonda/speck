@@ -1,13 +1,21 @@
 from matplotlib import pyplot as plt
+from matplotlib.pyplot import figure
 import numpy
 
 class speck_figure:
-    def __init__(self,fign=1, title="speck", grid=(1,1),sharex=True,sharey=False,**kwds):
+    def __init__(self,fign=1, title="speck", grid=(1,1),sharex=True,sharey=False,delete_axis=True,**kwds):
         """Create a figure via a simplified interface:
         fign is the figure number, it may enable overwriting a defined figure instead of spawning a number of them around. 
         The title appears on the window bar itself, it is not part of the graph.
         grid is the layout as a matrix of graphs called viewports (rows, cols)
         if sharex or sharey these axis scales are shared between the graphs/viewports"""
+        self.fig=figure(fign)
+        if delete_axis:           
+            try:
+                for i in self.fig.axes:
+                    self.fig.delaxes(i)
+            except:
+                pass
         if grid[0]<=1 and grid[1]<=1:
             ncols=1
             nrows=1
@@ -16,6 +24,8 @@ class speck_figure:
         else:
             self.fig,ax = plt.subplots(num=fign,nrows=grid[0],ncols=grid[1],sharex=sharex,sharey=sharey)
             self.ax =  self.flatten_an_item(ax)      
+        for i in self.ax:
+            i.clear()
         #plt.pause(0.001)
         self.curves=[[],]*grid[0]*grid[1]
         self.fig.canvas.set_window_title(title)
@@ -27,6 +37,7 @@ class speck_figure:
         It can be used once, after declaring the speck_figure"""
         self.ax[viewport].set_xlabel(xlabel)
         self.ax[viewport].set_ylabel(ylabel)
+        self.fig.draw()
         return
 
     def flatten_an_item(self,item):

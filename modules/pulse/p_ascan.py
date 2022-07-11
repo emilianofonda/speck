@@ -1,4 +1,6 @@
 from __future__ import print_function
+
+from io import open as file
 from time import strftime,gmtime,sleep,localtime,asctime
 from time import time as cputime
 from numpy import round, array, sum, mean, loadtxt, savetxt
@@ -152,7 +154,7 @@ scaler="ct",comment="",fullmca=False,graph=1, n = 1):
     ext = "txt"
     if graph >=0:
         w = speck_plot.speck_figure(fign=graph, title=name, grid=(1,1))
-    for scan_number in xrange(__no_scans):
+    for scan_number in range(__no_scans):
         x = []
         y = []
         full = []
@@ -164,10 +166,10 @@ scaler="ct",comment="",fullmca=False,graph=1, n = 1):
         if fullmca:
             os.mkdir(dirname,0o777)
             for mca_channel in cpt.read_mca().keys():
-                mca_files[mca_channel] = open(dirname + os.sep + current_name[:current_name.rfind(".")]+"_"+mca_channel+".txt","a")
+                mca_files[mca_channel] = file(dirname + os.sep + current_name[:current_name.rfind(".")]+"_"+mca_channel+".txt","a")
                 print(dirname + os.sep+name + "." + mca_channel)
         ###################### FULL MCA FILES! #####################################
-        f=open(current_name, "w")
+        f=file(current_name, "w")
         print("Saving in file: ",current_name)
         shell.logger.log_write("Saving data in: %s\n" % current_name, kind='output') 
         try:
@@ -180,25 +182,25 @@ scaler="ct",comment="",fullmca=False,graph=1, n = 1):
         try:
             if mot != cputime:
                 motname = whois(mot)
-                print("motor name is : ", motname)
                 f.write("#mot=%s p1=%g p2=%g dp=%g dt=%g\n"%(motname, p1, p2, dp, dt))
                 if graph >=0:
-                    w.set_axis_label(motname,"ct[%i]"%channel,0)
+                    w.set_axis_labels(motname,"ct[%i]"%channel,0)
             else:
                 time_scan = True
                 motname = "time"
-                print("motor name is : time")
                 f.write("#mot=%s p1=%g p2=%g dp=%g dt=%g\n" % (motname, p1, p2, dp, dt))
                 if graph >=0:
-                    w.set_axis_label(motname,"ct[%i]"%channel,0)
+                    w.set_axis_labels(motname,"ct[%i]"%channel,0)
         except (KeyboardInterrupt,SystemExit) as tmp:
             print("Scan finished on user request")
             f.close()
             __backup_data()
             raise tmp
-        except:
+        except Exception as tmp:
             motname="None"
+            print(tmp)
             pass
+        print("motor name is : ", motname)
         f.write("#Following line is a comment:")
         f.write("#"+comment+"\n")
         #Call pre scan function:
@@ -280,6 +282,7 @@ scaler="ct",comment="",fullmca=False,graph=1, n = 1):
         #You could use this if persist=1 does not work:
         print("Elapsed Time: %8.6fs" % (cputime() - __time_at_start))
     #
+    ml=min(len(x),len(y))
     #Call statistisc calculation
     if "ScanStats" in glob: 
         ascan_statistics(x[:ml], y[:ml], glob)
@@ -289,7 +292,6 @@ scaler="ct",comment="",fullmca=False,graph=1, n = 1):
     #
     print("Total Elapsed Time: %8.6fs" % (cputime() - __time_at_start))
     #
-    ml=min(len(x),len(y))
     if returndata == True:
         if fulldata:
             full = array(full[:ml])
@@ -433,11 +435,11 @@ def stepscan_open(name=None,dt=1,scaler="ct",comment="",fullmca=True):
         if fullmca:
             os.mkdir(dirname,0o777)
             for mca_channel in cpt.read_mca().keys():
-                mca_files[mca_channel]=open(dirname+os.sep+name[:name.rfind(".")]+"_"+mca_channel+".txt","a")
+                mca_files[mca_channel]=file(dirname+os.sep+name[:name.rfind(".")]+"_"+mca_channel+".txt","a")
                 #print dirname+os.sep+name+"."+mca_channel
         __stepscan.mca_files=mca_files
     ###################### FULL MCA FILES! #####################################
-    f=open(name,"w")
+    f=file(name,"w")
     __stepscan.datafile=f
     print("Saving in file: ",name)
     try:
@@ -501,7 +503,7 @@ def stepscan_close():
 #Helpers
 #scanfile_info is useless within pulse or should work in the future with HDF files.
 def scanfile_info(name):
-    f=open(name,"r")
+    f=file(name,"r")
     ll=f.readlines()
     f.close()
     head=ll[ll.index("#HEADER\n")+1][1:-1].split("\t")
