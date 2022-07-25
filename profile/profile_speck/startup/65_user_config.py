@@ -286,7 +286,7 @@ for i in __tmp:
 
 
 ###
-### Define alises below
+### Define aliases below
 ###
 
 aliases={

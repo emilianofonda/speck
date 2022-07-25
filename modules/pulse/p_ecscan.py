@@ -13,12 +13,6 @@ from spec_syntax import dark as ctDark
 from wait_functions import checkTDL, wait_injection
 import mycurses
 from p_dentist import dentist as p_dentist
-try:
-    import Tkinter
-    NoTk=False
-except:
-    print("Warning from escan: Tkinter not installed.")
-    NoTk=True
 
 print(mycurses.RED+"Using pulse ecscan"+mycurses.RESET)
 
@@ -301,34 +295,8 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
         raise tmp
     shell.logger.log_write("Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime), kind='output')
     print("Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime)) 
-    AlarmBeep()
     return
     
-def AlarmBeep():
-    """Uses Tkinter to alert user that the run is finished... just in case he was sleeping..."""
-    #try:
-    #    pass
-    #    Beep(5,0.1);Beep(5,0.2)
-    #    Beep(5,0.1);Beep(5,0.2)
-    #except:
-    #    print "WARNING: Error alerting for end of scan... \n"
-    #    print "BUT: Ignore this message if escan is working well,\n just report this to your local contact\n"
-    try:
-        a=Tkinter.Tk()
-        for j in range(5):
-            for i in range(3):
-                a.bell()
-                myTime.sleep(0.025)
-            myTime.sleep(0.35)
-        a.destroy()
-    except:
-        try:
-            a.destroy()
-        except:
-            pass
-        print("WARNING: Error alerting for end of scan... no Tkinter?\n")
-        print("BUT: Ignore this message if escan is working well,\n just report this to your local contact\n")
-    return
 
 
 def HDF2ASCII(filename):

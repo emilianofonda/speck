@@ -20,14 +20,8 @@ from wait_functions import checkTDL, wait_injection
 from GetPositions import GetPositions
 from spec_syntax import wa, wait_motor
 
-try:
-    import Tkinter
-    NoTk=False
-except:
-    print("Warning from escan: Tkinter not installed.")
-    NoTk=True
 
-import grace_np
+#import grace_np
 
 #
 # Nota: todo copy of files to ruche
@@ -638,7 +632,7 @@ class escan_class:
             except:
                 print("No thermocouple readings... error on D09-1-CX1/EX/TC.1")
         #Graphic properties and variables:
-        self.gracewins={}
+        #self.gracewins={}
         return
         
     def set_ts2(self):
@@ -739,299 +733,299 @@ class escan_class:
         return P
     
     
-    def start_grace_processes(self):
-        """Depending on detectionMode this function initialize the necessary grace windows and 
-        return the graceprocess objects as a tuple in self.gracewins"""
-        #!
-        #!This code could be rewritten using a text file source or a big string and sending it to grace just once per process
-        #!
-        
-        #
-        #Just to be sure that at least one detction mode has been set. This obliges programmer 
-        #to append the new detection mode in ReadScanForm (top declare it), here (to open windows)
-        #and in the update_grace_windows (to plot)... that is quite obvious.
-        #
-        self.GRAPHICS_RESTART_NEEDED=False
-        if not(self.detectionMode in ["absorption","fluo","tey","sexafs"]):
-            self.detectionMode="absorption"
-        #
-        
-        #If self.gracewins==[] the plotting will never work: but the checkout should be done
-        #always on plotSetting for the rest of the code so we set it to none in case of error
-        if self.plotSetting==None:
-            return
-        if ("__GRACE_FAULTY" in dir()):
-            self.plotSetting=None
-            return
-        #Start three grace processes for the following modes:
-        #absorption, rontec, fluo, tey
-        #Start two grace processes for the sexafs mode
-        #!
-        #!Windows will be opened in reverse order to get last on top !
-        #!
-        try:
-            #if self.detectionMode<>"sexafs":
-            if self.detectionMode!=None:       
-                if self.detectionMode in ["fluo","sexafs","tey"]:
-                    #Start gracewin3: fluo
-                    gracewin3=grace_np.GraceProcess()
-                    gracewin3("timestamp 0., 0.\ntimestamp char size 0.5\ntimestamp on")
-                    gracewin3("default char size 0.75")
-                    gracewin3.viewport={}
-                    ncols=int(sqrt(len(self.auto_fluo_channels)))
-                    nrows=ncols+int((len(self.auto_fluo_channels)-ncols**2)/ncols)
-                    if mod((len(self.auto_fluo_channels)-ncols**2),ncols)>0:
-                        nrows+=1
-                    gracewin3('arrange(%i,%i,0.05,0.,0.)'%(ncols,nrows))
-                    gracewin3('with g0;title "%s"'%self.filename)
-                    for i in range(nrows*ncols):
-                        gracewin3('with g%i'%(i))
-                        gracewin3('world xmin %g'%(self.e1))
-                        gracewin3('world xmax %g'%(self.e2))
-                        gracewin3.viewport["graph%02i"%i]=\
-                        {"xmin":self.e1,"xmax":self.e2,"ymin":None,"ymax":None}
-                        majortick=max(1.,int((self.e2-self.e1)/5.))
-                        gracewin3('xaxis tick major %g'%(majortick))
-                        gracewin3('xaxis ticklabel char size 0.75')
-                        gracewin3('xaxis ticklabel off')
-                        gracewin3('world ymin 0')
-                        gracewin3('world ymax 1e-5')
-                        majortick=100
-                        gracewin3('yaxis tick major %g'%(majortick))
-                        gracewin3('yaxis ticklabel char size 0.5')
-                        gracewin3('yaxis ticklabel off')
-                        gracewin3('xaxis tick major off\nyaxis tick major off')
-                        gracewin3('redraw')
+#   def start_grace_processes(self):
+#       """Depending on detectionMode this function initialize the necessary grace windows and 
+#       return the graceprocess objects as a tuple in self.gracewins"""
+#       #!
+#       #!This code could be rewritten using a text file source or a big string and sending it to grace just once per process
+#       #!
+#       
+#       #
+#       #Just to be sure that at least one detction mode has been set. This obliges programmer 
+#       #to append the new detection mode in ReadScanForm (top declare it), here (to open windows)
+#       #and in the update_grace_windows (to plot)... that is quite obvious.
+#       #
+#       self.GRAPHICS_RESTART_NEEDED=False
+#       if not(self.detectionMode in ["absorption","fluo","tey","sexafs"]):
+#           self.detectionMode="absorption"
+#       #
+#       
+#       #If self.gracewins==[] the plotting will never work: but the checkout should be done
+#       #always on plotSetting for the rest of the code so we set it to none in case of error
+#       if self.plotSetting==None:
+#           return
+#       if ("__GRACE_FAULTY" in dir()):
+#           self.plotSetting=None
+#           return
+#       #Start three grace processes for the following modes:
+#       #absorption, rontec, fluo, tey
+#       #Start two grace processes for the sexafs mode
+#       #!
+#       #!Windows will be opened in reverse order to get last on top !
+#       #!
+#       try:
+#           #if self.detectionMode<>"sexafs":
+#           if self.detectionMode!=None:       
+#               if self.detectionMode in ["fluo","sexafs","tey"]:
+#                   #Start gracewin3: fluo
+#                   gracewin3=grace_np.GraceProcess()
+#                   gracewin3("timestamp 0., 0.\ntimestamp char size 0.5\ntimestamp on")
+#                   gracewin3("default char size 0.75")
+#                   gracewin3.viewport={}
+#                   ncols=int(sqrt(len(self.auto_fluo_channels)))
+#                   nrows=ncols+int((len(self.auto_fluo_channels)-ncols**2)/ncols)
+#                   if mod((len(self.auto_fluo_channels)-ncols**2),ncols)>0:
+#                       nrows+=1
+#                   gracewin3('arrange(%i,%i,0.05,0.,0.)'%(ncols,nrows))
+#                   gracewin3('with g0;title "%s"'%self.filename)
+#                   for i in range(nrows*ncols):
+#                       gracewin3('with g%i'%(i))
+#                       gracewin3('world xmin %g'%(self.e1))
+#                       gracewin3('world xmax %g'%(self.e2))
+#                       gracewin3.viewport["graph%02i"%i]=\
+#                       {"xmin":self.e1,"xmax":self.e2,"ymin":None,"ymax":None}
+#                       majortick=max(1.,int((self.e2-self.e1)/5.))
+#                       gracewin3('xaxis tick major %g'%(majortick))
+#                       gracewin3('xaxis ticklabel char size 0.75')
+#                       gracewin3('xaxis ticklabel off')
+#                       gracewin3('world ymin 0')
+#                       gracewin3('world ymax 1e-5')
+#                       majortick=100
+#                       gracewin3('yaxis tick major %g'%(majortick))
+#                       gracewin3('yaxis ticklabel char size 0.5')
+#                       gracewin3('yaxis ticklabel off')
+#                       gracewin3('xaxis tick major off\nyaxis tick major off')
+#                       gracewin3('redraw')
 
-                #Start gracewin2: absorption of reference foil and currents
+#               #Start gracewin2: absorption of reference foil and currents
 
-                gracewin2=grace_np.GraceProcess()
-                gracewin2("timestamp 0., 0.\ntimestamp char size 0.5\ntimestamp on")
-                gracewin2("default char size 0.75")
-                gracewin2('arrange(2,1,0.15,0.1,0.1)')
-                gracewin2('with g0;title "%s"'%self.filename)
-                gracewin2('with g0;legend 1.13,0.95;with g1;legend 0.9,0.1')
-                gracewin2.viewport={}
-                #Reference Absorption    
-                i=0
-                gracewin2("with g%i"%(i))
-                gracewin2('yaxis label char size 0.75')
-                gracewin2('yaxis label color 1')
-                if self.detectionMode=="sexafs":
-                    gracewin2('yaxis label "Electron Yield"')
-                else:
-                    gracewin2('yaxis label "Reference (Absorption)"')
-                gracewin2('yaxis label "Reference (Absorption)"')
-                gracewin2.viewport["graph%02i"%i]=\
-                {"xmin":self.e1,"xmax":self.e2,"ymin":None,"ymax":None}
-                gracewin2('world xmin %g'%(self.e1))
-                gracewin2('world xmax %g'%(self.e2))
-                majortick=max(1.,int((self.e2-self.e1)/5.))
-                gracewin2('xaxis tick major %g'%(majortick))
-                gracewin2('xaxis ticklabel char size 0.75')
-                gracewin2('xaxis ticklabel color 2')
-                gracewin2('world ymin -1e-6')
-                gracewin2('world ymax 1e-6')
-                majortick=0.2
-                gracewin2('yaxis tick major %g'%(majortick))
-                gracewin2('yaxis ticklabel char size 0.5')
-                gracewin2('yaxis ticklabel color 2')
-                gracewin2('xaxis tick minor off\nyaxis tick minor off')
-                #Currents
-                i=1
-                gracewin2('with g%i'%(i))
-                gracewin2('xaxis label char size 0.75')
-                gracewin2('xaxis label color 2')
-                gracewin2('xaxis label "Energy (eV)"')
-                gracewin2('yaxis label char size 0.75')
-                gracewin2('yaxis label color 8')
-                if self.detectionMode=="sexafs":
-                    gracewin2('yaxis label "Currents"')
-                else:
-                    gracewin2('yaxis label "Ion Chambers Currents"')
-                gracewin2.viewport["graph%02i"%i]=\
-                {"xmin":self.e1,"xmax":self.e2,"ymin":0,"ymax":1000}
-                gracewin2('world xmin %g'%(self.e1))
-                gracewin2('world xmax %g'%(self.e2))
-                majortick=max(1.,int((self.e2-self.e1)/5.))
-                gracewin2('xaxis tick major %g'%(majortick))
-                gracewin2('xaxis ticklabel char size 0.75')
-                gracewin2('xaxis ticklabel color 2')
-                gracewin2('world ymin 0')
-                gracewin2('world ymax 1000')
-                majortick=200
-                gracewin2('yaxis tick major %g'%(majortick))
-                gracewin2('yaxis ticklabel char size 0.5')
-                gracewin2('yaxis ticklabel color 2')
-                gracewin2('xaxis tick minor off\nyaxis tick minor off')
-                gracewin2('redraw')
+#               gracewin2=grace_np.GraceProcess()
+#               gracewin2("timestamp 0., 0.\ntimestamp char size 0.5\ntimestamp on")
+#               gracewin2("default char size 0.75")
+#               gracewin2('arrange(2,1,0.15,0.1,0.1)')
+#               gracewin2('with g0;title "%s"'%self.filename)
+#               gracewin2('with g0;legend 1.13,0.95;with g1;legend 0.9,0.1')
+#               gracewin2.viewport={}
+#               #Reference Absorption    
+#               i=0
+#               gracewin2("with g%i"%(i))
+#               gracewin2('yaxis label char size 0.75')
+#               gracewin2('yaxis label color 1')
+#               if self.detectionMode=="sexafs":
+#                   gracewin2('yaxis label "Electron Yield"')
+#               else:
+#                   gracewin2('yaxis label "Reference (Absorption)"')
+#               gracewin2('yaxis label "Reference (Absorption)"')
+#               gracewin2.viewport["graph%02i"%i]=\
+#               {"xmin":self.e1,"xmax":self.e2,"ymin":None,"ymax":None}
+#               gracewin2('world xmin %g'%(self.e1))
+#               gracewin2('world xmax %g'%(self.e2))
+#               majortick=max(1.,int((self.e2-self.e1)/5.))
+#               gracewin2('xaxis tick major %g'%(majortick))
+#               gracewin2('xaxis ticklabel char size 0.75')
+#               gracewin2('xaxis ticklabel color 2')
+#               gracewin2('world ymin -1e-6')
+#               gracewin2('world ymax 1e-6')
+#               majortick=0.2
+#               gracewin2('yaxis tick major %g'%(majortick))
+#               gracewin2('yaxis ticklabel char size 0.5')
+#               gracewin2('yaxis ticklabel color 2')
+#               gracewin2('xaxis tick minor off\nyaxis tick minor off')
+#               #Currents
+#               i=1
+#               gracewin2('with g%i'%(i))
+#               gracewin2('xaxis label char size 0.75')
+#               gracewin2('xaxis label color 2')
+#               gracewin2('xaxis label "Energy (eV)"')
+#               gracewin2('yaxis label char size 0.75')
+#               gracewin2('yaxis label color 8')
+#               if self.detectionMode=="sexafs":
+#                   gracewin2('yaxis label "Currents"')
+#               else:
+#                   gracewin2('yaxis label "Ion Chambers Currents"')
+#               gracewin2.viewport["graph%02i"%i]=\
+#               {"xmin":self.e1,"xmax":self.e2,"ymin":0,"ymax":1000}
+#               gracewin2('world xmin %g'%(self.e1))
+#               gracewin2('world xmax %g'%(self.e2))
+#               majortick=max(1.,int((self.e2-self.e1)/5.))
+#               gracewin2('xaxis tick major %g'%(majortick))
+#               gracewin2('xaxis ticklabel char size 0.75')
+#               gracewin2('xaxis ticklabel color 2')
+#               gracewin2('world ymin 0')
+#               gracewin2('world ymax 1000')
+#               majortick=200
+#               gracewin2('yaxis tick major %g'%(majortick))
+#               gracewin2('yaxis ticklabel char size 0.5')
+#               gracewin2('yaxis ticklabel color 2')
+#               gracewin2('xaxis tick minor off\nyaxis tick minor off')
+#               gracewin2('redraw')
 
-                #Start gracewin1: absorption and fluorescence spectra
-                #Absorption or TEY
-                gracewin1=grace_np.GraceProcess()
-                gracewin1('arrange(2,1,0.15,0.1,0.1)')
-                gracewin1("timestamp 0., 0.\ntimestamp char size 0.5\ntimestamp on")
-                gracewin1("default char size 0.75")
-                gracewin1('with g0;title "%s"'%self.filename)
-                gracewin1('with g0;legend 1.13,0.95;with g1;legend 0.9,0.1')
-                gracewin1.viewport={}
-                i=0
-                gracewin1('with g%i'%(i))
-                gracewin1.viewport["graph%02i"%i]=\
-                {"xmin":self.e1,"xmax":self.e2,"ymin":None,"ymax":None}
-                gracewin1('world xmin %g'%(self.e1))
-                gracewin1('world xmax %g'%(self.e2))
-                majortick=max(1.,int((self.e2-self.e1)/5.))
-                gracewin1('xaxis tick major %g'%(majortick))
-                gracewin1('xaxis ticklabel char size 0.75')
-                gracewin1('xaxis ticklabel color 2')
-                gracewin1('world ymin 0')
-                gracewin1('world ymax 1')
-                majortick=0.25
-                gracewin1('yaxis tick major %g'%(majortick))
-                gracewin1('yaxis ticklabel char size 0.5')
-                gracewin1('yaxis ticklabel color 2')
-                gracewin1('xaxis tick minor off\nyaxis tick minor off')
-                gracewin1("with g%i"%(i))
-                gracewin1('yaxis label char size 0.75')
-                gracewin1('yaxis label color 4')
-                if self.detectionMode=="tey":
-                    gracewin1('yaxis label "Sample TEY"')
-                else:
-                    gracewin1('yaxis label "Sample Absorption"')
-                #Fluo
-                i=1 
-                gracewin1('with g%i'%(i))
-                gracewin1.viewport["graph%02i"%i]=\
-                {"xmin":self.e1,"xmax":self.e2,"ymin":None,"ymax":None}
-                gracewin1('world xmin %g'%(self.e1))
-                gracewin1('world xmax %g'%(self.e2))
-                majortick=max(1.,int((self.e2-self.e1)/5.))
-                gracewin1('xaxis tick major %g'%(majortick))
-                gracewin1('xaxis ticklabel char size 0.75')
-                gracewin1('xaxis ticklabel color 2')
-                gracewin1('world ymin 0')
-                gracewin1('world ymax 1')
-                majortick=0.25
-                gracewin1('yaxis tick major %g'%(majortick))
-                gracewin1('yaxis ticklabel char size 0.5')
-                gracewin1('yaxis ticklabel color 2')
-                gracewin1('xaxis tick minor off\nyaxis tick minor off')
-                gracewin1("with g%i"%(i))
-                gracewin1('xaxis label char size 0.75')
-                gracewin1('xaxis label color 2')
-                gracewin1('xaxis label "Energy (eV)"')
-                gracewin1("with g%i"%(i))
-                gracewin1('yaxis label char size 0.75')
-                gracewin1('yaxis label color 2')
-                gracewin1('yaxis label "Sample Fluorescence"')
-                gracewin1('redraw')
-                
-                if self.detectionMode in ["fluo","sexafs","tey"]:
-                    self.gracewins={"exafs_1":gracewin1,\
-                            "exafs_2":gracewin2,\
-                            "exafs_3":gracewin3}
-                else:
-                    self.gracewins={"exafs_1":gracewin1,\
-                            "exafs_2":gracewin2}
+#               #Start gracewin1: absorption and fluorescence spectra
+#               #Absorption or TEY
+#               gracewin1=grace_np.GraceProcess()
+#               gracewin1('arrange(2,1,0.15,0.1,0.1)')
+#               gracewin1("timestamp 0., 0.\ntimestamp char size 0.5\ntimestamp on")
+#               gracewin1("default char size 0.75")
+#               gracewin1('with g0;title "%s"'%self.filename)
+#               gracewin1('with g0;legend 1.13,0.95;with g1;legend 0.9,0.1')
+#               gracewin1.viewport={}
+#               i=0
+#               gracewin1('with g%i'%(i))
+#               gracewin1.viewport["graph%02i"%i]=\
+#               {"xmin":self.e1,"xmax":self.e2,"ymin":None,"ymax":None}
+#               gracewin1('world xmin %g'%(self.e1))
+#               gracewin1('world xmax %g'%(self.e2))
+#               majortick=max(1.,int((self.e2-self.e1)/5.))
+#               gracewin1('xaxis tick major %g'%(majortick))
+#               gracewin1('xaxis ticklabel char size 0.75')
+#               gracewin1('xaxis ticklabel color 2')
+#               gracewin1('world ymin 0')
+#               gracewin1('world ymax 1')
+#               majortick=0.25
+#               gracewin1('yaxis tick major %g'%(majortick))
+#               gracewin1('yaxis ticklabel char size 0.5')
+#               gracewin1('yaxis ticklabel color 2')
+#               gracewin1('xaxis tick minor off\nyaxis tick minor off')
+#               gracewin1("with g%i"%(i))
+#               gracewin1('yaxis label char size 0.75')
+#               gracewin1('yaxis label color 4')
+#               if self.detectionMode=="tey":
+#                   gracewin1('yaxis label "Sample TEY"')
+#               else:
+#                   gracewin1('yaxis label "Sample Absorption"')
+#               #Fluo
+#               i=1 
+#               gracewin1('with g%i'%(i))
+#               gracewin1.viewport["graph%02i"%i]=\
+#               {"xmin":self.e1,"xmax":self.e2,"ymin":None,"ymax":None}
+#               gracewin1('world xmin %g'%(self.e1))
+#               gracewin1('world xmax %g'%(self.e2))
+#               majortick=max(1.,int((self.e2-self.e1)/5.))
+#               gracewin1('xaxis tick major %g'%(majortick))
+#               gracewin1('xaxis ticklabel char size 0.75')
+#               gracewin1('xaxis ticklabel color 2')
+#               gracewin1('world ymin 0')
+#               gracewin1('world ymax 1')
+#               majortick=0.25
+#               gracewin1('yaxis tick major %g'%(majortick))
+#               gracewin1('yaxis ticklabel char size 0.5')
+#               gracewin1('yaxis ticklabel color 2')
+#               gracewin1('xaxis tick minor off\nyaxis tick minor off')
+#               gracewin1("with g%i"%(i))
+#               gracewin1('xaxis label char size 0.75')
+#               gracewin1('xaxis label color 2')
+#               gracewin1('xaxis label "Energy (eV)"')
+#               gracewin1("with g%i"%(i))
+#               gracewin1('yaxis label char size 0.75')
+#               gracewin1('yaxis label color 2')
+#               gracewin1('yaxis label "Sample Fluorescence"')
+#               gracewin1('redraw')
+#               
+#               if self.detectionMode in ["fluo","sexafs","tey"]:
+#                   self.gracewins={"exafs_1":gracewin1,\
+#                           "exafs_2":gracewin2,\
+#                           "exafs_3":gracewin3}
+#               else:
+#                   self.gracewins={"exafs_1":gracewin1,\
+#                           "exafs_2":gracewin2}
 
-            else:
-                #Start gracewin5: currents and multichannel (sexafs)
-                gracewin5=grace_np.GraceProcess()
-                gracewin5("timestamp 0., 0.\ntimestamp char size 0.5\ntimestamp on")
-                gracewin5("default char size 0.75")
-                gracewin5('arrange(4,2,0.08,0.15,0.)')
-                gracewin5.viewport={}
-                for i in range(8):
-                    gracewin5('with g%i'%(i))
-                    #gracewin5.viewport["graph%02i"%i]=\
-                    #{"xmin":self.e1,"xmax":self.e2,"ymin":-1e-6,"ymax":1e-6}
-                    gracewin5('world xmin %g'%(self.e1))
-                    gracewin5('world xmax %g'%(self.e2))
-                    #majortick=max(1.,int((self.e2-self.e1)/5.))
-                    #gracewin5('xaxis tick major %g'%(majortick))
-                    gracewin5('xaxis ticklabel char size 0.75')
-                    gracewin5('xaxis ticklabel color 2')
-                    gracewin5('world ymin -1e-6')
-                    gracewin5('world ymax 1e-6')
-                    majortick=0.25
-                    gracewin5('yaxis tick major %g'%(majortick))
-                    gracewin5('yaxis ticklabel char size 0.5')
-                    gracewin5('yaxis ticklabel color 2')
-                    gracewin5('xaxis tick minor off\nyaxis tick minor off')
-                for i in range(6):
-                    gracewin5('with g%i'%(i))
-                    gracewin5('xaxis ticklabel off')
-                for i in [6,7]:
-                    gracewin5("with g%i"%(i))
-                    gracewin5('xaxis label char size 0.75')
-                    gracewin5('xaxis label color 2')
-                    gracewin5('xaxis label "Energy (eV)"')
-                for i in range(0,1):
-                    gracewin5("with g%i"%(i))
-                    gracewin5('yaxis label char size 0.6')
-                    gracewin5('yaxis label color 4')
-                    gracewin5('yaxis label "SEX_TEY"')
-                for i in range(1,8):
-                    gracewin5("with g%i"%(i))
-                    gracewin5('yaxis label char size 0.6')
-                    gracewin5('yaxis label color 2')
-                    gracewin5('yaxis label "SEX_Fluo%i"'%(i))
-                gracewin5('with g1;legend 0.7,0.1')
-                gracewin5('redraw')
+#           else:
+#               #Start gracewin5: currents and multichannel (sexafs)
+#               gracewin5=grace_np.GraceProcess()
+#               gracewin5("timestamp 0., 0.\ntimestamp char size 0.5\ntimestamp on")
+#               gracewin5("default char size 0.75")
+#               gracewin5('arrange(4,2,0.08,0.15,0.)')
+#               gracewin5.viewport={}
+#               for i in range(8):
+#                   gracewin5('with g%i'%(i))
+#                   #gracewin5.viewport["graph%02i"%i]=\
+#                   #{"xmin":self.e1,"xmax":self.e2,"ymin":-1e-6,"ymax":1e-6}
+#                   gracewin5('world xmin %g'%(self.e1))
+#                   gracewin5('world xmax %g'%(self.e2))
+#                   #majortick=max(1.,int((self.e2-self.e1)/5.))
+#                   #gracewin5('xaxis tick major %g'%(majortick))
+#                   gracewin5('xaxis ticklabel char size 0.75')
+#                   gracewin5('xaxis ticklabel color 2')
+#                   gracewin5('world ymin -1e-6')
+#                   gracewin5('world ymax 1e-6')
+#                   majortick=0.25
+#                   gracewin5('yaxis tick major %g'%(majortick))
+#                   gracewin5('yaxis ticklabel char size 0.5')
+#                   gracewin5('yaxis ticklabel color 2')
+#                   gracewin5('xaxis tick minor off\nyaxis tick minor off')
+#               for i in range(6):
+#                   gracewin5('with g%i'%(i))
+#                   gracewin5('xaxis ticklabel off')
+#               for i in [6,7]:
+#                   gracewin5("with g%i"%(i))
+#                   gracewin5('xaxis label char size 0.75')
+#                   gracewin5('xaxis label color 2')
+#                   gracewin5('xaxis label "Energy (eV)"')
+#               for i in range(0,1):
+#                   gracewin5("with g%i"%(i))
+#                   gracewin5('yaxis label char size 0.6')
+#                   gracewin5('yaxis label color 4')
+#                   gracewin5('yaxis label "SEX_TEY"')
+#               for i in range(1,8):
+#                   gracewin5("with g%i"%(i))
+#                   gracewin5('yaxis label char size 0.6')
+#                   gracewin5('yaxis label color 2')
+#                   gracewin5('yaxis label "SEX_Fluo%i"'%(i))
+#               gracewin5('with g1;legend 0.7,0.1')
+#               gracewin5('redraw')
 
-                #Start gracewin4: SEXAFS fluorescence and TEY spectra
+#               #Start gracewin4: SEXAFS fluorescence and TEY spectra
 
-                gracewin4=grace_np.GraceProcess()
-                gracewin4('arrange(2,1,0.12,0.1,0.1)')
-                gracewin4("timestamp 0., 0.\ntimestamp char size 0.5\ntimestamp on")
-                gracewin4("default char size 0.75")
-                gracewin4.viewport={}
-                for i in range(2):
-                    gracewin4('with g%i'%(i))
-                    #gracewin4.viewport["graph%02i"%i]=\
-                    #{"xmin":self.e1,"xmax":self.e2,"ymin":-1e-6,"ymax":1e-6}
-                    gracewin4('world xmin %g'%(self.e1))
-                    gracewin4('world xmax %g'%(self.e2))
-                    #majortick=max(1.,int((self.e2-self.e1)/5.))
-                    #gracewin4('xaxis tick major %g'%(majortick))
-                    gracewin4('xaxis ticklabel char size 0.75')
-                    gracewin4('xaxis ticklabel color 2')
-                    gracewin4('world ymin -1e-6')
-                    gracewin4('world ymax 1e-6')
-                    majortick=0.25
-                    #gracewin4('yaxis tick major %g'%(majortick))
-                    gracewin4('yaxis ticklabel char size 0.5')
-                    gracewin4('yaxis ticklabel color 2')
-                    gracewin4('xaxis tick minor off\nyaxis tick minor off')
-                #for i in range(1):
-                #    gracewin4('with g%i'%(i))
-                #    gracewin4('xaxis ticklabel off')
-                for i in [1]:
-                    gracewin4("with g%i"%(i))
-                    gracewin4('xaxis label char size 0.75')
-                    gracewin4('xaxis label color 2')
-                    gracewin4('xaxis label "Energy (eV)"')
-                for i in range(0,1):
-                    gracewin4("with g%i"%(i))
-                    gracewin4('yaxis label char size 0.75')
-                    gracewin4('yaxis label color 4')
-                    gracewin4('yaxis label "Sample Fluorescence"')
-                for i in range(1,2):
-                    gracewin4("with g%i"%(i))
-                    gracewin4('yaxis label char size 0.75')
-                    gracewin4('yaxis label color 2')
-                    gracewin4('yaxis label "Sample Electron Yield"')
-                gracewin4('with g0;legend 0.7,0.95')
-                gracewin4('redraw')
-            
-                self.gracewins={"sexafs_1":gracewin4,\
-                        "sexafs_2":gracewin5}
-        except Exception as tmp:
-            print("Error starting Grace processes: no plotting. Scan will continue.")
-            self.plotSetting=None
-            print(tmp)
-        return
+#               gracewin4=grace_np.GraceProcess()
+#               gracewin4('arrange(2,1,0.12,0.1,0.1)')
+#               gracewin4("timestamp 0., 0.\ntimestamp char size 0.5\ntimestamp on")
+#               gracewin4("default char size 0.75")
+#               gracewin4.viewport={}
+#               for i in range(2):
+#                   gracewin4('with g%i'%(i))
+#                   #gracewin4.viewport["graph%02i"%i]=\
+#                   #{"xmin":self.e1,"xmax":self.e2,"ymin":-1e-6,"ymax":1e-6}
+#                   gracewin4('world xmin %g'%(self.e1))
+#                   gracewin4('world xmax %g'%(self.e2))
+#                   #majortick=max(1.,int((self.e2-self.e1)/5.))
+#                   #gracewin4('xaxis tick major %g'%(majortick))
+#                   gracewin4('xaxis ticklabel char size 0.75')
+#                   gracewin4('xaxis ticklabel color 2')
+#                   gracewin4('world ymin -1e-6')
+#                   gracewin4('world ymax 1e-6')
+#                   majortick=0.25
+#                   #gracewin4('yaxis tick major %g'%(majortick))
+#                   gracewin4('yaxis ticklabel char size 0.5')
+#                   gracewin4('yaxis ticklabel color 2')
+#                   gracewin4('xaxis tick minor off\nyaxis tick minor off')
+#               #for i in range(1):
+#               #    gracewin4('with g%i'%(i))
+#               #    gracewin4('xaxis ticklabel off')
+#               for i in [1]:
+#                   gracewin4("with g%i"%(i))
+#                   gracewin4('xaxis label char size 0.75')
+#                   gracewin4('xaxis label color 2')
+#                   gracewin4('xaxis label "Energy (eV)"')
+#               for i in range(0,1):
+#                   gracewin4("with g%i"%(i))
+#                   gracewin4('yaxis label char size 0.75')
+#                   gracewin4('yaxis label color 4')
+#                   gracewin4('yaxis label "Sample Fluorescence"')
+#               for i in range(1,2):
+#                   gracewin4("with g%i"%(i))
+#                   gracewin4('yaxis label char size 0.75')
+#                   gracewin4('yaxis label color 2')
+#                   gracewin4('yaxis label "Sample Electron Yield"')
+#               gracewin4('with g0;legend 0.7,0.95')
+#               gracewin4('redraw')
+#           
+#               self.gracewins={"sexafs_1":gracewin4,\
+#                       "sexafs_2":gracewin5}
+#       except Exception as tmp:
+#           print("Error starting Grace processes: no plotting. Scan will continue.")
+#           self.plotSetting=None
+#           print(tmp)
+#       return
 
 #    def GPlot(self,gw,graph,curve,x,y,legend=None,color=1,noredraw=False):
 #        """kills and replot a curve on a given graceprocess,graph,signal with an optional legend
@@ -1054,187 +1048,187 @@ class escan_class:
 #            gw(pipe_string+'redraw\n')
 #        return
 
-    def GPlot(self,gw,graph,curve,x,y,legend=None,color=1,noredraw=False,autoscale=False):
-        """kills and replot a curve on a given graceprocess,graph,signal with an optional legend
-        Could be executed in a thread to kill scan deadtime"""
-        etol=1e-15
-        scale_tol=0.1
-        l=min(len(x),len(y))
-        if len(x)<2 or len(y)<2:
-            return
-        xmax,xmin,ymax,ymin=max(x),min(x),max(y),min(y)
-        if xmax-xmin<etol: xmax=xmin+etol
-        if ymax-ymin<etol: ymax=ymin+etol
-        color=int(max(0,color))
-        #color==4 is yellow, almost invisible !
-        if mod(color,4)==0: color+=1
-        pipe_string="kill g%i.s%i"%(graph,curve)+"\n"+"with g%i\n"%(graph)
-        #Send data
-        for i in range(l):
-            pipe_string+='g%i.s%i point %g,%g\n'%(graph,curve,x[i],y[i])
-        #
-        if "viewport" in dir(gw):
-            if not("graph%02i"%graph in gw.viewport):
-                gw.viewport["graph%02i"%graph]={
-                "xmax":xmax,"xmin":xmin,"ymax":ymax,"ymin":ymin}
-            if xmin<gw.viewport["graph%02i"%graph]["xmin"] or gw.viewport["graph%02i"%graph]["xmin"]==None:
-                gw.viewport["graph%02i"%graph]["xmin"]=xmin
-                pipe_string+='world xmin %g\n'%(xmin)
-            if xmax>gw.viewport["graph%02i"%graph]["xmax"] or gw.viewport["graph%02i"%graph]["xmax"]==None:
-                gw.viewport["graph%02i"%graph]["xmax"]=xmax
-                pipe_string+='world xmax %g\n'%(xmax)
-            if ymin<gw.viewport["graph%02i"%graph]["ymin"] or gw.viewport["graph%02i"%graph]["ymin"]==None:
-                gw.viewport["graph%02i"%graph]["ymin"]=ymin
-                pipe_string+='world ymin %g\n'%(ymin)
-            if ymax>gw.viewport["graph%02i"%graph]["ymax"] or gw.viewport["graph%02i"%graph]["ymax"]==None:
-                gw.viewport["graph%02i"%graph]["ymax"]=ymax
-                pipe_string+='world ymax %g\n'%(ymax)
-        else:
-            gw.viewport={}
-            gw.viewport["graph%02i"%graph]=\
-            {"xmin":min(x),"xmax":max(x),"ymin":min(y),"ymax":max(y)}
-            pipe_string+='world xmin %g\n'%(xmin)
-            pipe_string+='world xmax %g\n'%(xmax)
-            pipe_string+='world ymin %g\n'%(ymin)
-            pipe_string+='world ymax %g\n'%(ymax)
-        majortick=(gw.viewport["graph%02i"%graph]["xmax"]-gw.viewport["graph%02i"%graph]["xmin"])*0.1
-        pipe_string+=('xaxis tick major %g\n'%(majortick))
-        majortick=(gw.viewport["graph%02i"%graph]["ymax"]-gw.viewport["graph%02i"%graph]["ymin"])*0.1
-        pipe_string+=('yaxis tick major %g\n'%(majortick))
-        if legend!=None:
-            pipe_string+='g%i.s%i legend "%s"\n'%(graph,curve,legend)
-        if color>0:
-            pipe_string+="g%i.s%i LINE COLOR %i\n"%(graph,curve,mod(color,24)+1)
-        else:
-            pipe_string+="g%i.s%i LINE COLOR 0\n"%(graph,curve)
-        if autoscale: pipe_string+="autoscale\n"
-        if noredraw:
-            gw(pipe_string)
-        else:
-            gw(pipe_string+'redraw\n')
-            #gw.flush()
-        return
-    
-    def restart_grace_processes(self):
-        """Kills living grace processes by PID with signal 15 and restart them."""
-        #Kills by PID
-        for i in self.gracewins:
-            try:
-                os.kill(self.gracewins[i].pid,15)
-            except KeyboardInterrupt as tmp:
-                raise tmp
-            except:
-                print("restart_grace_processes: cannot kill pid=",self.gracewins[i]," by signal 15")
-        #Restart them
-        self.start_grace_processes()
-        return
+#   def GPlot(self,gw,graph,curve,x,y,legend=None,color=1,noredraw=False,autoscale=False):
+#       """kills and replot a curve on a given graceprocess,graph,signal with an optional legend
+#       Could be executed in a thread to kill scan deadtime"""
+#       etol=1e-15
+#       scale_tol=0.1
+#       l=min(len(x),len(y))
+#       if len(x)<2 or len(y)<2:
+#           return
+#       xmax,xmin,ymax,ymin=max(x),min(x),max(y),min(y)
+#       if xmax-xmin<etol: xmax=xmin+etol
+#       if ymax-ymin<etol: ymax=ymin+etol
+#       color=int(max(0,color))
+#       #color==4 is yellow, almost invisible !
+#       if mod(color,4)==0: color+=1
+#       pipe_string="kill g%i.s%i"%(graph,curve)+"\n"+"with g%i\n"%(graph)
+#       #Send data
+#       for i in range(l):
+#           pipe_string+='g%i.s%i point %g,%g\n'%(graph,curve,x[i],y[i])
+#       #
+#       if "viewport" in dir(gw):
+#           if not("graph%02i"%graph in gw.viewport):
+#               gw.viewport["graph%02i"%graph]={
+#               "xmax":xmax,"xmin":xmin,"ymax":ymax,"ymin":ymin}
+#           if xmin<gw.viewport["graph%02i"%graph]["xmin"] or gw.viewport["graph%02i"%graph]["xmin"]==None:
+#               gw.viewport["graph%02i"%graph]["xmin"]=xmin
+#               pipe_string+='world xmin %g\n'%(xmin)
+#           if xmax>gw.viewport["graph%02i"%graph]["xmax"] or gw.viewport["graph%02i"%graph]["xmax"]==None:
+#               gw.viewport["graph%02i"%graph]["xmax"]=xmax
+#               pipe_string+='world xmax %g\n'%(xmax)
+#           if ymin<gw.viewport["graph%02i"%graph]["ymin"] or gw.viewport["graph%02i"%graph]["ymin"]==None:
+#               gw.viewport["graph%02i"%graph]["ymin"]=ymin
+#               pipe_string+='world ymin %g\n'%(ymin)
+#           if ymax>gw.viewport["graph%02i"%graph]["ymax"] or gw.viewport["graph%02i"%graph]["ymax"]==None:
+#               gw.viewport["graph%02i"%graph]["ymax"]=ymax
+#               pipe_string+='world ymax %g\n'%(ymax)
+#       else:
+#           gw.viewport={}
+#           gw.viewport["graph%02i"%graph]=\
+#           {"xmin":min(x),"xmax":max(x),"ymin":min(y),"ymax":max(y)}
+#           pipe_string+='world xmin %g\n'%(xmin)
+#           pipe_string+='world xmax %g\n'%(xmax)
+#           pipe_string+='world ymin %g\n'%(ymin)
+#           pipe_string+='world ymax %g\n'%(ymax)
+#       majortick=(gw.viewport["graph%02i"%graph]["xmax"]-gw.viewport["graph%02i"%graph]["xmin"])*0.1
+#       pipe_string+=('xaxis tick major %g\n'%(majortick))
+#       majortick=(gw.viewport["graph%02i"%graph]["ymax"]-gw.viewport["graph%02i"%graph]["ymin"])*0.1
+#       pipe_string+=('yaxis tick major %g\n'%(majortick))
+#       if legend!=None:
+#           pipe_string+='g%i.s%i legend "%s"\n'%(graph,curve,legend)
+#       if color>0:
+#           pipe_string+="g%i.s%i LINE COLOR %i\n"%(graph,curve,mod(color,24)+1)
+#       else:
+#           pipe_string+="g%i.s%i LINE COLOR 0\n"%(graph,curve)
+#       if autoscale: pipe_string+="autoscale\n"
+#       if noredraw:
+#           gw(pipe_string)
+#       else:
+#           gw(pipe_string+'redraw\n')
+#           #gw.flush()
+#       return
+#   
+#   def restart_grace_processes(self):
+#       """Kills living grace processes by PID with signal 15 and restart them."""
+#       #Kills by PID
+#       for i in self.gracewins:
+#           try:
+#               os.kill(self.gracewins[i].pid,15)
+#           except KeyboardInterrupt as tmp:
+#               raise tmp
+#           except:
+#               print("restart_grace_processes: cannot kill pid=",self.gracewins[i]," by signal 15")
+#       #Restart them
+#       self.start_grace_processes()
+#       return
 
-    def update_grace_windows(self,iscan):
-        """Append new points to the curves. This is a separate function, so that it can be easily executed in a separate thread.
-        The iscan value is used to decide on which curve send data. Every iscan has a curve sor as to observe evolutions.
-        I reserve the s0 curve for average even if not yet used."""
-        #Verify that all arrays have same lenght: this is not necessary using my GPlot function!
-        #
-        #Shortcuts
-        gws=self.gracewins
-        gp=self.GPlot
-        en=self.graph_data["energy"]
-        en_ave=self.graph_data["energy_average"]
-        gd=self.graph_data
-        #current curve index
-        iplot=iscan+1
-        #
-        for i in gws:
-            if not(gws[i].is_open()):
-                try:
-                    self.restart_grace_processes()
-                except:
-                    print("Graphics cannot be restarted. Scan will continue without...")
-                    self.GRAPHICS_RESTART_NEEDED=True
-        try:
-            if self.detectionMode in ["absorption","fluo","tey","sexafs"]:
-                #
-                #Window exafs_1
-                #
-                if self.plotSetting=="kinetic":
-                    #    Many plots mode
-                    gp(gws["exafs_1"],0,iplot,en,gd["mux"],legend="n=%i"%(iplot),color=iplot,noredraw=True)
-                    gp(gws["exafs_1"],1,iplot,en,gd["fluochannels"][0],color=iplot)
-                elif self.plotSetting=="average":
-                    #    Average mode
-                    gp(gws["exafs_1"],0,1,en,gd["mux"],legend="n=%i"%(iplot),color=3,noredraw=True)
-                    gp(gws["exafs_1"],1,1,en,gd["fluochannels"][0],color=3,noredraw=True)
-                    gp(gws["exafs_1"],0,0,en_ave,gd["mux_average"],legend="Average",color=1,noredraw=True)
-                    if self.detectionMode=="sexafs":
-                        gp(gws["exafs_1"],1,0,en_ave,gd["tey_average"],color=1)
-                    else:
-                        gp(gws["exafs_1"],1,0,en_ave,gd["fluo_average"],color=1)
-                #
-                #Window exafs_2
-                #
-                #For the currents always overwrite the same curve for short
-                names=["i0","i1","i2","i_tey"]
-                for i in range(len(names)):
-                    gp(gws["exafs_2"],1,i,en,gd[names[i]],legend=names[i],color=i+1,noredraw=True)
-                gp(gws["exafs_2"],0,iplot,en,gd["mux_ref"],legend=("n=%i"%(iplot)),color=iplot)
-                #
-                #Window exafs_3
-                #
-                #For the fluo counts always overwrite the same curve for short
-                if self.detectionMode in ["fluo","sexafs","tey"]:
-                    for i in range(len(self.auto_fluo_channels)-1):
-                        gp(gws["exafs_3"],i,1,en,gd["fluochannels"][i+1],color=1,noredraw=True)
-                    gp(gws["exafs_3"],len(self.auto_fluo_channels)-1,1,en,gd["fluochannels"][len(self.auto_fluo_channels)],\
-                    color=1)
-                    #gp(gws["exafs_3"],0,1,en,gd["rontec"],color=3)
-                    #
-            elif self.detectionMode in ["sexafs",]:
-                #
-                #Window sexafs_1: reference data are TEY data when in sexafs (just to reuse variables)
-                #
-                if self.plotSetting=="kinetic":
-                    #    Many plots mode
-                    gp(gws["sexafs_1"],0,iplot,en,gd["mux"],\
-                    legend=("n=%i"%(iplot)),color=iplot,noredraw=True)
-                    gp(gws["sexafs_1"],1,iplot,en,gd["mux_ref"],color=iplot)
-                elif self.plotSetting=="average":
-                    #    Average mode
-                    gp(gws["sexafs_1"],0,1,en,gd["mux"],legend=("n=%i"%(iplot)),color=3,noredraw=True)
-                    gp(gws["sexafs_1"],1,1,en,gd["mux_ref"],color=3,noredraw=True)
-                    gp(gws["sexafs_1"],0,0,en_ave,gd["mux_average"],legend="Average",color=1,noredraw=True)
-                    gp(gws["sexafs_1"],1,0,en_ave,gd["tey_average"],color=1)
-                #
-                #Window sexafs_2
-                #
-                #For the fluo counts always overwrite the same curve for short
-                for i in range(1,8):
-                    gp(gws["sexafs_2"],i,1,en,gd["fluochannels"][i],noredraw=True)
-                gp(gws["sexafs_2"],0,1,en,gd["i0"],color=1,legend="i0",noredraw=True)
-                gp(gws["sexafs_2"],0,2,en,gd["i1"],color=2,legend="i1")
-                #
-            else:
-                pass
-        except KeyboardInterrupt as tmp:
-            raise tmp
-        except grace_np.Disconnected:
-            print("One or more grace windows have been disconnected or closed !")
-            print("Restarting windows...", end=' ')
-            self.restart_grace_processes()
-            print("OK")
-        except Exception as tmp:
-            for i in gws:
-                if not(gws[i].is_open()):
-                    print("Restarting windows...", end=' ')
-                    self.restart_grace_processes()
-                    print("OK")
-                    return
-            self.plotSetting=None
-            print("Unknown error in update_grace_windows... no more plotting in grace")
-            print(tmp)
-            print(tmp.args)
-        #cleanup namespace and then returns
-        del gws,gp,gd,en        
-        return
+#   def update_grace_windows(self,iscan):
+#       """Append new points to the curves. This is a separate function, so that it can be easily executed in a separate thread.
+#       The iscan value is used to decide on which curve send data. Every iscan has a curve sor as to observe evolutions.
+#       I reserve the s0 curve for average even if not yet used."""
+#       #Verify that all arrays have same lenght: this is not necessary using my GPlot function!
+#       #
+#       #Shortcuts
+#       gws=self.gracewins
+#       gp=self.GPlot
+#       en=self.graph_data["energy"]
+#       en_ave=self.graph_data["energy_average"]
+#       gd=self.graph_data
+#       #current curve index
+#       iplot=iscan+1
+#       #
+#       for i in gws:
+#           if not(gws[i].is_open()):
+#               try:
+#                   self.restart_grace_processes()
+#               except:
+#                   print("Graphics cannot be restarted. Scan will continue without...")
+#                   self.GRAPHICS_RESTART_NEEDED=True
+#       try:
+#           if self.detectionMode in ["absorption","fluo","tey","sexafs"]:
+#               #
+#               #Window exafs_1
+#               #
+#               if self.plotSetting=="kinetic":
+#                   #    Many plots mode
+#                   gp(gws["exafs_1"],0,iplot,en,gd["mux"],legend="n=%i"%(iplot),color=iplot,noredraw=True)
+#                   gp(gws["exafs_1"],1,iplot,en,gd["fluochannels"][0],color=iplot)
+#               elif self.plotSetting=="average":
+#                   #    Average mode
+#                   gp(gws["exafs_1"],0,1,en,gd["mux"],legend="n=%i"%(iplot),color=3,noredraw=True)
+#                   gp(gws["exafs_1"],1,1,en,gd["fluochannels"][0],color=3,noredraw=True)
+#                   gp(gws["exafs_1"],0,0,en_ave,gd["mux_average"],legend="Average",color=1,noredraw=True)
+#                   if self.detectionMode=="sexafs":
+#                       gp(gws["exafs_1"],1,0,en_ave,gd["tey_average"],color=1)
+#                   else:
+#                       gp(gws["exafs_1"],1,0,en_ave,gd["fluo_average"],color=1)
+#               #
+#               #Window exafs_2
+#               #
+#               #For the currents always overwrite the same curve for short
+#               names=["i0","i1","i2","i_tey"]
+#               for i in range(len(names)):
+#                   gp(gws["exafs_2"],1,i,en,gd[names[i]],legend=names[i],color=i+1,noredraw=True)
+#               gp(gws["exafs_2"],0,iplot,en,gd["mux_ref"],legend=("n=%i"%(iplot)),color=iplot)
+#               #
+#               #Window exafs_3
+#               #
+#               #For the fluo counts always overwrite the same curve for short
+#               if self.detectionMode in ["fluo","sexafs","tey"]:
+#                   for i in range(len(self.auto_fluo_channels)-1):
+#                       gp(gws["exafs_3"],i,1,en,gd["fluochannels"][i+1],color=1,noredraw=True)
+#                   gp(gws["exafs_3"],len(self.auto_fluo_channels)-1,1,en,gd["fluochannels"][len(self.auto_fluo_channels)],\
+#                   color=1)
+#                   #gp(gws["exafs_3"],0,1,en,gd["rontec"],color=3)
+#                   #
+#           elif self.detectionMode in ["sexafs",]:
+#               #
+#               #Window sexafs_1: reference data are TEY data when in sexafs (just to reuse variables)
+#               #
+#               if self.plotSetting=="kinetic":
+#                   #    Many plots mode
+#                   gp(gws["sexafs_1"],0,iplot,en,gd["mux"],\
+#                   legend=("n=%i"%(iplot)),color=iplot,noredraw=True)
+#                   gp(gws["sexafs_1"],1,iplot,en,gd["mux_ref"],color=iplot)
+#               elif self.plotSetting=="average":
+#                   #    Average mode
+#                   gp(gws["sexafs_1"],0,1,en,gd["mux"],legend=("n=%i"%(iplot)),color=3,noredraw=True)
+#                   gp(gws["sexafs_1"],1,1,en,gd["mux_ref"],color=3,noredraw=True)
+#                   gp(gws["sexafs_1"],0,0,en_ave,gd["mux_average"],legend="Average",color=1,noredraw=True)
+#                   gp(gws["sexafs_1"],1,0,en_ave,gd["tey_average"],color=1)
+#               #
+#               #Window sexafs_2
+#               #
+#               #For the fluo counts always overwrite the same curve for short
+#               for i in range(1,8):
+#                   gp(gws["sexafs_2"],i,1,en,gd["fluochannels"][i],noredraw=True)
+#               gp(gws["sexafs_2"],0,1,en,gd["i0"],color=1,legend="i0",noredraw=True)
+#               gp(gws["sexafs_2"],0,2,en,gd["i1"],color=2,legend="i1")
+#               #
+#           else:
+#               pass
+#       except KeyboardInterrupt as tmp:
+#           raise tmp
+#       except grace_np.Disconnected:
+#           print("One or more grace windows have been disconnected or closed !")
+#           print("Restarting windows...", end=' ')
+#           self.restart_grace_processes()
+#           print("OK")
+#       except Exception as tmp:
+#           for i in gws:
+#               if not(gws[i].is_open()):
+#                   print("Restarting windows...", end=' ')
+#                   self.restart_grace_processes()
+#                   print("OK")
+#                   return
+#           self.plotSetting=None
+#           print("Unknown error in update_grace_windows... no more plotting in grace")
+#           print(tmp)
+#           print(tmp.args)
+#       #cleanup namespace and then returns
+#       del gws,gp,gd,en        
+#       return
         
     
     def calculate_pitch(self,energy):
@@ -1305,7 +1299,7 @@ class escan_class:
         #
         # Start graphic windows
         #
-        self.start_grace_processes()
+        #self.start_grace_processes()
         #    
         #Start the real stuff
         #
@@ -1718,12 +1712,13 @@ class escan_class:
                         if self.GRAPHICS_RESTART_NEEDED == False:
                             if mod(waitplot,_UPDATE_GRAPHICS_EVERY) == 0:
                                 waitplot = 0
-                                self.update_grace_windows(iscan)
+                                #self.update_grace_windows(iscan)
                                 #thread.start_new_thread(self.update_grace_windows, (iscan,))
                             else:
                                 waitplot += 1
                         else:
-                            self.update_grace_windows(iscan)
+                            #self.update_grace_windows(iscan)
+                            pass
                     #
                     #END OF A SCAN CYCLE
                     #
@@ -1755,11 +1750,13 @@ class escan_class:
                             fullFile.close()
                             print("Scan finished on user request.")
                             try:
-                                self.update_grace_windows(iscan)
+                                #self.update_grace_windows(iscan)
+                                pass
                             except:
                                 pass
                             try:
-                                self.update_grace_windows(iscan)
+                                #self.update_grace_windows(iscan)
+                                pass
                             except:
                                 pass
                             self.after_run(handler=shortFile, handlerFull=fullFile,nowait=nowait)
@@ -1829,7 +1826,8 @@ class escan_class:
             #!Call the graphics update for the last few points 
             #!
             if self.plotSetting != None:
-                self.update_grace_windows(iscan)
+                pass
+                #self.update_grace_windows(iscan)
                 #thread.start_new_thread(self.update_grace_windows,(iscan,))
             #
             if line_buffer:
@@ -2035,31 +2033,9 @@ class escan_class:
         sleep(1)
         self.dcm.velocity(60)
         print("OK")
-        self.EndOfRunAlert()        
         return
     
 
-    def EndOfRunAlert(self):
-        """Uses Tkinter to alert user that the run is finished... just in case he was sleeping..."""
-        #try:
-        #    pass
-        #    Beep(5,0.1);Beep(5,0.2)
-        #    Beep(5,0.1);Beep(5,0.2)
-        #except:
-        #    print "WARNING: Error alerting for end of scan... \n"
-        #    print "BUT: Ignore this message if escan is working well,\n just report this to your local contact\n"
-        try:
-            a=Tkinter.Tk()
-            for j in range(5):
-                for i in range(3):
-                    a.bell()
-                    sleep(0.025)
-                sleep(0.35)
-            a.destroy()
-        except:
-            print("WARNING: Error alerting for end of scan... no Tkinter?\n")
-            print("BUT: Ignore this message if escan is working well,\n just report this to your local contact\n")
-        return
 
 def escan(filename="",form="",n=1,nowait=False):
     """Provide the start of the filename for the data, the parameters file, the number of scans.
