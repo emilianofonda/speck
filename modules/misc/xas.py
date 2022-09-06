@@ -279,7 +279,7 @@ def kshift(chi,de=0,**kwargs):
     ge = npy.greater_equal(a[0], 0.)
     a[1] = a[1] * ge
     a[0] = sqrt(a[0] * ge)
-    #for i in xrange(len(a[0])):
+    #for i in range(len(a[0])):
     #    if a[0][i] < 0 or a[0][i] in [npy.nan, npy.inf]:
     #        a[0][i] = 0
     return interpolate(a,**kwargs)
@@ -655,7 +655,7 @@ class FEFFcalculation:
         center = array(absorber)
         temp_atoms = []
         #print "center =",center
-        for i in xrange(len(model["atoms"])):
+        for i in range(len(model["atoms"])):
             dd = sum((array(model["xyz"][i]) - center) ** 2 ) 
             if dd <= cutoff_2:
                 temp_atoms.append(i)

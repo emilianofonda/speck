@@ -245,7 +245,7 @@ class sai:
         self.clearDark()
         dark = self.read()
         #print "dark values are:", dark
-        self.DP.put_property({'SPECK_DARK_VALUES': map(str, dark)})
+        self.DP.put_property({'SPECK_DARK_VALUES': [str(i) for i in dark]})
         return self.readDark()
         
     def readDark(self):
@@ -264,7 +264,7 @@ class sai:
         elif len(dark) == len(self.user_readconfig):
             pass
             #print "dark values read from device %s"%self.label
-        self.dark = map(float, dark)
+        self.dark = [float(i) for i in dark]
         return self.dark
 
     def clearDark(self):
@@ -278,18 +278,18 @@ class sai:
             ShapeArrays = (self.DP.dataBufferNumber/2,)+ tuple(self.upperDimensions)
         else:
             ShapeArrays = (self.DP.dataBufferNumber,)+ tuple(self.upperDimensions)
-        handler.createGroup("/data/", self.identifier)
-        outNode = handler.getNode("/data/" + self.identifier)
+        handler.create_group("/data/", self.identifier)
+        outNode = handler.get_node("/data/" + self.identifier)
         for i in range(self.numChan):
-            handler.createCArray(outNode, "I%i" % i, title = "I%i" % i,\
+            handler.create_carray(outNode, "I%i" % i, title = "I%i" % i,\
             shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
 #Write down contextual data
         ll = np.array(["%s = %s"%(i,str(self.config[i])) for i in self.config.keys()])
-        outGroup = handler.createGroup("/context",self.identifier)
-        outGroup = handler.getNode("/context/"+self.identifier)
-        handler.createCArray(outGroup, "config", title = "config",\
+        outGroup = handler.create_group("/context",self.identifier)
+        outGroup = handler.get_node("/context/"+self.identifier)
+        handler.create_carray(outGroup, "config", title = "config",\
         shape = numpy.shape(ll), atom = tables.Atom.from_dtype(ll.dtype), filters = HDFfilters)
-        outNode = handler.getNode("/context/"+self.identifier+"/config")
+        outNode = handler.get_node("/context/"+self.identifier+"/config")
         outNode[:] = ll
 
         return
@@ -313,7 +313,7 @@ class sai:
             fmt = "%i," * len(tuple(upperIndex))
             stringIndex = fmt % tuple(upperIndex)     
         for i in range(self.numChan):
-            outNode = handler.getNode("/data/" + self.identifier + "/I%i" % i)
+            outNode = handler.get_node("/data/" + self.identifier + "/I%i" % i)
             #outNode[:] = buffer[i]
             if upperIndex == ():
                 outNode[:] = buffer[i]

@@ -85,7 +85,7 @@ class I200_serial:
             return self.SerPort.readlines()
         else:
             out=[]
-            for i in xrange(n):
+            for i in range(n):
                 out.append(self.SerPort.readline())
             return out
 
@@ -145,7 +145,7 @@ class I200_serial:
         ll = self.InOutS("PID:PROF 1",n=2)
         if verbose > 0:
             print(ll)
-        for i in xrange(np):
+        for i in range(np):
             time.sleep(self.deadtime)
             ll=self.InOutS("FETCH:PROF?", n=2)
             if verbose > 1:

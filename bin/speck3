@@ -1,3 +1,4 @@
 #!/bin/sh
-source /etc/pytango3rc
-~/speck3/bin/speck $@
+#export FORCE_PYTANGO3=yes
+source /etc/bashrc
+~/speck3/bin/speck setup=CX1_pulse

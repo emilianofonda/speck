@@ -436,57 +436,57 @@ class dxmap:
         ShapeArrays = (self.NbFrames,) + tuple(self.upperDimensions)
         ShapeMatrices = (self.NbFrames, self.DP.streamnbDataPerAcq) + tuple(self.upperDimensions)
         
-        handler.createGroup("/data", self.identifier)
-        outNode = handler.getNode("/data/" + self.identifier)
+        handler.create_group("/data", self.identifier)
+        outNode = handler.get_node("/data/" + self.identifier)
        
          
         for i in range(self.numChan):
-            handler.createCArray(outNode, "mca%02i" % i, title = "mca%02i" % i,\
+            handler.create_carray(outNode, "mca%02i" % i, title = "mca%02i" % i,\
             shape = ShapeMatrices, atom = tables.UInt32Atom(), filters = HDFfilters)
 
         for i in range(self.numChan):
             if 'icr' in self.stream_items:
-                handler.createCArray(outNode, "icr%02i" % i, title = "icr%02i" % i,\
+                handler.create_carray(outNode, "icr%02i" % i, title = "icr%02i" % i,\
                 shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
             if 'ocr' in self.stream_items:
-                handler.createCArray(outNode, "ocr%02i" % i, title = "ocr%02i" % i,\
+                handler.create_carray(outNode, "ocr%02i" % i, title = "ocr%02i" % i,\
                 shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
             if 'deadtime' in self.stream_items:
-                handler.createCArray(outNode, "deadtime%02i" % i, title = "deadtime%02i" % i,\
+                handler.create_carray(outNode, "deadtime%02i" % i, title = "deadtime%02i" % i,\
                 shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
             elif 'icr' in self.stream_items and 'ocr' in self.stream_items:
-                handler.createCArray(outNode, "deadtime%02i" % i, title = "deadtime%02i" % i,\
+                handler.create_carray(outNode, "deadtime%02i" % i, title = "deadtime%02i" % i,\
                 shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
-            handler.createCArray(outNode, "roi%02i" % i, title = "roi%02i" % i,\
+            handler.create_carray(outNode, "roi%02i" % i, title = "roi%02i" % i,\
             shape = ShapeArrays, atom = tables.UInt32Atom(), filters = HDFfilters)
 
-        handler.createArray("/data/"+self.identifier, "roiLimits", np.array(self.getROIs(),"i"))
+        handler.create_array("/data/"+self.identifier, "roiLimits", np.array(self.getROIs(),"i"))
 #Write down contextual data
         ll = np.array(["%s = %s"%(i,str(self.config[i])) for i in self.config.keys()])
-        handler.createGroup("/context",self.identifier)
-        outGroup = handler.getNode("/context/"+self.identifier)
-        handler.createCArray(outGroup, "config", title = "config",\
+        handler.create_group("/context",self.identifier)
+        outGroup = handler.get_node("/context/"+self.identifier)
+        handler.create_carray(outGroup, "config", title = "config",\
         shape = np.shape(ll), atom = tables.Atom.from_dtype(ll.dtype), filters = HDFfilters)
-        outNode = handler.getNode("/context/"+self.identifier+"/config")
+        outNode = handler.get_node("/context/"+self.identifier+"/config")
         outNode[:] = ll
         
-        handler.createGroup("/data/"+self.identifier,"detector_details","Detector description")
-        outGroup = handler.getNode("/data/"+self.identifier+"/detector_details")
+        handler.create_group("/data/"+self.identifier,"detector_details","Detector description")
+        outGroup = handler.get_node("/data/"+self.identifier+"/detector_details")
 
-        handler.createCArray(outGroup, "detector_name", title = "name of detector used by fastosh",\
+        handler.create_carray(outGroup, "detector_name", title = "name of detector used by fastosh",\
         shape = (1,), atom = tables.StringAtom(256,1))
-        outNode = handler.getNode("/data/"+self.identifier+"/detector_details"+"/detector_name")
-        outNode[:] = self.detector_details["detector_name"]
+        outNode = handler.get_node("/data/"+self.identifier+"/detector_details"+"/detector_name")
+        outNode[:] = np.array(self.detector_details["detector_name"])
 
-        handler.createCArray(outGroup, "real_pixels_list", title = "List of Real Pixels: 13,17,19,21",\
+        handler.create_carray(outGroup, "real_pixels_list", title = "List of Real Pixels",\
         shape = (1,), atom = tables.StringAtom(256,1))
-        outNode = handler.getNode("/data/"+self.identifier+"/detector_details"+"/real_pixels_list")
-        outNode[:] = self.detector_details["real_pixels_list"]
+        outNode = handler.get_node("/data/"+self.identifier+"/detector_details"+"/real_pixels_list")
+        outNode[:] = np.array(self.detector_details["real_pixels_list"])
 
-        handler.createCArray(outGroup, "comment", title = "free user comment",\
+        handler.create_carray(outGroup, "comment", title = "free user comment",\
         shape = (1,), atom = tables.StringAtom(256,1))
-        outNode = handler.getNode("/data/"+self.identifier+"/detector_details"+"/comment")
-        outNode[:] = self.detector_details["comment"]
+        outNode = handler.get_node("/data/"+self.identifier+"/detector_details"+"/comment")
+        outNode[:] = np.array(self.detector_details["comment"])
         return
 
     def saveData2HDF(self, handler, wait=True, upperIndex=(),reverse=1):
@@ -496,12 +496,13 @@ class dxmap:
         upperIndex has to be a tuple, it can be an empty tuple."""
         Roi0, Roi1 = self.getROIs()[:2]
 #Calculate the number of files expected
-        NOfiles = int(self.NbFrames) / int(self.DP.streamnbacqperfile)
+        NOfiles = int(self.NbFrames / self.DP.streamnbacqperfile)
         if np.mod(self.NbFrames, self.DP.streamnbacqperfile) :
             NOfiles += 1
 # Get the list of files to read and wait for the last to appear (?)
         files2read = [i for i in os.listdir(self.spoolMountPoint) if i.startswith(self.DP.streamTargetFile)\
         and i.endswith("nxs")]
+        print(files2read)
         if wait:
             t0 = time.time()
             #This check loop maybe avoided if a partial save has to be performed
@@ -532,7 +533,7 @@ class dxmap:
                 actualBlockLen = np.shape(sourceFile.root.entry.scan_data.channel00)[0]
                 p1 = p0 + actualBlockLen
                 for i in range(self.numChan):
-                    outNode = handler.getNode("/data/" + self.identifier + "/mca%02i" % i)
+                    outNode = handler.get_node("/data/" + self.identifier + "/mca%02i" % i)
                     #p0 = self.DP.streamnbacqperfile * Nfile 
                     #p1 = self.DP.streamnbacqperfile * (Nfile + 1)
                     if upperIndex == ():
@@ -543,26 +544,26 @@ class dxmap:
 
                 for i in range(self.numChan):
                     if 'icr' in self.stream_items:
-                        outNode = handler.getNode("/data/" + self.identifier + "/icr%02i" % i)
+                        outNode = handler.get_node("/data/" + self.identifier + "/icr%02i" % i)
                         if upperIndex == ():
                             outNode[p0:p1] = eval("sourceFile.root.entry.scan_data.icr%02i" % i)[:]
                         else:
                             outNode[p0:p1][upperIndex] = eval("sourceFile.root.entry.scan_data.icr%02i" % i)[::reverse]
 
                     if 'ocr' in self.stream_items:
-                        outNode = handler.getNode("/data/" + self.identifier + "/ocr%02i" % i)
+                        outNode = handler.get_node("/data/" + self.identifier + "/ocr%02i" % i)
                         if upperIndex == ():
                             outNode[p0:p1] =  eval("sourceFile.root.entry.scan_data.ocr%02i" % i)[:]
                         else:
                             outNode[p0:p1][upperIndex] =  eval("sourceFile.root.entry.scan_data.ocr%02i" % i)[::reverse]
                     if 'deadtime' in self.stream_items:
-                        outNode = handler.getNode("/data/" + self.identifier + "/deadtime%02i" % i)
+                        outNode = handler.get_node("/data/" + self.identifier + "/deadtime%02i" % i)
                         if upperIndex == ():
                             outNode[p0:p1] =  eval("sourceFile.root.entry.scan_data.deadtime%02i" % i)[:]
                         else:
                             outNode[p0:p1][upperIndex] =  eval("sourceFile.root.entry.scan_data.deadtime%02i" % i)[::reverse]
                     elif 'icr' in self.stream_items and 'ocr' in self.stream_items:
-                        outNode = handler.getNode("/data/" + self.identifier + "/deadtime%02i" % i)
+                        outNode = handler.get_node("/data/" + self.identifier + "/deadtime%02i" % i)
                         if upperIndex == ():
                             outNode[p0:p1] =  np.nan_to_num(\
                             100.*(1.-eval("sourceFile.root.entry.scan_data.ocr%02i" % i)[:]/eval("sourceFile.root.entry.scan_data.icr%02i" % i)[:])\
@@ -581,8 +582,8 @@ class dxmap:
             #os.system("rm %s" % (self.spoolMountPoint + os.sep + files2read[Nfile]))
 
         for i in range(self.numChan):
-            roi = handler.getNode("/data/" + self.identifier + "/roi%02i" % i)
-            mca = handler.getNode("/data/" + self.identifier + "/mca%02i" % i)
+            roi = handler.get_node("/data/" + self.identifier + "/roi%02i" % i)
+            mca = handler.get_node("/data/" + self.identifier + "/mca%02i" % i)
             roi[:] = np.sum(mca[:,Roi0:Roi1],axis=1)
         try:
             sleep(0.3)

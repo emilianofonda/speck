@@ -9,7 +9,7 @@ def quickplot2(qm=DeviceProxy("tmp/qexafs-v1/qexafs_manager_mono2"), curve = -1,
     try:
         energy_data = qm.energySpectrum
         mux_data = qm.muxSpectrum
-        #for i in xrange(5):
+        #for i in range(5):
             #dt = ni6602.read_attribute("DeltaTheta")
             #channel0_Raw, channel1_Raw =  sai1.read_attributes(["channel0_Raw","channel1_Raw"])
             #if abs(dt.time.tv_sec - channel0_Raw.time.tv_sec) < 1:

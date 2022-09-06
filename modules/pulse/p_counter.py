@@ -194,7 +194,7 @@ class counter:
         1) dark correction (if dark performed)
         2) normalization of clock value (if specified)"""
         try:
-            values = map(lambda x: x.value, self.DP.read_attributes(self.counter_names))
+            values = [i.value for i in self.DP.read_attributes(self.counter_names)]
             if self.clock_channel >-1 and self.clock_freq>0: 
                 clock_value = float(values[self.clock_channel]) / float(self.clock_freq)
                 values = list(round(array(values) - array(self.dark) * clock_value))
@@ -217,7 +217,7 @@ class counter:
     def readRawData(self):
         """Returns a tuple of Raw values. """
         try:
-            return map(lambda x: x.value, self.DP.read_attributes(self.counter_names))
+            return [i.value for i in self.DP.read_attributes(self.counter_names)]
         except PyTango.DevFailed as tmp:
             print("Cannot read counters... ", end=' ')
             raise tmp
@@ -275,7 +275,7 @@ class counter:
         else:
             clock_freq = -1
         #print "dark values are:", dark
-        self.DP.put_property({'SPECK_DARK_VALUES': map(str, dark)})
+        self.DP.put_property({'SPECK_DARK_VALUES': [str(i) for i in dark]})
         self.DP.put_property({'SPECK_CLOCK_FREQ': str(clock_freq)})
         return self.readDark()
         
@@ -294,7 +294,7 @@ class counter:
         elif len(dark) == len(self.user_readconfig):
             pass
             #print "dark values read from device %s"%self.label
-        self.dark = map(float, dark)
+        self.dark = [float(i) for i in dark]
         clock_freq = self.DP.get_property('SPECK_CLOCK_FREQ')['SPECK_CLOCK_FREQ']
         if len(clock_freq) > 0:
             self.clock_freq = float(clock_freq[0])

@@ -38,10 +38,10 @@ class dataBlock:
     def evaluate(self):
         __IPy = get_ipython()
         try:
-            outGroup = self.HDFfile.getNode("/" + self.domain )
+            outGroup = self.HDFfile.get_node("/" + self.domain )
         except:
-            self.HDFfile.createGroup("/", self.domain)
-            outGroup = self.HDFfile.getNode("/" + self.domain )
+            self.HDFfile.create_group("/", self.domain)
+            outGroup = self.HDFfile.get_node("/" + self.domain )
         #self.computed["HDFfile"] = self.HDFfile
         for i in self.dictionary["addresses"].keys():
             try:
@@ -61,15 +61,16 @@ class dataBlock:
                 value = numpy.array(eval(self.dictionary["formulas"][i],glob,self.computed))
                 #print(i,value)
                 #value = numpy.array(eval(self.dictionary["formulas"][i],globals(),self.computed))
-                self.HDFfile.createCArray(outGroup, i , title = i,\
+                self.HDFfile.create_carray(outGroup, i , title = i,\
                 #shape = numpy.shape(value), atom = tables.Atom.from_dtype(value.dtype))
                 shape = numpy.shape(value), atom = tables.Atom.from_dtype(value.dtype), filters = self.HDFfilters)
-                outNode = self.HDFfile.getNode("/" + self.domain +"/" + i)
+                outNode = self.HDFfile.get_node("/" + self.domain +"/" + i)
                 outNode[:] = value
                 del value
             except Exception as tmp:
                 print("post calculation error: %s = %s"%(i, self.dictionary["formulas"][i]))
-                print(tmp.message)
+                print(tmp)
+                #raise tmp
         try:
             del outNode, c
         except:

@@ -40,7 +40,7 @@ def fftI0(name="fftI0", freq = 10000, figN=10, spool="/nfs/srv5/spool1/sai"):
     pngOut = findNextFileName(filename2ruche(name),"png")
     os.system("mv " + Path + "/" + lastfile + " " + nxsOut)
 
-    f = tables.openFile(nxsOut,"r")
+    f = tables.open_file(nxsOut,"r")
     thisFT = make_fft(f.root.entry.scan_data.channel0[:].flatten(),freq)
     f.close()
     
