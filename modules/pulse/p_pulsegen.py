@@ -96,11 +96,11 @@ class pulseGen:
         """the handler is an already opened file object"""
 #Write down contextual data
         ll = numpy.array(["%s = %s"%(i,str(self.config[i])) for i in self.config.keys()])
-        outGroup = handler.createGroup("/context",self.identifier)
-        outGroup = handler.getNode("/context/"+self.identifier)
-        handler.createCArray(outGroup, "config", title = "config",\
+        outGroup = handler.create_group("/context",self.identifier)
+        outGroup = handler.get_node("/context/"+self.identifier)
+        handler.create_carray(outGroup, "config", title = "config",\
         shape = numpy.shape(ll), atom = tables.Atom.from_dtype(ll.dtype), filters = HDFfilters)
-        outNode = handler.getNode("/context/"+self.identifier+"/config")
+        outNode = handler.get_node("/context/"+self.identifier+"/config")
         outNode[:] = ll
         return
 

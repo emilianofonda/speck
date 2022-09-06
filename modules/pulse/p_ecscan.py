@@ -75,8 +75,8 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
         sys.stdout.flush()
         raise KeyboardInterrupt
     except Exception as tmp:
-        print(tmp.message)
-        shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp.message, kind='output')
+        print(tmp)
+        shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp.args[0], kind='output')
         stopscan(shutter)
         #raise
     return 
@@ -154,8 +154,8 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             #Start acquisition?
             print("Preparing acquisition ... ", end=' ')
             ct.prepare(dt=dt,NbFrames = NumberOfPoints, nexusFileGeneration = True)
-            print("OK")
 #It is dangerous to address the handler out of the ct context
+            print("OK")
             handler = ct.openHDFfile(fileName)
             #Print Name:
             print("Measuring : %s\n"%handler.filename)
@@ -168,8 +168,10 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 raise
             except:
                 pass
+            print("Starting counters....", end=" ")
             #Start Acqusiition
             ct.start(dt)
+            print("OK")
             myTime.sleep(0.1)
             #Start Mono
             dcm.pos(e2, wait=False)
@@ -278,7 +280,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 ax4.set_yticks(numpy.linspace(l1+red,l2-red,5))
                 pylab.setp(ax4.get_xticklabels(),  visible=True)
                 ax4.xaxis.set_major_formatter(FormatStrFormatter('%.1f')) 
-                legend(frameon=False)    
+                legend(frameon=False)                    
                 pylab.draw()
             except Exception as tmp:
                 print("No Plot! Bad Luck!")
@@ -293,9 +295,11 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                     p_dentist(ct.final_filename,e0=e0,mode=mode,figN=2)
             except:
                 pass
+            pylab.pause(0.01)
     except Exception as tmp:
         try:
             ct.closeHDFfile()
+            raise
         except:
             pass
         raise tmp

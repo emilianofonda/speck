@@ -316,8 +316,9 @@ class xspress3:
                 print(tmp)
                 sleep(0.1)
 
+        dts=100.*(1-reads[:,4]/reads[:,3])
 #                   rois,               icrs,                                   ocrs,                               dts
-        return self.computeRois() + list(reads[:,3]/reads[:,0]*8.0e7) + list(reads[:,4]/reads[:,0]*8.0e7) + list(reads[:,9])
+        return self.computeRois() + list(reads[:,3]/reads[:,0]*8.0e7) + list(reads[:,4]/reads[:,0]*8.0e7) + list(dts)
 #       if self.state() == DevState.ON:
 #           #The order matters: rois, icrs, ocrs, dts
 #           #out=self.DP.read_attributes(self.rois+self.icrs+self.ocrs+self.dts)
@@ -349,7 +350,7 @@ class xspress3:
         
     def getROIs(self,channel=-1):
         """This implementation is very limited: only one roi for the whole card"""
-        gottenROIS = map(int, self.DP.get_property(["SPECK_roi"])["SPECK_roi"])
+        gottenROIS = [int(i) for i in self.DP.get_property(["SPECK_roi"])["SPECK_roi"]]
         if gottenROIS == []:
             print("Cannot get ROI from SPECK property. Defaulting to full range", end=' ')
             Ch1 = 0
@@ -364,59 +365,59 @@ class xspress3:
         ShapeArrays = (self.DP.acq_nb_frames,) + tuple(self.upperDimensions)
         ShapeMatrices = (self.DP.acq_nb_frames, self.DP.image_width - 9)+ tuple(self.upperDimensions)
 
-        handler.createGroup("/data/", self.identifier)
-        outNode = handler.getNode("/data/" + self.identifier)
+        handler.create_group("/data/", self.identifier)
+        outNode = handler.get_node("/data/" + self.identifier)
 
         for i in range(self.numChan):
-            handler.createCArray(outNode, "mca%02i" % i, title = "mca%02i" % i,\
+            handler.create_carray(outNode, "mca%02i" % i, title = "mca%02i" % i,\
             shape = ShapeMatrices, atom = tables.UInt32Atom(), filters = HDFfilters)
 
         for i in range(self.numChan):
-            handler.createCArray(outNode, "icr%02i" % i, title = "icr%02i" % i,\
+            handler.create_carray(outNode, "icr%02i" % i, title = "icr%02i" % i,\
             shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
-            handler.createCArray(outNode, "ocr%02i" % i, title = "ocr%02i" % i,\
+            handler.create_carray(outNode, "ocr%02i" % i, title = "ocr%02i" % i,\
             shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
-            handler.createCArray(outNode, "roi%02i" % i, title = "roi%02i" % i,\
+            handler.create_carray(outNode, "roi%02i" % i, title = "roi%02i" % i,\
             shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
-            handler.createCArray(outNode, "deadtime%02i" % i, title = "deadtime%02i" % i,\
+            handler.create_carray(outNode, "deadtime%02i" % i, title = "deadtime%02i" % i,\
             shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
 
-        handler.createArray("/data/"+self.identifier, "roiLimits", array(self.getROIs(),"i"))
+        handler.create_array("/data/"+self.identifier, "roiLimits", array(self.getROIs(),"i"))
 
 #Write down contextual data
         #ll = numpy.array(["%s = %s"%(i,str(self.config[i])) for i in self.config.keys()])
-        #outGroup = handler.createGroup("/context",self.identifier)
-        #outGroup = handler.getNode("/context/"+self.identifier)
-        #handler.createCArray(outGroup, "config", title = "config",\
+        #outGroup = handler.create_group("/context",self.identifier)
+        #outGroup = handler.get_node("/context/"+self.identifier)
+        #handler.create_carray(outGroup, "config", title = "config",\
         #shape = numpy.shape(ll), atom = tables.Atom.from_dtype(ll.dtype), filters = HDFfilters)
-        #outNode = handler.getNode("/context/"+self.identifier+"/config")
+        #outNode = handler.get_node("/context/"+self.identifier+"/config")
         #outNode[:] = ll
 
         ll = np.array(["%s = %s"%(i,str(self.config[i])) for i in self.config.keys()])
-        handler.createGroup("/context",self.identifier)
-        outGroup = handler.getNode("/context/"+self.identifier)
-        handler.createCArray(outGroup, "config", title = "config",\
+        handler.create_group("/context",self.identifier)
+        outGroup = handler.get_node("/context/"+self.identifier)
+        handler.create_carray(outGroup, "config", title = "config",\
         shape = np.shape(ll), atom = tables.Atom.from_dtype(ll.dtype), filters = HDFfilters)
-        outNode = handler.getNode("/context/"+self.identifier+"/config")
+        outNode = handler.get_node("/context/"+self.identifier+"/config")
         outNode[:] = ll
         
-        handler.createGroup("/data/"+self.identifier,"detector_details","Detector description")
-        outGroup = handler.getNode("/data/"+self.identifier+"/detector_details")
+        handler.create_group("/data/"+self.identifier,"detector_details","Detector description")
+        outGroup = handler.get_node("/data/"+self.identifier+"/detector_details")
 
-        handler.createCArray(outGroup, "detector_name", title = "name of detector used by fastosh",\
+        handler.create_carray(outGroup, "detector_name", title = "name of detector used by fastosh",\
         shape = (1,), atom = tables.StringAtom(256,1))
-        outNode = handler.getNode("/data/"+self.identifier+"/detector_details"+"/detector_name")
-        outNode[:] = self.detector_details["detector_name"]
+        outNode = handler.get_node("/data/"+self.identifier+"/detector_details"+"/detector_name")
+        outNode[:] = np.array(self.detector_details["detector_name"])
 
-        handler.createCArray(outGroup, "real_pixels_list", title = "List of Real Pixels: 13,17,19,21",\
+        handler.create_carray(outGroup, "real_pixels_list", title = "List of Real Pixels",\
         shape = (1,), atom = tables.StringAtom(256,1))
-        outNode = handler.getNode("/data/"+self.identifier+"/detector_details"+"/real_pixels_list")
-        outNode[:] = self.detector_details["real_pixels_list"]
+        outNode = handler.get_node("/data/"+self.identifier+"/detector_details"+"/real_pixels_list")
+        outNode[:] = np.array(self.detector_details["real_pixels_list"])
 
-        handler.createCArray(outGroup, "comment", title = "free user comment",\
+        handler.create_carray(outGroup, "comment", title = "free user comment",\
         shape = (1,), atom = tables.StringAtom(256,1))
-        outNode = handler.getNode("/data/"+self.identifier+"/detector_details"+"/comment")
-        outNode[:] = self.detector_details["comment"]
+        outNode = handler.get_node("/data/"+self.identifier+"/detector_details"+"/comment")
+        outNode[:] = np.array(self.detector_details["comment"])
         
         return
 
@@ -449,7 +450,7 @@ class xspress3:
                 p0 = self.DP.saving_frame_per_file * Nfile 
                 p1 = self.DP.saving_frame_per_file * (Nfile + 1)
                 for i in range(self.numChan):
-                    outNode = handler.getNode("/data/" + self.identifier + "/mca%02i" % i)
+                    outNode = handler.get_node("/data/" + self.identifier + "/mca%02i" % i)
                     p0 = self.DP.saving_frame_per_file * Nfile 
                     p1 = self.DP.saving_frame_per_file * (Nfile + 1)
                     if upperIndex == ():
@@ -459,30 +460,31 @@ class xspress3:
 
                 for i in range(self.numChan):
                     
-                    outNode = handler.getNode("/data/" + self.identifier + "/icr%02i" % i)
+                    outNode = handler.get_node("/data/" + self.identifier + "/icr%02i" % i)
                     if upperIndex == ():
                         outNode[p0:p1] = sourceFile.root.entry_0000.measurement.xspress3.data[:,i,nBins+4:nBins+5].transpose()[0]
                     else:
                         outNode[p0:p1][upperIndex] = sourceFile.root.entry_0000.measurement.xspress3.data[::reverse,i,nBins+4:nBins+5].transpose()[0]
 
-                    outNode = handler.getNode("/data/" + self.identifier + "/ocr%02i" % i)
+                    outNode = handler.get_node("/data/" + self.identifier + "/ocr%02i" % i)
                     if upperIndex == ():
                         outNode[p0:p1] = sourceFile.root.entry_0000.measurement.xspress3.data[:,i,nBins+5:nBins+6].transpose()[0]
                     else:
                         outNode[p0:p1][upperIndex] = sourceFile.root.entry_0000.measurement.xspress3.data[::reverse,i,nBins+5:nBins+6].transpose()[0]
+                    
 
             finally:
                 sourceFile.close()
-
+#Careful!  teeeeeemporary modification for one single test!!!!!! 
             os.system("rm %s" % (self.spoolMountPoint + os.sep + files2read[Nfile]))
 
         for i in range(self.numChan):
-            dt = handler.getNode("/data/" + self.identifier + "/deadtime%02i" % i)
-            ocr = handler.getNode("/data/" + self.identifier + "/ocr%02i" % i)
-            icr = handler.getNode("/data/" + self.identifier + "/icr%02i" % i)
+            dt = handler.get_node("/data/" + self.identifier + "/deadtime%02i" % i)
+            ocr = handler.get_node("/data/" + self.identifier + "/ocr%02i" % i)
+            icr = handler.get_node("/data/" + self.identifier + "/icr%02i" % i)
             dt[:] = np.nan_to_num(1.0 - (array(ocr[:],"f") / array(icr[:],"f")))*100.0
-            roi = handler.getNode("/data/" + self.identifier + "/roi%02i" % i)
-            mca = handler.getNode("/data/" + self.identifier + "/mca%02i" % i)
+            roi = handler.get_node("/data/" + self.identifier + "/roi%02i" % i)
+            mca = handler.get_node("/data/" + self.identifier + "/mca%02i" % i)
             roi[:] = np.sum(mca[:,Roi0:Roi1],axis=1)
         return
     

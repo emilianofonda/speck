@@ -200,18 +200,18 @@ class bufferedCounter:
     def prepareHDF(self, handler, HDFfilters = tables.Filters(complevel = 1, complib='zlib')):
         """the handler is an already opened file object"""
         ShapeArrays = (self.DP.totalnbpoint,) + tuple(self.upperDimensions)
-        handler.createGroup("/data/", self.identifier)
-        outNode = handler.getNode("/data/" + self.identifier)
+        handler.create_group("/data/", self.identifier)
+        outNode = handler.get_node("/data/" + self.identifier)
         for s in self.channels:
-            handler.createCArray(outNode, "%s" % s, title = "%s" % s,\
+            handler.create_carray(outNode, "%s" % s, title = "%s" % s,\
             shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
 #Write down contextual data
         ll = numpy.array(["%s = %s"%(i,str(self.config[i])) for i in self.config.keys()])
-        outGroup = handler.createGroup("/context",self.identifier)
-        outGroup = handler.getNode("/context/"+self.identifier)
-        handler.createCArray(outGroup, "config", title = "config",\
+        outGroup = handler.create_group("/context",self.identifier)
+        outGroup = handler.get_node("/context/"+self.identifier)
+        handler.create_carray(outGroup, "config", title = "config",\
         shape = numpy.shape(ll), atom = tables.Atom.from_dtype(ll.dtype), filters = HDFfilters)
-        outNode = handler.getNode("/context/"+self.identifier+"/config")
+        outNode = handler.get_node("/context/"+self.identifier+"/config")
         outNode[:] = ll
         return
 
@@ -233,7 +233,7 @@ class bufferedCounter:
             fmt = "%i," * len(tuple(upperIndex))
             stringIndex = fmt % tuple(upperIndex)
         for i in range(len(buffer)):
-            outNode = handler.getNode("/data/" + self.identifier + "/%s" % self.channels[i])
+            outNode = handler.get_node("/data/" + self.identifier + "/%s" % self.channels[i])
             if upperIndex == ():
                 outNode[:] = buffer[i]
             else:

@@ -434,7 +434,7 @@ class mono1:
             fIn.close()
             pp = float(ll[1].strip())
             self.DP.put_property({"SPECK_LocalTable_p": pp})
-            outList = map(lambda x: x.strip(), ll[2:])
+            outList = [i.strip() for i in ll[2:]]
             self.DP.put_property({"SPECK_LocalTable": outList})
             self.readTable()
             self.setLocalTable()
@@ -548,9 +548,10 @@ class mono1:
         else:
             s+= "No\n"
         s+= "--------------------------\n"
-        cols= self.LocalTable.keys()
-        cols.remove("Energy")
-        cols.remove("Points")
+        cols= list(self.LocalTable.keys())
+        garbage = cols.remove("Energy")
+        garbage = cols.remove("Points")
+        del garbage
         cols= ["Energy",] + cols
         for i in cols:
             s += "%-15s\t"%i
@@ -1023,7 +1024,7 @@ class mono1:
         """Legacy: retrieves coeffs from DataViewer and computes Rz2 for seten.
         This code will be removed after correction of mode 0 move of the combined axis:
         a bug obliges us to move rz2 separately."""
-        polyC = map(lambda x: x.value, self.DataViewer.read_attributes(["Rz2_C5","Rz2_C4","Rz2_C3","Rz2_C2","Rz2_C1","Rz2_C0"]))
+        polyC = [x.value for x in self.DataViewer.read_attributes(["Rz2_C5","Rz2_C4","Rz2_C3","Rz2_C2","Rz2_C1","Rz2_C0"])]
         return numpy.polyval(polyC, self.e2theta(energy))
 
     def calculate_rx2(self,energy):

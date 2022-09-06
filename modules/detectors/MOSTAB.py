@@ -97,7 +97,7 @@ class MOSTAB_serial:
             return self.SerPort.readlines()
         else:
             out=[]
-            for i in xrange(n):
+            for i in range(n):
                 out.append(self.SerPort.readline())
             return out
 
@@ -267,7 +267,7 @@ class MOSTAB_serial:
             #time.sleep(2)
             main=0.
             quad=0.
-            for i in xrange(repeat):
+            for i in range(repeat):
                 t_main, t_quad = map(float, self.InOutS("?OSCBEAM")[self.echo].split())
                 main += t_main
                 quad += t_quad

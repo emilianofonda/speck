@@ -298,7 +298,7 @@ def Dpos(*args):
             print(i.label, " set at ", i.pos())
         except:
             pass
-    return map(lambda i: i.pos(), args[0::2])
+    return [i.pos() for i in  args[0::2]]
    
 def tw(x,step):
     try:
@@ -1033,12 +1033,12 @@ class pseudo_counter:
             __tmp = sh.user_ns["__SPECK_CONFIG"]["TEMPORARY_FOLDER"] + self.final_filename[__itmp:]
         else:
             __tmp = sh.user_ns["__SPECK_CONFIG"]["TEMPORARY_FOLDER"] + os.sep + self.final_filename[:]
-        self.handler = tables.openFile(__tmp, "w")
+        self.handler = tables.open_file(__tmp, "w")
 #file is open and can be prepared
-        self.handler.createGroup("/", "data")
-        self.handler.createGroup("/", "post")
-        self.handler.createGroup("/", "context")
-        self.handler.createGroup("/", "coordinates")
+        self.handler.create_group("/", "data")
+        self.handler.create_group("/", "post")
+        self.handler.create_group("/", "context")
+        self.handler.create_group("/", "coordinates")
         self.__prepareHDF(HDFfilters = HDFfilters)
         return self.handler
 
@@ -1106,7 +1106,7 @@ class pseudo_counter:
 
 #If the handler has been closed due to an error, it has to be reopened for post operations to complete
         if not self.handler.isopen :
-            self.handler = tables.openFile(self.handler.filename, "a")
+            self.handler = tables.open_file(self.handler.filename, "a")
 
 #Define shape
         try:
@@ -1120,23 +1120,23 @@ class pseudo_counter:
 #Get the right node and/or create it
         try:
             if group == "":
-                outGroup = self.handler.getNode("/" + domain )
+                outGroup = self.handler.get_node("/" + domain )
             else:
-                outGroup = self.handler.getNode("/" + domain + "/" + group)
+                outGroup = self.handler.get_node("/" + domain + "/" + group)
         except:
             if group != "":
-                self.handler.createGroup("/" + domain, group)
-                outGroup = self.handler.getNode("/" + domain + "/" + group)
+                self.handler.create_group("/" + domain, group)
+                outGroup = self.handler.get_node("/" + domain + "/" + group)
             else:
-                outGroup = self.handler.getNode("/" + domain )
+                outGroup = self.handler.get_node("/" + domain )
 #Create nodes with the correct shape and atom type
-        self.handler.createCArray(outGroup, name, title = name,\
+        self.handler.create_carray(outGroup, name, title = name,\
         shape = value_shape, atom = value_atom, filters = HDFfilters)
 #Point to node
         if group != "":
-            outNode = self.handler.getNode("/" + domain + "/" + group + "/" + name)
+            outNode = self.handler.get_node("/" + domain + "/" + group + "/" + name)
         else:
-            outNode = self.handler.getNode("/" + domain + "/" + name)
+            outNode = self.handler.get_node("/" + domain + "/" + name)
 #Store value
         outNode[:] = value
         return

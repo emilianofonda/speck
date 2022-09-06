@@ -70,7 +70,7 @@ def makeModel(groups, occupancy, axis = [1, 1, 1, 90., 90., 90.], na = 1, nb = 1
 #    f = open(filename, "w")
 #    f.write("%i\ni\n" % len(model))
 #    fmt = "%s    %-8.6f    %-8.6f    %-8.6f    %s\n"
-#    for i in xrange(len(model["atoms"])):
+#    for i in range(len(model["atoms"])):
 #        f.write(fmt % tuple(model["atoms"][i] + model["xyz"][i] + model["labels"][i]))
 #    f.close()
 #    return
@@ -81,7 +81,7 @@ def drawModel(model, radius_type = "covalent", r_factor = 0.6, temporary_file_na
         raise Exception("draw model error: radius_type can be covalent or vanderwaals only.")
     temporary_file = open(temporary_file_name, "w")
     atom_types = []
-    for i in xrange(len(model["atoms"])):
+    for i in range(len(model["atoms"])):
         if not(model["atoms"][i] in atom_types):
             atom_types.append(model["atoms"][i])
         temporary_file.write("atom %s %8.6f %8.6f %8.6f %s\n" % tuple([model["atoms"][i],] + model["xyz"][i] + [model["labels"][i],]))
@@ -127,7 +127,7 @@ def saveModel(filename, model, superaxis=[], other_stuff={}):
         f.write("%s\n" % other_stuff[i])
     f.write("#ATOMS\n")
 
-    for i in xrange(len(model["atoms"])):
+    for i in range(len(model["atoms"])):
         f.write("%s\t%g\t%g\t%g\t%s\n" % tuple(model["atoms"][i] + model["xyz"][i] + model["labels"][i]))
     f.close()
     return
@@ -176,7 +176,7 @@ def saveXYZ(filename, model):
     The axis data are not saved and lost."""
     f=open(filename,"w")
     f.write("%i\n\n"%len(model))
-    for  i in xrange(len(model["atoms"])):
+    for  i in range(len(model["atoms"])):
         f.write("%2s %8.6f %8.6f %8.6f %2s\n" % tuple(model["atoms"][i] + model["xyz"][i] + model["labels"][i]))
     f.close()
     return
@@ -224,7 +224,7 @@ ovl=1., index=False):
     out["axis"] = axis * array([nx,ny,nz,1,1,1],"f")
     idx =[]
     idx_i=0
-    for atx in xrange(len(model["atoms"])):
+    for atx in range(len(model["atoms"])):
         for i in range(0, nx):
             for j in range(0, ny):
                 for k in range(0, nz):
@@ -272,9 +272,9 @@ ovl=1., index=False):
     frac0 = Normal2Fractional(array(model["xyz"],"f"), axis)
     #print "frac0 shape is : ", npy.shape(frac0)
     frac=[]
-    for i in xrange(nx):
-        for j in xrange(ny):
-            for k in xrange(nz):
+    for i in range(nx):
+        for j in range(ny):
+            for k in range(nz):
                 frac += (frac0 + array([i, j, k])).tolist()
     #print "frac shape is : ",npy.shape(frac)
     out["atoms"] = model["atoms"] * nx * ny * nz
@@ -369,14 +369,14 @@ def reportDistances(atoms, rmax=5., use_site=False, precision =0.01):
     nats = len(atoms["atoms"])
     outl={}
     site_counts={}
-    for i in xrange(nats):
+    for i in range(nats):
         outl[atoms[identity][i]] = []
         if atoms[identity][i] not in site_counts.keys():
             site_counts[atoms[identity][i]] = 1
         else:
             site_counts[atoms[identity][i]] += 1
-    for i in xrange(nats):
-        for j in xrange(i+1,nats):
+    for i in range(nats):
+        for j in range(i+1,nats):
             atatdist = sqrt(sum((array(atoms["xyz"][i]) - array(atoms["xyz"][j])) ** 2 ))
             if atatdist < rmin:
                 raise Exception("makeModel.reportDistances: \
@@ -510,7 +510,7 @@ def analyseModel(m, absorber="", axis=None, histogram_bar=0.025, rmax=6.,\
         m_ext = copy.deepcopy(m)
     distrep=[]
     n_absorbers = 0
-    for i in xrange(len(m["atoms"])):
+    for i in range(len(m["atoms"])):
         if m["atoms"][i] == absorber:
             n_absorbers += 1
             tmp = reportDistancesForAtom(m["xyz"][i], m_ext, rmax = rmax)

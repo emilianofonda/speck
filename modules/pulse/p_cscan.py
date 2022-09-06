@@ -337,8 +337,8 @@ def c2scan(cmot,p1,p2,velocity,mot2,p21,p22,dp2,n=1,dt=0.1, channel=1,shutter=Fa
         handler.create_soft_link('/coordinates', 'X2', target='/data/'+mot2.DP.associated_counter.replace(".","/"))
     else:
         mot2_fake = np.array([arange(NumberOfLines,dtype="float32")*dp2 + p21]*NumberOfPoints,dtype="float32")
-        outGroup = handler.getNode("/coordinates")
-        handler.createCArray(outGroup, "X2", title = "X2",\
+        outGroup = handler.get_node("/coordinates")
+        handler.create_carray(outGroup, "X2", title = "X2",\
         shape =  (NumberOfPoints, NumberOfLines), atom = tables.Atom.from_dtype(mot2_fake.dtype))
         handler.root.coordinates.X2[:] = mot2_fake
         del mot2_fake
