@@ -6,6 +6,7 @@ print("CX1_pulse: preparing.")
 from p_escan import *
 from p_spec_syntax import *
 from p_dxmap import dxmap
+from matplotlib import pyplot as plt
 
 try:
     #Fastosh recognized detector names:
@@ -284,8 +285,8 @@ execfile(__pySamba_root+"/modules/pulse/p_cscan.py")
 execfile(__pySamba_root+"/modules/pulse/p_ecscan.py")
 
 #ct=ct_xp
-#ct=ct0
-ct=ct_x3mca
+ct=ct0
+#ct=ct_x3mca
 
 #define ecscan_xp on the base of ecscan
 def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10,e0=-1,mode="t",shutter=False,beamCheck=True):
@@ -319,6 +320,21 @@ def setroi(ch1, ch2):
 def setSTEP():
     return
 def setMAP():
+    return
+
+def ctx(dt=1.):
+    ct(dt)
+    n_mca=len(ct.mca_units)
+    try:
+        figure(101).clear()
+    except:
+        pass
+    fig,ax=plt.subplots(n_mca,1,num=101)
+    if n_mca == 1: 
+        ax.plot(sum(ct.mca_units[0].read_mca(),axis=0))
+    elif n_mca >1:
+        for i in range(len(ct.mca_units)):
+            ax[i].plot(sum(ct.mca_units[i].read_mca(),axis=0))
     return
 
 __shclose = shclose
