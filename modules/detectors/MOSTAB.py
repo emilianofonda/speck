@@ -257,12 +257,15 @@ class MOSTAB_serial:
         tau = float(self.InOutS("?TAU")[self.echo])
 
         self.InOutS("OSCIL ON")
-        
-        self.pos(self.lm()[0]+0.05)
+        if p1 < p2: 
+            self.pos(self.lm()[0]+0.05)
+        else:
+            self.pos(self.lm()[1]-0.05)
+            dp = -abs(dp)
         time.sleep(0.1)
         for p in numpy.arange(p1, p2+dp, dp):
             print(self.pos(p))
-            time.sleep(0.1)
+            time.sleep(0.5)
             #self.InOutS("OSCIL ON")
             #time.sleep(2)
             main=0.
