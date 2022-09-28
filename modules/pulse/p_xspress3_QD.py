@@ -475,8 +475,7 @@ class xspress3:
 
             finally:
                 sourceFile.close()
-#Careful!  teeeeeemporary modification for one single test!!!!!! 
-            os.system("rm %s" % (self.spoolMountPoint + os.sep + files2read[Nfile]))
+                os.system("rm %s" % (self.spoolMountPoint + os.sep + files2read[Nfile]))
 
         for i in range(self.numChan):
             dt = handler.get_node("/data/" + self.identifier + "/deadtime%02i" % i)

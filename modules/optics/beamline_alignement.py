@@ -211,7 +211,7 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = False, bender2 = None):
             mv(mir1_pitch, theta, mir2_pitch, __m2theta(theta), \
             po1, __girder(theta), po2, __obxgZ(theta), po3, __exafsZ(theta),\
             po4, __exafsZ(theta), po5, __exafsZ(theta),\
-            mir1_c, __m1bender(theta,hgap), mir2_c, mir2_c_target )
+            mir1_c, __m1bender(theta,hgap), mir2_c, mir2_c_target)
         else:
             mv(mir1_pitch, theta, mir2_pitch, __m2theta(theta), \
             po1, __girder(theta), po2, __obxgZ(theta), po3, __exafsZ(theta),\
@@ -221,7 +221,7 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = False, bender2 = None):
         mv(mir1_z, __m1Z(theta), mir2_z, __m2Z(theta))
     except Exception as tmp:
         if tpp_aknowledge()!=0:
-            print("TPP_security active... tring to continue...")
+            print("TPP_security active... trying to continue...")
             print("Trying...", end=' ')
             tpp_aknowledge(0)
             sleep(2.)
