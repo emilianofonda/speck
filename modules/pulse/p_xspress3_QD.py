@@ -269,10 +269,14 @@ class xspress3:
         return
 
     def read_mca(self, channels=None):
+        """Read mca values with one workaround, the last point of each is set to 0, 
+        otherwise a spurious point appears at the end  fo the array and we want to keep the 4096 length of the array."""
         for i in range(5):
             try:
                 lastFrame = self.DP.last_image_ready
-                return [self.DPspecific.readHistogram([lastFrame,i]) for i in range(self.numChan)]
+                __mca = numpy.array([self.DPspecific.readHistogram([lastFrame,i]) for i in range(self.numChan)])
+                __mca[:,-1] = numpy.zeros(len(__mca))
+                return list(__mca)
                 break
             except Exception as tmp:
                 print(tmp)
@@ -316,17 +320,24 @@ class xspress3:
                 print(tmp)
                 sleep(0.1)
 
-        dts=100.*(1-reads[:,4]/reads[:,3])
+#GALAXIES: JPRueff code
+        #detcount = np.sum(xspress_image[:,channel,roi[0]:roi[1]],axis=1,dtype=float)
+        #ctime = xspress_image[:,channel,4096].astype(float)
+        #reset_ticks = xspress_image[:,channel,4097].astype(float)
+        #all_event = xspress_image[:,channel,4099].astype(float)
+        #event_width = 12.5
+        #deadtime = 100 * (all_event * (event_width + 1) + reset_ticks) / ctime
+
+        ctime = reads[:,0].astype(float)
+        reset_ticks = reads[:,1].astype(float)
+        all_event = reads[:,3].astype(float)
+        event_width = 12.5
+        #deadtime = 100 * (all_event * (event_width + 1) + reset_ticks) / ctime
+        dts = 100 * (all_event * (event_width + 1) + reset_ticks) / ctime
+#Erroneous dts
+#        dts = 100.*(1-reads[:,4]/reads[:,3])
 #                   rois,               icrs,                                   ocrs,                               dts
         return self.computeRois() + list(reads[:,3]/reads[:,0]*8.0e7) + list(reads[:,4]/reads[:,0]*8.0e7) + list(dts)
-#       if self.state() == DevState.ON:
-#           #The order matters: rois, icrs, ocrs, dts
-#           #out=self.DP.read_attributes(self.rois+self.icrs+self.ocrs+self.dts)
-#           lastFrame = self.DP.last_image_ready
-#           reads = array([self.DPspecific.readscalers([lastFrame,i]) for i in range(self.numChan)])
-#           return self.computeRois() + list(reads[:,3]) + list(reads[:,4]) + list(reads[:,9])
-#       else:
-#           raise Exception("%s: attempt to read scalers data when not in ON state"%self.DP.name)
     
     def computeRois(self):
         ch1,ch2 = self.getROIs()
@@ -472,7 +483,12 @@ class xspress3:
                     else:
                         outNode[p0:p1][upperIndex] = sourceFile.root.entry_0000.measurement.xspress3.data[::reverse,i,nBins+5:nBins+6].transpose()[0]
                     
-
+                    #outNode = handler.get_node("/data/" + self.identifier + "/deadtime%02i" % i)
+                    #if upperIndex == ():
+                    #    outNode[p0:p1] = sourceFile.root.entry_0000.measurement.xspress3.data[:,i,nBins+5:nBins+6].transpose()[0]
+                    #else:
+                    #    outNode[p0:p1][upperIndex] = sourceFile.root.entry_0000.measurement.xspress3.data[::reverse,i,nBins+5:nBins+6].transpose()[0]
+ 
             finally:
                 sourceFile.close()
                 os.system("rm %s" % (self.spoolMountPoint + os.sep + files2read[Nfile]))

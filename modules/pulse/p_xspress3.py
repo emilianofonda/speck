@@ -204,41 +204,30 @@ class xspress3_test:
 #so I store it in a variable that prepare updates. This is reused for saving data
         self.NbFrames = NbFrames
         self.config["nbpixels"] = NbFrames
-        try:
-            if self.DP.currentAlias != self.config["mode"]:
-                self.setMode(self.config["mode"])
-        except:
-            self.DP.command_inout("Init")
-            sleep(1)
-            self.setMode(self.config["mode"])
         #The following setup must be supplied in original config
         #self.config["streamNbAcqPerFile"]=NbFrames
         ##If possible, to be replaced with write_attributes...
         attValues=[]
         if stepMode :
-            dontTouch = ["mode", "nbpixelsperbuffer"]
+            dontTouch = ["nbpixelsperbuffer",]
             attValues.append(("nbpixelsperbuffer",1))
-            #self.DP.write_attribute("nbpixelsperbuffer",1)
         else:
-            dontTouch = ["mode"]
+            dontTouch = []
         for i in [k for k in cKeys if (not k in dontTouch) and (self.config[k] != self.DP.read_attribute(k).value)]:
             try:
-                #attValues.append((i,self.config[i]))
                 self.DP.write_attribute(i,self.config[i])
-                #print i,self.config[i]
             except Exception as tmp:
                 print(tmp)
         if nexusFileGeneration:
             #Auto delete remaining files!!! this avoids aborting, but it is a potential risk.
             sleep(self.deadtime)
             self.DP.write_attribute("filegeneration",True)
-            self.startFTP(deleteRemainingFiles=True)
+            #FTP server is unused in xspress3, nfs used instead
+            #self.startFTP(deleteRemainingFiles=True)
             self.DP.streamresetindex()
         else:
             sleep(self.deadtime)
             self.DP.write_attribute("filegeneration",False)
-        #self.DP.write_attributes(attValues)
-        #sleep(self.deadtime)
 
         return self.start()
 
@@ -317,13 +306,7 @@ class xspress3_test:
         try:
             mca=self.DP.read_attributes(channels)
             mca = [x.value for x in mca]
-#           if (None in mca) and auto:
-#               print "Reiniting mca"
-#               self.reinit()
-#               mca=self.DP.read_attributes(channels)
-#               mca=map(lambda x: x.value, mca)
-#           elif None in mca:
-#               raise Exception("Wrong channel")
+           raise Exception("Wrong channel")
         except DevFailed as tmp:
             if tmp.args[0].reason=='API_AttrNotFound':
                 print("Reiniting mca")
