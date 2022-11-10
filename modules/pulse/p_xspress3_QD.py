@@ -333,11 +333,12 @@ class xspress3:
         all_event = reads[:,3].astype(float)
         event_width = 12.5
         #deadtime = 100 * (all_event * (event_width + 1) + reset_ticks) / ctime
-        dts = 100 * (all_event * (event_width + 1) + reset_ticks) / ctime
+        dts = 100. * (all_event * (event_width + 1) + reset_ticks) / ctime
+        dts_cor = 1./(1.-dts*0.01)
 #Erroneous dts
 #        dts = 100.*(1-reads[:,4]/reads[:,3])
 #                   rois,               icrs,                                   ocrs,                               dts
-        return self.computeRois() + list(reads[:,3]/reads[:,0]*8.0e7) + list(reads[:,4]/reads[:,0]*8.0e7) + list(dts)
+        return self.computeRois() + list(reads[:,3]/reads[:,0]*8.0e7*dts_cor) + list(reads[:,4]/reads[:,0]*8.0e7) + list(dts)
     
     def computeRois(self):
         ch1,ch2 = self.getROIs()
@@ -471,12 +472,6 @@ class xspress3:
 
                 for i in range(self.numChan):
                     
-                    outNode = handler.get_node("/data/" + self.identifier + "/icr%02i" % i)
-                    if upperIndex == ():
-                        outNode[p0:p1] = sourceFile.root.entry_0000.measurement.xspress3.data[:,i,nBins+4:nBins+5].transpose()[0]
-                    else:
-                        outNode[p0:p1][upperIndex] = sourceFile.root.entry_0000.measurement.xspress3.data[::reverse,i,nBins+4:nBins+5].transpose()[0]
-
                     outNode = handler.get_node("/data/" + self.identifier + "/ocr%02i" % i)
                     if upperIndex == ():
                         outNode[p0:p1] = sourceFile.root.entry_0000.measurement.xspress3.data[:,i,nBins+5:nBins+6].transpose()[0]
@@ -491,13 +486,21 @@ class xspress3:
                         reset_ticks = data[:,i,nBins+2:nBins+3].transpose()[0]
                         all_event = data[:,i,nBins+4:nBins+5].transpose()[0]
                         event_width = 12.5
+                        dts_cor = 1./(1.-(all_event * (event_width + 1) + reset_ticks) / ctime)
                         outNode[p0:p1] = 100. * (all_event * (event_width + 1) + reset_ticks) / ctime
                     else:
                         ctime = data[::reverse,i,nBins+1:nBins+2].transpose()[0]
                         reset_ticks = data[::reverse,i,nBins+2:nBins+3].transpose()[0]
                         all_event = data[::reverse,i,nBins+4:nBins+5].transpose()[0]
                         event_width = 12.5
+                        dts_cor = 1./(1.-(all_event * (event_width + 1) + reset_ticks) / ctime)
                         outNode[p0:p1][upperIndex] = 100. * (all_event * (event_width + 1) + reset_ticks) / ctime
+
+                    outNode = handler.get_node("/data/" + self.identifier + "/icr%02i" % i)
+                    if upperIndex == ():
+                        outNode[p0:p1] = sourceFile.root.entry_0000.measurement.xspress3.data[:,i,nBins+4:nBins+5].transpose()[0]*dts_cor
+                    else:
+                        outNode[p0:p1][upperIndex] = sourceFile.root.entry_0000.measurement.xspress3.data[::reverse,i,nBins+4:nBins+5].transpose()[0]*dts_cor
 
             finally:
                 sourceFile.close()
