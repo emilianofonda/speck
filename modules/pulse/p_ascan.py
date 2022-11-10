@@ -3,12 +3,14 @@ from __future__ import print_function
 from io import open as file
 from time import strftime,gmtime,sleep,localtime,asctime
 from time import time as cputime
+import numpy
+numpy.seterr(all="ignore")
 from numpy import round, array, sum, mean, loadtxt, savetxt
 import os
 import pylab
 import IPython
 from PyTango import DeviceProxy
-
+from p_spec_syntax import wait_motor
 from GetPositions import GetPositions
 
 #THIS MODULE HAS TO BE COMPLETELY REWRITTEN:
@@ -210,7 +212,11 @@ scaler="ct",comment="",fullmca=False,graph=1, n = 1):
         #Mark Header with a special card
         f.write("#HEADER\n")
         #f.write("#"+motname+"\t"+"\t".join(map(lambda x:"Chan%02i"%x,range(no_channels)))+"\tTimeFromEpoch\n")
-        header="#"+motname+"\t"+"\t".join(map(lambda x:x.label,cpt.user_readconfig))+"\tTimeFromEpoch\n"
+        header="#" + motname + "\t"\
+        + "\t".join(map(lambda x:x.label,cpt.user_readconfig))\
+        + "\t".join(map(lambda x:x["name"],cpt.posts))\
+        + "\tTimeFromEpoch\n"        
+#header="#"+motname+"\t"+"\t".join(map(lambda x:x.label,cpt.user_readconfig))+"\tTimeFromEpoch\n"
         f.write(header)
         try:
             if not time_scan: 
@@ -533,4 +539,219 @@ def scanfile_xplot(name,col1=None,col2=None):
 
 def scanfile_data(name):
     return loadtxt(name).transpose()
+
+
+#trajectory is a dictionary, 
+#{"main_axis":name of the main motor
+#"integration_time":[all integration times in seconds one per point],
+#"trajectory":[{"motor":motor_name,"trajectory":[all positions to reach],"backlash":optional}]}
+
+def nascan(trajectory,channel=None,returndata=False,fulldata=False,name=None,delay=0.,delay0=0.,\
+scaler="ct",comment="",fullmca=False,graph=1, n = 1):
+    """Scan over trajectory object. 
+    The default timebase is named ct.
+    delay applies to all points
+    delay0 to first after backlash
+    
+    trajectory has the form:
+    trajectory is a dictionary, 
+    {
+    "main_axis":name_of_the_main_motor,
+    "integration_time":[all integration times in seconds one per point],
+    "trajectory":[{"motor":motor_name,"points":[all positions to reach],"backlash":optional}]
+    "extra_backlash":[
+    {"motor":motor,"value":value},...
+    ]
+    }
+
+
+    """
+
+#Verify compatibility of trajectories
+    npoints = len(trajectory["integration_time"])
+    for i in trajectory["trajectory"]:
+        if len(i["points"]) != npoints:
+            raise Exception("Error in trajectory, one element has not the same length as the integration_time")            
+    all_motors=[]
+    all_motors_names=[]
+    for mot in trajectory["trajectory"]:
+        all_motors.append(mot["motor"])
+        all_motors_names.append(whois(mot["motor"]))
+#Start setup
+    glob  = get_ipython().user_ns
+    shell = IPython.core.getipython.get_ipython()
+    if "setSTEP" in glob.keys():
+        glob["setSTEP"]()
+    __time_at_start = cputime()
+    if channel == None: channel = 1
+    __no_scans = n
+    time_scan = False
+    if scaler in glob:
+        cpt = glob[scaler]
+    else:
+        raise Exception("Timebase not defined or wrong timebase name.")
+    if name == None:
+        name = "nscan_out"
+    ext = "txt"
+    if graph >=0:
+        w = speck_plot.speck_figure(fign=graph, title=name, grid=(1,1))
+    for scan_number in range(__no_scans):
+        x = []
+        y = []
+        full = []
+        current_name = findNextFileName(name, ext, file_index = scan_number + 1)
+        ###################### FULL MCA FILES! #####################################
+        if fullmca:
+            dirname = current_name[:current_name.rfind(".")]+".d"
+            mca_files = {}
+        if fullmca:
+            os.mkdir(dirname,0o777)
+            for mca_channel in cpt.read_mca().keys():
+                mca_files[mca_channel] = file(dirname + os.sep + current_name[:current_name.rfind(".")]+"_"+mca_channel+".txt","a")
+                print(dirname + os.sep+name + "." + mca_channel)
+        ###################### FULL MCA FILES! #####################################
+        f=file(current_name, "w")
+        print("Saving in file: ",current_name)
+        shell.logger.log_write("Saving data in: %s\n" % current_name, kind='output') 
+        try:
+            if "label" in dir(mot):    f.write("#ascan over motor: "+mot.label+"\n")
+        except (KeyboardInterrupt,SystemExit) as tmp:
+            print("Scan finished on user request")
+            raise tmp
+        except:
+            pass
+        try:
+            motname = whois(trajectory["main_axis"])
+            f.write("#main_axis  = %s\n"%(motname))
+            if graph >=0:
+                w.set_axis_labels(motname,"ct[%i]"%channel,0)
+        except (KeyboardInterrupt,SystemExit) as tmp:
+            print("Scan finished on user request")
+            f.close()
+            __backup_data()
+            raise tmp
+        except Exception as tmp:
+            motname="None"
+            print(tmp)
+            pass
+        print("main axis : ", motname)
+        f.write("#Following line is a comment:")
+        f.write("#"+comment+"\n")
+        #Call pre scan function:
+        pre_scan(handler=f)
+        #
+        no_channels=len(cpt.read())
+        #Mark Header with a special card
+        f.write("#HEADER\n")
+        #f.write("#"+motname+"\t"+"\t".join(map(lambda x:"Chan%02i"%x,range(no_channels)))+"\tTimeFromEpoch\n")
+        header="#"\
+        + "\t".join(all_motors_names)\
+        + "\t".join(map(lambda x:x.label,cpt.user_readconfig))\
+        + "\t".join(map(lambda x:x["name"],cpt.posts))\
+        + "\tTimeFromEpoch\n"
+        f.write(header)
+        try:
+            for m_back in trajectory["trajectory"]:
+                if "backlash" in m_back.keys():
+                    m_back["motor"].go(m_back["points"][0]-abs(backlash))
+            wait_motor(all_motors,verbose=False)
+            for m_back in trajectory["trajectory"]:
+                m_back["motor"].go(m_back["points"][0])
+            wait_motor(all_motors,verbose=False)
+            if "extra_backlash" in trajectory.keys():
+                for m_back in trajectory["extra_backlash"]:
+                    mvr(m_back["motor"],m_back["value"])
+                #Workaround for resetting motors after extra backlash (keep in mind monochromator...)
+                for m_back in trajectory["trajectory"]:
+                    m_back["motor"].go(m_back["points"][0])
+                wait_motor(all_motors,verbose=False)
+            if delay0>0: sleep(delay0)
+            
+            if "dummy_points" in trajectory.keys() and trajectory["dummy_points"] > 0:
+                dummies = trajectory["dummy_points"]
+                for istep in range(trajectory["dummy_points"]):
+                    if istep>0:
+                        for mot in trajectory["trajectory"]:
+                            mot["motor"].go(mot["points"][istep])
+                        wait_motor(all_motors,verbose=False)
+            else :
+                dummies = 0
+            for istep in range(dummies,len(trajectory["integration_time"])):
+                if istep>0:
+                    for mot in trajectory["trajectory"]:
+                        mot["motor"].go(mot["points"][istep])
+                    wait_motor(all_motors,verbose=False)
+                    if delay>0: sleep(delay)
+                    
+                x_all=[x.pos() for x in all_motors]
+                x.append(xall[0])
+                __cts=cpt.count(trajectory["integration_time"][istep])
+                y.append(__cts[channel])
+                if fulldata:
+                    full.append(array(__cts))
+                for j in x_all:
+                    f.write("%14.13e\t"%(j))
+                for j in __cts:
+                    f.write("%10.8e\t"%(numpy.nan_to_num(j)))
+                f.write("%14.13e"%(cputime()))
+                f.write("\n")
+                ######################################################################################
+                #            Write to Full MCA files
+                ######################################################################################
+                if fullmca:
+                    __fullmca=cpt.read_mca()
+                    for mca_channel in mca_files.keys():
+                        __fullmca_line=__fullmca[mca_channel]
+                        __fullmca_line_format="%d\t"*(len(__fullmca_line)-1)+"%d\n"
+                        mca_files[mca_channel].write(__fullmca_line_format%tuple(__fullmca_line))
+                ######################################################################################
+                if graph >=0 and len(mod(x,5)==0):
+                    w.plot(x,y,curve=0,update=True,marker=".",linestyle="--",linewidth=2,color="b")
+            if graph >= 0:
+                w.plot(x,y,curve=0,update=True,marker=".",linestyle="--",linewidth=2,color="b")
+
+        except (KeyboardInterrupt,SystemExit) as tmp:
+            print("Scan finished on user request")
+            cpt.stop()
+            f.close()
+            __backup_data()
+            raise tmp
+        except Exception as tmp:
+            f.close()
+            raise tmp
+        f.close()
+        ##################### CLOSE MCA FILES ##################
+        if fullmca:
+            for mca_channel in mca_files.keys():
+                mca_files[mca_channel].close()
+        ########################################################
+
+        try:
+            __backup_data()
+        except (KeyboardInterrupt,SystemExit) as tmp:
+            print("Scan finished on user request")
+            raise tmp
+        except:
+            pass
+        #You could use this if persist=1 does not work:
+        print("Elapsed Time: %8.6fs" % (cputime() - __time_at_start))
+    #
+    ml=min(len(x),len(y))
+    #Call statistisc calculation
+    if "ScanStats" in glob: 
+        ascan_statistics(x[:ml], y[:ml], glob)
+        print(BOLD + "\nScanStats:\n---------------------------" + RESET)
+        print(glob["ScanStats"]())
+        print("")
+    #
+    print("Total Elapsed Time: %8.6fs" % (cputime() - __time_at_start))
+    #
+    if returndata == True:
+        if fulldata:
+            full = array(full[:ml])
+            return array([x[:ml], full.transpose()])
+        else:
+            return array([x[:ml], y[:ml]])
+    return 
+
 

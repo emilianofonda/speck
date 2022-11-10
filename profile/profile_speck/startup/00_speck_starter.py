@@ -18,9 +18,6 @@ ip.prompts=MyPrompt(ip)
 import sys,os
 import scipy
 from time import asctime,time,sleep,clock
-#Why these import here? old things forgotten here?
-import numpy
-from numpy import *
 
 #Define environment
 __SPECK_CONFIG = {}
@@ -29,6 +26,9 @@ dn = __SPECK_CONFIG["SPECK_FOLDER"] + os.sep+"modules"
 sys.path.append(dn)
 subdn=os.listdir(dn)
 for i in subdn: sys.path.append(dn+os.sep+i)
+
+import numpy
+numpy.seterr(all="ignore")
 
 ##
 ## Data folders
