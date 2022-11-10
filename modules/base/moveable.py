@@ -64,36 +64,42 @@ class moveable(object):
         self.init_is_over=True
         return
 
+#   def __repr__(self):
+#       if self.state() in [DevState.FAULT,DevState.ALARM]: 
+#           color=BOLD+RED
+#       elif self.state() in [DevState.ON,DevState.STANDBY,DevState.OPEN]: 
+#           color=BOLD+GREEN
+#       elif self.state() in [DevState.RUNNING,DevState.MOVING]: 
+#           color=BOLD+BLUE
+#       else: 
+#           color=""
+#       #return self.label+"/"+self.att_name+" (attribute label=%s) at "%self.ac.label+self.ac.format%self.pos()+\
+#       #"[" + self.ac.format + ":" + self.ac.format + "]" % (*self.lm()) +" %s"%self.ac.unit\
+#       #+" is in state: "+color+"%s"%(self.state())+RESET
+#       lmts= list(self.lm())
+#       lmf0 = self.ac.format
+#       lmf1 = self.ac.format
+#       if lmts[0] == None:
+#           lmts[0] = -inf
+#           lmf0 = "%g"
+#       if lmts[1] == None:
+#           lmts[1] = inf
+#           lmf1 = "%g"
+#       fmt = self.label + "/" + self.att_name + " (attribute label=%s) at " + self.ac.format + "[" + lmf0 + ":" + lmf1 + "]"\
+#       +" %s"+" is in state: " + color + " %s " + RESET
+#       fmt_g = self.label + "/" + self.att_name + " (attribute label=%s) at " + "%g " + "[" + "%g" + ":" + "%g" + "]"\
+#       +" %s"+" is in state: " + color + " %s " + RESET
+#       try:
+#           return fmt % (self.ac.label, self.pos(), lmts[0], lmts[1], self.ac.unit, self.state())
+#       except:
+#           return fmt_g % (self.ac.label, self.pos(), lmts[0], lmts[1], self.ac.unit, self.state())
+
     def __repr__(self):
-        if self.state() in [DevState.FAULT,DevState.ALARM]: 
-            color=BOLD+RED
-        elif self.state() in [DevState.ON,DevState.STANDBY,DevState.OPEN]: 
-            color=BOLD+GREEN
-        elif self.state() in [DevState.RUNNING,DevState.MOVING]: 
-            color=BOLD+BLUE
-        else: 
-            color=""
-        #return self.label+"/"+self.att_name+" (attribute label=%s) at "%self.ac.label+self.ac.format%self.pos()+\
-        #"[" + self.ac.format + ":" + self.ac.format + "]" % (*self.lm()) +" %s"%self.ac.unit\
-        #+" is in state: "+color+"%s"%(self.state())+RESET
-        lmts= list(self.lm())
-        lmf0 = self.ac.format
-        lmf1 = self.ac.format
-        if lmts[0] == None:
-            lmts[0] = -inf
-            lmf0 = "%g"
-        if lmts[1] == None:
-            lmts[1] = inf
-            lmf1 = "%g"
-        fmt = self.label + "/" + self.att_name + " (attribute label=%s) at " + self.ac.format + "[" + lmf0 + ":" + lmf1 + "]"\
-        +" %s"+" is in state: " + color + " %s " + RESET
-        fmt_g = self.label + "/" + self.att_name + " (attribute label=%s) at " + "%g " + "[" + "%g" + ":" + "%g" + "]"\
-        +" %s"+" is in state: " + color + " %s " + RESET
-        try:
-            return fmt % (self.ac.label, self.pos(), lmts[0], lmts[1], self.ac.unit, self.state())
-        except:
-            return fmt_g % (self.ac.label, self.pos(), lmts[0], lmts[1], self.ac.unit, self.state())
-    
+        lm0, lm1 = self.lm()
+        if lm0 == None: lm0 = -inf
+        if lm1 == None: lm1 = inf
+        return self.label+" at %10.6f [%g:%g] is in state: %s"%(self.pos(), lm0, lm1, self.state())
+   
     def __call__(self,x=None):
         print(self.__repr__())
         return self.pos()

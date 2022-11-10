@@ -1455,8 +1455,8 @@ class escan_class:
                         p = self.dcm.m_rx2fine.pos()
                     if self.PitchCorrection: 
                         try:
-                            self.dcm.m_rx2fine.go(self.calculate_pitch(en))
-                            motors_to_wait.append(self.dcm.m_rx2fine)
+                            self.dcm.m_rx2.go(self.calculate_pitch(en))
+                            motors_to_wait.append(self.dcm.m_rx2)
                         except KeyboardInterrupt as tmp:
                             raise tmp
                         except:
@@ -1598,10 +1598,10 @@ class escan_class:
                         bp1, bp2 = self.dcm.bender.c1.pos(),self.dcm.bender.c2.pos()
                     except:
                         bp1, bp2 = 0.,0.
-                    try:
-                        an1, an2 = self.dcm.bender.analog1(), self.dcm.bender.analog2()
-                    except:
-                        an1, an2 = 0., 0.
+                    #try:
+                    #    an1, an2 = self.dcm.bender.analog1(), self.dcm.bender.analog2()
+                    #except:
+                    #    an1, an2 = 0., 0.
                     #line_buffer+=("%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g"\
                     line_buffer+=("%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g"\
                     % (p, self.dcm.m_rx2fine.pos(),\

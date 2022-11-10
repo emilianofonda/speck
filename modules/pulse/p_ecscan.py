@@ -5,6 +5,7 @@ import dentist
 import tables
 import os
 import numpy
+numpy.seterr(all="ignore")
 import time as myTime
 from time import sleep
 from spec_syntax import wait_motor
