@@ -46,7 +46,7 @@ try:
     #config={"acq_trigger_mode":"internal_trigger",\
     config={"acq_trigger_mode":"external_gate",\
     "saving_suffix":"hdf","saving_prefix":"x3x_","saving_format":"hdf5",\
-    "saving_directory":"/mnt/spool/x3x","saving_mode":"auto_frame",\
+    "saving_directory":"/nfs/srv5/spool1/x3x","saving_mode":"auto_frame",\
     "saving_overwrite_policy":"abort"}
 
     detector_details={"detector_name":"Canberra_SDD13","real_pixels_list":"1,2,3,4,5,6,7,8,9,10,11,12,13","comment":"Canberra 13 elements SDD + xspress3x"}
