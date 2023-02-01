@@ -7,6 +7,7 @@ from p_escan import *
 from p_spec_syntax import *
 from p_dxmap import dxmap
 from matplotlib import pyplot as plt
+import pandabox
 
 try:
     #Fastosh recognized detector names:
@@ -96,12 +97,22 @@ dcm.DP.associated_counter = "encoder01.Theta"
 
 #PulseGenerator
 
-from p_pulsegen import pulseGen
-config = {"generationType":"FINITE","pulseNumber":1,"counter0Enable":True,\
-"initialDelay0":0.0,"delayCounter0":5.,"pulseWidthCounter0":995.}
+######   These definitions correspond to NI6602 that is replaced by Pandabox (definitions right below)
+
+#from p_pulsegen import pulseGen
+#config = {"generationType":"FINITE","pulseNumber":1,"counter0Enable":True,\
+#"initialDelay0":0.0,"delayCounter0":5.,"pulseWidthCounter0":995.}
 #delayCounter0 is the GateDownTime of the other cards
 
-pulseGen0 = pulseGen("d09-1-cx1/dt/pulsgen.1",config=config,deadtime=0.1,timeout=10.)
+#pulseGen0 = pulseGen("d09-1-cx1/dt/pulsgen.1",config=config,deadtime=0.1,timeout=10.)
+
+######   These definitions correspond to new pandabox timebase
+
+pulseGen0 = pandabox.pandabox_timebase("flyscan/clock/pandabox-timebase.1",\
+config={"mode":0,"inputCoder":0,"firstPulseDelay":0.001,"pulsePeriod":1000,"gateDownTime":2},\
+identifier="pulsegenerator_0")
+
+
 
 #The following post format is very heavy with large array detectors.
 #A simplification could be provided if detectors provided already computed averages or corrected counts, but it is tricky 
