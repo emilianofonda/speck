@@ -17,7 +17,7 @@ try:
     import Tkinter
     NoTk=False
 except:
-    print("Warning from escan: Tkinter not installed.")
+    print("Tkinter not installed.")
     NoTk=True
 
 print(mycurses.PINK+"Using alpha version of cscan"+mycurses.RESET)
@@ -243,7 +243,7 @@ def cscanActor(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beam
         f.close()
     shell.logger.log_write("Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime), kind='output')
     print("Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime)) 
-    AlarmBeep()
+    #AlarmBeep()
     cmot.velocity = cmot_previous_velocity
     return
     
@@ -406,7 +406,7 @@ def c2scan(cmot,p1,p2,velocity,mot2,p21,p22,dp2,n=1,dt=0.1, channel=1,shutter=Fa
     timeout0 = time()
     shell.logger.log_write("Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime), kind='output')
     print("Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime)) 
-    AlarmBeep()
+    #AlarmBeep()
     cmot.velocity = cmot_previous_velocity
     return
    
@@ -432,8 +432,6 @@ def AlarmBeep():
             a.destroy()
         except:
             pass
-        print("WARNING: Error alerting for end of scan... no Tkinter?\n")
-        print("BUT: Ignore this message if escan is working well,\n just report this to your local contact\n")
     return
 
 

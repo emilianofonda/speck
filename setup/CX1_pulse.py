@@ -112,7 +112,9 @@ pulseGen0 = pandabox.pandabox_timebase("flyscan/clock/pandabox-timebase.1",\
 config={"mode":0,"inputCoder":0,"firstPulseDelay":0.001,"pulsePeriod":1000,"gateDownTime":2},\
 identifier="pulsegenerator_0")
 
+udp_pulseGen0 = pandabox.pandabox_udp_timebase("flyscan/clock/pandabox-udp-timebase.1",identifier="pulsegenerator_udp_0")
 
+udp_sampler0 = pandabox.udp_sampler(label="flyscan/sensor/sampler.1",user_readconfig=[],timeout=10.,deadtime=0.1,config={}, identifier="udp_sampler0")
 
 #The following post format is very heavy with large array detectors.
 #A simplification could be provided if detectors provided already computed averages or corrected counts, but it is tricky 
@@ -177,7 +179,7 @@ try:
 #These Posts should be modified each time when changing detectors.
     from p_spec_syntax import pseudo_counter
 
-    cpt=pseudo_counter(masters=[pulseGen0,])
+    cpt=pseudo_counter(masters=[pulseGen0,],slaves=[udp_pulseGen0,])
     #ct=pseudo_counter(masters=[pulseGen0,],slaves=[mca1,], posts= ctPosts)
     #ct=pseudo_counter(masters=[pulseGen0],slaves=[cx1sai_1,x3mca], posts= ctPosts)
     #Remember to set the cpt3 card from master to slave mode and modify BNC cable position from OUT to GATE
@@ -187,7 +189,9 @@ try:
 
     #ct=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cx1xia1,cx1xia2,cpt3])
     ct0=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cx1xia1,cx1xia2,cpt3],posts=ctPosts, postDictionary=XAS_dictionary)
-
+    
+    ct_udp = pseudo_counter(masters=[pulseGen0,],slaves=[udp_pulseGen0,udp_sampler0])
+    
 except Exception as tmp:
     print(tmp)
     print("Failure defining ct0 config")
@@ -282,7 +286,7 @@ try:
             },
     }
  
-    ct_xp=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cpt3],posts = ctPosts_xp, postDictionary = XAS_dictionary_xp)
+    ct_xp=pseudo_counter(masters=[pulseGen0,],slaves=[udp_pulseGen0,cx1sai,cpt3],posts = ctPosts_xp, postDictionary = XAS_dictionary_xp)
 
 except Exception as tmp:
     print(tmp)

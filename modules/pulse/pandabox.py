@@ -264,6 +264,7 @@ class udp_sampler:
         self.deadtime=deadtime
         self.timeout=timeout
         self.DP.set_timeout_millis(int(self.timeout*1000))
+        self.attribute = {"attribute":"","nx_name":"","read_error_threshold":10.0}
         if identifier =="":
             self.identifier = "sampler_udp_0"
         else:
@@ -297,15 +298,25 @@ class udp_sampler:
         return self.DP.status()
         
     def prepare(self,dt=1,NbFrames=1,nexusFileGeneration=False,stepMode=False,upperDimensions=()):
-        self.DP.start()
-        sleep(self.deadtime)
+        """This first version is made for one single attribute, but several can be sampled together"""
+        if self.attribute["attribute"] != "" and NbFrames>1:
+            __start_string = ("[sampler]","attribute:")
+            __start_string += ("name = %s" % (self.attribute["attribute"]),)
+            __start_string += ("nx_name = %s" % (self.attribute["nx_name"]),)
+            __start_string += ("nx_sampling_name = %s_sampling_time" % (self.attribute["nx_name"]),)
+            __start_string += ("read_error_threshold = %8.6f" % (self.attribute["read_error_threshold"]),)
+            __start_string += ("-",)
+            self.DP.configuration = __start_string
+            sleep(self.deadtime)
+            self.DP.start(NbFrames)
+            sleep(self.deadtime)
         return self.state()
 
     def prepareHDF(self, handler, HDFfilters = tables.Filters(complevel = 1, complib='zlib')):
         """the handler is an already opened file object"""
 #Write down contextual data
         ll = numpy.array(["%s = %s"%(i,str(self.config[i])) for i in self.config.keys()])
-        outGroup = handler.create_groupflyscan/sensor/sampler.1("/context",self.identifier)
+        outGroup = handler.create_group("/context",self.identifier)
         outGroup = handler.get_node("/context/"+self.identifier)
         handler.create_carray(outGroup, "config", title = "config",\
         shape = numpy.shape(ll), atom = tables.Atom.from_dtype(ll.dtype), filters = HDFfilters)
@@ -313,13 +324,6 @@ class udp_sampler:
         outNode[:] = ll
         return
 
-    def start(self,dt=1):
-        """ This is a slave device, the start command does nothing, make it ready with the prepare command"""
-
-
-
-
-        return self.state()
         
     def stop(self):
         if self.state()==DevState.RUNNING:

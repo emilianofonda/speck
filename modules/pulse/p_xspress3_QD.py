@@ -454,7 +454,7 @@ class xspress3:
                 and i.endswith(self.DP.saving_suffix)]
                 sleep(self.deadtime)
         files2read.sort()
-        print("xsp3 files to read:", files2read)
+        #print("xsp3 files to read:", files2read)
 #One after the other: open, transfert data, close and delete
         for Nfile in range(len(files2read)):
             sourceFile = tables.open_file(self.spoolMountPoint + os.sep + files2read[Nfile], "r")

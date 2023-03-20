@@ -659,6 +659,7 @@ class pseudo_counter:
         self.preCountList = []
         self.postCountList = []
         self.stepWaitList = []
+        self.readable = []
         #self.handler = None
 
         for i in self.slaves: 
@@ -668,6 +669,8 @@ class pseudo_counter:
                 self.postCountList.append(i)
             if "stepWait" in dir(i):
                 self.stepWaitList.append(i)
+            if "read" in dir(i):
+                self.readable.append(i)
 
         self.deadtime = deadtime
         self.timeout = timeout
@@ -885,7 +888,7 @@ class pseudo_counter:
     def read(self):
         "All objects must provide a read command, this command will supply a list of values"
         counts=[]
-        for i in self.all:
+        for i in self.readable:
             counts += i.read()
         if len(counts) != len(self.user_readconfig):
             self.reinit()
