@@ -81,7 +81,8 @@ class pandabox_timebase:
     def prepare(self,dt=1,NbFrames=1,nexusFileGeneration=False,stepMode=False,upperDimensions=()):
         cKeys = self.config.keys()
         if stepMode:
-            self.config["sequenceLength"] = 1 
+        #Careful ! modification to be checked, it was =1 and working last week
+            self.config["sequenceLength"] = 2 
         else:
             self.config["sequenceLength"] = NbFrames + 1 
         #Remove GateDownTime:

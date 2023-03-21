@@ -109,7 +109,7 @@ dcm.DP.associated_counter = "encoder01.Theta"
 ######   These definitions correspond to new pandabox timebase
 
 pulseGen0 = pandabox.pandabox_timebase("flyscan/clock/pandabox-timebase.1",\
-config={"mode":0,"inputCoder":0,"firstPulseDelay":0.001,"pulsePeriod":1000,"gateDownTime":2},\
+config={"mode":0,"inputCoder":0,"firstPulseDelay":0.1,"pulsePeriod":1000,"gateDownTime":1},\
 identifier="pulsegenerator_0")
 
 udp_pulseGen0 = pandabox.pandabox_udp_timebase("flyscan/clock/pandabox-udp-timebase.1",identifier="pulsegenerator_udp_0")
@@ -179,7 +179,8 @@ try:
 #These Posts should be modified each time when changing detectors.
     from p_spec_syntax import pseudo_counter
 
-    cpt=pseudo_counter(masters=[pulseGen0,],slaves=[udp_pulseGen0,])
+    #cpt=pseudo_counter(masters=[pulseGen0,],slaves=[udp_pulseGen0,])
+    cpt=pseudo_counter(masters=[pulseGen0,],slaves=[])
     #ct=pseudo_counter(masters=[pulseGen0,],slaves=[mca1,], posts= ctPosts)
     #ct=pseudo_counter(masters=[pulseGen0],slaves=[cx1sai_1,x3mca], posts= ctPosts)
     #Remember to set the cpt3 card from master to slave mode and modify BNC cable position from OUT to GATE
@@ -286,7 +287,8 @@ try:
             },
     }
  
-    ct_xp=pseudo_counter(masters=[pulseGen0,],slaves=[udp_pulseGen0,cx1sai,cpt3],posts = ctPosts_xp, postDictionary = XAS_dictionary_xp)
+    #ct_xp=pseudo_counter(masters=[pulseGen0,],slaves=[udp_pulseGen0,cx1sai,cpt3],posts = ctPosts_xp, postDictionary = XAS_dictionary_xp)
+    ct_xp=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cpt3],posts = ctPosts_xp, postDictionary = XAS_dictionary_xp)
 
 except Exception as tmp:
     print(tmp)
