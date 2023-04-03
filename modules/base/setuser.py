@@ -1,6 +1,7 @@
 #!/usr/bin/ipython
 from __future__ import print_function
 import os,sys,string,time
+import subprocess
 #from ascan import filename2ruche
 #from IPython.core import ipapi
 from IPython.core.getipython import get_ipython
@@ -124,5 +125,53 @@ def setuser(name=None):
             print(tmp)
             pass
     return
+
+def check_project(project_number=""):
+
+    keys=['numEntries','title',"manager"]
+    
+    def match(s,k):
+        return True in [i+":" in s for i in k]
+    
+    if project_number == "":
+        return False
+    result = subprocess.run([r'ldapsearch',r'-x','-s','sub','cn=%s'%project_number],stdout=subprocess.PIPE)
+    information = {}
+    ll = [i.strip(" #").split(":") for i in str(result.stdout).split('\\n') if match(i,keys)]
+    for i in ll : 
+        information[i[0]] = i[1].strip()
+    if information["numEntries"] != '1':
+        return False
+    else:
+        tmp = information.pop("numEntries")
+    
+    keys=['numEntries','o',"displayName"]
+    result = subprocess.run([r'ldapsearch',r'-x','-s','sub','%s'%information["manager"]],stdout=subprocess.PIPE)
+    ll = [i.strip(" #").split(":") for i in str(result.stdout).split('\\n') if match(i,keys)]
+    for i in ll : 
+        information[i[0]] = i[1].strip()
+    information["manager"] = information["displayName"]
+    information["institute"] = information["o"]
+    for i in ["o","displayName","numEntries"]:
+        try:
+            tmp = information.pop(i)
+        except:
+            pass
+    result = subprocess.run([r'ldapsearch',r'-x','-s','sub','cn=g%s'%project_number],stdout=subprocess.PIPE)
+    ll = [i[11:].strip() for i in str(result.stdout).split('\\n') if "memberUid:" in i]
+    members=[]
+    for member in ll:
+        result = (subprocess.run([r'ldapsearch',r'-x','-s','sub','uid=%s'%member,'displayName'],stdout=subprocess.PIPE))
+        i0=str(result.stdout).find("displayName:")+12
+        d0=str(result.stdout)[i0:].find("\\n")
+        members.append(str(result.stdout)[i0:i0+d0].strip())
+    tmp=members.pop(members.index(project_number))
+    information["members"]=members
+    del tmp
+    return information
+
+
+
+
 
 
