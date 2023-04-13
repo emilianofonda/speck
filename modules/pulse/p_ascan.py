@@ -82,54 +82,17 @@ def ascan_statistics(x,y,glob):
 
 
 def __backup_data():
-    ##############################################################
-    #
-    #Define data and backup folders: backup only if
-    #current folder is in data path
-    #
     try:
-        __IPy = get_ipython()
-        __Default_Data_Folder = __IPy.user_ns["__SPECK_CONFIG"]["TEMPORARY_HOME"]
-        __Default_Backup_Folder = __IPy.user_ns["__SPECK_CONFIG"]["DATA_FOLDER"]
-        if __Default_Backup_Folder == "":
-            print("No backup/ruche folder defined.")
-            return
-#the folder is set via the config:
-        currentDataFolder=__IPy.user_ns["__SPECK_CONFIG"]["USER_FOLDER"]
-#
-        currentDataFolder=os.path.realpath(os.getcwd())
-        print("Data Folder is :",currentDataFolder)
-        if currentDataFolder.startswith(__Default_Data_Folder) and\
-        len(currentDataFolder.split(os.sep))>len(__Default_Data_Folder.split(os.sep)):
-            currentBackupFolder=__Default_Backup_Folder+"/"+\
-            currentDataFolder.lstrip(__Default_Data_Folder.rstrip("/"))
-            cbf=currentBackupFolder
-            currentBackupFolder=cbf[:cbf.rstrip("/").rfind("/")]
-        else:
-            print("No backup!")
-            return
-        print("Backup Folder is :",currentBackupFolder)
-    except (KeyboardInterrupt,SystemExit) as tmp:
-        print("Backup halted on user request")
-        raise tmp
-    except:
-        print("--------------------------------------------------------------------")
-        print("WARNING:")
-        print("Error defining backup folders... please, backup data files manually.")
-        print("--------------------------------------------------------------------")
-        return
-        #NOTA:  This version make an integral backup of folder content
-        # another strategy could be just to copy current data file.
-        # but I prefer a complete backup including other files too.
-        #Backup is performed in a separate shell by os.system
-    try:
-        command="rsync --ignore-existing -auv --temp-dir=/tmp '"+currentDataFolder+"' '"+currentBackupFolder+"'"
+        ipy=get_ipython()
+        command="rsync --ignore-existing -uv --temp-dir=/tmp '"+\
+        ipy.user_ns["__SPECK_CONFIG"]["USER_HOME"] +"' '"+\
+        ipy.user_ns["__SPECK_CONFIG"]["USER_DATA"] +"'"
         os.system(command)
     except (KeyboardInterrupt,SystemExit) as tmp:
         print("Backup halted on user request")
         raise tmp
     except:
-        print("Experimental feature error: Cannot make backup to ruche... do it manually!")
+        print("__backup_data error: cannot make backup to ruche... ")
     return
 
 def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,name=None,delay=0.,delay0=0.,\
@@ -153,6 +116,7 @@ scaler="ct",comment="",fullmca=False,graph=1, n = 1):
         raise Exception("Timebase not defined or wrong timebase name.")
     if name == None:
         name = "ascan_out"
+    filename = glob["__SPECK_CONFIG"]["USER_HOME"] + os.sep + name
     ext = "txt"
     if graph >=0:
         w = speck_plot.speck_figure(fign=graph, title=name, grid=(1,1))
@@ -160,7 +124,7 @@ scaler="ct",comment="",fullmca=False,graph=1, n = 1):
         x = []
         y = []
         full = []
-        current_name = findNextFileName(name, ext, file_index = scan_number + 1)
+        current_name = findNextFileName(filename, ext, file_index = scan_number + 1)
         ###################### FULL MCA FILES! #####################################
         if fullmca:
             dirname = current_name[:current_name.rfind(".")]+".d"
@@ -168,8 +132,8 @@ scaler="ct",comment="",fullmca=False,graph=1, n = 1):
         if fullmca:
             os.mkdir(dirname,0o777)
             for mca_channel in cpt.read_mca().keys():
-                mca_files[mca_channel] = file(dirname + os.sep + current_name[:current_name.rfind(".")]+"_"+mca_channel+".txt","a")
-                print(dirname + os.sep+name + "." + mca_channel)
+                mca_files[mca_channel] = file(dirname + os.sep + name + "_" + mca_channel+".txt","a")
+                #print(dirname + os.sep +name + "." + mca_channel)
         ###################### FULL MCA FILES! #####################################
         f=file(current_name, "w")
         print("Saving in file: ",current_name)
@@ -465,7 +429,12 @@ def stepscan_open(name=None,dt=1,scaler="ct",comment="",fullmca=True):
     f.write(header)
     return
 
-    
+
+#### The whole code below is supposed to work, but it is less and less useful and maintained
+#### This has to be rewritten, if needed, after passing ascan and dscan fully to pulse scheme
+
+
+
 #def stepscan_step(glob=globals()):
 def stepscan_step():
     glob  = get_ipython().user_ns

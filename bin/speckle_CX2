@@ -1,0 +1,23 @@
+#!/bin/bash
+if 
+    test -z `screen -ls|grep speckle3|cut -f 2|cut -d $'\n' -f 2`
+then
+    if
+        (screen -ls |grep speckle3_CX2); 
+    then 
+        echo speckle session already exists: connecting to...
+        SCRS=`screen -ls|grep speckle3_CX2|cut -f 2`
+        gnome-terminal --hide-menubar --title=SPECKLE3_CX2 -e "screen -xr `echo $SCRS|cut -f 1 -d " "`"
+    else 
+        echo speckle session not found: creating speckle session.
+        gnome-terminal --hide-menubar --title=SPECKLE3_CX2 --geometry 140x50+10+20 -e "screen -S speckle3_CX2 -A speck3"
+    fi    
+else
+    echo Multiple speckle sessions exist please connect manually.
+    echo list follows:
+    screen -ls|grep speckle3_CX2
+    echo use "screen -x sessionname" to connect
+fi
+
+
+
