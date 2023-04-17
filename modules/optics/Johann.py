@@ -122,7 +122,7 @@ class JohannAnalyzer:
     def resolutionBeamSize(self,theta):
         """theta is the Bragg angle in degrees
         """
-        return (self.beamsize/(self.R*npy.sin((theta-self.alpha)/180.*npy.pi)))**2
+        return (self.beamsize/(self.R*npy.sin((theta-self.alpha)/180.*npy.pi)))
     
     def resolutionJohannAberration(self,theta):
         """theta is the Bragg angle in degrees
