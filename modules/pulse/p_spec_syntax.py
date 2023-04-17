@@ -1024,8 +1024,6 @@ class pseudo_counter:
         To write data to this file in the calling process, use the self.handler pointer
 
         The file has to be explicitly closed at the end of the scan: self.closeHDFfile.
-        The saving scheme use the old global variable __DefaultBackup_Folder to determine where to save.
-        This has probably to be changed soon.
         """
         sh = get_ipython()
 #Find the final file name
@@ -1255,29 +1253,14 @@ def findNextFileIndex(prefix,ext,file_index=1):
     return file_index
 
 def filename2ruche(filename):
-    ##############################################################
-    #
-    #Returns complete filename to save data directly in ruche
-    #it works only if
-    #current folder is in data path
-    #
-    __IPy = get_ipython()
-    __Default_Data_Folder = __IPy.user_ns["__SPECK_CONFIG"]["TEMPORARY_HOME"]
-    __Default_Backup_Folder = __IPy.user_ns["__SPECK_CONFIG"]["DATA_FOLDER"]
-    if __Default_Backup_Folder == "":
-        print("No backup/ruche folder defined.")
-        return
-#The following line is risky. Now setuser is the only way to change temporary home and saving points
-    #currentDataFolder=os.path.realpath(os.getcwd())
-#the folder is set via the config:
-    currentDataFolder=__IPy.user_ns["__SPECK_CONFIG"]["USER_FOLDER"]
-#
-    currentBackupFolder=__Default_Backup_Folder+os.sep+\
-    currentDataFolder.lstrip(__Default_Data_Folder.rstrip(os.sep))
-    cbf=currentBackupFolder
-    ruche_filename = currentBackupFolder + os.sep + filename
-    return ruche_filename
-   
+    """It becomes useless after the upgrade of setuser
+    Full information is set in __SPECK_CONFIG from start
+    __SPECK_CONFIG["USER_HOME"]
+    __SPECK_CONFIG["USER_DATA"]
+    """
+    ip=get_ipython()
+    return ip.user_ns['__SPECK_CONFIG']["USER_DATA"] + os.sep + filename
+
 
     
     

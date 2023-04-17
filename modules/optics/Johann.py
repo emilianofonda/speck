@@ -121,12 +121,14 @@ class JohannAnalyzer:
 
     def resolutionBeamSize(self,theta):
         """theta is the Bragg angle in degrees
+        The resolution here is DE/E
         """
-        return (self.beamsize/(self.R*npy.sin((theta-self.alpha)/180.*npy.pi)))
+        return self.beamsize/(self.R*npy.sin((theta-self.alpha)/180.*npy.pi))/npy.tan(theta/180.*npy.pi)
     
     def resolutionJohannAberration(self,theta):
         """theta is the Bragg angle in degrees
         (the crystal is supposed to be a round wafer of radius A)
+        The resolution here is DE/E
         """
         return 0.125*(self.A/(self.R*npy.sin((theta-self.alpha)/180.*npy.pi)))**2\
         /(npy.tan((theta-self.alpha)/180.*npy.pi) * npy.tan(theta/180.*npy.pi))
@@ -135,6 +137,7 @@ class JohannAnalyzer:
     def resolutionBentCrystal(self,theta,energy):
         """theta is the Bragg angle
         energy is the energy of the analyzed radiation in eV
+        The resolution here is DE/E
         """
         t=npy.log(2.)/(pymucal.muro(self.atom,energy)*pymucal.atomic_data(self.atom).density)/100.
         return t/self.R*(1/npy.tan(theta/180.*npy.pi)-2*self.poisson[self.atom])

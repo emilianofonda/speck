@@ -196,8 +196,9 @@ def shopen(level=2):
 #       Johann Analyzer
 import Johann
 #__Johann_Geometry = {"atom":"Si","hkl":[3,1,1],"order":3,"R":0.985,"A":0.05,"alpha":0.,"detectorsize":0.3,"beamsize":3e-4,"angleMax":85,"angleMin":55.}
-__Johann_Geometry = {"atom":"Si","hkl":[1,1,0],"order":4,"R":0.5000,"A":0.05,"alpha":0.,"detectorsize":0.3,"beamsize":1.6e-4,"angleMax":85,"angleMin":55.}
+#__Johann_Geometry = {"atom":"Si","hkl":[2,2,0],"order":4,"R":1.000,"A":0.05,"alpha":0.,"detectorsize":0.3,"beamsize":3e-4,"angleMax":85,"angleMin":55.}
 #__Johann_Geometry = {"atom":"Si","hkl":[1,1,1],"order":5,"R":1.000,"A":0.05,"alpha":0.,"detectorsize":0.3,"beamsize":3e-4,"angleMax":85,"angleMin":55.}
+__Johann_Geometry = {"atom":"Si","hkl":[1,1,0],"order":4,"R":0.5,"A":0.05,"alpha":0.,"detectorsize":0.3,"beamsize":160e-6,"angleMax":85,"angleMin":55.}
 __Johann_Motors ={"crystal_theta":thetaCrystal,"crystal_x":xCrystal,"detector_theta":thetaDetector,"detector_x":xDetector,"detector_z":zDetector}
 jo = Johann.JohannSpectro(__Johann_Motors, __Johann_Geometry)
 #jo.offset_crystal_theta=0.17

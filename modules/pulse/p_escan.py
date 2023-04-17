@@ -341,7 +341,7 @@ def ReadScanForm(filename):
         if (len(i)>=3):
             res.append(i[0:3])
     if len(res)<2:
-        raise SyntaxError("Too few usefull lines. Error in input file. Abort.")
+        raise SyntaxError("Too few useful lines. Error in input file. Abort.")
     #print "Truncation on data:"
     print("Scan over:")
     for i in res: print(i)
@@ -354,9 +354,6 @@ def ReadScanForm(filename):
     "plotSetting":plotSetting,"roi":roi,"scanMode":scanMode,"backup":backup,\
     "ServoRollParameters":ServoRollParameters,"ServoPitchParameters":ServoPitchParameters,\
     "notz2":notz2,"notz2_auto_limit":notz2_auto_limit,"fullmca":fullmca,"attributes":attributes}
-
-
-
 
 class escan_class:
     def __init__(self,scan_form="",\
@@ -387,19 +384,9 @@ class escan_class:
         # MUST be declared outside this class and before the escan class!
         #
         try:
-            #__Default_Data_Folder="/home/experiences/samba/com-samba/ExperimentalData/"
-            #__Default_Backup_Folder="/nfs/ruche-samba/samba-soleil/com-samba/"
-            __Default_Data_Folder = get_ipython().user_ns["__Default_Data_Folder"]
-            __Default_Backup_Folder = get_ipython().user_ns["__Default_Backup_Folder"]
-            self.currentDataFolder=os.getcwd()
+            self.currentDataFolder = get_ipython().user_ns["__SPECK_CONFIG"]["USER_HOME"]
+            self.currentBackupFolder = get_ipython().user_ns["__SPECK_CONFIG"]["USER_DATA"]
             print("Data Folder is :",self.currentDataFolder)
-            if self.currentDataFolder.startswith(__Default_Data_Folder.rstrip("/")) and __Default_Backup_Folder != "":
-                self.currentBackupFolder=__Default_Backup_Folder+"/"+\
-                self.currentDataFolder.lstrip(__Default_Data_Folder.rstrip("/"))
-                cbf=self.currentBackupFolder
-                self.currentBackupFolder=cbf[:cbf.rstrip("/").rfind("/")]
-            else:
-                self.currentBackupFolder=None
             print("Backup Folder is :",self.currentBackupFolder)
         except:
             print(RED, end=' ')
@@ -412,7 +399,7 @@ class escan_class:
         #
         #Setup avec scan file
         #
-        ###Rustine revoltante !!!!!
+        ###Rustine revoltante !!!!! le machine status est passé en dur 
         ###Il faut definir un controlleur pour le machinestatus et le passer en argument...
         try:
             self.ms = DeviceProxy("ans/ca/machinestatus")
@@ -478,6 +465,7 @@ class escan_class:
         # Defining different parameters for CX1 and CX2: very delicate! #
         #                                                               #
         #################################################################
+        #The timer channel is no more usable
         if self.detectionMode=="sexafs":
             self.stoppersList=sexafsStoppers
             self.timer_channel=6
@@ -1250,7 +1238,7 @@ class escan_class:
         #Backup is performed in a separate shell by os.system
         try:
             if self.backup and not(self.currentBackupFolder in [None,""]):
-                command="rsync --ignore-existing  -auv --temp-dir=/tmp '"+self.currentDataFolder+"' '"+self.currentBackupFolder+"'"
+                command="rsync --ignore-existing  -uv --temp-dir=/tmp '"+self.currentDataFolder+"' '"+self.currentBackupFolder+"'"
                 os.system(command)
             else:
                 print("Please do a manual backup of data files.")

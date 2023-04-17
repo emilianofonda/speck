@@ -293,16 +293,16 @@ class MOSTAB_serial:
         ll += "MOSTAB at %f\n"%self.pos()
         ll += "Reporting MOSTAB setup\n"
         ll += "----------------------\n"
-        ll += "MODE       = %s\n"% self("?MODE")[self.echo]
-        ll += "AMPLITUDE  = %s\n"% self("?AMPLITUDE")[self.echo]
-        ll += "PHASE      = %s\n"% self("?PHASE")[self.echo]
-        ll += "FREQUENCY  = %s\n"% self("?FREQUENCY")[self.echo]
-        ll += "TAU        = %s\n"% self("?TAU")[self.echo]
-        ll += "SLOPE      = %s\n"% self("?SLOPE")[self.echo]
-        ll += "INBEAM     = %s\n"% self("?INBEAM")[self.echo]
-        ll += "OUTBEAM    = %s\n"% self("?OUTBEAM")[self.echo]
-        ll += "OPRANGE    = %s\n"% self("?OPRANGE")[self.echo]
-        ll += "SPEED      = %s\n"% self("?SPEED")[self.echo]
+        ll += "MODE       %s\n"% self("?MODE")[self.echo]
+        ll += "AMPLITUDE  %s\n"% self("?AMPLITUDE")[self.echo]
+        ll += "PHASE      %s\n"% self("?PHASE")[self.echo]
+        ll += "FREQUENCY  %s\n"% self("?FREQUENCY")[self.echo]
+        ll += "TAU        %s\n"% self("?TAU")[self.echo]
+        ll += "SLOPE      %s\n"% self("?SLOPE")[self.echo]
+        ll += "INBEAM     %s\n"% self("?INBEAM")[self.echo]
+        ll += "OUTBEAM    %s\n"% self("?OUTBEAM")[self.echo]
+        ll += "OPRANGE    %s\n"% self("?OPRANGE")[self.echo]
+        ll += "SPEED      %s\n"% self("?SPEED")[self.echo]
         ll += "In case of doubt, please, verify bandwith limit of amplifier...\n"
         return ll
 
