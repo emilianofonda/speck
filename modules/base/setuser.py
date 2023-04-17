@@ -236,16 +236,6 @@ def setuser(project_number="",name=""):
         except Exception as tmp:
             print(tmp)
 
-#Folders are defined and if required they have been created
-#Now data have to be written to user.cfg and we should move to the home folder correctly (log/backup/...)
-#STOP HERE on Friday
-        user_home = IPy.user_ns["__SPECK_CONFIG"]["USER_HOME"]
-        user_data = IPy.user_ns["__SPECK_CONFIG"]["USER_DATA"]
-
-#Move to the new home 
-        os.chdir(user_home)
-
-      
 #Store information in config file
         cfgfile=open(IPy.user_ns["__SPECK_CONFIG"]['SPECK_FOLDER'] + "/config/user.cfg","w")
         for i in list(cfg.keys()):
@@ -253,6 +243,17 @@ def setuser(project_number="",name=""):
             if i != "PROJECTINFO":
                 cfgfile.write("%s=%s\n" % (i,cfg[i]))
         cfgfile.close()
+
+#Folders are defined and if required they have been created
+#Now data have to be written to user.cfg and we should move to the home folder correctly (log/backup/...)
+#STOP HERE on Friday
+    user_home = IPy.user_ns["__SPECK_CONFIG"]["USER_HOME"]
+    user_data = IPy.user_ns["__SPECK_CONFIG"]["USER_DATA"]
+
+#Move to the new home 
+    os.chdir(user_home)
+
+      
 
 #Restart logging
         try:
