@@ -1057,9 +1057,9 @@ class pseudo_counter:
             self.handler.close()
 #Now move file from temporary folder to ruche
         IPy = get_ipython()
-        if self.final_filename.startswitch(IPy.user_ns["__SPECK_CONFIG"]["SOLEIL_DATA_ROOT"]):
+        if self.final_filename.startswith(IPy.user_ns["__SPECK_CONFIG"]["SOLEIL_DATA_ROOT"]):
             shutil.move(self.handler.filename, self.final_filename)
-        elif self.final_filename.startswitch(IPy.user_ns["__SPECK_CONFIG"]["USER_DATA_ROOT"]):
+        elif self.final_filename.startswith(IPy.user_ns["__SPECK_CONFIG"]["USER_DATA_ROOT"]):
             #Use root privileges to move data if necessary
             command="mv '" + self.handler.filename + "' '" + self.final_filename + "'"
             adm_srv = DeviceProxy(IPy.user_ns["__SPECK_CONFIG"]["ROOT_SERVER"])
