@@ -253,14 +253,12 @@ def setuser(project_number="",name=""):
 #Move to the new home 
     os.chdir(user_home)
 
-      
-
 #Restart logging
-        try:
-            IPy.magic("logstart -ort %s global"%(user_home + os.sep + "logBook.txt"))
-        except Exception as tmp:
-            print(tmp)
-            pass
+    try:
+        IPy.magic("logstart -ort %s global"%(user_home + os.sep + "logBook.txt"))
+    except Exception as tmp:
+        print(tmp)
+        pass
     return
 
 
