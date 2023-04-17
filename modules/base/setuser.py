@@ -251,7 +251,7 @@ def setuser(project_number="",name=""):
             command = "mkdir -p -m 750 %s" % IPy.user_ns["__SPECK_CONFIG"]["USER_DATA"]
             adm_srv = DeviceProxy(IPy.user_ns["__SPECK_CONFIG"]["ROOT_SERVER"])
             adm_srv.ShellExe(command)
-except Exception as tmp:
+        except Exception as tmp:
             print(tmp)
 
 #Store information in config file
