@@ -13,6 +13,9 @@ from PyTango import DeviceProxy
 from p_spec_syntax import wait_motor
 from GetPositions import GetPositions
 
+from setuser import backup as __backup_data
+
+
 #THIS MODULE HAS TO BE COMPLETELY REWRITTEN:
 #   Data must be saved in temporary folder in hdf and THEN moved to ruche avoiding home folder
 #   Backup mechanism could be removed after.
@@ -81,19 +84,19 @@ def ascan_statistics(x,y,glob):
     return 0
 
 
-def __backup_data():
-    try:
-        ipy=get_ipython()
-        command="rsync --ignore-existing -uv --temp-dir=/tmp '"+\
-        ipy.user_ns["__SPECK_CONFIG"]["USER_HOME"] +"' '"+\
-        ipy.user_ns["__SPECK_CONFIG"]["USER_DATA"] +"'"
-        os.system(command)
-    except (KeyboardInterrupt,SystemExit) as tmp:
-        print("Backup halted on user request")
-        raise tmp
-    except:
-        print("__backup_data error: cannot make backup to ruche... ")
-    return
+#def __backup_data():
+#    try:
+#        ipy=get_ipython()
+#        command="rsync --ignore-existing -uv --temp-dir=/tmp '"+\
+#        ipy.user_ns["__SPECK_CONFIG"]["USER_HOME"] +"' '"+\
+#        ipy.user_ns["__SPECK_CONFIG"]["USER_DATA"] +"'"
+#        os.system(command)
+#    except (KeyboardInterrupt,SystemExit) as tmp:
+#        print("Backup halted on user request")
+#        raise tmp
+#    except:
+#        print("__backup_data error: cannot make backup to ruche... ")
+#    return
 
 def ascan(mot,p1,p2,dp=0.1,dt=0.1,channel=None,returndata=False,fulldata=False,name=None,delay=0.,delay0=0.,\
 scaler="ct",comment="",fullmca=False,graph=1, n = 1):
