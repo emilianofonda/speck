@@ -221,7 +221,7 @@ scaler="ct",comment="",fullmca=False,graph=1, n = 1):
                         __fullmca_line_format="%d\t"*(len(__fullmca_line)-1)+"%d\n"
                         mca_files[mca_channel].write(__fullmca_line_format%tuple(__fullmca_line))
                 ######################################################################################
-                if graph >=0 and len(mod(x,5)==0):
+                if graph >=0 and len(x)>0 and mod(len(x),5)==0 :
                     w.plot(x,y,curve=0,update=True,marker="x",linestyle="--",linewidth=2,color="b")
             if graph >= 0:
                 w.plot(x,y,curve=0,update=True,marker="x",linestyle="--",linewidth=2,color="b")
@@ -674,7 +674,7 @@ scaler="ct",comment="",fullmca=False,graph=1, n = 1):
                         __fullmca_line_format="%d\t"*(len(__fullmca_line)-1)+"%d\n"
                         mca_files[mca_channel].write(__fullmca_line_format%tuple(__fullmca_line))
                 ######################################################################################
-                if graph >=0 and len(mod(x,5)==0):
+                if graph >=0 and (len(x) > 0 and mod(len(x),5) == 0):
                     w.plot(x,y,curve=0,update=True,marker=".",linestyle="--",linewidth=2,color="b")
             if graph >= 0:
                 w.plot(x,y,curve=0,update=True,marker=".",linestyle="--",linewidth=2,color="b")

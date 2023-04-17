@@ -26,7 +26,6 @@ class speck_figure:
             self.ax =  self.flatten_an_item(ax)      
         for i in self.ax:
             i.clear()
-        #plt.pause(0.001)
         self.curves=[[],]*grid[0]*grid[1]
         self.fig.canvas.set_window_title(title)
         return
@@ -58,17 +57,31 @@ class speck_figure:
         if self.curves[viewport] == []:
             self.curves[viewport] = self.ax[viewport].plot(x,y,**kwds)
             if len(x)>0:
-                self.ax[viewport].set_xlim(min(x),max(x))
-                self.ax[viewport].set_ylim(min(y),max(y))
+                xmin,xmax = self.ax[viewport].get_xlim()
+                ymin,ymax = self.ax[viewport].get_ylim()
+                if ymin == ymax :
+                    ymin -= ymin * 0.1 - 1e-6
+                    ymax += ymax * 0.1 + 1e-6
+                if xmin == xmax :            
+                    xmin -= xmin * 0.1 - 1e-6
+                    xmax += xmax * 0.1 + 1e-6
+                self.ax[viewport].set_xlim(xmin,xmax)
+                self.ax[viewport].set_ylim(ymin,ymax)
         else:
             self.curves[viewport].extend(self.ax[viewport].plot(x,y,**kwds))
             if len(x)>0:
                 xmin,xmax = self.ax[viewport].get_xlim()
                 ymin,ymax = self.ax[viewport].get_ylim()
+                if ymin == ymax :
+                    ymin -= ymin * 0.1 - 1e-6
+                    ymax += ymax * 0.1 + 1e-6
+                if xmin == xmax :
+                    xmin -= xmin * 0.1 - 1e-6
+                    xmax += xmax * 0.1 + 1e-6
                 self.ax[viewport].set_xlim(min(min(x),xmin),max(xmax,max(x)))
                 self.ax[viewport].set_ylim(min(min(y),ymin),max(ymax,max(y)))
         if update:
-            plt.pause(0.01)
+            plt.pause(0.1)
         return len(self.curves[viewport])-1
 
     def update_curve(self,x,y,viewport=0,curve=0,update=True):
@@ -78,9 +91,15 @@ class speck_figure:
         self.curves[viewport][curve].set(data=(x,y))
         xmin,xmax = self.ax[viewport].get_xlim()
         ymin,ymax = self.ax[viewport].get_ylim()
+        if ymin == ymax :
+            ymin -= ymin * 0.1 - 1e-6
+            ymax += ymax * 0.1 + 1e-6
+        if xmin == xmax :            
+            xmin -= xmin * 0.1 - 1e-6
+            xmax += xmax * 0.1 + 1e-6
         self.ax[viewport].set_xlim(min(min(x),xmin),max(xmax,max(x)))
         self.ax[viewport].set_ylim(min(min(y),ymin),max(ymax,max(y)))
-        plt.pause(0.01)
+        plt.pause(0.1)
         return curve
 
     def plot(self,x,y,viewport=0,curve=0,update=True,legend=False,**kwds):
