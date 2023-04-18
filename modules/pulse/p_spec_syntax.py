@@ -13,7 +13,7 @@ import tables
 import copy
 
 import PyTango
-from PyTango import DevState
+from PyTango import DevState, DeviceProxy
 import Universal_Prefilter
 
 import p_post_calc
@@ -554,11 +554,19 @@ def status(x):
     return
 
 def lsruche():
-    return os.system("ls "+filename2ruche(""))
+    IPy =get_ipython()
+    if IPy.user_ns["__SPECK_CONFIG"]["PROJECTID"] == '':
+        return os.system("ls "+filename2ruche(""))
+    else:
+        __toolbox = DeviceProxy(IPy.user_ns["__SPECK_CONFIG"]["FILE_SERVER"])
+        return __toolbox.Listdir(IPy.user_ns["__SPECK_CONFIG"]["USER_DATA"])
 
 def llruche():
-    return os.system("ls -lh "+filename2ruche(""))
-
+    IPy =get_ipython()
+    if IPy.user_ns["__SPECK_CONFIG"]["PROJECTID"] == '':
+        return os.system("ls -lh "+filename2ruche(""))
+    else:
+        return None
 
 def editmacro(macrofilename):
     try:

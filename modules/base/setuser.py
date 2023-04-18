@@ -8,16 +8,20 @@ from IPython.core.getipython import get_ipython
 from PyTango import DeviceProxy
 
 
-#Dangerous legacy definitions
 IPy = get_ipython()
+
+#Dangerous legacy definitions
 #__Default_Data_Folder = IPy.user_ns["__SPECK_CONFIG"]['TEMPORARY_HOME'] #os.getenv("SPECK_DATA_FOLDER")
 #__Default_Backup_Folder = IPy.user_ns["__SPECK_CONFIG"]['DATA_FOLDER'] #os.getenv("SPECK_DATA_FOLDER")
 
 IPy.user_ns["__SPECK_CONFIG"]["ROOT_SERVER"] = "tango/sysadmin/srv4"
+#The following should be set in the root of speck once for all
+#One device for config/one for file management/one for scanning...
+IPy.user_ns["__SPECK_CONFIG"]["FILE_SERVER"] = "speck/common/toolbox"
+__toolbox = DeviceProxy(IPy.user_ns["__SPECK_CONFIG"]["FILE_SERVER"])
 
 def backup():
     IPy = get_ipython()
-
 
     print("\n"*1)
     print("Executing Backup.")
@@ -30,10 +34,14 @@ def backup():
         
         if Backup_Folder == "":
            raise Exception("No Backup Folder defined! GoodBye")
-        command="rsync -rlu --temp-dir=/tmp '" + Data_Folder + os.sep + "' '" + Backup_Folder + "'"
-        adm_srv = DeviceProxy(IPy.user_ns["__SPECK_CONFIG"]["ROOT_SERVER"])
-        adm_srv.ShellExe(command)
-        #os.system(command)
+        if IPy.user_ns["__SPECK_CONFIG"]["PROJECTID"] != '':
+            __toolbox = DeviceProxy(IPy.user_ns["__SPECK_CONFIG"]["FILE_SERVER"])
+            #adm_srv = DeviceProxy(IPy.user_ns["__SPECK_CONFIG"]["ROOT_SERVER"])
+            #adm_srv.ShellExe(command)
+            __toolbox.Copytree([IPy.user_ns["__SPECK_CONFIG"]["PROJECTID"], Data_Folder, Backup_Folder])
+        else:
+            command="rsync -rlu --temp-dir=/tmp '" + Data_Folder + os.sep + "' '" + Backup_Folder + "'"
+            os.system(command)
 
     except (KeyboardInterrupt,SystemExit) as tmp:
         print("Backup halted on user request")
@@ -200,21 +208,16 @@ def setuser(project_number="",name=""):
 
         try:
             os.makedirs(IPy.user_ns["__SPECK_CONFIG"]["USER_HOME"],exist_ok=True)
-            #command = "mkdir -p -m 750 %s" % IPy.user_ns["__SPECK_CONFIG"]["USER_HOME"]
-            #adm_srv = DeviceProxy(IPy.user_ns["__SPECK_CONFIG"]["ROOT_SERVER"])
-            #adm_srv.ShellExe(command)
         except Exception as tmp:
             print(tmp)
         try:
             os.makedirs(IPy.user_ns["__SPECK_CONFIG"]["USER_DATA"],exist_ok=True)
-            #command = "mkdir -p -m 750 %s" % IPy.user_ns["__SPECK_CONFIG"]["USER_DATA"]
-            #adm_srv = DeviceProxy(IPy.user_ns["__SPECK_CONFIG"]["ROOT_SERVER"])
-            #adm_srv.ShellExe(command)
         except Exception as tmp:
             print(tmp)
 
 #Cases 3 and 4: the project is provided with or without a name, if there is no name the date of the day
 #is used for home folder but no subfolder is made in ruche
+#In this case super powers are needed to create the user data folder in the project folder
 
     elif project_number != "":
         information = check_project(project_number)
@@ -247,10 +250,13 @@ def setuser(project_number="",name=""):
         except Exception as tmp:
             print(tmp)
         try:
+            __toolbox = DeviceProxy(IPy.user_ns["__SPECK_CONFIG"]["FILE_SERVER"])
+            __toolbox.Makedir([IPy.user_ns["__SPECK_CONFIG"]["PROJECTID"], IPy.user_ns["__SPECK_CONFIG"]["USER_DATA"]])
             #os.makedirs(IPy.user_ns["__SPECK_CONFIG"]["USER_DATA"],exist_ok=True)
-            command = "mkdir -p -m 750 %s" % IPy.user_ns["__SPECK_CONFIG"]["USER_DATA"]
-            adm_srv = DeviceProxy(IPy.user_ns["__SPECK_CONFIG"]["ROOT_SERVER"])
-            adm_srv.ShellExe(command)
+            #command = "mkdir -p -m 750 %s" % IPy.user_ns["__SPECK_CONFIG"]["USER_DATA"]
+            #adm_srv = DeviceProxy(IPy.user_ns["__SPECK_CONFIG"]["ROOT_SERVER"])
+            #adm_srv.ShellExe(command)
+
         except Exception as tmp:
             print(tmp)
 
