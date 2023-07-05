@@ -27,14 +27,14 @@ class pandabox_timebase:
         Channels are named from 0 to 7.
 
         mode: 0 or 1 (they stand for "TIME","POSITION")
-        inputCoder : 0 (for "TIME")  a number 1 to 4 for encoder inputs 1,2,3,and 4.
+        inputCoder : a number 1 to 4 for encoder inputs 1,2,3,and 4.
         firstPulseDelay : first delay in train of pulses (ms or axis units) >0
         pulsePeriod : is the integration time (ms or axis units)
         gateDownTime : the actual gateUpTime is pulsePeriod-gateDownTime (hint: use 2ms as gate down time) 
         sequenceLength: number of pulses (set it to +1 respect to what you would like to measure...)
 
         example:
-        config={"mode":0,"inputCoder":0,"firstPulseDelay":0.001,"pulsePeriod":1000,
+        config={"mode":0,"inputCoder":1,"firstPulseDelay":0.001,"pulsePeriod":1000,
         "gateDownTime":2}
 
         """

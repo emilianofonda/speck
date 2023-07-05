@@ -109,7 +109,7 @@ dcm.DP.associated_counter = "encoder01.Theta"
 ######   These definitions correspond to new pandabox timebase
 
 pulseGen0 = pandabox.pandabox_timebase("flyscan/clock/pandabox-timebase.1",\
-config={"mode":0,"inputCoder":0,"firstPulseDelay":0.1,"pulsePeriod":1000,"gateDownTime":1},\
+config={"mode":0,"inputCoder":1,"firstPulseDelay":0.1,"pulsePeriod":1000,"gateDownTime":1},\
 identifier="pulsegenerator_0")
 
 udp_pulseGen0 = pandabox.pandabox_udp_timebase("flyscan/clock/pandabox-udp-timebase.1",identifier="pulsegenerator_udp_0")
@@ -130,6 +130,7 @@ try:
     {"name":"MUX","formula":"log(float(ch[0])/ch[1])","units":"","format":"%9.7f"},\
     {"name":"MUS","formula":"log(float(ch[1])/ch[2])","units":"","format":"%9.7f"},\
     {"name":"I1Norm","formula":"float(ch[1])/ch[0]","units":"","format":"%9.7e"},\
+    {"name":"I3Norm","formula":"float(ch[3])/ch[0]","units":"","format":"%9.7e"},\
     {"name":"FLUO_RAW","formula":"float(sum(ch[66:84])+sum(ch[132:148]))/ch[0]","units":"","format":"%9.7e"},
     ]  
     #>>>>>>>>>>>>>>>> Remember only formulas are saved to file <<<<<<<<<<<<<<<<<<<<<<<<
@@ -356,3 +357,6 @@ def ctx(dt=1.):
 
 __shclose = shclose
 __shopen = shopen
+
+
+domacro("mv2energy.py")
