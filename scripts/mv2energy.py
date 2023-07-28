@@ -1,4 +1,6 @@
-def mv2energy(dest):
+def mv2energy(dest=None):
+    if dest == None:
+        return dcm.pos()
     if dcm.pos()>dest:
         mv(dcm,dest)
         mvr(bender,30e3)
