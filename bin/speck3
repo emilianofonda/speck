@@ -1,4 +1,3 @@
 #!/bin/sh
-#export FORCE_PYTANGO3=yes
 source /etc/bashrc
-~/speck3/bin/speck setup=CX1_pulse
+~/speck3/bin/speck $@

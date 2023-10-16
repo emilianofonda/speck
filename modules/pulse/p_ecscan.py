@@ -134,8 +134,10 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
 
             dcm.velocity(60)
             dcm.pos(e1-40.)
-            #General bender backlash correction
-            mvr(dcm.bender,20000)
+            #General bender backlash correction (bender 2 = 5000, bender 1 = 30000) to be generalised via Powerbrick
+            mvr(dcm.bender,5000)
+            myTime.sleep(0.2)
+            mvr(dcm.bender,-5000)
             myTime.sleep(0.2)
             dcm.velocity(velocity)
             myTime.sleep(0.2)
