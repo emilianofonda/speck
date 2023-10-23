@@ -142,7 +142,6 @@ __tmp={
 "I2_gain"    :["d09-1-cx1/ex/amp_iv.3","gain"],
 "I3_gain"    :["d09-1-cx1/ex/amp_iv.4","gain"],
 "mostab_gain1"    :["d09-1-cx1/ex/amp_iv.10","gain"],
-#"mostab_gain2"    :["d09-1-cx1/ex/amp_iv.4","gain"],
 "mostab_gain2"    :["d09-1-cx1/ex/amp_iv.11","gain"],
 "mir1_pitch"    :["d09-1-c02/op/mir1-tpp","pitch"],
 "mir1_roll"    :["d09-1-c02/op/mir1-tpp","roll"],
@@ -164,11 +163,17 @@ __tmp={
 "hgap5" :["d09-1-c06/ex/fent_h.2-mt_gap","position"],
 "cryoz" :["d09-1-cx1/ex/konti-mt_tz.1","position"],
 "cryophi" :["d09-1-cx1/ex/konti-mt_rz.1","position"],
-#"cryo4z" :["d09-1-cx1/ex/option1-mt_tz.1","position"],
-#"cryo4set" :["d09-1-cx1/ex/cryo4.1-ctrl","temperatureSetPoint"],
-#"keith_I0"      :["d09-1-cx1/ex/amp_iv.7","gain"],
-#"keith_I1"      :["d09-1-cx1/ex/amp_iv.8","gain"],
-#"keith_I2"      :["d09-1-cx1/ex/amp_iv.9","gain"],
+#Positionneur CX2
+"cx2_x"    :["d09-1-cx2/ex/sex-mt_tx.1","position"],
+"cx2_z"    :["d09-1-cx2/ex/sex-mt_tz.2","position"],
+"cx2_z2"    :["d09-1-cx2/ex/sex-mt_tz.1","position"],
+"cx2_phi"    :["d09-1-cx2/ex/sex-mt_rz.1","position"],
+#Analyseur CX2
+"cx2_xCrystal"    :["d09-1-cx2/dt/cristal-mt_tx.1","position"],
+"cx2_thetaCrystal"    :["d09-1-cx2/dt/cristal-mt_rs.1","position"],
+"cx2_xDetector"    :["d09-1-cx2/dt/det-mt_tx.1","position"],
+"cx2_zDetector"    :["d09-1-cx2/dt/det-mt_tz.1","position"],
+"cx2_thetaDetector"    :["d09-1-cx2/dt/det-mt_rs.1","position"],
 }
 for i in __tmp:
     try:
