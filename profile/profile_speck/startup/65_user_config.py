@@ -99,7 +99,6 @@ except Exception as tmp:
 
 #Normal moveables (missing special options)
 __tmp={
-#"T_dcm_set": ["d09-1-c03/op/bath.1","temperatureSetPoint"],
 "po1"        :["d09-1-c02/ex/po.1-mt.1","position","delay=1.","timeout=3."],
 "po2"        :["d09-1-c06/ex/po.1-mt_tz.1","position","delay=1.","timeout=3."],
 "po3"        :["d09-1-cx1/ex/po.1-mt_tz.1","position","delay=1.","timeout=3."],
@@ -117,8 +116,6 @@ __tmp={
 "fluo_x"    :["d09-1-cx1/dt/dtc_ge.1-mt_tx.1","position"],
 "fluo_s"    :["d09-1-cx1/dt/dtc_ge.1-mt_ts.1","position"],
 "fluo_z"    :["d09-1-cx1/dt/dtc_ge.1-mt_tz.1","position"],
-#"raman_x"    :["d09-1-cx1/ex/raman-tx.1","position"],
-#"z2"    :["d09-1-cx1/ex/raman-tz.1","position"],
 "thetaBoral"    :["d09-1-cx1/ex/pfi.1-mt_rs.1","position"],
 "imag1"        :["D09-1-C02/DT/IMAG1-MT_Tz.1","position"],
 "imag2"        :["D09-1-C04/DT/IMAG2-MT_Tz.1","position"],
@@ -220,9 +217,6 @@ __tmp={
 "pi6_1"        :["d09-1-c06/vi/pi.1","pressure"],
 "pi6_2"        :["d09-1-c06/vi/pi.2","pressure"],
 "tc1"	       :["d09-1-cx1/ex/tc.1","temperature"],
-#"T_dcm"        :["d09-1-c03/op/bath.1","temperature"],
-#"cryo4temp1" :["d09-1-cx1/ex/cryo4.1-ctrl","temperature1"],
-#"cryo4temp2" :["d09-1-cx1/ex/cryo4.1-ctrl","temperature2"],
 }                                                
 
 __ll=list(__tmp.keys())
