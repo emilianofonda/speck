@@ -1,15 +1,14 @@
 from __future__ import print_function
 from past.builtins import execfile
 from builtins import range
-print("CX1_pulse: preparing.")
+print("CX1: preparing.")
 
 from p_escan import *
 from p_spec_syntax import *
-from p_dxmap import dxmap
 from matplotlib import pyplot as plt
-import pandabox
 
 try:
+    from p_dxmap import dxmap
     #Fastosh recognized detector names:
     #CdTe, Canberra_Ge36, Canberra_Ge7, Vortex_SDD4, Vortex_SDD1, Canberra_SDD13
     detector_details={"detector_name":"Canberra_Ge36","real_pixels_list":"nan,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19","comment":"Canberra 36 pixels HPGe installed in CX1"}
@@ -41,13 +40,12 @@ except Exception as tmp:
 #EXSPRESS3
 #trigger modes can be internal_trigger or external_gate  
 
-from p_xspress3_QD import xspress3
-
 try:
+    from p_xspress3_QD import xspress3
     #config={"acq_trigger_mode":"internal_trigger",\
     config={"acq_trigger_mode":"external_gate",\
     "saving_suffix":"hdf","saving_prefix":"x3x_","saving_format":"hdf5",\
-    "saving_directory":"/nfs/srv5/spool1/x3x","saving_mode":"auto_frame",\
+    "saving_directory":"/mnt/spool/x3x","saving_mode":"auto_frame",\
     "saving_overwrite_policy":"abort"}
 
     detector_details={"detector_name":"Canberra_SDD13","real_pixels_list":"1,2,3,4,5,6,7,8,9,10,11,12,13","comment":"Canberra 13 elements SDD + xspress3x"}
@@ -62,8 +60,23 @@ try:
 except Exception as tmp:
     print(tmp)
 
-#SAI
+try:
+    from p_xspress3 import xspress3_test
+    #Fastosh recognized detector names:
+    #CdTe, Canberra_Ge36, Canberra_Ge7, Vortex_SDD4, Vortex_SDD1, Canberra_SDD13
+    detector_details={"detector_name":"Vortex_SDD4","real_pixels_list":"1,2,3,4","comment":"Vortex ME4 from pool"}
 
+    config = {"fileGeneration":False,"streamTargetPath":'/nfs/srv5/spool1/xspress3_mini',"streamtargetfile":"x3_mca"}
+    
+    x3mca_test = xspress3_test("tmp/test/xspress3.1",identifier = "fluo04",timeout=90., 
+    config=config,detector_details = detector_details)
+    
+    print(GREEN+" x3mca_test --> xspress3 mini + Vortex ME4"+RESET)
+except Exception as tmp:
+    print(tmp)
+
+
+#SAI
 from p_sai import sai as p_sai
 
 config = {"configurationId":3,"frequency":10000,"integrationTime":1,"nexusFileGeneration":False,\
@@ -97,24 +110,12 @@ dcm.DP.associated_counter = "encoder01.Theta"
 
 #PulseGenerator
 
-######   These definitions correspond to NI6602 that is replaced by Pandabox (definitions right below)
-
-#from p_pulsegen import pulseGen
-#config = {"generationType":"FINITE","pulseNumber":1,"counter0Enable":True,\
-#"initialDelay0":0.0,"delayCounter0":5.,"pulseWidthCounter0":995.}
+from p_pulsegen import pulseGen
+config = {"generationType":"FINITE","pulseNumber":1,"counter0Enable":True,\
+"initialDelay0":0.0,"delayCounter0":5.,"pulseWidthCounter0":995.}
 #delayCounter0 is the GateDownTime of the other cards
 
-#pulseGen0 = pulseGen("d09-1-cx1/dt/pulsgen.1",config=config,deadtime=0.1,timeout=10.)
-
-######   These definitions correspond to new pandabox timebase
-
-pulseGen0 = pandabox.pandabox_timebase("flyscan/clock/pandabox-timebase.1",\
-config={"mode":0,"inputCoder":1,"firstPulseDelay":0.1,"pulsePeriod":1000,"gateDownTime":1},\
-identifier="pulsegenerator_0")
-
-udp_pulseGen0 = pandabox.pandabox_udp_timebase("flyscan/clock/pandabox-udp-timebase.1",identifier="pulsegenerator_udp_0")
-
-udp_sampler0 = pandabox.udp_sampler(label="flyscan/sensor/sampler.1",user_readconfig=[],timeout=10.,deadtime=0.1,config={}, identifier="udp_sampler0")
+pulseGen0 = pulseGen("d09-1-cx1/dt/pulsgen.1",config=config,deadtime=0.1,timeout=10.)
 
 #The following post format is very heavy with large array detectors.
 #A simplification could be provided if detectors provided already computed averages or corrected counts, but it is tricky 
@@ -130,7 +131,6 @@ try:
     {"name":"MUX","formula":"log(float(ch[0])/ch[1])","units":"","format":"%9.7f"},\
     {"name":"MUS","formula":"log(float(ch[1])/ch[2])","units":"","format":"%9.7f"},\
     {"name":"I1Norm","formula":"float(ch[1])/ch[0]","units":"","format":"%9.7e"},\
-    {"name":"I3Norm","formula":"float(ch[3])/ch[0]","units":"","format":"%9.7e"},\
     {"name":"FLUO_RAW","formula":"float(sum(ch[66:84])+sum(ch[132:148]))/ch[0]","units":"","format":"%9.7e"},
     ]  
     #>>>>>>>>>>>>>>>> Remember only formulas are saved to file <<<<<<<<<<<<<<<<<<<<<<<<
@@ -180,8 +180,7 @@ try:
 #These Posts should be modified each time when changing detectors.
     from p_spec_syntax import pseudo_counter
 
-    #cpt=pseudo_counter(masters=[pulseGen0,],slaves=[udp_pulseGen0,])
-    cpt=pseudo_counter(masters=[pulseGen0,],slaves=[])
+    cpt=pseudo_counter(masters=[pulseGen0,])
     #ct=pseudo_counter(masters=[pulseGen0,],slaves=[mca1,], posts= ctPosts)
     #ct=pseudo_counter(masters=[pulseGen0],slaves=[cx1sai_1,x3mca], posts= ctPosts)
     #Remember to set the cpt3 card from master to slave mode and modify BNC cable position from OUT to GATE
@@ -191,9 +190,7 @@ try:
 
     #ct=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cx1xia1,cx1xia2,cpt3])
     ct0=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cx1xia1,cx1xia2,cpt3],posts=ctPosts, postDictionary=XAS_dictionary)
-    
-    ct_udp = pseudo_counter(masters=[pulseGen0,],slaves=[udp_pulseGen0,udp_sampler0])
-    
+
 except Exception as tmp:
     print(tmp)
     print("Failure defining ct0 config")
@@ -288,7 +285,6 @@ try:
             },
     }
  
-    #ct_xp=pseudo_counter(masters=[pulseGen0,],slaves=[udp_pulseGen0,cx1sai,cpt3],posts = ctPosts_xp, postDictionary = XAS_dictionary_xp)
     ct_xp=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cpt3],posts = ctPosts_xp, postDictionary = XAS_dictionary_xp)
 
 except Exception as tmp:
@@ -357,6 +353,3 @@ def ctx(dt=1.):
 
 __shclose = shclose
 __shopen = shopen
-
-
-domacro("mv2energy.py")

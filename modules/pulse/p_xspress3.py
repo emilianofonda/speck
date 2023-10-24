@@ -165,21 +165,24 @@ class xspress3_SOLEIL:
 #The frame numbers is a concept that does not exists in DxMap
 #so I store it in a variable that prepare updates. This is reused for saving data
         self.NbFrames = NbFrames
-        self.config["nbpixels"] = NbFrames
-        #The following setup must be supplied in original config
+#There is no more nbpixels        
+        #self.config["nbpixels"] = NbFrames
+
+#The following setup must be supplied in original config
         #self.config["streamNbAcqPerFile"]=NbFrames
-        ##If possible, to be replaced with write_attributes...
+#If possible, to be replaced with write_attributes...
         attValues=[]
 #Following lines have to be tested, it is possible, that the streamNbAcqPerFile is an unused value
-        dontTouch = ["streamNbAcqPerFile",]
+        dontTouch = ["streamnbacqperfile",]
         if stepMode :
-            attValues.append(("streamNbAcqPerFile",1))
+            attValues.append(("streamnbacqperfile",1))
         else:
             attValues.append(("streamNbAcqPerFile",NbFrames))
         for i in [k for k in cKeys if (not k in dontTouch) and (self.config[k] != self.DP.read_attribute(k).value)]:
             try:
                 self.DP.write_attribute(i,self.config[i])
             except Exception as tmp:
+                print(i,self.config[i])
                 print(tmp)
         if nexusFileGeneration:
             #Auto delete remaining files!!! this avoids aborting, but it is a potential risk.
@@ -261,7 +264,6 @@ class xspress3_SOLEIL:
         try:
             mca=self.DP.read_attributes(channels)
             mca = [x.value for x in mca]
-           raise Exception("Wrong channel")
         except DevFailed as tmp:
             if tmp.args[0].reason=='API_AttrNotFound':
                 print("Reiniting mca")
@@ -310,7 +312,7 @@ class xspress3_SOLEIL:
     def prepareHDF(self, handler, HDFfilters = tables.Filters(complevel = 1, complib='zlib'),upperIndex=()):
         """the handler is an already opened file object"""
         ShapeArrays = (self.NbFrames,) + tuple(self.upperDimensions)
-        ShapeMatrices = (self.NbFrames, self.DP.streamnbDataPerAcq) + tuple(self.upperDimensions)
+        ShapeMatrices = (self.NbFrames, self.DP.streamNbAcqPerFile) + tuple(self.upperDimensions)
         
         handler.create_group("/data", self.identifier)
         outNode = handler.get_node("/data/" + self.identifier)
