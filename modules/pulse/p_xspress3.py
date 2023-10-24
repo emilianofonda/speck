@@ -8,8 +8,10 @@ import numpy
 import numpy as np
 import os
 
+#This controller is a variation of DxMap controller for XIA (SOLEIL TANGO DEVICE)
+#The FTP is useless and removed from usage, it is left for homogeneity of interface (could be removed in the future)
 
-class xspress3_test:
+class xspress3_SOLEIL:
     def __init__(self,label="",channels=None,user_readconfig=[],timeout=90.,deadtime=0.05, FTPclient="",FTPserver="",spoolMountPoint="",
     specificDevice="",config={},identifier="",detector_details={"detector_name":"","real_pixels_list":"","comment":""}):
        
@@ -27,14 +29,7 @@ class xspress3_test:
 
         self.init_user_readconfig=user_readconfig
         failure=False
-        if FTPclient != "":
-            self.FTPclient = DeviceProxy(FTPclient)
-        else:
-            self.FTPclient = None
-        if FTPserver != "":
-            self.FTPserver = DeviceProxy(FTPserver)
-        else:
-            self.FTPserver = None
+
         self.spoolMountPoint=spoolMountPoint
 
         if self.state() == DevState.FAULT:
@@ -48,13 +43,11 @@ class xspress3_test:
 
         if self.init_user_readconfig!=[]:
             for i in self.init_user_readconfig:
-                #ac=self.DP.get_attribute_config_ex([i[0],])[0]
                 try:
                     ac=self.DP.get_attribute_config([i[0],])[0]
                     ac.label=i[1]
                     ac.format=i[2]
                     ac.unit=i[3]
-                    #self.DP.set_attribute_config_ex([ac,])
                     self.DP.set_attribute_config([ac,])
                 except:
                     failure=True
@@ -106,20 +99,6 @@ class xspress3_test:
         return
 
     def reinit(self):
-        #for prova in range(5):
-        #    try:
-        #        if self.init_user_readconfig<>[]: 
-        #            for i in self.init_user_readconfig:
-        #                #ac=self.DP.get_attribute_config_ex([i[0],])[0]
-        #                ac=self.DP.get_attribute_config([i[0],])[0]
-        #                ac.label=i[1]
-        #                ac.format=i[2]
-        #                ac.unit=i[3]
-        #                #self.DP.set_attribute_config_ex([ac,])
-        #                self.DP.set_attribute_config([ac,])
-        #        break
-        #    except:
-        #        print self.label+": Failed setting user_readconfig! Trial no: %i"%prova
         self.rois,self.ocrs,self.icrs,self.dts=[],[],[],[]
         self.channels=[]
         self.channels_labels=[]
@@ -167,29 +146,12 @@ class xspress3_test:
     def status(self):
         return self.DP.status()
        
-    def startFTP(self, deleteRemainingFiles = False):
-        if self.FTPclient:
-            try:
-                self.FTPclient.DeleteRemainingFiles()
-            except:
-                print("%s : Cannot delete remaining files." % self.label)
-            if self.FTPserver and self.FTPserver.state() != DevState.RUNNING:
-                raise Exception("FTP server %s is not running. Starting client is useless. Please start it and retry.")%self.FTPserver.name
-            return self.FTPclient.start()
-        else:
-            pass
-
-    def stopFTP(self):
-        if self.FTPclient:
-            return self.FTPclient.stop()
-        else:
-            pass
-
     def wait(self):
         while self.state() == DevState.RUNNING:
             sleep(self.deadtime)
         return
 
+#Following to be removed later
     def setMode(self, mode=""):
         """xspress3 differs from dx_map: there is no command to change configuration file.""" 
         return
@@ -208,11 +170,12 @@ class xspress3_test:
         #self.config["streamNbAcqPerFile"]=NbFrames
         ##If possible, to be replaced with write_attributes...
         attValues=[]
+#Following lines have to be tested, it is possible, that the streamNbAcqPerFile is an unused value
+        dontTouch = ["streamNbAcqPerFile",]
         if stepMode :
-            dontTouch = ["nbpixelsperbuffer",]
-            attValues.append(("nbpixelsperbuffer",1))
+            attValues.append(("streamNbAcqPerFile",1))
         else:
-            dontTouch = []
+            attValues.append(("streamNbAcqPerFile",NbFrames))
         for i in [k for k in cKeys if (not k in dontTouch) and (self.config[k] != self.DP.read_attribute(k).value)]:
             try:
                 self.DP.write_attribute(i,self.config[i])
@@ -220,10 +183,9 @@ class xspress3_test:
                 print(tmp)
         if nexusFileGeneration:
             #Auto delete remaining files!!! this avoids aborting, but it is a potential risk.
-            sleep(self.deadtime)
+#Function to be writtem: purge old files
             self.DP.write_attribute("filegeneration",True)
-            #FTP server is unused in xspress3, nfs used instead
-            #self.startFTP(deleteRemainingFiles=True)
+            sleep(self.deadtime)
             self.DP.streamresetindex()
         else:
             sleep(self.deadtime)
@@ -233,16 +195,11 @@ class xspress3_test:
 
     def start(self,dt=1):
         if self.state()!=DevState.RUNNING:
-            if self.FTPclient and self.DP.currentMODE=="MAPPING" and self.FTPclient.state()!=DevState.RUNNING:
-                self.FTPclient.start()
             try:
                 self.DP.command_inout("Snap")
-            except:
-                try:
-                    self.DP.command_inout("Start")
-                except Exception as tmp:
-                    print("Cannot Start")
-                    raise tmp
+            except Exception as tmp:
+                print("Cannot Start xspress card")
+                raise tmp
         else:
             raise Exception("Trying to start %s when already in RUNNING state"%self.label)
         t0 = time.time()
@@ -250,24 +207,22 @@ class xspress3_test:
             sleep(self.deadtime)
         return self.state()
         
-    def stopAcq(self):
-        try:
-            self.DP.command_inout("Stop")
-        except Exception as tmp:
-            print(tmp)
-            raise tmp
-        return self.state()
+#There is no such thing in device
+#   def stopAcq(self):
+#       try:
+#           self.DP.command_inout("Stop")
+#       except Exception as tmp:
+#           print(tmp)
+#           raise tmp
+#       return self.state()
 
     def stop(self):
-        #Version change: Abort becomes Abort. kept for compatibility 5/9/2014
         if self.state()==DevState.RUNNING:
             try:
                 self.DP.command_inout("Stop")
-            except DevFailed:
-                self.DP.command_inout("Abort")
-        #Why stopping the client ? after all...
-        #if self.FTPclient and self.DP.currentMODE=="MAPPING" and self.FTPclient.state() == DevState.RUNNING:
-        #    self.FTPclient.stop()
+            except Exception as tmp:
+                print("Cannot Stop xspress card")
+                raise tmp
         return self.state()
 
     def read(self):
@@ -327,7 +282,7 @@ class xspress3_test:
 
     
     def count(self,dt=1):
-        """Not working, this code is designed for a slave XIA device not a master"""
+        """Useless, this code is designed for a slave device not a master"""
         return
 
     def setROIs(self,*args):
@@ -417,13 +372,15 @@ class xspress3_test:
         upperIndex has to be a tuple, it can be an empty tuple."""
         Roi0, Roi1 = self.getROIs()[:2]
 #Calculate the number of files expected
-        NOfiles = int(self.NbFrames / self.DP.streamnbacqperfile)
-        if np.mod(self.NbFrames, self.DP.streamnbacqperfile) :
-            NOfiles += 1
+#        NOfiles = int(self.NbFrames / self.DP.streamnbacqperfile)
+#        if np.mod(self.NbFrames, self.DP.streamnbacqperfile) :
+#            NOfiles += 1
+#This version uses a single file
+        NOfiles = 1
 # Get the list of files to read and wait for the last to appear (?)
         files2read = [i for i in os.listdir(self.spoolMountPoint) if i.startswith(self.DP.streamTargetFile)\
         and i.endswith("nxs")]
-        #print(files2read)
+        print(files2read)
         if wait:
             t0 = time.time()
             #This check loop maybe avoided if a partial save has to be performed
@@ -432,14 +389,19 @@ class xspress3_test:
                 files2read = [i for i in os.listdir(self.spoolMountPoint) if i.startswith(self.DP.streamTargetFile)\
                 and i.endswith("nxs")]
                 sleep(self.deadtime)
-            #print("XIA files waited for %4.2fs" % (time.time()-t0))
-            if time.time()-t0 > self.timeout:
-                try:
-                    ipy=get_ipython()
-                    ipy.user_global_ns["resetFluo"]()
-                except:
-                    pass
-                    #print("p_dxmap tried to reset fluo electronics calling ResetFluo: failure.")
+            #print("xspress3 files waited for %4.2fs" % (time.time()-t0))
+
+#The following block is only to be used with DxMap
+#Even for DxMap is a old work around to be removed
+
+#           if time.time()-t0 > self.timeout:
+#               try:
+#                   ipy=get_ipython()
+#                   ipy.user_global_ns["resetFluo"]()
+#               except:
+#                   pass
+#                   #print("p_dxmap tried to reset fluo electronics calling ResetFluo: failure.")
+
         files2read.sort()
 #check reverse value for upper dimensional scans
         if reverse not in [-1,1]:
@@ -501,24 +463,14 @@ class xspress3_test:
                 raise
             finally:
                 sourceFile.close()
+#The following line should be restored,however leaving it commented permits analysis of file after scan
+
                 #os.system("rm %s" % (self.spoolMountPoint + os.sep + files2read[Nfile]))
 
         for i in range(self.numChan):
             roi = handler.get_node("/data/" + self.identifier + "/roi%02i" % i)
             mca = handler.get_node("/data/" + self.identifier + "/mca%02i" % i)
             roi[:] = np.sum(mca[:,Roi0:Roi1],axis=1)
-        try:
-            sleep(0.3)
-            if self.FTPclient != None:
-                self.FTPclient.deleteremainingfiles()
-        except Exception as tmp:
-            #print(tmp)
-            print("Timeout ==> Retry Once")
-            sleep(10)
-            if self.FTPclient != None:
-                self.FTPclient.deleteremainingfiles()
-            print("Timeout ==> OK")
-        return
-    
 
+        return
 
