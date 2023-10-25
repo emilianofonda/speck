@@ -45,7 +45,7 @@ from p_xspress3 import xspress3_SOLEIL
 
 try:
     config = {"fileGeneration":False,"streamTargetPath":'/nfs/srv5/spool1/xspress3_mini',\
-    "streamNbAcqPerFile":1,"streamtargetfile":"x3_mca","triggerMode":1}
+    "streamtargetfile":"x3_mca","triggerMode":1}
     
     detector_details = {"detector_name":"Vortex_SDD4","real_pixels_list":"1,2,3,4","comment":"Vortex ME4 SDD + xspress3 mini"}
     

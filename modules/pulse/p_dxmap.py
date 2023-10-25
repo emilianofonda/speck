@@ -574,7 +574,7 @@ class dxmap:
                             /eval("sourceFile.root.entry.scan_data.icr%02i" % i)[::reverse])\
                             )
             except Exception as tmp:
-                print("Error saving data from file %s"%sourceFile.name)
+                print("Error saving data from file %s"%sourceFile.filename)
                 print(tmp)
                 raise
             finally:

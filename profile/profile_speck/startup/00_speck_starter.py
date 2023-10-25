@@ -27,8 +27,15 @@ sys.path.append(dn)
 subdn=os.listdir(dn)
 for i in subdn: sys.path.append(dn+os.sep+i)
 
+
 import numpy
+
+#Get rid of some warnings that interfere with the CLI
 numpy.seterr(all="ignore")
+
+import warnings
+warnings.filterwarnings("ignore", message="support for unicode type is very\
+limited, and only works for strings that can be cast as ascii")
 
 ##
 ## Data folders

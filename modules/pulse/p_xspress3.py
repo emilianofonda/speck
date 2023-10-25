@@ -158,26 +158,23 @@ class xspress3_SOLEIL:
 
     def prepare(self, dt=1., NbFrames=1, nexusFileGeneration=False,stepMode=False, upperDimensions=()):
         self.upperDimensions = upperDimensions
-#Verify stream items
-        self.stream_items = [i.lower() for i in self.DP.get_property("StreamItems")["StreamItems"]]
+#Verify stream items: the property has a different name respect to XIA, why?
+        self.stream_items = [i.lower() for i in self.DP.get_property("ExpertsStreamItems")["ExpertsStreamItems"]]
 #Order of the following attributes seems to matter!
         cKeys = self.config.keys()
 #The frame numbers is a concept that does not exists in DxMap
 #so I store it in a variable that prepare updates. This is reused for saving data
         self.NbFrames = NbFrames
-#There is no more nbpixels        
-        #self.config["nbpixels"] = NbFrames
+        self.config["nbFrames"] = NbFrames
 
-#The following setup must be supplied in original config
-        #self.config["streamNbAcqPerFile"]=NbFrames
 #If possible, to be replaced with write_attributes...
         attValues=[]
-#Following lines have to be tested, it is possible, that the streamNbAcqPerFile is an unused value
-        dontTouch = ["streamnbacqperfile",]
+        
+        dontTouch = []
         if stepMode :
             attValues.append(("streamnbacqperfile",1))
         else:
-            attValues.append(("streamNbAcqPerFile",NbFrames))
+            attValues.append(("streamnbacqperfile",NbFrames))
         for i in [k for k in cKeys if (not k in dontTouch) and (self.config[k] != self.DP.read_attribute(k).value)]:
             try:
                 self.DP.write_attribute(i,self.config[i])
@@ -210,15 +207,6 @@ class xspress3_SOLEIL:
             sleep(self.deadtime)
         return self.state()
         
-#There is no such thing in device
-#   def stopAcq(self):
-#       try:
-#           self.DP.command_inout("Stop")
-#       except Exception as tmp:
-#           print(tmp)
-#           raise tmp
-#       return self.state()
-
     def stop(self):
         if self.state()==DevState.RUNNING:
             try:
@@ -312,7 +300,7 @@ class xspress3_SOLEIL:
     def prepareHDF(self, handler, HDFfilters = tables.Filters(complevel = 1, complib='zlib'),upperIndex=()):
         """the handler is an already opened file object"""
         ShapeArrays = (self.NbFrames,) + tuple(self.upperDimensions)
-        ShapeMatrices = (self.NbFrames, self.DP.streamNbAcqPerFile) + tuple(self.upperDimensions)
+        ShapeMatrices = (self.NbFrames, self.DP.nbBins) + tuple(self.upperDimensions)
         
         handler.create_group("/data", self.identifier)
         outNode = handler.get_node("/data/" + self.identifier)
@@ -393,17 +381,6 @@ class xspress3_SOLEIL:
                 sleep(self.deadtime)
             #print("xspress3 files waited for %4.2fs" % (time.time()-t0))
 
-#The following block is only to be used with DxMap
-#Even for DxMap is a old work around to be removed
-
-#           if time.time()-t0 > self.timeout:
-#               try:
-#                   ipy=get_ipython()
-#                   ipy.user_global_ns["resetFluo"]()
-#               except:
-#                   pass
-#                   #print("p_dxmap tried to reset fluo electronics calling ResetFluo: failure.")
-
         files2read.sort()
 #check reverse value for upper dimensional scans
         if reverse not in [-1,1]:
@@ -413,11 +390,19 @@ class xspress3_SOLEIL:
             sourceFile = tables.open_file(self.spoolMountPoint + os.sep + files2read[Nfile], "r")
             
             try:
-                p0 = self.DP.streamnbacqperfile * Nfile 
-                #p1 = self.DP.streamnbacqperfile * (Nfile + 1)
+#For single file operation it is useless to use the block by block operation
+#This is legacy from XIA, could be removed in a second time
+                if NOfiles == 1:
+                    p0 = 0
+                    p1 = None
+                else:
+#If more than one file expected use XIA old block by block method
+                    p0 = self.DP.streamnbacqperfile * Nfile 
 #Get actual file length that can vary depending on number of points in scan
-                actualBlockLen = np.shape(sourceFile.root.entry.scan_data.channel00)[0]
-                p1 = p0 + actualBlockLen
+                    actualBlockLen = \
+                    np.shape(sourceFile.root.entry.scan_data.channel00)[0]
+                    p1 = p0 + actualBlockLen
+
                 for i in range(self.numChan):
                     outNode = handler.get_node("/data/" + self.identifier + "/mca%02i" % i)
                     #p0 = self.DP.streamnbacqperfile * Nfile 
@@ -460,19 +445,18 @@ class xspress3_SOLEIL:
                             /eval("sourceFile.root.entry.scan_data.icr%02i" % i)[::reverse])\
                             )
             except Exception as tmp:
-                print("Error saving data from file %s"%sourceFile.name)
+                print("Error saving data from file %s"%sourceFile.filename)
                 print(tmp)
                 raise
             finally:
                 sourceFile.close()
 #The following line should be restored,however leaving it commented permits analysis of file after scan
 
-                #os.system("rm %s" % (self.spoolMountPoint + os.sep + files2read[Nfile]))
+                os.system("rm %s" % (self.spoolMountPoint + os.sep + files2read[Nfile]))
 
         for i in range(self.numChan):
             roi = handler.get_node("/data/" + self.identifier + "/roi%02i" % i)
             mca = handler.get_node("/data/" + self.identifier + "/mca%02i" % i)
             roi[:] = np.sum(mca[:,Roi0:Roi1],axis=1)
-
         return
 
