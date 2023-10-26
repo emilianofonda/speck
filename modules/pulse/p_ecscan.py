@@ -5,7 +5,6 @@ import dentist
 import tables
 import os
 import numpy
-numpy.seterr(all="ignore")
 import time as myTime
 from time import sleep
 from spec_syntax import wait_motor
@@ -14,6 +13,7 @@ from spec_syntax import dark as ctDark
 from wait_functions import checkTDL, wait_injection
 import mycurses
 from p_dentist import dentist as p_dentist
+
 
 print(mycurses.RED+"Using pulse ecscan"+mycurses.RESET)
 

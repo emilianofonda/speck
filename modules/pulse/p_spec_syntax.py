@@ -23,6 +23,7 @@ import p_post_calc
 from numpy import mod
 from mycurses import *
 
+
 def whois(x):
     """This function may return wrong results if the object supplied 
     has a non unique value. For example it will not work on a simple

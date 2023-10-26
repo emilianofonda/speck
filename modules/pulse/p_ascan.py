@@ -4,7 +4,6 @@ from io import open as file
 from time import strftime,gmtime,sleep,localtime,asctime
 from time import time as cputime
 import numpy
-numpy.seterr(all="ignore")
 from numpy import round, array, sum, mean, loadtxt, savetxt
 import os
 import pylab

@@ -6,6 +6,8 @@ import scipy
 import tables
 import os
 
+numpy.seterr(all="ignore")
+
 def polySc(x,*args):
     return pylab.polyval(args, x)   
 

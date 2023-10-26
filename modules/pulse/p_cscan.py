@@ -23,6 +23,7 @@ except:
 print(mycurses.PINK+"Using alpha version of cscan"+mycurses.RESET)
 
 
+
 def stop_cscan(shutter=False,cmot=None,cmot_previous_velocity=None):
     shell=get_ipython()
     ct = shell.user_ns["ct"]

@@ -4,10 +4,10 @@ from PyTango import DevState, DeviceProxy,DevFailed,AttributeInfoEx
 from time import sleep
 import time
 import tables
+#Why such a double import ?
 import numpy
 import numpy as np
 import os
-
 
 class dxmap:
     def __init__(self,label="",channels=None,user_readconfig=[],timeout=90.,deadtime=0.05, FTPclient="",FTPserver="",spoolMountPoint="",
@@ -524,7 +524,15 @@ class dxmap:
             reverse = 1
 #One after the other: open, transfert data, close and delete
         for Nfile in range(len(files2read)):
-            sourceFile = tables.open_file(self.spoolMountPoint + os.sep + files2read[Nfile], "r")
+            for try_it_again_Sam in range(3):
+                try:
+                    sourceFile = tables.open_file(self.spoolMountPoint + os.sep + files2read[Nfile], "r")
+                    break
+                except Exception as tmp:
+                    if try_it_again_Sam<3:
+                        sleep(1)
+                    else:
+                        raise tmp
             
             try:
                 p0 = self.DP.streamnbacqperfile * Nfile 

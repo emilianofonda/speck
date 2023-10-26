@@ -8,6 +8,7 @@ import numpy
 import numpy as np
 import os
 
+
 #This controller is a variation of DxMap controller for XIA (SOLEIL TANGO DEVICE)
 #The FTP is useless and removed from usage, it is left for homogeneity of interface (could be removed in the future)
 
