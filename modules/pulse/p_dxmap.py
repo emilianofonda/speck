@@ -507,10 +507,13 @@ class dxmap:
             t0 = time.time()
             #This check loop maybe avoided if a partial save has to be performed
             while(NOfiles > len(files2read) and time.time() - t0 < self.timeout):
-                os.system("cd %s && ls . > /dev/null" % self.spoolMountPoint)
                 files2read = [i for i in os.listdir(self.spoolMountPoint) if i.startswith(self.DP.streamTargetFile)\
                 and i.endswith("nxs")]
+                useless_file=open(self.spoolMountPoint+os.sep+"useless.txt","w")
+                useless_file.write("\n")
+                useless_file.close()
                 sleep(self.deadtime)
+                os.system("rm "+self.spoolMountPoint+os.sep+"useless.txt")
             #print("XIA files waited for %4.2fs" % (time.time()-t0))
             if time.time()-t0 > self.timeout:
                 try:

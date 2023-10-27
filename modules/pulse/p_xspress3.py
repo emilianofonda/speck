@@ -371,17 +371,15 @@ class xspress3_SOLEIL:
 # Get the list of files to read and wait for the last to appear (?)
         files2read = [i for i in os.listdir(self.spoolMountPoint) if i.startswith(self.DP.streamTargetFile)\
         and i.endswith("nxs")]
-        print(files2read)
         if wait:
             t0 = time.time()
             #This check loop maybe avoided if a partial save has to be performed
             while(NOfiles > len(files2read) and time.time() - t0 < self.timeout):
-                os.system("cd %s && ls . > /dev/null" % self.spoolMountPoint)
                 files2read = [i for i in os.listdir(self.spoolMountPoint) if i.startswith(self.DP.streamTargetFile)\
                 and i.endswith("nxs")]
                 sleep(self.deadtime)
             #print("xspress3 files waited for %4.2fs" % (time.time()-t0))
-
+        #print(files2read)
         files2read.sort()
 #check reverse value for upper dimensional scans
         if reverse not in [-1,1]:
