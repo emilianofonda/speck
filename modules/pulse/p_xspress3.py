@@ -171,11 +171,15 @@ class xspress3_SOLEIL:
 #If possible, to be replaced with write_attributes...
         attValues=[]
         
-        dontTouch = []
+        dontTouch = ["streamnbacqperfile"]
         if stepMode :
-            attValues.append(("streamnbacqperfile",1))
+            if self.DP.streamnbacqperfile != 1:
+                self.DP.write_attribute("streamnbacqperfile",1)
+                sleep(self.deadtime)
         else:
-            attValues.append(("streamnbacqperfile",NbFrames))
+            if self.DP.streamnbacqperfile != NbFrames:
+                self.DP.write_attribute("streamnbacqperfile",NbFrames)
+                sleep(self.deadtime)
         for i in [k for k in cKeys if (not k in dontTouch) and (self.config[k] != self.DP.read_attribute(k).value)]:
             try:
                 self.DP.write_attribute(i,self.config[i])
@@ -188,6 +192,7 @@ class xspress3_SOLEIL:
             self.DP.write_attribute("filegeneration",True)
             sleep(self.deadtime)
             self.DP.streamresetindex()
+            os.system("rm "+self.spoolMountPoint+os.sep+self.DP.streamTargetFile+"*.*")
         else:
             sleep(self.deadtime)
             self.DP.write_attribute("filegeneration",False)
@@ -377,7 +382,11 @@ class xspress3_SOLEIL:
             while(NOfiles > len(files2read) and time.time() - t0 < self.timeout):
                 files2read = [i for i in os.listdir(self.spoolMountPoint) if i.startswith(self.DP.streamTargetFile)\
                 and i.endswith("nxs")]
+                useless_file=open(self.spoolMountPoint+os.sep+"useless.txt","w")
+                useless_file.write("\n")
+                useless_file.close()
                 sleep(self.deadtime)
+                os.system("rm "+self.spoolMountPoint+os.sep+"useless.txt")
             #print("xspress3 files waited for %4.2fs" % (time.time()-t0))
         #print(files2read)
         files2read.sort()
