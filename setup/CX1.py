@@ -49,7 +49,7 @@ try:
     
     detector_details = {"detector_name":"Vortex_SDD4","real_pixels_list":"1,2,3,4","comment":"Vortex ME4 SDD + xspress3 mini"}
     
-    x3mini = xspress3_SOLEIL("tmp/test/xspress3.1",identifier = "fluo01",timeout=30.,deadtime=0.1,\
+    x3mini = xspress3_SOLEIL("tmp/test/xspress3.1",identifier = "fluo01",timeout=30.,deadtime=0.1,postcountdelay=0.1,\
     spoolMountPoint="/nfs/srv5/spool1/xspress3_mini", config=config,detector_details = detector_details)
 
 except Exception as tmp:
