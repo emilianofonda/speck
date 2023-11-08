@@ -13,7 +13,7 @@ import os
 #The FTP is useless and removed from usage, it is left for homogeneity of interface (could be removed in the future)
 
 class xspress3_SOLEIL:
-    def __init__(self,label="",channels=None,user_readconfig=[],timeout=90.,deadtime=0.05, postcountdelay=0.1, FTPclient="",FTPserver="",spoolMountPoint="",
+    def __init__(self,label="",channels=None,user_readconfig=[],timeout=90.,deadtime=0.05, postcountdelay=0, FTPclient="",FTPserver="",spoolMountPoint="",
     specificDevice="",config={},identifier="",detector_details={"detector_name":"","real_pixels_list":"","comment":""}):
        
         self.DP=DeviceProxy(label)
@@ -151,11 +151,13 @@ class xspress3_SOLEIL:
     def wait(self):
         while self.state() == DevState.RUNNING:
             sleep(self.deadtime)
-        sleep(self.postcountdelay)
+        if self.postcountdelay>0:
+            sleep(self.postcountdelay)
         return
 
     def postCount(self):
-        sleep(self.postcountdelay)
+        if self.postcountdelay>0:
+            sleep(self.postcountdelay)
         return
 
 #Following to be removed later

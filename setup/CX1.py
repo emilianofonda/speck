@@ -49,7 +49,7 @@ try:
     
     detector_details = {"detector_name":"Vortex_SDD4","real_pixels_list":"1,2,3,4","comment":"Vortex ME4 SDD + xspress3 mini"}
     
-    x3mini = xspress3_SOLEIL("tmp/test/xspress3.1",identifier = "fluo01",timeout=30.,deadtime=0.1,postcountdelay=0.1,\
+    x3mini = xspress3_SOLEIL("tmp/test/xspress3.1",identifier = "fluo01",timeout=30.,deadtime=0.1,postcountdelay=0,\
     spoolMountPoint="/nfs/srv5/spool1/xspress3_mini", config=config,detector_details = detector_details)
 
 except Exception as tmp:
@@ -261,7 +261,10 @@ try:
 #These Posts should be modified each time when changing detectors.
     from p_spec_syntax import pseudo_counter
 
-    ct_x3mini = pseudo_counter(masters=[pulseGen0], slaves=[cx1sai, x3mini, cpt3], posts= ctPosts_x3mini, postDictionary=XAS_dictionary_x3mini)
+#A postcountdelay >= 0.1 is necessary when using the xspress3mini. Otherwise the scalars are not refreshed before reading.
+    ct_x3mini = pseudo_counter(masters=[pulseGen0], slaves=[cx1sai, x3mini, cpt3],\
+    posts= ctPosts_x3mini, postDictionary=XAS_dictionary_x3mini,\
+    postcountdelay=0.1)
 
 except Exception as tmp:
     print(tmp)

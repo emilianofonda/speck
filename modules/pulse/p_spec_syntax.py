@@ -607,7 +607,7 @@ def dark(dt=10):
     return
 
 class pseudo_counter:
-    def __init__(self,masters=[],slaves=[],posts=[],postDictionary={},deadtime=0.05,timeout=3):
+    def __init__(self,masters=[],slaves=[],posts=[],postDictionary={},deadtime=0.05,timeout=3,postcountdelay=0.):
         """
         In this version the only distinction should be between masters and slaves.
         the slaves themselves are configured through prepare, pre count and post count functions if defined.
@@ -675,7 +675,8 @@ class pseudo_counter:
 
         self.deadtime = deadtime
         self.timeout = timeout
-        
+        self.postcountdelay = postcountdelay
+
         self.timestamp_start=0.
         self.timestamp_stop=0.
 
@@ -933,6 +934,8 @@ class pseudo_counter:
                 sleep(self.deadtime) 
             for i in self.postCountList:
                 i.postCount()
+            if self.postcountdelay>0:
+                sleep(self.postcountdelay)
             self.timestamp_stop=[asctime(),"%f"%time()]
             return
         except (KeyboardInterrupt, SystemExit) as tmp:
@@ -948,6 +951,8 @@ class pseudo_counter:
                 sleep(self.deadtime) 
 #            for i in self.postCountList:
 #                i.postCount()
+            if self.postcountdelay>0:
+                sleep(self.postcountdelay)
             return
         except (KeyboardInterrupt, SystemExit) as tmp:
             self.stop()
