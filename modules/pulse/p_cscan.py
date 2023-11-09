@@ -410,7 +410,175 @@ def c2scan(cmot,p1,p2,velocity,mot2,p21,p22,dp2,n=1,dt=0.1, channel=1,shutter=Fa
     #AlarmBeep()
     cmot.velocity = cmot_previous_velocity
     return
-   
+
+def tcscan(total_time=1,integration_time=0.1,n=1,channel=1,shutter=False,beamCheck=True,filename="tcscan_out"):
+    """
+    Continuous time scan (missing time scale in coordinates!!! to be done)
+    total_time: total scan time in seconds
+    integration_time : time of one single gate or point
+    channel to be drawn at the end of the scan
+    shutter: use shutter_fast or not
+    beamCheck: wait or not for the presence of x-ray beam (check shutters and machine current)
+    filename: the first part of datafile (an hdf file is produced)
+    """
+    shell=get_ipython()
+    try:
+        for i in range(n):
+	        tcscanActor(total_time,integration_time, channel=channel,shutter=shutter,beamCheck=beamCheck,filename=filename)
+    except KeyboardInterrupt:
+        shell.logger.log_write("tcscan halted on user request: Ctrl-C\n", kind='output')
+        print("Halting on user request.")
+        sys.stdout.flush()
+        stop_cscan(shutter, cmot, cmot_previous_velocity)
+        print("tcscan halted. OK.")
+        print("Raising KeyboardInterrupt as requested.")
+        sys.stdout.flush()
+        raise KeyboardInterrupt
+    except Exception as tmp:
+        shell.logger.log_write("Error during tcscan:\n %s\n\n" % tmp, kind='output')
+        print(tmp)
+        #The ct should be stopped here
+        raise tmp
+    return 
+
+def tcscanActor(total_time=1,integration_time=0.1,n=1,channel=1,shutter=False,beamCheck=True,filename="cscan_out"):
+    """
+    """
+    shell=get_ipython()
+    FE = shell.user_ns["FE"]
+    obxg = shell.user_ns["obxg"]
+    ct = shell.user_ns["ct"]
+    dcm = shell.user_ns["dcm"]
+    mostab = shell.user_ns["mostab"]
+    TotalScanTime = myTime.time()
+    NofScans = n
+    #
+    if filename == None: 
+        raise Exception("filename and limits must be specified")
+    
+    NumberOfPoints =  int(total_time / integration_time)
+    print("Number of points: ",NumberOfPoints)
+    
+    if beamCheck and not(checkTDL(FE)):
+        wait_injection(FE,[obxg,])
+        myTime.sleep(10.)
+    
+    # Store the where_all_before
+    wa_before = shell.user_ns["wa"](verbose=False,returns=True)
+    #Prepare recording (and acquire first point position... this prevents preparing AND moving)
+    print("Preparing acquisition ... ", end=' ')
+    ct.prepare(dt=integration_time,NbFrames = NumberOfPoints, nexusFileGeneration = True)
+    print("OK")
+    handler = ct.openHDFfile(filename)
+#Warning: using the handler out of ct and directly has to be avoided, problems arise when scans are aborted and resumed. 
+    #Create coordinates links and arrays in file
+
+    
+    timeAtStart = asctime()
+    #Start acquisition?
+       #Print Name:
+    print("Measuring : %s\n"%ct.handler.filename)
+    try:
+        pass
+        if shutter:
+            sh_fast.open()
+    except KeyboardInterrupt:
+        ct.stop()
+        raise
+    except:
+        pass
+    #Start Acquisition
+    ct.start(integration_time)
+    ct.wait()
+    try:
+        if shutter:
+            sh_fast.close()
+    except:
+        print("tcscan: error closing fast shutter")
+    ct.saveData2HDF()
+
+#Replace X1 coordinate by theoretical time values
+#handler.create_soft_link('/coordinates', 'X1', target='/data/'+cmot.DP.associated_counter.replace(".","/"))
+    ct.savePost2HDF("X1", np.linspace(0,total_time,NumberOfPoints),\
+    group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'),
+    domain="data")
+    #
+    #Insert here specific data saving in ct.handler at position root.post? root.spectra?....
+    #
+    graph_x = np.linspace(0,total_time,NumberOfPoints)
+    #
+    #Save CONTEXT
+    #
+#Context can be saved to an approriate dictionary like post.
+#This will make scan procedures much more flexible and general
+    ct.savePost2HDF("where_all_before", np.array(wa_before), 
+    group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
+    try:
+        ct.savePost2HDF("where_all_after", np.array(shell.user_ns["wa"](verbose=False,returns=True)), 
+        group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
+    except:
+        print("Cannot save where_all_after.")
+    # MOSTAB and Mono Configs
+    try:
+        ct.savePost2HDF("mostab", np.array(mostab.status().split("\n")), 
+        group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
+    except:
+        print("Cannot save mostab status.")
+    try:
+        ct.savePost2HDF("dcm", np.array(dcm.status().split("\n")), 
+        group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
+    except:
+        print("Cannot save dcm status.")
+    #
+    #
+    ct.closeHDFfile()
+    print("Saving actions over!")
+    timeAtStop = asctime()
+    timeout0 = myTime.time()
+    #The plotting, once finalised a reasonable code, could be generalised via a generic function and a dictionary listing plot items 
+    try:
+        f=tables.open_file(ct.final_filename,"r")
+        fig1 = pylab.figure(3,figsize=(8,11),edgecolor="white",facecolor="white",)
+        fig1.clear()
+        pylab.subplot(4,1,1)
+        pylab.ylabel("$\mu$x")
+        try:
+            pylab.plot(graph_x, f.root.post.MUX.read())
+        except:
+            pass
+        pylab.subplot(4,1,2)
+        pylab.ylabel("Fluo")
+        try:
+            pylab.plot(graph_x, f.root.post.FLUO.read(),label="DTC on")
+        except:
+            pass
+        try:
+            pylab.plot(graph_x, f.root.post.FLUO_RAW.read(),label="DTC off")
+        except:
+            pass
+        pylab.legend(frameon=False)    
+        pylab.subplot(4,1,3)
+        pylab.ylabel("$\mu$x Reference")
+        pylab.plot(graph_x, f.root.post.REF.read())
+        pylab.subplot(4,1,4)
+        pylab.ylabel("$I_0,I_1,I_2$ Counts")
+        pylab.xlabel("t (s)")
+        pylab.plot(graph_x, f.root.post.I0.read(),"r",label="$I_0$")
+        pylab.plot(graph_x, f.root.post.I1.read(),"k",label="$I_1$")
+        pylab.plot(graph_x, f.root.post.I2.read(),"g",label="$I_2$")
+        pylab.plot(graph_x, f.root.post.I3.read(),"b--",label="$I_3$")
+        pylab.legend(frameon=False)    
+        pylab.draw()
+    except Exception as tmp:
+        print("No Plot! Bad Luck!")
+        print(tmp)
+    finally:
+        f.close()
+    shell.logger.log_write("Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime), kind='output')
+    print("Total Elapsed Time = %i s" % (myTime.time() - TotalScanTime)) 
+    #AlarmBeep()
+    return
+    
 def AlarmBeep():
     """Uses Tkinter to alert user that the run is finished... just in case he was sleeping..."""
     #try:

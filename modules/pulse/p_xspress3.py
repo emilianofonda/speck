@@ -9,13 +9,17 @@ import numpy as np
 import os
 
 
-#This controller is a variation of DxMap controller for XIA (SOLEIL TANGO DEVICE)
-#The FTP is useless and removed from usage, it is left for homogeneity of interface (could be removed in the future)
 
 class xspress3_SOLEIL:
+    """ 
+    This controller is a variation of DxMap controller for XIA (SOLEIL TANGO DEVICE)
+    The FTP is useless and removed from usage, it is left for homogeneity of interface (could be removed in the future)
+    a postcountdelay of 0.1s at least must be used after counting to let the scalars refresh before reading.
+    Prefer to set the postcountdelay of ct to this value, do not use the postcountdelay of xspress3
+    """
     def __init__(self,label="",channels=None,user_readconfig=[],timeout=90.,deadtime=0.05, postcountdelay=0, FTPclient="",FTPserver="",spoolMountPoint="",
     specificDevice="",config={},identifier="",detector_details={"detector_name":"","real_pixels_list":"","comment":""}):
-       
+        
         self.DP=DeviceProxy(label)
         self.label=label
         self.deadtime = deadtime
