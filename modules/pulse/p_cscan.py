@@ -46,6 +46,25 @@ def stop_cscan(shutter=False,cmot=None,cmot_previous_velocity=None):
     sys.stdout.flush()
     return
 
+def stop_tcscan(shutter=False):
+    shell=get_ipython()
+    ct = shell.user_ns["ct"]
+    try:
+        if shutter:
+            sh_fast.close()
+    except:
+        pass
+    print("Wait... Stopping Devices...", end=' ')
+    sys.stdout.flush()
+    ct.stop()
+    try:
+        ct.handler.close()
+    except:
+        pass
+    print("Scan Stopped: OK")
+    sys.stdout.flush()
+    return
+
 class CPlotter:
     def __init__(self):
         return
@@ -429,7 +448,7 @@ def tcscan(total_time=1,integration_time=0.1,n=1,channel=1,shutter=False,beamChe
         shell.logger.log_write("tcscan halted on user request: Ctrl-C\n", kind='output')
         print("Halting on user request.")
         sys.stdout.flush()
-        stop_cscan(shutter, cmot, cmot_previous_velocity)
+        stop_tcscan(shutter)
         print("tcscan halted. OK.")
         print("Raising KeyboardInterrupt as requested.")
         sys.stdout.flush()
@@ -443,6 +462,7 @@ def tcscan(total_time=1,integration_time=0.1,n=1,channel=1,shutter=False,beamChe
 
 def tcscanActor(total_time=1,integration_time=0.1,n=1,channel=1,shutter=False,beamCheck=True,filename="cscan_out"):
     """
+    no news
     """
     shell=get_ipython()
     FE = shell.user_ns["FE"]
@@ -540,13 +560,13 @@ def tcscanActor(total_time=1,integration_time=0.1,n=1,channel=1,shutter=False,be
         f=tables.open_file(ct.final_filename,"r")
         fig1 = pylab.figure(3,figsize=(8,11),edgecolor="white",facecolor="white",)
         fig1.clear()
-        pylab.subplot(4,1,1)
+        ax1=pylab.subplot(4,1,1)
         pylab.ylabel("$\mu$x")
         try:
             pylab.plot(graph_x, f.root.post.MUX.read())
         except:
             pass
-        pylab.subplot(4,1,2)
+        ax2=pylab.subplot(4,1,2,sharex=ax1)
         pylab.ylabel("Fluo")
         try:
             pylab.plot(graph_x, f.root.post.FLUO.read(),label="DTC on")
@@ -557,10 +577,10 @@ def tcscanActor(total_time=1,integration_time=0.1,n=1,channel=1,shutter=False,be
         except:
             pass
         pylab.legend(frameon=False)    
-        pylab.subplot(4,1,3)
+        ax3=pylab.subplot(4,1,3,sharex=ax1)
         pylab.ylabel("$\mu$x Reference")
         pylab.plot(graph_x, f.root.post.REF.read())
-        pylab.subplot(4,1,4)
+        ax4=pylab.subplot(4,1,4,sharex=ax1)
         pylab.ylabel("$I_0,I_1,I_2$ Counts")
         pylab.xlabel("t (s)")
         pylab.plot(graph_x, f.root.post.I0.read(),"r",label="$I_0$")
