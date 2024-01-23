@@ -366,9 +366,18 @@ execfile(__pySamba_root+"/modules/pulse/p_ascan.py")
 execfile(__pySamba_root+"/modules/pulse/p_cscan.py")
 execfile(__pySamba_root+"/modules/pulse/p_ecscan.py")
 
+#Initialisation par default de ct
+
+#Canberra 36px
 #ct=ct0
+
+#SDD13
 ct=ct_x3mca
+
+#VortexME4 + xspress3 mini
 #ct=ct_x3mini
+
+#Transmission only
 #ct=ct_xp
 
 #define ecscan_xp on the base of ecscan
