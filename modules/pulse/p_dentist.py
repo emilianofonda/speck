@@ -39,6 +39,8 @@ poly1 =  15., poly2 =  -1, polyN =  -1, kweight = -1, rmax=6,\
 mode="t", figN=1, overlap=False,out=False):
     """mode can be t = transmission or f = fluorescence or s = standard
     """
+    pylab.plt.ion()
+    
     baseFilename = filename[:filename.rfind(".")]
     #m = pylab.loadtxt(filename).transpose()
     m = load_xas_from_hdf(filename)
@@ -165,9 +167,9 @@ mode="t", figN=1, overlap=False,out=False):
         pylab.plot(derENE, derNOR - 0.5,"g-",label="$\delta \mu /\delta E$")
         pylab.plot(derENE, derNORsg - 0.5,"k-",linewidth=1)
         pylab.annotate("%8.2f" % e0, xy=(e0,0.9), xytext=(e0-60,0.9),\
-        arrowprops={"width":0.1,"headwidth":5,"frac":0.5,"color":"r","shrink":0.9})
+        arrowprops={"width":0.1,"headwidth":5,"headlength":10,"color":"r","shrink":0.9})
         pylab.annotate("%8.2f" % derENE[iMaxDer], xy=(derENE[iMaxDer],max(derNOR)-0.5), xytext=(derENE[iMaxDer]-60,max(derNOR)-0.5),\
-        arrowprops={"width":0.1,"headwidth":5,"frac":0.5,"color":"g","shrink":0.9})
+        arrowprops={"width":0.1,"headwidth":5,"headlength":10,"color":"g","shrink":0.9})
         #pylab.arrow(derENE[iMaxDer], derNOR[iMaxDer],-20,-0.2, label="%8.2f" % derENE[iMaxDer])
         pylab.legend(loc="best",ncol=2, frameon=False)
         pylab.arrow(ene[ie0],0,0,1.1,ls="dotted",color="red")

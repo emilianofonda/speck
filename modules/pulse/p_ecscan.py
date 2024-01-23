@@ -5,10 +5,10 @@ import dentist
 import tables
 import os
 import numpy
+import pylab
 import time as myTime
 from time import sleep
 from spec_syntax import wait_motor
-from GracePlotter import GracePlotter
 from spec_syntax import dark as ctDark
 from wait_functions import checkTDL, wait_injection
 import mycurses
@@ -56,24 +56,28 @@ class CPlotter:
 
 __CPlotter__ = CPlotter()
 
-def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True):
-    try:
-        for i in range(n):
-	        ecscanActor(fileName=fileName,e1=e1,e2=e2,dt=dt,velocity=velocity, e0=e0, mode=mode,shutter=shutter, beamCheck=beamCheck, n=1)
-    except KeyboardInterrupt:
-        shell.logger.log_write("ecscan halted on user request: Ctrl-C\n", kind='output')
-        print("Halting on user request.")
-        sys.stdout.flush()
-        stopscan(shutter)
-        print("ecscan halted. OK.")
-        print("Raising KeyboardInterrupt as requested.")
-        sys.stdout.flush()
-        raise KeyboardInterrupt
-    except Exception as tmp:
-        print(tmp)
-        shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp.args[0], kind='output')
-        stopscan(shutter)
-        #raise
+def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,maxRetry=3):
+    failures = 0
+    for i in range(n):
+        try:
+            ecscanActor(fileName=fileName,e1=e1,e2=e2,dt=dt,velocity=velocity, e0=e0, mode=mode,shutter=shutter, beamCheck=beamCheck, n=1)
+        except KeyboardInterrupt:
+            shell.logger.log_write("ecscan halted on user request: Ctrl-C\n", kind='output')
+            print("Halting on user request.")
+            sys.stdout.flush()
+            stopscan(shutter)
+            print("ecscan halted. OK.")
+            print("Raising KeyboardInterrupt as requested.")
+            sys.stdout.flush()
+            raise KeyboardInterrupt
+        except Exception as tmp:
+            print(tmp)
+            shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp.args[0], kind='output')
+            stopscan(shutter)
+            failures += 1
+            shell.logger.log_write("ecscan no failures = %i"%(failures), kind='output')
+            if failures >maxRetry:
+                raise tmp
     return 
 
 def ecscan_debug(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=False):
@@ -88,6 +92,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     The backup folder MUST be defined for the code to run.
     Global variables: FE and obxg must exist and should point to Front End and Shutter
     """
+    pylab.plt.ion()
     shell=get_ipython()
     FE = shell.user_ns["FE"]
     obxg = shell.user_ns["obxg"]

@@ -38,10 +38,13 @@ try:
 except Exception as tmp:
     print(tmp)
 
+
+#XSPRESS3 section 
+from p_xspress3 import xspress3_SOLEIL
+
 # x3mini
 #EXSPRESS3 Mini with Vortex ME4 
 #Trigger Mode INTERNAL (set 0) or GATE (set 1)
-from p_xspress3 import xspress3_SOLEIL
 
 try:
     config = {"fileGeneration":False,"streamTargetPath":'/nfs/srv5/spool1/xspress3_mini',\
@@ -50,34 +53,24 @@ try:
     detector_details = {"detector_name":"Vortex_SDD4","real_pixels_list":"1,2,3,4","comment":"Vortex ME4 SDD + xspress3 mini"}
     
     x3mini = xspress3_SOLEIL("tmp/test/xspress3.1",identifier = "fluo01",timeout=30.,deadtime=0.1,postcountdelay=0,\
-    spoolMountPoint="/nfs/srv5/spool1/xspress3_mini", config=config,detector_details = detector_details)
+    spoolMountPoint="/nfs/srv5/spool1/xspress3_mini", config=config, detector_details = detector_details)
 
 except Exception as tmp:
     print(tmp)
 
 
 # x3mca    
-#EXSPRESS3 Quantum Lima with Mirion SDD13
-#trigger modes can be internal_trigger or external_gate  
-
-from p_xspress3_QD import xspress3
+#EXSPRESS3X with Mirion SDD13
 
 try:
-    #config={"acq_trigger_mode":"internal_trigger",\
-    config={"acq_trigger_mode":"external_gate",\
-    "saving_suffix":"hdf","saving_prefix":"x3x_","saving_format":"hdf5",\
-    "saving_directory":"/nfs/srv5/spool1/x3x","saving_mode":"auto_frame",\
-    "saving_overwrite_policy":"abort"}
-
+    config = {"fileGeneration":False,"streamTargetPath":'/nfs/srv5/spool1/x3x',\
+    "streamtargetfile":"x3_mca","triggermode":1}
+    
     detector_details={"detector_name":"Canberra_SDD13","real_pixels_list":"1,2,3,4,5,6,7,8,9,10,11,12,13","comment":"Canberra 13 elements SDD + xspress3x"}
     
-#   x3mca = xspress3(label = "d09-1-cx1/dt/xspress3x.1", timeout=30,deadtime=0.1,
-#   spoolMountPoint="/nfs/srv5/spool1/x3x",specificDevice="d09-1-cx1/dt/xspress3x.1-specific",\
-#   config=config,identifier="fluo03")
+    x3mca = xspress3_SOLEIL("d09-1-cx1/dt/xspress3x.1",identifier = "fluo01",timeout=30.,deadtime=0.1,postcountdelay=0,\
+    spoolMountPoint="/nfs/srv5/spool1/x3x", config=config, detector_details = detector_details)
 
-    x3mca = xspress3(label = "lima/limaccd/1", timeout=30,deadtime=0.1,
-    spoolMountPoint="/nfs/srv5/spool1/x3x",specificDevice="lima/xspress3/1",\
-    config=config,identifier="fluo03",detector_details = detector_details)
 except Exception as tmp:
     print(tmp)
 
@@ -373,8 +366,8 @@ execfile(__pySamba_root+"/modules/pulse/p_ascan.py")
 execfile(__pySamba_root+"/modules/pulse/p_cscan.py")
 execfile(__pySamba_root+"/modules/pulse/p_ecscan.py")
 
-ct=ct0
-#ct=ct_x3mca
+#ct=ct0
+ct=ct_x3mca
 #ct=ct_x3mini
 #ct=ct_xp
 

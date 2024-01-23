@@ -201,6 +201,7 @@ scaler="ct",comment="",fullmca=False,graph=1, n = 1):
             motname="None"
             print(tmp)
             pass
+        f.write("#channel=%i at column=%i\n"%(channel,channel+1))
         print("motor name is : ", motname)
         f.write("#Following line is a comment:")
         f.write("#"+comment+"\n")

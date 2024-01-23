@@ -9,6 +9,7 @@ class speck_figure:
         The title appears on the window bar itself, it is not part of the graph.
         grid is the layout as a matrix of graphs called viewports (rows, cols)
         if sharex or sharey these axis scales are shared between the graphs/viewports"""
+        plt.ion()
         self.fig=figure(fign)
         if delete_axis:           
             try:
@@ -37,7 +38,7 @@ class speck_figure:
         It can be used once, after declaring the speck_figure"""
         self.ax[viewport].set_xlabel(xlabel)
         self.ax[viewport].set_ylabel(ylabel)
-        self.fig.draw()
+        #self.fig.draw()
         return
 
     def flatten_an_item(self,item):
@@ -57,12 +58,12 @@ class speck_figure:
         The curve number is returned."""
         if self.curves[viewport] == []:
             self.curves[viewport] = self.ax[viewport].plot(x,y,**kwds)
-            if len(x)>0:
-                self.ax[viewport].set_xlim(min(x),max(x))
-                self.ax[viewport].set_ylim(min(y),max(y))
+            if len(x)>1:
+                self.ax[viewport].set_xlim(min(x)*0.99,max(x)*1.01)
+                self.ax[viewport].set_ylim(min(y)*0.99,max(y)*1.01)
         else:
             self.curves[viewport].extend(self.ax[viewport].plot(x,y,**kwds))
-            if len(x)>0:
+            if len(x)>1:
                 xmin,xmax = self.ax[viewport].get_xlim()
                 ymin,ymax = self.ax[viewport].get_ylim()
                 self.ax[viewport].set_xlim(min(min(x),xmin),max(xmax,max(x)))
