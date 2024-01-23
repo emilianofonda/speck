@@ -258,8 +258,9 @@ class xspress3_SOLEIL:
 
     def posts(self):
         """Returns values calculated after counting: here it is used for determining rois in map mode"""
-        roi1,roi2 = self.getROIs()
-        return list(numpy.sum(numpy.array(self.read_mca())[:,roi1:roi2],axis=1))
+        #roi1,roi2 = self.getROIs()
+        #return list(numpy.sum(numpy.array(self.read_mca())[:,roi1:roi2],axis=1))
+        return list([])
 
     def read_mca(self, channels=None):
         if channels==None: 
