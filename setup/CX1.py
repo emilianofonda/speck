@@ -52,7 +52,7 @@ try:
     
     detector_details = {"detector_name":"Vortex_SDD4","real_pixels_list":"1,2,3,4","comment":"Vortex ME4 SDD + xspress3 mini"}
     
-    x3mini = xspress3_SOLEIL("tmp/test/xspress3.1",identifier = "fluo01",timeout=30.,deadtime=0.1,postcountdelay=0,\
+    x3mini = xspress3_SOLEIL("tmp/test/xspress3.1",identifier = "fluo04",timeout=30.,deadtime=0.1,postcountdelay=0,\
     spoolMountPoint="/nfs/srv5/spool1/xspress3_mini", config=config, detector_details = detector_details)
 
 except Exception as tmp:
@@ -68,7 +68,7 @@ try:
     
     detector_details={"detector_name":"Canberra_SDD13","real_pixels_list":"1,2,3,4,5,6,7,8,9,10,11,12,13","comment":"Canberra 13 elements SDD + xspress3x"}
     
-    x3mca = xspress3_SOLEIL("d09-1-cx1/dt/xspress3x.1",identifier = "fluo01",timeout=30.,deadtime=0.1,postcountdelay=0,\
+    x3mca = xspress3_SOLEIL("d09-1-cx1/dt/xspress3x.1",identifier = "fluo03",timeout=30.,deadtime=0.1,postcountdelay=0,\
     spoolMountPoint="/nfs/srv5/spool1/x3x", config=config, detector_details = detector_details)
 
 except Exception as tmp:
@@ -158,20 +158,22 @@ try:
             "FLUO_DIODE":"I3[:]/I0[:]",
             },
     }
+    __cx1xia1_id = cx1xia1.identifier
+    __cx1xia2_id = cx1xia2.identifier
     __cx1xia1_channels=list(range(0,20))
     __cx1xia2_channels=list(range(0,16))
     __FLUO="("
     __FLUO_RAW="("
     for i in __cx1xia1_channels:
-        XAS_dictionary["addresses"]["ROI%02i"%i] = "fluo01.roi%02i"%i
-        XAS_dictionary["addresses"]["ICR%02i"%i] = "fluo01.icr%02i"%i
-        XAS_dictionary["addresses"]["OCR%02i"%i] = "fluo01.ocr%02i"%i
+        XAS_dictionary["addresses"]["ROI%02i"%i] = __cx1xia1_id+".roi%02i"%i
+        XAS_dictionary["addresses"]["ICR%02i"%i] = __cx1xia1_id+".icr%02i"%i
+        XAS_dictionary["addresses"]["OCR%02i"%i] = __cx1xia1_id+".ocr%02i"%i
         __FLUO+="+numpy.nan_to_num(ROI%02i[:]/OCR%02i[:]*ICR%02i[:])"%(i,i,i)
         __FLUO_RAW+="+ROI%02i[:]"%(i)
     for i in __cx1xia2_channels:
-        XAS_dictionary["addresses"]["ROI%02i"%(i+20)] = "fluo02.roi%02i"%i
-        XAS_dictionary["addresses"]["ICR%02i"%(i+20)] = "fluo02.icr%02i"%i
-        XAS_dictionary["addresses"]["OCR%02i"%(i+20)] = "fluo02.ocr%02i"%i
+        XAS_dictionary["addresses"]["ROI%02i"%(i+20)] = __cx1xia1_id+".roi%02i"%i
+        XAS_dictionary["addresses"]["ICR%02i"%(i+20)] = __cx1xia1_id+".icr%02i"%i
+        XAS_dictionary["addresses"]["OCR%02i"%(i+20)] = __cx1xia1_id+".ocr%02i"%i
         __FLUO+="+numpy.nan_to_num(ROI%02i[:]/OCR%02i[:]*ICR%02i[:])"%(i+20,i+20,i+20)
         __FLUO_RAW+="+ROI%02i[:]"%(i+20)
     __FLUO+=")/numpy.array(I0[:],'f')"

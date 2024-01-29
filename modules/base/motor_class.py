@@ -773,14 +773,14 @@ class motor_slit(object):
         else:
             try:
                 if(self.argument in ["gap","position"]):
-                    __gap=self.DP_slit.read_attribute("gap")
-                    __pos=self.DP_slit.read_attribute("position")
+                    __gap = self.DP_slit.read_attribute("gap")
+                    __pos = self.DP_slit.read_attribute("position")
                     if self.argument=="gap":
-                        __iu=0.5*value-__pos.value
-                        __od=0.5*value+__pos.value
+                        __iu = -__pos.value * self.invertedDir + 0.5 * value #
+                        __od = +__pos.value * self.invertedDir + 0.5 * value #
                     if self.argument=="position":
-                        __iu=0.5*__gap.value-value*self.invertedDir
-                        __od=0.5*__gap.value+value*self.invertedDir
+                        __iu = -value * self.invertedDir  + 0.5 * __gap.value #
+                        __od = +value * self.invertedDir  + 0.5 * __gap.value #
                     self.setIndependantMode()
                     sleep(self.delay)
                     self.mt_IU.DefinePosition(__iu)
