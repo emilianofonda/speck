@@ -44,8 +44,8 @@ class xspress3_SOLEIL:
             while(self.state() != Devstate.OFF or time.time()-t0 < self.timeout):
                 sleep(1)
 
-        if self.state() == DevState.OFF:
-            self.setMode(self.config["mode"])
+        #if self.state() == DevState.OFF:
+        #    self.setMode(self.config["mode"])
 
         if self.init_user_readconfig!=[]:
             for i in self.init_user_readconfig:
@@ -101,7 +101,7 @@ class xspress3_SOLEIL:
         self.DP.command_inout("Init")
         while(self.state() in [DevState.UNKNOWN, DevState.DISABLE]):
             sleep(self.deadtime)
-        self.setMode(self.config["mode"])
+        #self.setMode(self.config["mode"])
         return
 
     def reinit(self):
@@ -194,7 +194,9 @@ class xspress3_SOLEIL:
                 sleep(self.deadtime)
         for i in [k for k in cKeys if (not k in dontTouch) and (self.config[k] != self.DP.read_attribute(k).value)]:
             try:
+                #print("x3mca: %s = %s"%(str(i),str(self.config[i])))
                 self.DP.write_attribute(i,self.config[i])
+                sleep(self.deadtime)
             except Exception as tmp:
                 print(i,self.config[i])
                 print(tmp)
@@ -223,6 +225,7 @@ class xspress3_SOLEIL:
         t0 = time.time()
         while(self.state() != DevState.RUNNING and time.time()-t0 < self.timeout):
             sleep(self.deadtime)
+        sleep(1)
         return self.state()
         
     def stop(self):
@@ -257,7 +260,7 @@ class xspress3_SOLEIL:
     
 
     def posts(self):
-        """Returns values calculated after counting: here it is used for determining rois in map mode"""
+        """Unused, retruns empty list"""
         #roi1,roi2 = self.getROIs()
         #return list(numpy.sum(numpy.array(self.read_mca())[:,roi1:roi2],axis=1))
         return list([])

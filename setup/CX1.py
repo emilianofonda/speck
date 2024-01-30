@@ -47,16 +47,25 @@ from p_xspress3 import xspress3_SOLEIL
 #Trigger Mode INTERNAL (set 0) or GATE (set 1)
 
 try:
-    config = {"fileGeneration":False,"streamTargetPath":'/nfs/srv5/spool1/xspress3_mini',\
-    "streamtargetfile":"x3_mca","triggermode":1}
-    
-    detector_details = {"detector_name":"Vortex_SDD4","real_pixels_list":"1,2,3,4","comment":"Vortex ME4 SDD + xspress3 mini"}
-    
-    x3mini = xspress3_SOLEIL("tmp/test/xspress3.1",identifier = "fluo04",timeout=30.,deadtime=0.1,postcountdelay=0,\
-    spoolMountPoint="/nfs/srv5/spool1/xspress3_mini", config=config, detector_details = detector_details)
+    __test=DeviceProxy("tmp/test/xspress3.1")
+    del __test
+    __jumpit=False
+except:
+    __jumpit=True
+    pass
 
-except Exception as tmp:
-    print(tmp)
+if not __jumpit:
+    try:
+        config = {"fileGeneration":False,"streamTargetPath":'/nfs/srv5/spool1/xspress3_mini',\
+        "streamtargetfile":"x3_mca","triggermode":1}
+    
+        detector_details = {"detector_name":"Vortex_SDD4","real_pixels_list":"1,2,3,4","comment":"Vortex ME4 SDD + xspress3 mini"}
+    
+        x3mini = xspress3_SOLEIL("tmp/test/xspress3.1",identifier = "fluo04",timeout=30.,deadtime=0.1,postcountdelay=0.1,\
+        spoolMountPoint="/nfs/srv5/spool1/xspress3_mini", config=config, detector_details = detector_details)
+
+    except Exception as tmp:
+        print(tmp)
 
 
 # x3mca    
@@ -68,7 +77,7 @@ try:
     
     detector_details={"detector_name":"Canberra_SDD13","real_pixels_list":"1,2,3,4,5,6,7,8,9,10,11,12,13","comment":"Canberra 13 elements SDD + xspress3x"}
     
-    x3mca = xspress3_SOLEIL("d09-1-cx1/dt/xspress3x.1",identifier = "fluo03",timeout=30.,deadtime=0.1,postcountdelay=0,\
+    x3mca = xspress3_SOLEIL("d09-1-cx1/dt/xspress3x.1",identifier = "fluo03",timeout=30.,deadtime=0.05,postcountdelay=0.1,\
     spoolMountPoint="/nfs/srv5/spool1/x3x", config=config, detector_details = detector_details)
 
 except Exception as tmp:
@@ -112,12 +121,12 @@ dcm.DP.associated_counter = "encoder01.Theta"
 ######   These definitions correspond to new pandabox timebase
 
 pulseGen0 = pandabox.pandabox_timebase("flyscan/clock/pandabox-timebase.1",\
-config={"mode":0,"inputCoder":1,"firstPulseDelay":0.1,"pulsePeriod":1000,"gateDownTime":1},\
+config={"mode":0,"inputCoder":1,"firstPulseDelay":0.1,"pulsePeriod":1000,"gateDownTime":5},\
 identifier="pulsegenerator_0")
 
 udp_pulseGen0 = pandabox.pandabox_udp_timebase("flyscan/clock/pandabox-udp-timebase.1",identifier="pulsegenerator_udp_0")
 
-udp_sampler0 = pandabox.udp_sampler(label="flyscan/sensor/sampler.1",user_readconfig=[],timeout=10.,deadtime=0.1,config={}, identifier="udp_sampler0")
+udp_sampler0 = pandabox.udp_sampler(label="flyscan/sensor/sampler.1",user_readconfig=[],timeout=30.,deadtime=0.05,config={}, identifier="udp_sampler0")
 
 #The following post format is very heavy with large array detectors.
 #A simplification could be provided if detectors provided already computed averages or corrected counts, but it is tricky 
