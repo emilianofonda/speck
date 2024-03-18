@@ -24,7 +24,7 @@ def ttl_edges(y,rising=True,phase=0):
     return idx, period
 
 def fold_edges(y_signal,y_ttl,rising=True,timescale=(),phase=0):
-    """Use ttl_edges to fold a signal over itself by analysisng an associated ttl
+    """Use ttl_edges to fold a signal over itself by analysing an associated ttl
     if timescale is not None it must have the same length of y_signal 
     and being an equispaced sampling time
     if timescale == (): returns y_fold

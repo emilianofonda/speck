@@ -203,6 +203,7 @@ class xspress3_SOLEIL:
         if nexusFileGeneration:
             #Auto delete remaining files!!! this avoids aborting, but it is a potential risk.
 #Function to be writtem: purge old files
+            sleep(self.deadtime)
             self.DP.write_attribute("filegeneration",True)
             sleep(self.deadtime)
             self.DP.streamresetindex()
@@ -225,7 +226,7 @@ class xspress3_SOLEIL:
         t0 = time.time()
         while(self.state() != DevState.RUNNING and time.time()-t0 < self.timeout):
             sleep(self.deadtime)
-        sleep(1)
+        sleep(3)
         return self.state()
         
     def stop(self):

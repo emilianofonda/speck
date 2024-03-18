@@ -9,6 +9,10 @@ from p_dxmap import dxmap
 from matplotlib import pyplot as plt
 import pandabox
 
+
+machine_current=sensor("ans/ca/machinestatus","current")
+
+
 try:
     #Fastosh recognized detector names:
     #CdTe, Canberra_Ge36, Canberra_Ge7, Vortex_SDD4, Vortex_SDD1, Canberra_SDD13
@@ -77,7 +81,7 @@ try:
     
     detector_details={"detector_name":"Canberra_SDD13","real_pixels_list":"1,2,3,4,5,6,7,8,9,10,11,12,13","comment":"Canberra 13 elements SDD + xspress3x"}
     
-    x3mca = xspress3_SOLEIL("d09-1-cx1/dt/xspress3x.1",identifier = "fluo03",timeout=30.,deadtime=0.05,postcountdelay=0.1,\
+    x3mca = xspress3_SOLEIL("d09-1-cx1/dt/xspress3x.1",identifier = "fluo03",timeout=30.,deadtime=0.1,postcountdelay=0.1,\
     spoolMountPoint="/nfs/srv5/spool1/x3x", config=config, detector_details = detector_details)
 
 except Exception as tmp:
@@ -120,8 +124,9 @@ dcm.DP.associated_counter = "encoder01.Theta"
 
 ######   These definitions correspond to new pandabox timebase
 
+#gateDownTime decreased for time resolved experiments on 18/03/2024
 pulseGen0 = pandabox.pandabox_timebase("flyscan/clock/pandabox-timebase.1",\
-config={"mode":0,"inputCoder":1,"firstPulseDelay":0.1,"pulsePeriod":1000,"gateDownTime":5},\
+config={"mode":0,"inputCoder":1,"firstPulseDelay":0.1,"pulsePeriod":1000,"gateDownTime":0.0015},\
 identifier="pulsegenerator_0")
 
 udp_pulseGen0 = pandabox.pandabox_udp_timebase("flyscan/clock/pandabox-udp-timebase.1",identifier="pulsegenerator_udp_0")
@@ -380,10 +385,10 @@ execfile(__pySamba_root+"/modules/pulse/p_ecscan.py")
 #Initialisation par default de ct
 
 #Canberra 36px
-#ct=ct0
+ct=ct0
 
 #SDD13
-ct=ct_x3mca
+#ct=ct_x3mca
 
 #VortexME4 + xspress3 mini
 #ct=ct_x3mini
