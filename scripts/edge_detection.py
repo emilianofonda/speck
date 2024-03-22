@@ -2,6 +2,114 @@ from numpy import *
 from pylab import *
 import tables
 
+def chopper_series(prefix,folder="./",trashfirst=0,chopper="/post/I3",\
+data="/post/FLUO",timescale="/data/X1",data2="/post/I2",phase=0,graphics=True,usablefiles=[]):
+
+    def test_file(ff):
+        f=tables.open_file(ff,"r")
+        try:
+            toto=f.get_node(chopper).read()
+            toto = True
+        except:
+            toto = False
+        finally:
+            f.close()
+        return toto
+
+    files = [i for i in os.listdir(folder) if i.startswith(prefix) and i.endswith(".hdf") \
+    and test_file(folder+os.sep+i)]
+    files.sort()
+    if usablefiles != []:
+        files = [i for i in files if int(i[-8:-4]) in usablefiles]
+    
+    toto=chopper_chop(folder+os.sep+files[0],trashfirst,chopper,data,timescale,data2,phase,graphics=False,period=-1)
+    period = len(toto[0])
+    
+    matout = array([chopper_chop(folder+os.sep+filename,trashfirst,\
+    chopper,data,timescale,data2,phase,graphics=False,period=period) for filename in files])
+
+    #print(shape(matout))
+    n=len(files)
+    t_out, sig_out, trig_out, y2_out = \
+    sum(matout[:,0,:],axis=0)/n,sum(matout[:,1,:],axis=0)/n,\
+    sum(matout[:,2,:],axis=0)/n,sum(matout[:,3,:],axis=0)/n
+    
+    time_g = concatenate([t_out,t_out+2*t_out[-1]-t_out[-2]])
+    sign_g = concatenate([sig_out,]*2)
+    trig_g = concatenate([trig_out,]*2)
+    dat2_g = concatenate([y2_out,]*2)
+
+    if graphics == True:
+        fig1 = pylab.figure(figsize=(8,11),edgecolor="white",facecolor="white",)
+        fig1.clear()
+        ax1=pylab.subplot(2,1,1)
+        ax1.set_title(prefix)
+        ax1.plot(time_g,sign_g)
+        ax1.plot(time_g,dat2_g/\
+        (max(dat2_g)-min(dat2_g))*(max(sign_g)-min(sign_g))+min(sign_g),label="data2")
+        ax1.grid()
+        ax1.set_ylabel("FLUO")
+        ax2=pylab.subplot(2,1,2,sharex=ax1)
+        ax2.plot(time_g,trig_g,label="trigger")
+        ax2.plot(time_g,dat2_g,label="data2")
+        ax2.legend()
+        ax2.grid()
+        ax2.set_xlabel("t(s)")
+        ax2.set_ylabel("trigger level")
+
+    return t_out, sig_out, trig_out, y2_out
+
+def chopper_chop(filename,trashfirst=0,chopper="/post/I3",data="/post/FLUO",\
+timescale="/data/X1",data2="/post/I2",phase=0,graphics=False,period=-1):
+#Load data
+    datasource = tables.open_file(filename, "r")
+
+# trigger or chopper signal are y
+    y = datasource.get_node(chopper).read()[trashfirst:]
+    y2 = datasource.get_node(data2).read()[trashfirst:]
+# signal is the data to fold over the chopper or trigger
+    signal = datasource.get_node(data).read()[trashfirst:]
+#time coordinate
+    t_scale = datasource.get_node(timescale).read()[trashfirst:]
+
+    datasource.close()
+#Process trigger 
+
+    #Set a level just above "dark"
+    level=(max(y)-min(y))*0.1+min(y)
+    
+    idx = [where(y>level)[0][i]+1 for i in where(diff(where(y>level))[0]>1)[0]]
+    if period == -1:
+        period = int(round(mean(diff(idx))))
+    last=idx[1] + int(len(y[idx[1]:])/period)*period
+    #print(period)
+
+# Obtain output
+
+    trig = reshape(y[idx[1]:last],(int((last-idx[1])/period),period))
+    trig = sum(trig,axis=0)/shape(trig)[0]
+    sig = reshape(signal[idx[1]:last],(int((last-idx[1])/period),period))
+    sig = sum(sig,axis=0)/shape(sig)[0]
+    sig2 = reshape(y2[idx[1]:last],(int((last-idx[1])/period),period))
+    sig2 = sum(sig2,axis=0)/shape(sig2)[0]
+    t_out = [t-t[0] for t in reshape(t_scale[idx[1]:last],(int((last-idx[1])/period),period))]
+    t_out = sum(t_out,axis=0)/shape(t_out)[0]
+    if graphics == True:
+        fig1 = pylab.figure(101,figsize=(8,11),edgecolor="white",facecolor="white",)
+        fig1.clear()
+        ax1=pylab.subplot(2,1,1)
+        ax1.plot(t_out,sig)
+        ax1.grid()
+        ax1.set_ylabel("FLUO")
+        ax2=pylab.subplot(2,1,2,sharex=ax1)
+        ax2.plot(t_out,trig,label="trigger")
+        ax2.plot(t_out,sig2,label="diode")
+        #ax2.plot(t_out,y[idx[1]:idx[1]+period],label="trigger_raw")
+        ax2.legend()
+        ax2.grid()
+        ax2.set_xlabel("t(s)")
+        ax2.set_ylabel("trigger level")
+    return (t_out,sig,trig,sig2)
 
 def ttl_edges(y,rising=True,phase=0):
     """Use maximum and minimum value to determine amplitude and base of signal,

@@ -204,14 +204,16 @@ class xspress3_SOLEIL:
             #Auto delete remaining files!!! this avoids aborting, but it is a potential risk.
 #Function to be writtem: purge old files
             sleep(self.deadtime)
-            self.DP.write_attribute("filegeneration",True)
-            sleep(self.deadtime)
+            if not(self.DP.filegeneration):
+                self.DP.write_attribute("filegeneration",True)
+                sleep(self.deadtime)
             self.DP.streamresetindex()
             os.system("rm "+self.spoolMountPoint+os.sep+self.DP.streamTargetFile+"*.*")
         else:
-            sleep(self.deadtime)
-            self.DP.write_attribute("filegeneration",False)
-
+            if self.DP.filegeneration:
+                self.DP.write_attribute("filegeneration",False)
+                sleep(self.deadtime)
+        sleep(self.deadtime)
         return self.start()
 
     def start(self,dt=1):
