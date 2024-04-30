@@ -36,10 +36,10 @@ class valve(object):
         return self.DP.command_inout(command)
 
     def state(self):
-        return self.command("State")
+        return self.DP.state()
 
     def status(self):
-        return self.command("Status")
+        return self.DP.status()
             
     def close(self):
         if self.state() == DevState.DISABLE:
