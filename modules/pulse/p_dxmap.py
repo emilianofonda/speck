@@ -187,10 +187,15 @@ class dxmap:
             try:
                 self.FTPclient.DeleteRemainingFiles()
             except:
-                print("%s : Cannot delete remaining files." % self.label)
+                #print("%s : Cannot delete remaining files." % self.label)
+                pass
+            sleep(0.1)
             if self.FTPserver and self.FTPserver.state() != DevState.RUNNING:
                 raise Exception("FTP server %s is not running. Starting client is useless. Please start it and retry.")%self.FTPserver.name
-            return self.FTPclient.start()
+            if self.FTPclient.state() != DevState.RUNNING:
+                return self.FTPclient.start()
+            else:
+                return
         else:
             pass
 
@@ -600,11 +605,12 @@ class dxmap:
             sleep(0.3)
             self.FTPclient.deleteremainingfiles()
         except Exception as tmp:
+            pass
             #print(tmp)
-            print("Timeout ==> Retry Once")
-            sleep(10)
-            self.FTPclient.deleteremainingfiles()
-            print("Timeout ==> OK")
+            #print("Timeout ==> Retry Once")
+            #sleep(3)
+            #self.FTPclient.deleteremainingfiles()
+            #print("Timeout ==> OK")
         return
     
 

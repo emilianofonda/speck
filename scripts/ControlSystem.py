@@ -3,6 +3,11 @@ from PyTango import DeviceProxy
 
 ControlSystem = DeviceProxy("tango/devadmin/ControlSystemMonitor.1")
 
+def RestartServer(speckInstance, timeOut=10,delay=5):
+    StopServer(speckInstance, timeOut,delay)
+    StartServer(speckInstance, timeOut,delay)
+    return
+
 def StopServer(speckInstance, timeOut=10,delay=5):
     """There is a time for joy and a time for sorrow,
     There is a time to live and a time to die
@@ -12,8 +17,12 @@ def StopServer(speckInstance, timeOut=10,delay=5):
         label = speckInstance
     elif "label" in dir(speckInstance):
         label = speckInstance.label
-    #elif "name" in dir(speckInstance):
-    #    label = speckInstance.name()
+    elif "name" in dir(speckInstance):
+        label = speckInstance.name()
+        try:
+            speckInstance.label = label
+        except:
+            pass
     else:
         raise Exception("Error: trying StartServer on non compatible object.")
     ControlSystem.killDevices([label,])

@@ -19,7 +19,7 @@ class valve(object):
         try:
             self.timeout=self.timeout_device()
         except:
-            self.timeout=10
+            self.timeout=10.
         return
 
     def __str__(self):
@@ -64,7 +64,7 @@ class valve(object):
     def timeout_device(self,tout=None):
         "With no argument returns the timeout, with argument set it to the value. Timeout cannot be set to 0 for a valve."
         if(tout==None): 
-            return self.DP.read_attribute("maxTime")
+            return self.DP.maxTime
         self.DP.write_attribute("maxTime",tout)
         sleep(self.deadtime)
         return self.timeout_device()
