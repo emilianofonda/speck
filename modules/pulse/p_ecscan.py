@@ -138,8 +138,13 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 myTime.sleep(1)
 
             dcm.velocity(60)
+#Additional waiting time for velocity setting in powerbrick
+            myTime.sleep(0.2)
+#Error on bender could be here
             dcm.pos(e1-40.)
-            #General bender backlash correction (bender 2 = 5000, bender 1 = 30000) to be generalised via Powerbrick
+#or ... error on bender could be here
+            myTime.sleep(0.2)
+#General bender backlash correction (bender 2 = 5000, bender 1 = 30000) to be generalised via Powerbrick
             mvr(dcm.bender,5000)
             myTime.sleep(0.2)
             mvr(dcm.bender,-5000)
