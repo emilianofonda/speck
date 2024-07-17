@@ -14,9 +14,10 @@
 #SPECK_BACKUP_FOLDER="/nfs/ruche-samba/samba-soleil/com-samba/"
 #SPECK_BACKUP_FOLDER="/nfs/ruche-samba/share-temp/SAMBA"
 
+#Once the switch to srv11 is done remove all .autofs below
 SPECK_DATA_FOLDER="/nfs/ruche-samba/samba-soleil/com-samba"
 SPECK_BACKUP_FOLDER=""
-SPECK_TEMPORARY_HOME="/nfs/srv5/spool1/ExperimentalData"
+SPECK_TEMPORARY_HOME="/nfs/.autofs/srv5/spool1/ExperimentalData"
 SPECK_TEMPORARY_FOLDER="/nfs/srv5/spool1/speck_temp"
 
 #####################################################################

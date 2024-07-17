@@ -104,6 +104,20 @@ try:
 except Exception as tmp:
     print(tmp)
 
+config = {"configurationId":3,"frequency":10000,"integrationTime":1,"nexusFileGeneration":False,\
+"nexusTargetPath":'/nfs/srv5/spool1/cx1sai2',"nexusNbAcqPerFile":1000,"dataBufferNumber":1,\
+"statHistoryBufferDepth":1000}
+
+try:
+
+    cx1sai2 = p_sai("d09-1-c00/ca/sai.2", timeout=10., deadtime=0.1, spoolMountPoint="/nfs/srv5/spool1/cx1sai2",\
+    FTPclient="",FTPserver="",
+    config=config, identifier="cx1sai2",GateDownTime=1.)
+
+except Exception as tmp:
+    print(tmp)
+
+
 #bufferedCounter (Theta)
 
 from p_bufferedCounter import bufferedCounter as p_bufferedCounter
@@ -209,7 +223,7 @@ try:
     #ct=pseudo_counter(masters=[pulseGen0,], slaves=[cx1sai,cpt3], posts=ctPosts)
 
     #ct=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cx1xia1,cx1xia2,cpt3])
-    ct0=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cx1xia1,cx1xia2,cpt3],posts=ctPosts, postDictionary=XAS_dictionary)
+    ct0=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cx1xia1,cx1xia2,cpt3,cx1sai2],posts=ctPosts, postDictionary=XAS_dictionary)
     
     ct_udp = pseudo_counter(masters=[pulseGen0,],slaves=[udp_pulseGen0,udp_sampler0])
     
@@ -271,7 +285,7 @@ try:
     from p_spec_syntax import pseudo_counter
 
 #A postcountdelay >= 0.1 is necessary when using the xspress3mini. Otherwise the scalars are not refreshed before reading.
-    ct_x3mini = pseudo_counter(masters=[pulseGen0], slaves=[cx1sai, x3mini, cpt3],\
+    ct_x3mini = pseudo_counter(masters=[pulseGen0], slaves=[cx1sai, x3mini, cpt3,cx1sai2],\
     posts= ctPosts_x3mini, postDictionary=XAS_dictionary_x3mini,\
     postcountdelay=0.1)
 
@@ -331,7 +345,7 @@ try:
 #These Posts should be modified each time when changing detectors.
     from p_spec_syntax import pseudo_counter
 
-    ct_x3mca=pseudo_counter(masters=[pulseGen0],slaves=[cx1sai,x3mca,cpt3], posts= ctPosts_x3mca, postDictionary=XAS_dictionary_x3mca)
+    ct_x3mca=pseudo_counter(masters=[pulseGen0],slaves=[cx1sai,x3mca,cpt3,cx1sai2], posts= ctPosts_x3mca, postDictionary=XAS_dictionary_x3mca)
 
 except Exception as tmp:
     print(tmp)
@@ -369,7 +383,7 @@ try:
     }
  
     #ct_xp=pseudo_counter(masters=[pulseGen0,],slaves=[udp_pulseGen0,cx1sai,cpt3],posts = ctPosts_xp, postDictionary = XAS_dictionary_xp)
-    ct_xp=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cpt3],posts = ctPosts_xp, postDictionary = XAS_dictionary_xp)
+    ct_xp=pseudo_counter(masters=[pulseGen0,],slaves=[cx1sai,cpt3,cx1sai2],posts = ctPosts_xp, postDictionary = XAS_dictionary_xp)
 
 except Exception as tmp:
     print(tmp)

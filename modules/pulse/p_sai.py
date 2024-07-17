@@ -236,6 +236,7 @@ class sai:
         self.prepare(dt,NbFrames=1,nexusFileGeneration=False)
         self.start()
         self.wait()
+        self.stop()
         for i in zip(self.user_readconfig,self.read()):
             print(i[0].name+"="+i[0].format%i[1])
         return

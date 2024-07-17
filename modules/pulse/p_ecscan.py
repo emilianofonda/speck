@@ -115,11 +115,11 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     print("Number of points: ",NumberOfPoints)
     print("One point every %4.2feV." % (velocity * dt))
     
-    for i in range(5):
-        try:
-            dcm.mode(1)
-        except:
-            myTime.sleep(3)
+#   for i in range(5):
+#       try:
+#           dcm.mode(1)
+#       except:
+#           myTime.sleep(3)
     try:
          for CurrentScan in range(NofScans):
             #Calculate name of last data buffer file to wait (XIA)
@@ -145,10 +145,11 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
 #or ... error on bender could be here
             myTime.sleep(0.2)
 #General bender backlash correction (bender 2 = 5000, bender 1 = 30000) to be generalised via Powerbrick
+            dcm.mode(0)
             mvr(dcm.bender,5000)
-            myTime.sleep(0.2)
             mvr(dcm.bender,-5000)
             myTime.sleep(0.2)
+            dcm.mode(1)
             dcm.velocity(velocity)
             myTime.sleep(0.2)
             dcm.pos(e1)

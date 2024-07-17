@@ -112,7 +112,8 @@ class xspress3_SOLEIL:
         for i in self.DP.get_attribute_list(): 
             if i[:7]=="channel" and int(i[-2:])>=0 and int(i[-2:])<=99:
                 self.channels.append(i)
-            if i[:3]=="roi" and i[5]=="_": self.rois.append(i)
+            #Uncomment this line if you want to use only native roi system, in that case you should remove additional roi created by this controller
+            #if i[:3]=="roi" and i[5]=="_": self.rois.append(i)
             if i[:14]=="inputCountRate" and int(i[-2:])>=0 and int(i[-2:])<=99:
                 self.icrs.append(i)
             if i[:len("outputCountRate")]=="outputCountRate" and int(i[-2:])>=0 and int(i[-2:])<=99:

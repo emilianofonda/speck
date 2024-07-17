@@ -33,7 +33,7 @@ try:
     config = {"fileGeneration":False,"streamTargetPath":'D:\\FTP',\
     "mode":"VORTEX", "streamNbAcqPerFile":630,"nbPixelsPerBuffer":63,"streamtargetfile":"cx2xia1"}
     cx2xia1=dxmap("d09-1-cx2/dt/dtc-mca_xmap.1",FTPclient="d09-1-c00/ca/ftpclientcx2xia1",identifier = "fluo01",\
-    FTPserver="d09-1-c00/ca/ftpservercx2xia1",spoolMountPoint="/nfs/.autofs/srv5/spool1/cx2xia1", config=config, detector_details=detector_details)
+    FTPserver="d09-1-c00/ca/ftpservercx2xia1",spoolMountPoint="/nfs/srv5/spool1/cx2xia1", config=config, detector_details=detector_details)
     mca1=cx2xia1
     mca2=None
     print(GREEN+"cx2xia1 --> DxMap card"+RESET)
