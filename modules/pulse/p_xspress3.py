@@ -82,17 +82,19 @@ class xspress3_SOLEIL:
         self.user_readconfig=[]
         for i in self.rois+self.icrs+self.ocrs+self.dts:
             self.user_readconfig.append(self.DP.get_attribute_config(i))
-        for i in self.channels:
-            __lbl = self.DP.get_attribute_config(i).label
-            self.channels_labels.append(self.identifier + __lbl)
-            __AI = AttributeInfoEx()
-            __AI.label = "roi_"+ __lbl
-            __AI.format = "%6i"
-            __AI.unit = ""
-            self.user_readconfig += [__AI,]
+        #for i in self.channels:
+        #    __lbl = self.DP.get_attribute_config(i).label
+        #    self.channels_labels.append(self.identifier + __lbl)
+        #    __AI = AttributeInfoEx()
+        #    __AI.label = "roi_"+ __lbl
+        #    __AI.format = "%6i"
+        #    __AI.unit = ""
+        #    self.user_readconfig += [__AI,]
  
         for i in range(len(self.user_readconfig)):
             self.user_readconfig[i].label = self.identifier + "_" + self.user_readconfig[i].label
+        self.streamTargetFile = self.DP.streamTargetFile
+        self.streamnbacqperfile = self.DP.streamnbacqperfile 
         return
 
     def init(self):
@@ -112,8 +114,7 @@ class xspress3_SOLEIL:
         for i in self.DP.get_attribute_list(): 
             if i[:7]=="channel" and int(i[-2:])>=0 and int(i[-2:])<=99:
                 self.channels.append(i)
-            #Uncomment this line if you want to use only native roi system, in that case you should remove additional roi created by this controller
-            #if i[:3]=="roi" and i[5]=="_": self.rois.append(i)
+            if i[:3]=="roi" and i[5]=="_": self.rois.append(i)
             if i[:14]=="inputCountRate" and int(i[-2:])>=0 and int(i[-2:])<=99:
                 self.icrs.append(i)
             if i[:len("outputCountRate")]=="outputCountRate" and int(i[-2:])>=0 and int(i[-2:])<=99:
@@ -123,14 +124,14 @@ class xspress3_SOLEIL:
         self.user_readconfig=[]
         for i in self.rois+self.icrs+self.ocrs+self.dts:
             self.user_readconfig.append(self.DP.get_attribute_config(i))
-        for i in self.channels:
-            __lbl = self.DP.get_attribute_config(i).label
-            self.channels_labels.append(self.identifier +"_"+ __lbl)
-            __AI = AttributeInfoEx()
-            __AI.label = "roi_"+ __lbl[-2:]
-            __AI.format = "%6i"
-            __AI.unit = ""
-            self.user_readconfig += [__AI,]
+        #for i in self.channels:
+        #    __lbl = self.DP.get_attribute_config(i).label
+        #    self.channels_labels.append(self.identifier +"_"+ __lbl)
+        #    __AI = AttributeInfoEx()
+        #    __AI.label = "roi_"+ __lbl[-2:]
+        #    __AI.format = "%6i"
+        #    __AI.unit = ""
+        #    self.user_readconfig += [__AI,]
 
         for i in range(len(self.user_readconfig)):
             self.user_readconfig[i].label = self.identifier + "_" + self.user_readconfig[i].label
@@ -209,7 +210,10 @@ class xspress3_SOLEIL:
                 self.DP.write_attribute("filegeneration",True)
                 sleep(self.deadtime)
             self.DP.streamresetindex()
-            os.system("rm "+self.spoolMountPoint+os.sep+self.DP.streamTargetFile+"*.*")
+            os.system("rm "+self.spoolMountPoint+os.sep+"*.*")
+            #os.system("rm "+self.spoolMountPoint+os.sep+self.DP.streamTargetFile+"*.*")
+            self.streamnbacqperfile = self.DP.streamnbacqperfile 
+            self.streamTargetFile = self.DP.streamTargetFile
         else:
             if self.DP.filegeneration:
                 self.DP.write_attribute("filegeneration",False)
@@ -394,13 +398,13 @@ class xspress3_SOLEIL:
 #This version uses a single file
         NOfiles = 1
 # Get the list of files to read and wait for the last to appear (?)
-        files2read = [i for i in os.listdir(self.spoolMountPoint) if i.startswith(self.DP.streamTargetFile)\
+        files2read = [i for i in os.listdir(self.spoolMountPoint) if i.startswith(self.streamTargetFile)\
         and i.endswith("nxs")]
         if wait:
             t0 = time.time()
             #This check loop maybe avoided if a partial save has to be performed
             while(NOfiles > len(files2read) and time.time() - t0 < self.timeout):
-                files2read = [i for i in os.listdir(self.spoolMountPoint) if i.startswith(self.DP.streamTargetFile)\
+                files2read = [i for i in os.listdir(self.spoolMountPoint) if i.startswith(self.streamTargetFile)\
                 and i.endswith("nxs")]
                 useless_file=open(self.spoolMountPoint+os.sep+"useless.txt","w")
                 useless_file.write("\n")
@@ -425,7 +429,7 @@ class xspress3_SOLEIL:
                     p1 = None
                 else:
 #If more than one file expected use XIA old block by block method
-                    p0 = self.DP.streamnbacqperfile * Nfile 
+                    p0 = self.streamnbacqperfile * Nfile 
 #Get actual file length that can vary depending on number of points in scan
                     actualBlockLen = \
                     np.shape(sourceFile.root.entry.scan_data.channel00)[0]

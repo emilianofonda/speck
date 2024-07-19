@@ -345,7 +345,7 @@ try:
 #These Posts should be modified each time when changing detectors.
     from p_spec_syntax import pseudo_counter
 
-    ct_x3mca=pseudo_counter(masters=[pulseGen0],slaves=[cx1sai,x3mca,cpt3,cx1sai2], posts= ctPosts_x3mca, postDictionary=XAS_dictionary_x3mca)
+    ct_x3mca=pseudo_counter(masters=[pulseGen0],slaves=[cx1sai,x3mca,cx1sai2,cpt3], posts= ctPosts_x3mca, postDictionary=XAS_dictionary_x3mca)
 
 except Exception as tmp:
     print(tmp)

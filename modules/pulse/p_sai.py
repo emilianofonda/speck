@@ -309,7 +309,14 @@ class sai:
         if reverse not in [-1,1]:
             reverse = 1
         
-        buffer = self.readBuffer()
+#Force the read out to be perfor;ed even in case of time outs
+        for i in range(5):
+            try:
+                buffer = self.readBuffer()
+                break
+            except Exception as tmp:
+                print(tmp)
+                sleep(1)
         if upperIndex != ():
             fmt = "%i," * len(tuple(upperIndex))
             stringIndex = fmt % tuple(upperIndex)     

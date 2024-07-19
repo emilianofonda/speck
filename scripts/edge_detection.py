@@ -10,6 +10,7 @@ data="/post/FLUO",timescale="/data/X1",data2="/post/I2",phase=0,graphics=True,us
         try:
             toto=f.get_node(chopper).read()
             toto = True
+            #print("%s is readable."%ff)
         except:
             toto = False
         finally:
@@ -19,6 +20,7 @@ data="/post/FLUO",timescale="/data/X1",data2="/post/I2",phase=0,graphics=True,us
     files = [i for i in os.listdir(folder) if i.startswith(prefix) and i.endswith(".hdf") \
     and test_file(folder+os.sep+i)]
     files.sort()
+    print(files)
     if usablefiles != []:
         files = [i for i in files if int(i[-8:-4]) in usablefiles]
     
@@ -34,28 +36,41 @@ data="/post/FLUO",timescale="/data/X1",data2="/post/I2",phase=0,graphics=True,us
     sum(matout[:,0,:],axis=0)/n,sum(matout[:,1,:],axis=0)/n,\
     sum(matout[:,2,:],axis=0)/n,sum(matout[:,3,:],axis=0)/n
     
-    time_g = concatenate([t_out,t_out+2*t_out[-1]-t_out[-2]])
-    sign_g = concatenate([sig_out,]*2)
-    trig_g = concatenate([trig_out,]*2)
-    dat2_g = concatenate([y2_out,]*2)
+#Cheating !!!
+    #time_g = concatenate([t_out,t_out+2*t_out[-1]-t_out[-2]])
+    #sign_g = concatenate([sig_out,]*2)
+    #trig_g = concatenate([trig_out,]*2)
+    #dat2_g = concatenate([y2_out,]*2)
+#Reality
+    time_g = array(t_out)
+    sign_g = array(sig_out)
+    trig_g = array(trig_out)
+    dat2_g = array(y2_out)
+
+
 
     if graphics == True:
         fig1 = pylab.figure(figsize=(8,11),edgecolor="white",facecolor="white",)
         fig1.clear()
-        ax1=pylab.subplot(2,1,1)
+        ax1=pylab.subplot(3,1,1)
         ax1.set_title(prefix)
         ax1.plot(time_g,sign_g)
-        ax1.plot(time_g,dat2_g/\
-        (max(dat2_g)-min(dat2_g))*(max(sign_g)-min(sign_g))+min(sign_g),label="data2")
         ax1.grid()
-        ax1.set_ylabel("FLUO")
-        ax2=pylab.subplot(2,1,2,sharex=ax1)
-        ax2.plot(time_g,trig_g,label="trigger")
-        ax2.plot(time_g,dat2_g,label="data2")
+        ax1.set_ylabel(data)
+        
+        ax2=pylab.subplot(3,1,2,sharex=ax1)
+        ax2.plot(time_g,trig_g,label=chopper)
         ax2.legend()
         ax2.grid()
         ax2.set_xlabel("t(s)")
-        ax2.set_ylabel("trigger level")
+        ax2.set_ylabel(chopper)
+        
+        ax3=pylab.subplot(3,1,3,sharex=ax1)
+        ax3.plot(time_g,dat2_g,label=data2)
+        ax3.legend()
+        ax3.grid()
+        ax3.set_xlabel("t(s)")
+        ax3.set_ylabel(data2)
 
     return t_out, sig_out, trig_out, y2_out
 
@@ -80,7 +95,7 @@ timescale="/data/X1",data2="/post/I2",phase=0,graphics=False,period=-1):
     
     idx = [where(y>level)[0][i]+1 for i in where(diff(where(y>level))[0]>1)[0]]
     if period == -1:
-        period = int(round(mean(diff(idx))))
+        period = int(round(mean(diff(idx))))*2
     last=idx[1] + int(len(y[idx[1]:])/period)*period
     #print(period)
 

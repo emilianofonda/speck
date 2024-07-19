@@ -58,9 +58,11 @@ __CPlotter__ = CPlotter()
 
 def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,maxRetry=3):
     failures = 0
+    total_failures = 0
     for i in range(n):
         try:
             ecscanActor(fileName=fileName,e1=e1,e2=e2,dt=dt,velocity=velocity, e0=e0, mode=mode,shutter=shutter, beamCheck=beamCheck, n=1)
+            failures=0
         except KeyboardInterrupt:
             shell.logger.log_write("ecscan halted on user request: Ctrl-C\n", kind='output')
             print("Halting on user request.")
@@ -75,9 +77,12 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
             shell.logger.log_write("Error during ecscan:\n %s\n\n" % tmp.args[0], kind='output')
             stopscan(shutter)
             failures += 1
+            total_failures += 1
             shell.logger.log_write("ecscan no failures = %i"%(failures), kind='output')
-            if failures >maxRetry:
+            if failures > maxRetry:
                 raise tmp
+    if total_failures >0 :
+        print("WARNING: ecscan counted %i failures"%total_failures)
     return 
 
 def ecscan_debug(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=False):

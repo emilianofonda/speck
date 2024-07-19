@@ -441,22 +441,34 @@ def tcscan(total_time=1,integration_time=0.1,n=1,channel=1,shutter=False,beamChe
     filename: the first part of datafile (an hdf file is produced)
     """
     shell=get_ipython()
-    try:
-        for i in range(n):
+    no_failures=0
+    total_failures=0
+    for i in range(n):
+        try:
 	        tcscanActor(total_time,integration_time, channel=channel,shutter=shutter,beamCheck=beamCheck,filename=filename)
-    except KeyboardInterrupt:
-        shell.logger.log_write("tcscan halted on user request: Ctrl-C\n", kind='output')
-        print("Halting on user request.")
-        sys.stdout.flush()
-        stop_tcscan(shutter)
-        print("tcscan halted. OK.")
-        print("Raising KeyboardInterrupt as requested.")
-        sys.stdout.flush()
-        raise KeyboardInterrupt
-    except Exception as tmp:
-        shell.logger.log_write("Error during tcscan:\n %s\n\n" % tmp, kind='output')
-        print(tmp)
-        #The ct should be stopped here
+            no_failures=0
+        except KeyboardInterrupt:
+            shell.logger.log_write("tcscan halted on user request: Ctrl-C\n", kind='output')
+            print("Halting on user request.")
+            sys.stdout.flush()
+            stop_tcscan(shutter)
+            print("tcscan halted. OK.")
+            print("Raising KeyboardInterrupt as requested.")
+            sys.stdout.flush()
+            raise KeyboardInterrupt
+        except Exception as tmp:
+            shell.logger.log_write("Error during tcscan:\n %s\n\n" % tmp, kind='output')
+            total_failures+=1
+            no_failures+=1
+            print(tmp)
+            stop_tcscan(shutter)
+            print("tcscan halted on exception. NOK.")
+            if no_failures>3:
+                print(tmp)
+                break
+    if total_failures>0:
+        print("Total number of failed scans = %i"%total_failures)
+    if no_failures>3:
         raise tmp
     return 
 

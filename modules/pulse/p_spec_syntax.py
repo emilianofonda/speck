@@ -892,8 +892,8 @@ class pseudo_counter:
         counts=[]
         for i in self.readable:
             counts += i.read()
-        if len(counts) != len(self.user_readconfig):
-            self.reinit()
+        #if len(counts) != len(self.user_readconfig):
+        #    self.reinit()
         #Use counts for calculating posts (duplicate values for security of original counts)
         ch = [] + counts
         cposts = []
