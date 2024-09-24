@@ -3,7 +3,7 @@ from pylab import *
 import tables
 
 def chopper_series(prefix,folder="./",trashfirst=0,chopper="/post/I3",\
-data="/post/FLUO",timescale="/data/X1",data2="/post/I2",phase=0,graphics=True,usablefiles=[]):
+data="/post/FLUO",timescale="/data/X1",data2="/post/I2",phase=0,graphics=True,usablefiles=[],replica=True,multiplier=1):
 
     def test_file(ff):
         f=tables.open_file(ff,"r")
@@ -24,7 +24,7 @@ data="/post/FLUO",timescale="/data/X1",data2="/post/I2",phase=0,graphics=True,us
     if usablefiles != []:
         files = [i for i in files if int(i[-8:-4]) in usablefiles]
     
-    toto=chopper_chop(folder+os.sep+files[0],trashfirst,chopper,data,timescale,data2,phase,graphics=False,period=-1)
+    toto=chopper_chop(folder+os.sep+files[0],trashfirst,chopper,data,timescale,data2,phase,graphics=False,period=-1,multiplier=multiplier)
     period = len(toto[0])
     
     matout = array([chopper_chop(folder+os.sep+filename,trashfirst,\
@@ -36,16 +36,18 @@ data="/post/FLUO",timescale="/data/X1",data2="/post/I2",phase=0,graphics=True,us
     sum(matout[:,0,:],axis=0)/n,sum(matout[:,1,:],axis=0)/n,\
     sum(matout[:,2,:],axis=0)/n,sum(matout[:,3,:],axis=0)/n
     
-#Cheating !!!
-    #time_g = concatenate([t_out,t_out+2*t_out[-1]-t_out[-2]])
-    #sign_g = concatenate([sig_out,]*2)
-    #trig_g = concatenate([trig_out,]*2)
-    #dat2_g = concatenate([y2_out,]*2)
-#Reality
-    time_g = array(t_out)
-    sign_g = array(sig_out)
-    trig_g = array(trig_out)
-    dat2_g = array(y2_out)
+    if replica:
+    #Cheating !!!
+        time_g = concatenate([t_out,t_out+2*t_out[-1]-t_out[-2]])
+        sign_g = concatenate([sig_out,]*2)
+        trig_g = concatenate([trig_out,]*2)
+        dat2_g = concatenate([y2_out,]*2)
+    else:
+    #Reality
+        time_g = array(t_out)
+        sign_g = array(sig_out)
+        trig_g = array(trig_out)
+        dat2_g = array(y2_out)
 
 
 
@@ -75,7 +77,7 @@ data="/post/FLUO",timescale="/data/X1",data2="/post/I2",phase=0,graphics=True,us
     return t_out, sig_out, trig_out, y2_out
 
 def chopper_chop(filename,trashfirst=0,chopper="/post/I3",data="/post/FLUO",\
-timescale="/data/X1",data2="/post/I2",phase=0,graphics=False,period=-1):
+timescale="/data/X1",data2="/post/I2",phase=0,graphics=False,period=-1,multiplier=1):
 #Load data
     datasource = tables.open_file(filename, "r")
 
@@ -95,7 +97,7 @@ timescale="/data/X1",data2="/post/I2",phase=0,graphics=False,period=-1):
     
     idx = [where(y>level)[0][i]+1 for i in where(diff(where(y>level))[0]>1)[0]]
     if period == -1:
-        period = int(round(mean(diff(idx))))*2
+        period = int(round(mean(diff(idx))))*multiplier
     last=idx[1] + int(len(y[idx[1]:])/period)*period
     #print(period)
 

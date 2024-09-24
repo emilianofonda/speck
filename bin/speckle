@@ -1,15 +1,18 @@
 #!/bin/bash
-
+echo 
+echo Do Not Close This Window
+echo
 #Define usable terminal for X11
-if command -v gnome-terminal &> /dev/null; then
+if command -v mate-terminal &> /dev/null; then
+    use_term=mate-terminal
+    options="--hide-menubar --title=SPECKLE3 --geometry 140x50+10+20"
+elif command -v gnome-terminal &> /dev/null; then
     use_term=gnome-terminal
     options="--hide-menubar --title=SPECKLE3 --geometry 140x50+10+20"
-elif command -v xterm &> /dev/null; then
+else 
     use_term=xterm
+    #options=""
     options="-fa Monospace -fs 10 -geometry 140x50+10+20"
-else
-    use_term=mate-terminal
-    options=""
 fi
 
 #Detect existing speckle session or open a new one
@@ -22,15 +25,16 @@ then
     then 
         echo speckle session already exists: connecting to...
         SCRS=`screen -ls|grep speckle3|cut -f 2`
-        command $use_term $options -e "screen -xr `echo $SCRS|cut -f 1 -d " "`"
+        $use_term $options -e "screen -xr `echo $SCRS|cut -f 1 -d " "`"
     else 
         echo speckle session not found: creating speckle session.
-        command $use_term $options -e "screen -S speckle3 -A speck3"
+        $use_term $options -e "screen -L -S speckle3 speck3"
     fi    
 else
-    echo Multiple speckle sessions exist please connect manually.
-    echo list follows:
-    screen -ls|grep speckle3
-    echo use "screen -x sessionname" to connect
+    $use_term $options -e "screen -x"
+    #echo Multiple speckle sessions exist please connect manually.
+    #echo list follows:
+    #screen -ls|grep speckle3
+    #echo use "screen -x sessionname" to connect
 fi
 

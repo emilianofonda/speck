@@ -80,7 +80,7 @@ def cscan(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beamCheck
     try:
         for i in range(n):
             #Previous speed to record
-	        cscanActor(cmot,p1,p2,velocity=velocity,n=1,dt=dt, channel=channel,shutter=shutter,beamCheck=beamCheck,filename=filename)
+            cscanActor(cmot,p1,p2,velocity=velocity,n=1,dt=dt, channel=channel,shutter=shutter,beamCheck=beamCheck,filename=filename)
             #Previous speed to restore
     except KeyboardInterrupt:
         shell.logger.log_write("ecscan halted on user request: Ctrl-C\n", kind='output')
@@ -275,7 +275,7 @@ def dcscan(cmot,p1,p2,velocity=None,n=1,dt=0.1, channel=1,shutter=False,beamChec
     try:
         for i in range(n):
             #Previous speed to record
-	        cscanActor(cmot,cmot_previous_position + p1,cmot_previous_position + p2,\
+            cscanActor(cmot,cmot_previous_position + p1,cmot_previous_position + p2,\
             velocity=velocity,n=1,dt=dt, channel=channel,shutter=shutter,beamCheck=beamCheck,filename=filename)
             #Previous speed to restore
     
@@ -445,7 +445,7 @@ def tcscan(total_time=1,integration_time=0.1,n=1,channel=1,shutter=False,beamChe
     total_failures=0
     for i in range(n):
         try:
-	        tcscanActor(total_time,integration_time, channel=channel,shutter=shutter,beamCheck=beamCheck,filename=filename)
+            tcscanActor(total_time,integration_time, channel=channel,shutter=shutter,beamCheck=beamCheck,filename=filename)
             no_failures=0
         except KeyboardInterrupt:
             shell.logger.log_write("tcscan halted on user request: Ctrl-C\n", kind='output')

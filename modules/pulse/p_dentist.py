@@ -21,12 +21,13 @@ def load_xas_from_hdf(filename):
     f = tables.open_file(filename,"r")
     try:
         dimx = f.root.post.energy.shape[0]
-        m = numpy.zeros((5,dimx))
+        m = numpy.zeros((6,dimx))
         m[0]=numpy.nan_to_num(f.root.post.energy[:])
         m[1]=numpy.nan_to_num(f.root.post.Theta[:])
         m[2]=numpy.nan_to_num(f.root.post.MUX[:])
         m[3]=numpy.nan_to_num(f.root.post.FLUO[:])
         m[4]=numpy.nan_to_num(f.root.post.REF[:])
+        m[5]=numpy.nan_to_num(f.root.post.I3[:]/f.root.post.I0[:])
     except Exception as tmp:
         print(tmp)
     finally:
@@ -55,6 +56,8 @@ mode="t", figN=1, overlap=False,out=False):
         xmu = m[3]
     elif mode == "s":
         xmu = m[4]
+    elif mode == "e":
+        xmu = m[5]
     else:
         raise Exception("unknown dentist mode.")
 

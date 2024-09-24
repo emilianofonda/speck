@@ -82,9 +82,9 @@ class xspress3_SOLEIL:
         self.user_readconfig=[]
         for i in self.rois+self.icrs+self.ocrs+self.dts:
             self.user_readconfig.append(self.DP.get_attribute_config(i))
-        #for i in self.channels:
-        #    __lbl = self.DP.get_attribute_config(i).label
-        #    self.channels_labels.append(self.identifier + __lbl)
+        for i in self.channels:
+            __lbl = self.DP.get_attribute_config(i).label
+            self.channels_labels.append(self.identifier + __lbl)
         #    __AI = AttributeInfoEx()
         #    __AI.label = "roi_"+ __lbl
         #    __AI.format = "%6i"
@@ -210,7 +210,7 @@ class xspress3_SOLEIL:
                 self.DP.write_attribute("filegeneration",True)
                 sleep(self.deadtime)
             self.DP.streamresetindex()
-            os.system("rm "+self.spoolMountPoint+os.sep+"*.*")
+            os.system("rm "+self.spoolMountPoint+os.sep+"*.* 2>/dev/null")
             #os.system("rm "+self.spoolMountPoint+os.sep+self.DP.streamTargetFile+"*.*")
             self.streamnbacqperfile = self.DP.streamnbacqperfile 
             self.streamTargetFile = self.DP.streamTargetFile

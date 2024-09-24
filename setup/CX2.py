@@ -130,6 +130,31 @@ try:
             },
     }
 
+    ctPosts_XP=[\
+    {"name":"MUX","formula":"log(float(ch[0])/ch[1])","units":"","format":"%9.7f"},\
+    {"name":"MUS","formula":"log(float(ch[1])/ch[2])","units":"","format":"%9.7f"},\
+    ]  
+    XAS_dictionary_XP = {
+        "addresses":{
+            "Theta":"encoder01.Theta",
+            "I0":"sai01.I0",
+            "I1":"sai01.I1",
+            "I2":"sai01.I2",
+            "I3":"sai01.I3",
+            },
+        "constants":{},
+        "formulas":{
+            "Theta":"Theta[:]",
+            "energy":"dcm.theta2e(Theta[:])",
+            "I0":"I0[:]",
+            "I1":"I1[:]",
+            "I2":"I2[:]",
+            "I3":"I3[:]",
+            "MUX":"numpy.log(I0[:]/I1[:])",
+            "REF":"numpy.log(I1[:]/I2[:])",
+            "FLUO_DIODE":"I3[:]/I0[:]",
+            },
+    }
 
 #These Posts should be modified each time when changing detectors.
     from p_spec_syntax import pseudo_counter
@@ -140,7 +165,7 @@ try:
     #Remember to set the cpt3 card from master to slave mode and modify BNC cable position from OUT to GATE
     #ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai01,mca1,cpt3], posts= ctPosts)
     ct=pseudo_counter(masters=[pulseGen0,],slaves=[sai01,cx2xia1,cpt3],posts=ctPosts, postDictionary=XAS_dictionary)
-    #ct=pseudo_counter(masters=[pulseGen0,], slaves=[sai01,cpt3], posts=ctPosts, postDictionary=XAS_dictionary)
+    ct_xp=pseudo_counter(masters=[pulseGen0,], slaves=[sai01,cpt3], posts=ctPosts_XP, postDictionary=XAS_dictionary_XP)
 
 except Exception as tmp:
     print(tmp)
