@@ -1086,7 +1086,9 @@ class pseudo_counter:
         This function should be used to write more standard scan macros"""
         for i in self.all:
             if "saveData2HDF" in dir(i):
+                #print("Device %s saves data: "%i.identifier)
                 i.saveData2HDF(self.handler, wait = wait,upperIndex=upperIndex,reverse=reverse)
+                #print("OK")
         if self.postDictionary not in [{}, None]:
             self.savePostDictionary2HDF(HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="post")
         return

@@ -223,7 +223,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
                 group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
             except:
                 print("No contextual data for where_all and/or where_after")
-            # MOSTAB and Mono Configs
+            #MOSTAB and Mono Configs
             try:
                 ct.savePost2HDF("mostab", array(mostab.status().split("\n")), 
                 group = "", wait = True, HDFfilters = tables.Filters(complevel = 1, complib='zlib'), domain="context")
@@ -237,8 +237,8 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
 
             #
             ct.closeHDFfile()
-            timeAtStop = asctime()
-            timeout0 = time()
+            timeAtStop = myTime.asctime()
+            timeout0 = myTime.time()
             try:
                 HDF2ASCII(ct.final_filename)
             except Exception as tmp:
