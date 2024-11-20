@@ -410,6 +410,7 @@ ct=ct0
 #Transmission only
 #ct=ct_xp
 
+
 #define ecscan_xp on the base of ecscan
 def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10,e0=-1,mode="t",shutter=False,beamCheck=True):
     shell=get_ipython()

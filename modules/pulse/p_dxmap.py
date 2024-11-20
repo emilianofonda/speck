@@ -439,8 +439,7 @@ class dxmap:
     def prepareHDF(self, handler, HDFfilters = tables.Filters(complevel = 1, complib='zlib'),upperIndex=()):
         """the handler is an already opened file object"""
         ShapeArrays = (self.NbFrames,) + tuple(self.upperDimensions)
-        ShapeMatrices = (self.NbFrames, self.DP.streamnbDataPerAcq) + tuple(self.upperDimensions)
-        
+        ShapeMatrices = (self.NbFrames, self.DP.nbBins) + tuple(self.upperDimensions)
         handler.create_group("/data", self.identifier)
         outNode = handler.get_node("/data/" + self.identifier)
        
