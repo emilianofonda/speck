@@ -1,9 +1,12 @@
 from numpy import *
 from pylab import *
 import tables
+import xas
 
-def chopper_series(prefix,folder="./",trashfirst=0,chopper="/post/I3",\
-data="/post/FLUO",timescale="/data/X1",data2="/post/I2",phase=0,graphics=True,usablefiles=[],replica=True,multiplier=1):
+
+def sum_series(prefixes=[],folder="./",suffixes=[],trashfirst=0,chopper="/post/I3",\
+data="/post/FLUO",timescale="/data/X1",data2="/post/I2",\
+phase=0,graphics=True,usablefiles=[],replica=True,multiplier=1):
 
     def test_file(ff):
         f=tables.open_file(ff,"r")
@@ -16,14 +19,87 @@ data="/post/FLUO",timescale="/data/X1",data2="/post/I2",phase=0,graphics=True,us
         finally:
             f.close()
         return toto
+    
+    n_tot = 0
+    m_tot = []
+    for prefix,suffix in zip(prefixes,suffixes):
+        files = [i for i in os.listdir(folder) if i.startswith(prefix) and i.endswith(suffix+".hdf") \
+        and test_file(folder+os.sep+i)]
+        files.sort()
+        #print(files)
+        if usablefiles != []:
+            files = [i for i in files if int(i[-8:-4]) in usablefiles]
+        n=len(files)
+        mout=array(\
+        chopper_series(prefix,folder=folder,suffix=suffix,trashfirst=trashfirst,chopper=chopper,\
+        data=data,timescale=timescale,data2=data2,\
+        phase=phase,graphics=False,usablefiles=[],replica=replica,multiplier=multiplier)\
+        )
+        if len(m_tot) == 0:
+            m_tot=mout*n
+        else:
+            m_tot+=mout*n
+        n_tot+=n
+    m_tot=m_tot/n
+    t_out, sig_out, trig_out, y2_out = m_tot
+    if replica:
+    #Cheating !!!
+        time_g = concatenate([t_out,t_out+2*t_out[-1]-t_out[-2]])
+        sign_g = concatenate([sig_out,]*2)
+        trig_g = concatenate([trig_out,]*2)
+        dat2_g = concatenate([y2_out,]*2)
+    else:
+    #Reality
+        time_g = array(t_out)
+        sign_g = array(sig_out)
+        trig_g = array(trig_out)
+        dat2_g = array(y2_out)
 
-    files = [i for i in os.listdir(folder) if i.startswith(prefix) and i.endswith(".hdf") \
-    and test_file(folder+os.sep+i)]
+    if graphics == True:
+        fig1 = pylab.figure(figsize=(8,11),edgecolor="white",facecolor="white",)
+        fig1.clear()
+        ax1=pylab.subplot(2,1,1)
+        ax1.set_title(prefix)
+        #ax1.plot(time_g,xas.SavitzkyGolay(sign_g,5,3))
+        ax1.plot(time_g,sign_g)
+        ax1.grid()
+        ax1.set_ylabel(data)
+        
+        ax2=pylab.subplot(2,1,2,sharex=ax1)
+        ax2.plot(time_g,trig_g,label=chopper)
+        ax2.legend()
+        ax2.grid()
+        ax2.set_xlabel("t(s)")
+        ax2.set_ylabel(chopper)
+    return m_tot
+
+
+
+def chopper_series(prefix,folder="./",suffix="",trashfirst=0,chopper="/post/I3",\
+data="/post/FLUO",timescale="/data/X1",data2="/post/I2",\
+phase=0,graphics=True,usablefiles=[],replica=True,multiplier=1):
+
+    def test_file(ff):
+        f=tables.open_file(ff,"r")
+        try:
+            toto=f.get_node(chopper).read()
+            toto=f.get_node(data).read()
+            toto=f.get_node(timescale).read()
+            toto = True
+            #print("%s is readable."%ff)
+        except:
+            toto = False
+        finally:
+            f.close()
+        return toto
+
+    #files = [i for i in os.listdir(folder) if i.startswith(prefix) and i.endswith(suffix+".hdf") \
+    #and test_file(folder+os.sep+i)]
+    files = [i for i in os.listdir(folder) if i[:-9] == prefix and test_file(folder+os.sep+i)]
     files.sort()
     print(files)
     if usablefiles != []:
         files = [i for i in files if int(i[-8:-4]) in usablefiles]
-    
     toto=chopper_chop(folder+os.sep+files[0],trashfirst,chopper,data,timescale,data2,phase,graphics=False,period=-1,multiplier=multiplier)
     period = len(toto[0])
     
@@ -56,12 +132,15 @@ data="/post/FLUO",timescale="/data/X1",data2="/post/I2",phase=0,graphics=True,us
         fig1.clear()
         ax1=pylab.subplot(3,1,1)
         ax1.set_title(prefix)
+        ax1.plot(time_g,xas.SavitzkyGolay(concatenate([sign_g,]*3),11,3)[len(sign_g):len(sign_g)*2],"r--")
         ax1.plot(time_g,sign_g)
         ax1.grid()
         ax1.set_ylabel(data)
         
         ax2=pylab.subplot(3,1,2,sharex=ax1)
         ax2.plot(time_g,trig_g,label=chopper)
+        ax2b=ax2.twinx()
+        ax2b.plot(time_g,xas.SavitzkyGolay(concatenate([sign_g,]*3),31,3)[len(sign_g):len(sign_g)*2],"r--")
         ax2.legend()
         ax2.grid()
         ax2.set_xlabel("t(s)")

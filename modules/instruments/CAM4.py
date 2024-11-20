@@ -1,6 +1,6 @@
 from __future__ import print_function
-from sensor_group import sensor_group
-__tmp=sensor_group(\
+import p_sensor_group
+__tmp=p_sensor_group.sensor_group(\
 [
 #["d09-1-c02/dt/vg1.0-analyzer",["XProjFitCenter","YProjFitCenter","XProjFitFWHM","YProjFitFWHM","MeanIntensity"]],\
 #["d09-1-c04/dt/vg1.1-analyzer",["XProjFitCenter","YProjFitCenter","XProjFitFWHM","YProjFitFWHM","MeanIntensity"]],\
