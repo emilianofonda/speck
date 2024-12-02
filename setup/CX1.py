@@ -145,7 +145,7 @@ identifier="pulsegenerator_0")
 
 udp_pulseGen0 = pandabox.pandabox_udp_timebase("flyscan/clock/pandabox-udp-timebase.1",identifier="pulsegenerator_udp_0")
 
-udp_sampler0 = pandabox.udp_sampler(label="flyscan/sensor/sampler.1",user_readconfig=[],timeout=30.,deadtime=0.05,config={}, identifier="udp_sampler0")
+udp_sampler0 = pandabox.pandabox_udp_sampler(label="flyscan/sensor/sampler.1",user_readconfig=[],timeout=30.,deadtime=0.05,config={}, identifier="udp_sampler0")
 
 #The following post format is very heavy with large array detectors.
 #A simplification could be provided if detectors provided already computed averages or corrected counts, but it is tricky 

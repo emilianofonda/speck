@@ -230,7 +230,7 @@ class pandabox_udp_timebase:
         return
 
 
-class udp_sampler:
+class pandabox_udp_sampler:
     def __init__(self,label="",user_readconfig=[],timeout=10.,deadtime=0.1,config={}, identifier=""):
         """
         this class interface with the sampler device that receives triggers from the udp timebase.
@@ -342,5 +342,259 @@ class udp_sampler:
             sleep(self.deadtime)
         return
 
+
+class pandabox_dataviewer:
+    def __init__(self,label="",user_readconfig=[],
+    timeout=3.,deadtime=0.1, 
+    FTPclient="",FTPserver="",
+    spoolMountPoint="", config={},identifier=""
+    ):
+        """
+        This class interfaces with the PandaBox DataViewer at the sole intent of recording encoder values.
+        Its purpose is to replace the bufferedCounter module (aka the underlying NI6602 card) in the pulse type data recording.
+        The unit is slave, the triggering mode must be a priori set correctly. In this implementation the card has the same pandabox as a trigger generator.
+
+        The FTPclient and FTPserver are maintained for backward compatibility but they are not used.
+        Let them as blank strings and expect them to be removed.
+
+        config is a dictionary containing the following kw informations, name of kw must correspond to existing attributes:
+
+        GateDownTime: this value in ms (not seconds!) is used to correct the integration time to the real live time (integrationTime-GateDownTime*1000)
+        
+        integrationTime: used for calculating averages (Beware: I use seconds, card use ms) 
+        Beware : the GateDownTime is removed from this value so the 10ms acquisition with a 0.1ms gatedowntime results in a 9.99ms integration every 10ms
+        
+        nexusFileGeneration: False or True
+        nexusTargetPath: path to spool as '\\\\srv5\\spool1\\sai' remark double backlashes if on windows...
+        nexusNbAcqPerFile: self explaining
+        totalNbPoint: how many points you want to read it's the captureFrameNumber attribute
+        bufferDepth: usually 100, it's the infinite mode buffer depth, you arrange to empty it about every second max(1,int(1/delta_t))
+
+        identifier is a string, it is used in final nexus files
+
+        the enables of the encoders must be set by hand or via the config as below for cod1
+
+###################
+        
+        Two special config keywords deserve description and are NECESSARY in the config:
+        
+        The first determine the command to be used to set the device in the good triggering mode:
+        
+        set_trigger_source_command:"AcqFromFlyscan"
+
+        The second is the value expected for the good triggering mode. 
+        If this is not the case and only in this case the command above is executed at prepare.
+        
+        trigger_source:"PULSE1.OUT"
+
+        The values of these two parameters (one an attribute, the other a dynamically defined command) 
+        are subject to modifications depending on the configuration and cannot be determined in advance.
+
+###################
+
+        The encoder names are guessed from the GetCaptureInfo command, but the fact they are in enable or disable state
+        is let as it is unless explicitly stated in the config. You may want to enforce an encoder to be active or inactive via the config.
+        Disabled encoders are not recorded nor taken into account at any level.
+
+        example:
+        config={"integrationTime":0.01,"nexusFileGeneration":False,
+        "nexusTargetPath":'\\\\srv5\\spool1\\panda_dataviewer',"nexusNbAcqPerFile":1000,"totalNbPoint":1000,
+        "bufferDepth":100,enableDatasetcod1:True,set_trigger_source_command:"AcqFromFlyscan",trigger_source:"PULSE1.OUT"}
+
+        """
+        self.config = config
+#If there are no attributes to save, user_readconfig is set to []
+        self.init_user_readconfig=user_readconfig
+        self.user_readconfig=user_readconfig
+        self.label=label
+        self.DP=DeviceProxy(label)
+        self.identifier = identifier
+        self.GateDownTime=GateDownTime
+        
+#FTP is not used. Values to be removed in future pulse versions
+        self.FTPclient = None
+        self.FTPserver = None
+
+        self.spoolMountPoint=spoolMountPoint
+        self.channels=[]
+        self.channels_labels=[]
+        self.deadtime=deadtime
+        self.timeout=timeout
+        self.DP.set_timeout_millis(int(self.timeout*1000))
+
+        #encoders_properties = self.DP.get_property("CaptureRegisterConfig")["CaptureRegisterConfig"]
+        encoders_properties = [i.split(";") for i in self.DP.GetCaptureInfo()]
+        for i in encoders_properties:
+            self.channels.append([j[j.find(":")+1:] for j in i if j.startswith("NAME")][0])
+
+        return
+
+    def init(self):
+        self.DP.set_timeout_millis(int(self.timeout*1000))
+        sleep(1)
+        self.DP.command_inout("Init")
+        while(self.state() in [DevState.UNKNOWN, DevState.DISABLE]):
+            sleep(1)
+        return
+
+    def reinit(self):
+        self.FTPclient = None
+        self.FTPserver = None
+        self.DP.set_timeout_millis(int(self.timeout*1000))
+
+        encoders_properties = self.DP.get_property("CaptureRegisterConfig")["CaptureRegisterConfig"]
+        
+        self.channels=[i.split(":")[0] for i in encoders_properties]
+        for i in countersProp:
+            self.channels.append([j.split(":")[-1] for j in i if j.lower().startswith("name")][0])
+        return
+
+    def __repr__(self):
+        repr =  "Device name = %s\n" % self.label
+        repr += "State       = %s\n"%self.DP.state()
+        fmtCh = "%s, "*len(self.channels)
+        repr += "Channels are = " + fmtCh%tuple(self.channels) + "\n"
+        return repr
+                    
+    def __call__(self,x=None):
+        print(self.__repr__())
+        return self.state()                              
+
+    def state(self):
+        return self.DP.state()
+
+    def status(self):
+        return self.DP.status()
+        
+    def startFTP(self):
+        """Unused"""
+        return
+
+    def stopFTP(self):
+        """Unused"""
+        return
+
+    def prepare(self,dt=1,NbFrames=1,nexusFileGeneration=False,stepMode=False,upperDimensions=()):
+        self.upperDimensions=upperDimensions
+
+        if self.DP.state() == DevState.FAULT:
+            self.DP.init()
+
+        cKeys = self.config.keys()
+
+#Check triggering configuration
+#       set_trigger_source_command:"AcqFromFlyscan"
+#       trigger_source:"PULSE1.OUT"
+        if self.DP.triggerSource != self.config["trigger_source"]:
+            self.DP.command_inout(self.config["set_trigger_source_command"])
+        self.wait()
+        if nexusFileGeneration:
+            self.config["nexusFileGeneration"] = True
+            self.DP.NexusResetBufferIndex()
+            #Auto delete remaining files!!! this avoids aborting, but it is a potential risk.
+            os.system("rm %s/*.%s"%(self.spoolMountPoint,"nxs"))
+        else:
+            self.config["nexusFileGeneration"] = False
+#Remove GateDownTime (this card works in seconds and GateDown is always in ms): 
+        self.config["integrationTime"] = dt*1000 - self.GateDownTime 
+        sleep(self.deadtime)
+        self.DP.captureFrameNumber=NbFrames
+        reloadAtts = self.DP.get_attribute_list()
+#Some Attributes doesn't exist or exist depending on mode or external/internal time base
+#So we protect checking the actual Atts list
+        for kk in [i for i in cKeys if not i in ["nexusFileGeneration","triggerSource","integrationTime","captureFrameNumber"] \
+            and i in reloadAtts and self.config[i]!=self.DP.read_attribute(i).value]:
+            self.DP.write_attribute(kk,self.config[kk])
+
+        return self.start()
+
+    def start(self,dt=1):
+        if self.state() not in [DevState.RUNNING,DevState.FAULT,DevSate.INIT]:
+            self.DP.command_inout("StartCapture")
+        else:
+            raise Exception("Trying to start %s when in %s state"%(self.label,self.state())
+        return self.state()
+        
+    def stop(self):
+        if self.state()==DevState.RUNNING:
+            try:
+                self.DP.command_inout("StopCapture")
+            except DevFailed:
+                self.DP.command_inout("AbortCapture")
+            finally:
+                return self.state()
+        else:
+            return self.state()
+
+    def wait(self):
+        while self.state() in [DevState.RUNNING, DevState.UNKNOWN, DevState.INIT]:
+            sleep(self.deadtime)
+        return
+
+    def read(self):
+        """This returns the last read value of all encoders in attribute"""
+        return []
+        #return [i.value for i in self.DP.read_attributes(self.channels)]
+
+    def readBuffer(self):
+        """This returns an ordered matrix (following list of channels) of all encoders"""
+#Please modify this to use read_attributes.
+        return [self.DP.read_attribute(i).value for i in self.channels]
+
+################# Worked until here down is not yet modified
+
+    def count(self,dt=1):
+        """This is a slave device, but it can be useful to test it with a standalone count
+        This count function is used for debug only. It could work if the card does not need an external trigger"""
+        self.prepare(dt,NbFrames=1,nexusFileGeneration=False)
+        #self.start()
+        self.wait()
+        #for i in zip(self.user_readconfig,self.read()):
+        #    print i[0].name+"="+i[0].format%i[1]
+        return self.readBuffer()
+
+    def prepareHDF(self, handler, HDFfilters = tables.Filters(complevel = 1, complib='zlib')):
+        """the handler is an already opened file object"""
+        ShapeArrays = (self.DP.totalnbpoint,) + tuple(self.upperDimensions)
+        handler.create_group("/data/", self.identifier)
+        outNode = handler.get_node("/data/" + self.identifier)
+        for s in self.channels:
+            handler.create_carray(outNode, "%s" % s, title = "%s" % s,\
+            shape = ShapeArrays, atom = tables.Float32Atom(), filters = HDFfilters)
+#Write down contextual data
+        ll = numpy.array(["%s = %s"%(i,str(self.config[i])) for i in self.config.keys()])
+        outGroup = handler.create_group("/context",self.identifier)
+        outGroup = handler.get_node("/context/"+self.identifier)
+        handler.create_carray(outGroup, "config", title = "config",\
+        shape = numpy.shape(ll), atom = tables.Atom.from_dtype(ll.dtype), filters = HDFfilters)
+        outNode = handler.get_node("/context/"+self.identifier+"/config")
+        outNode[:] = ll
+        return
+
+    def saveData2HDF(self, handler, wait=True,upperIndex=(),reverse=1):
+        """the handler is an already opened file object
+        The function will not open nor close the file to be written.
+
+        This version uses the buffered data through TANGO
+        The upperIndex is used when storing data of nD maps, it has nD-1 elements
+        reverse is used to save date reversed if in azigzag scan. Can be 1 or -1."""
+#Calculate the number of files expected
+        #NOfiles = self.NbFrames / self.DP.streamnbacqperfile
+# Get the list of files to read and wait for the last to appear (?)
+#One after the other: open, transfert data, close and delete
+        if reverse not in [-1,1]:
+            reverse = 1
+        buffer = self.readBuffer()
+        if upperIndex != ():
+            fmt = "%i," * len(tuple(upperIndex))
+            stringIndex = fmt % tuple(upperIndex)
+        for i in range(len(buffer)):
+            outNode = handler.get_node("/data/" + self.identifier + "/%s" % self.channels[i])
+            if upperIndex == ():
+                outNode[:] = buffer[i]
+            else:
+                exec("outNode[:,%s]=buffer[i][::reverse]"%(stringIndex))
+        del buffer
+        return
 
 
