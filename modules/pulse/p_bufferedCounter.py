@@ -137,9 +137,11 @@ class bufferedCounter:
         self.config["nexusFileGeneration"] = False
 #Remove GateDownTime (this card works in seconds and GateDown is always in ms): 
         self.config["integrationTime"] = dt - self.GateDownTime/1000. 
-        self.config["totalNbPoint"] = NbFrames
-        self.config["bufferDepth"] = max(int(1.0/dt),10)
-        #min(NbFrames, max(int(1./dt), 1)) #Check with ECA ... this value is exotic...
+#Workaround
+        self.config["totalNbPoint"] = max(NbFrames,10)
+#Workaround
+        self.config["bufferDepth"] = 10
+        #self.config["bufferDepth"] = min(max(int(1.0/dt),10),NbFrames)
         self.config["continuous"] = False
         sleep(self.deadtime)
         reloadAtts = self.DP.get_attribute_list()

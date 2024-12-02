@@ -86,7 +86,8 @@ class pandabox_timebase:
 #Works again as it should: 26/10/2023 :-)
             self.config["sequenceLength"] = 1 
         else:
-            self.config["sequenceLength"] = NbFrames + 1 
+# the +10 comes as a workaround for pulsecounting cpt3
+            self.config["sequenceLength"] = NbFrames + 1 + 10
         #Remove GateDownTime:
         self.config["pulseWidth"] = dt * 1000. - self.config["gateDownTime"]
         self.config["pulsePeriod"] = dt * 1000.
