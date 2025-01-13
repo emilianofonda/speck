@@ -377,6 +377,11 @@ class mono1:
                  #Calculate coefficients and update DataViewer
                  x = self.e2theta(self.LocalTable["Energy"])
                  crv = self.calculate_curvature(x)
+                 #A12, A11, A10 = numpy.polyfit(crv, self.LocalTable["C1"],2)
+                 #print("Test coefs: A12=%6.4e A11=%6.4e A10=%6.4e "%(A12, A11, A10))
+                 #A22, A21, A20 = numpy.polyfit(crv, self.LocalTable["C2"],2)
+                 #print("Test coefs: A22=%6.4e A21=%6.4e A20=%6.4e "%(A22, A21, A20))
+
                  A11, A10 = numpy.polyfit(crv, self.LocalTable["C1"],1)
                  A21, A20 = numpy.polyfit(crv, self.LocalTable["C2"],1)
                  self.DataViewer.A11 = A11
