@@ -197,16 +197,23 @@ def SetPositions(filename=""):
             _nodef=True
             if "DefinePosition" in dir(i[0]):
                 try: 
-                    i[0].init()
-                    sleep(3.)
-                    _noinit=False
+                    if "init" in dir(i[0]):
+                        i[0].init()
+                        sleep(3.)
+                        _noinit=False
+                    else:
+                        _noinit=False
+
                     if "on" in dir (i[0]):
                         i[0].on()
                         sleep(1.)
                         _nosh=False
+                    else:
+                        _nosh=False
+
                     i[0].DefinePosition(i[1])
                     _nodef=False
-                    sleep(1.)
+                    sleep(0.2)
                     print(i[0].label," is at ",i[0].pos()," should be at ",i[1])
                 except:
                     failures+=1
