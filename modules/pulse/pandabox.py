@@ -359,9 +359,9 @@ class pandabox_dataviewer:
 
         config is a dictionary containing the following kw informations, name of kw must correspond to existing attributes:
 
-        GateDownTime: this value in ms (not seconds!) is used to correct the integration time to the real live time (integrationTime-GateDownTime*1000)
+        GateDownTime: this value in ms (not seconds!) is used to correct the integration time to the real live time (integrationTime-GateDownTime)
         
-        integrationTime: used for calculating averages (Beware: I use seconds, card use ms) 
+        integrationTime: used for calculating averages (Beware: I use generally seconds, card use ms) 
         Beware : the GateDownTime is removed from this value so the 10ms acquisition with a 0.1ms gatedowntime results in a 9.99ms integration every 10ms
         
         nexusFileGeneration: False or True
@@ -371,8 +371,6 @@ class pandabox_dataviewer:
         bufferDepth: usually 100, it's the infinite mode buffer depth, you arrange to empty it about every second max(1,int(1/delta_t))
 
         identifier is a string, it is used in final nexus files
-
-        the enables of the encoders must be set by hand or via the config as below for cod1
 
 ###################
         
@@ -392,17 +390,34 @@ class pandabox_dataviewer:
 
 ###################
 
-        The encoder names are guessed from the GetCaptureInfo command, but the fact they are in enable or disable state
-        is let as it is unless explicitly stated in the config. You may want to enforce an encoder to be active or inactive via the config.
-        Disabled encoders are not recorded nor taken into account at any level.
+        The device is written in a quite user unfriendly way and it is cumbersome:
+        - you cannot guess the names of the encoders and you do not have an explicit definition of an associated motor if any exists
+        - then you need to initialize the encoder value once and the command to do that is unpredictable
+        - how to know if enable/disable state is an accident or desired ?
+
+        Solution: define a dictionary that MUST be defined by the user.
+        encoders_config={"pandabox encoder name":{"motor":speck_motor_name,"dpos_command":"command to define the position in pandabox","enable":True}}
+
+        If the encoder is listed:
+            - it is recorded in the output, if enable == True
+            - it is enabled, if enable == True
+        otherwise
+            - it is ignored
 
         example:
-        config={"integrationTime":0.01,"nexusFileGeneration":False,
-        "nexusTargetPath":'\\\\srv5\\spool1\\panda_dataviewer',"nexusNbAcqPerFile":1000,"totalNbPoint":1000,
-        "bufferDepth":100,enableDatasetcod1:True,set_trigger_source_command:"AcqFromFlyscan",trigger_source:"PULSE1.OUT"}
+        config={
+            "integrationTime":0.01,"nexusFileGeneration":False,
+            "nexusTargetPath":'\\\\srv5\\spool1\\panda_dataviewer',"nexusNbAcqPerFile":1000,"totalNbPoint":1000,
+            "bufferDepth":100,set_trigger_source_command:"AcqFromFlyscan",trigger_source:"PULSE1.OUT",
+            "encoders_config":{"rx1":{"motor":"rx1","dpos_command":"Rx1DefinePosition","enable":True}}
+        }
 
         """
+        self.shell = get_ipython()
+
         self.config = config
+        if "encoders_config" not in self.config.keys():
+            raise Exception("PandaBox DataViewer: you must define encoders_config in self.config. Abort.")
 #If there are no attributes to save, user_readconfig is set to []
         self.init_user_readconfig=user_readconfig
         self.user_readconfig=user_readconfig
@@ -422,10 +437,12 @@ class pandabox_dataviewer:
         self.timeout=timeout
         self.DP.set_timeout_millis(int(self.timeout*1000))
 
+        self.channels=self.config["encoders_config"].keys()
+        
         #encoders_properties = self.DP.get_property("CaptureRegisterConfig")["CaptureRegisterConfig"]
-        encoders_properties = [i.split(";") for i in self.DP.GetCaptureInfo()]
-        for i in encoders_properties:
-            self.channels.append([j[j.find(":")+1:] for j in i if j.startswith("NAME")][0])
+        #encoders_properties = [i.split(";") for i in self.DP.GetCaptureInfo()]
+        #for i in encoders_properties:
+        #    self.channels.append([j[j.find(":")+1:] for j in i if j.startswith("NAME")][0])
 
         return
 
@@ -435,6 +452,11 @@ class pandabox_dataviewer:
         self.DP.command_inout("Init")
         while(self.state() in [DevState.UNKNOWN, DevState.DISABLE]):
             sleep(1)
+        for i in self.config["encoders_config"].keys():
+            if not self.DP.read_attribute(i+"Init").value:
+                jj = self.config["encoders_config"][i]
+                self.DP.command_inout(jj["dpos_command"],self.shell.user_ns[j["motor"]].pos())
+        
         return
 
     def reinit(self):
@@ -442,11 +464,10 @@ class pandabox_dataviewer:
         self.FTPserver = None
         self.DP.set_timeout_millis(int(self.timeout*1000))
 
-        encoders_properties = self.DP.get_property("CaptureRegisterConfig")["CaptureRegisterConfig"]
+        encoders_properties = [i.split(";") for i in self.DP.GetCaptureInfo()]
+        for i in encoders_properties:
+            self.channels.append([j[j.find(":")+1:] for j in i if j.startswith("NAME")][0])
         
-        self.channels=[i.split(":")[0] for i in encoders_properties]
-        for i in countersProp:
-            self.channels.append([j.split(":")[-1] for j in i if j.lower().startswith("name")][0])
         return
 
     def __repr__(self):
@@ -505,7 +526,9 @@ class pandabox_dataviewer:
         for kk in [i for i in cKeys if not i in ["nexusFileGeneration","triggerSource","integrationTime","captureFrameNumber"] \
             and i in reloadAtts and self.config[i]!=self.DP.read_attribute(i).value]:
             self.DP.write_attribute(kk,self.config[kk])
-
+        for kk in self.config["encoders_config"].keys():
+            if self.DP.read_attribute("enableDataset"+kk).value != self.config["encoders_config"][kk]["enable"]:
+                self.DP.write_attribute("enableDataset"+kk,self.config["encoders_config"][kk]["enable"])
         return self.start()
 
     def start(self,dt=1):
@@ -533,15 +556,11 @@ class pandabox_dataviewer:
 
     def read(self):
         """This returns the last read value of all encoders in attribute"""
-        return []
-        #return [i.value for i in self.DP.read_attributes(self.channels)]
+        return [i.value[-1] for i in self.DP.read_attributes(self.channels)]
 
     def readBuffer(self):
         """This returns an ordered matrix (following list of channels) of all encoders"""
-#Please modify this to use read_attributes.
-        return [self.DP.read_attribute(i).value for i in self.channels]
-
-################# Worked until here down is not yet modified
+        return [i.value for i in self.DP.read_attributes(self.channels).value]
 
     def count(self,dt=1):
         """This is a slave device, but it can be useful to test it with a standalone count
@@ -551,7 +570,7 @@ class pandabox_dataviewer:
         self.wait()
         #for i in zip(self.user_readconfig,self.read()):
         #    print i[0].name+"="+i[0].format%i[1]
-        return self.readBuffer()
+        return self.read()
 
     def prepareHDF(self, handler, HDFfilters = tables.Filters(complevel = 1, complib='zlib')):
         """the handler is an already opened file object"""
@@ -577,7 +596,7 @@ class pandabox_dataviewer:
 
         This version uses the buffered data through TANGO
         The upperIndex is used when storing data of nD maps, it has nD-1 elements
-        reverse is used to save date reversed if in azigzag scan. Can be 1 or -1."""
+        reverse is used to save date reversed if in a zigzag scan. Can be 1 or -1."""
 #Calculate the number of files expected
         #NOfiles = self.NbFrames / self.DP.streamnbacqperfile
 # Get the list of files to read and wait for the last to appear (?)
