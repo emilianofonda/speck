@@ -123,7 +123,7 @@ from pandabox import pandabox_dataviewer
 
 config = {"integrationTime":0.01,"nexusFileGeneration":False,
           "nexusTargetPath":'/srv5/spool1/panda_dataviewer',"nexusNbAcqPerFile":1000,
-          "bufferDepth":100,set_trigger_source_command:"AcqFromFlyscan",trigger_source:"PULSE1.OUT",
+          "bufferDepth":100,"set_trigger_source_command":"AcqFromFlyscan","trigger_source":"PULSE1.OUT",
           "encoders_config":{"rx1":{"motor":"rx1","dpos_command":"Rx1DefinePosition","enable":True}}
 }
 

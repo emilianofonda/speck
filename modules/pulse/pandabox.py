@@ -1,6 +1,6 @@
 from __future__ import print_function
 import PyTango
-from PyTango import DevState, DeviceProxy,DevFailed
+from PyTango import DevState,DeviceProxy,DevFailed
 from time import sleep
 import time
 import numpy, tables
@@ -347,7 +347,8 @@ class pandabox_dataviewer:
     def __init__(self,label="",user_readconfig=[],
     timeout=3.,deadtime=0.1, 
     FTPclient="",FTPserver="",
-    spoolMountPoint="", config={},identifier=""
+    spoolMountPoint="", config={},identifier="",
+    GateDownTime=0.1
     ):
         """
         This class interfaces with the PandaBox DataViewer at the sole intent of recording encoder values.
@@ -437,12 +438,14 @@ class pandabox_dataviewer:
         self.timeout=timeout
         self.DP.set_timeout_millis(int(self.timeout*1000))
 
-        self.channels=self.config["encoders_config"].keys()
-        
-        #encoders_properties = self.DP.get_property("CaptureRegisterConfig")["CaptureRegisterConfig"]
-        #encoders_properties = [i.split(";") for i in self.DP.GetCaptureInfo()]
-        #for i in encoders_properties:
-        #    self.channels.append([j[j.find(":")+1:] for j in i if j.startswith("NAME")][0])
+        self.channels=list(self.config["encoders_config"].keys())
+        self.channels_labels=[]+self.channels
+
+        self.user_readconfig = [self.DP.get_attribute_config(i) for i in self.channels]
+        self.numChan = len(self.user_readconfig)
+        for i in range(self.numChan):
+            self.user_readconfig[i].label = self.identifier + "_" + self.user_readconfig[i].label
+            self.user_readconfig[i].name = self.identifier + "_" + self.user_readconfig[i].name
 
         return
 
@@ -532,10 +535,10 @@ class pandabox_dataviewer:
         return self.start()
 
     def start(self,dt=1):
-        if self.state() not in [DevState.RUNNING,DevState.FAULT,DevSate.INIT]:
+        if self.state() not in [DevState.RUNNING,DevState.FAULT,DevState.INIT]:
             self.DP.command_inout("StartCapture")
         else:
-            raise Exception("Trying to start %s when in %s state"%(self.label,self.state())
+            raise Exception("Trying to start %s when in %s state"%(self.label,self.state()))
         return self.state()
         
     def stop(self):
@@ -560,7 +563,7 @@ class pandabox_dataviewer:
 
     def readBuffer(self):
         """This returns an ordered matrix (following list of channels) of all encoders"""
-        return [i.value for i in self.DP.read_attributes(self.channels).value]
+        return [i.value for i in self.DP.read_attributes(self.channels)]
 
     def count(self,dt=1):
         """This is a slave device, but it can be useful to test it with a standalone count
