@@ -117,17 +117,29 @@ try:
 except Exception as tmp:
     print(tmp)
 
+#PandaBox DataViewer (Theta)
+
+from pandabox import pandabox_dataviewer
+
+config = {"integrationTime":0.01,"nexusFileGeneration":False,
+          "nexusTargetPath":'/srv5/spool1/panda_dataviewer',"nexusNbAcqPerFile":1000,
+          "bufferDepth":100,set_trigger_source_command:"AcqFromFlyscan",trigger_source:"PULSE1.OUT",
+          "encoders_config":{"rx1":{"motor":"rx1","dpos_command":"Rx1DefinePosition","enable":True}}
+}
+
+cpt3 = pandabox_dataviewer("flyscan/sensor/pandaboxdataviewer.1",deadtime=0.1,timeout=10,config = config,
+spoolMountPoint="",identifier="encoder01",GateDownTime=1.)
 
 #bufferedCounter (Theta)
 
-from p_bufferedCounter import bufferedCounter as p_bufferedCounter
+#from p_bufferedCounter import bufferedCounter as p_bufferedCounter
 
-config = {"frequency":100,"integrationTime":0.01,"nexusFileGeneration":False,\
-"nexusTargetPath":'/nfs/tempdata/samba/com-samba/cpt3',"nexusNbAcqPerFile":1000,"totalNbPoint":1000,\
-"bufferDepth":1}
+#config = {"frequency":100,"integrationTime":0.01,"nexusFileGeneration":False,\
+#"nexusTargetPath":'/nfs/tempdata/samba/com-samba/cpt3',"nexusNbAcqPerFile":1000,"totalNbPoint":1000,\
+#"bufferDepth":1}
 
-cpt3 = p_bufferedCounter("d09-1-c00/ca/cpt.3",deadtime=0.1,timeout=10,config = config,
-spoolMountPoint="/nfs/tempdata/samba/com-samba/cpt3",identifier="encoder01",GateDownTime=1.)
+#cpt3 = p_bufferedCounter("d09-1-c00/ca/cpt.3",deadtime=0.1,timeout=10,config = config,
+#spoolMountPoint="/nfs/tempdata/samba/com-samba/cpt3",identifier="encoder01",GateDownTime=1.)
 
 #Associate counters to moveables for continuous scans
 
