@@ -359,9 +359,9 @@ class pandabox_dataviewer:
 
         config is a dictionary containing the following kw informations, name of kw must correspond to existing attributes:
 
-        GateDownTime: this value in ms (not seconds!) is used to correct the integration time to the real live time (integrationTime-GateDownTime*1000)
+        GateDownTime: this value in ms (not seconds!) is used to correct the integration time to the real live time (integrationTime-GateDownTime)
         
-        integrationTime: used for calculating averages (Beware: I use seconds, card use ms) 
+        integrationTime: used for calculating averages (Beware: I use generally seconds, card use ms) 
         Beware : the GateDownTime is removed from this value so the 10ms acquisition with a 0.1ms gatedowntime results in a 9.99ms integration every 10ms
         
         nexusFileGeneration: False or True
@@ -371,8 +371,6 @@ class pandabox_dataviewer:
         bufferDepth: usually 100, it's the infinite mode buffer depth, you arrange to empty it about every second max(1,int(1/delta_t))
 
         identifier is a string, it is used in final nexus files
-
-        the enables of the encoders must be set by hand or via the config as below for cod1
 
 ###################
         
@@ -455,7 +453,7 @@ class pandabox_dataviewer:
         while(self.state() in [DevState.UNKNOWN, DevState.DISABLE]):
             sleep(1)
         for i in self.config["encoders_config"].keys():
-            if !self.DP.read_attribute(i+"Init").value:
+            if not self.DP.read_attribute(i+"Init").value:
                 jj = self.config["encoders_config"][i]
                 self.DP.command_inout(jj["dpos_command"],self.shell.user_ns[j["motor"]].pos())
         
