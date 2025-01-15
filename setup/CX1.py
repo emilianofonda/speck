@@ -122,9 +122,12 @@ except Exception as tmp:
 from pandabox import pandabox_dataviewer
 
 config = {"integrationTime":0.01,"nexusFileGeneration":False,
-          "nexusTargetPath":'/srv5/spool1/panda_dataviewer',"nexusNbAcqPerFile":1000,
+          "nexusTargetPath":'/nfs/srv5/spool1/panda_dataviewer',"nexusNbAcqPerFile":1000,
           "bufferDepth":100,"set_trigger_source_command":"AcqFromFlyscan","trigger_source":"PULSE1.OUT",
-          "encoders_config":{"rx1":{"motor":"rx1","dpos_command":"Rx1DefinePosition","enable":True}}
+          "encoders_config":{
+              "Theta":{"motor":"rx1","dpos_command":"Rx1DefinePosition","enable":True,"ratio":0.0000005},
+              "X":{"motor":"sample_x","dpos_command":"TxDefinePosition","enable":True,"ratio":0.0002}
+              }
 }
 
 cpt3 = pandabox_dataviewer("flyscan/sensor/pandaboxdataviewer.1",deadtime=0.1,timeout=10,config = config,

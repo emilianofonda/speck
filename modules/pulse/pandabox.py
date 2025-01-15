@@ -4,6 +4,7 @@ from PyTango import DevState,DeviceProxy,DevFailed
 from time import sleep
 import time
 import numpy, tables
+import os
 
 class pandabox_timebase:
     def __init__(self,label="",user_readconfig=[],timeout=10.,deadtime=0.1,config={}, identifier=""):
@@ -86,8 +87,9 @@ class pandabox_timebase:
 #Works again as it should: 26/10/2023 :-)
             self.config["sequenceLength"] = 1 
         else:
-# the +10 comes as a workaround for pulsecounting cpt3
-            self.config["sequenceLength"] = NbFrames + 1 + 10
+# the +10 was a workaround for pulsecounting cpt3
+#            self.config["sequenceLength"] = NbFrames + 1 + 10
+            self.config["sequenceLength"] = NbFrames + 1 
         #Remove GateDownTime:
         self.config["pulseWidth"] = dt * 1000. - self.config["gateDownTime"]
         self.config["pulsePeriod"] = dt * 1000.
@@ -447,6 +449,10 @@ class pandabox_dataviewer:
             self.user_readconfig[i].label = self.identifier + "_" + self.user_readconfig[i].label
             self.user_readconfig[i].name = self.identifier + "_" + self.user_readconfig[i].name
 
+        for i in self.config["encoders_config"].keys():
+            if not self.DP.read_attribute(i+"Init").value:
+                jj = self.config["encoders_config"][i]
+                self.DP.command_inout(jj["dpos_command"],round(self.shell.user_ns[jj["motor"]].pos()/jj["ratio"]))
         return
 
     def init(self):
@@ -458,7 +464,7 @@ class pandabox_dataviewer:
         for i in self.config["encoders_config"].keys():
             if not self.DP.read_attribute(i+"Init").value:
                 jj = self.config["encoders_config"][i]
-                self.DP.command_inout(jj["dpos_command"],self.shell.user_ns[j["motor"]].pos())
+                self.DP.command_inout(jj["dpos_command"],round(self.shell.user_ns[jj["motor"]].pos()/jj["ratio"]))
         
         return
 
@@ -577,7 +583,7 @@ class pandabox_dataviewer:
 
     def prepareHDF(self, handler, HDFfilters = tables.Filters(complevel = 1, complib='zlib')):
         """the handler is an already opened file object"""
-        ShapeArrays = (self.DP.totalnbpoint,) + tuple(self.upperDimensions)
+        ShapeArrays = (self.DP.captureFrameNumber,) + tuple(self.upperDimensions)
         handler.create_group("/data/", self.identifier)
         outNode = handler.get_node("/data/" + self.identifier)
         for s in self.channels:
