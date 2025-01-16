@@ -81,14 +81,12 @@ class pandabox_timebase:
         
     def prepare(self,dt=1,NbFrames=1,nexusFileGeneration=False,stepMode=False,upperDimensions=()):
         cKeys = self.config.keys()
-        if stepMode:
+        if stepMode or NbFrames==1:
 #Careful ! modification to be checked, it was =1 and working last week :-(
 #           self.config["sequenceLength"] = 2
 #Works again as it should: 26/10/2023 :-)
             self.config["sequenceLength"] = 1 
         else:
-# the +10 was a workaround for pulsecounting cpt3
-#            self.config["sequenceLength"] = NbFrames + 1 + 10
             self.config["sequenceLength"] = NbFrames + 1 
         #Remove GateDownTime:
         self.config["pulseWidth"] = dt * 1000. - self.config["gateDownTime"]
@@ -215,7 +213,7 @@ class pandabox_udp_timebase:
         return
 
     def start(self,dt=1):
-        """ This is a slave device, the start command does nothing, make it ready with the prepare command"""
+        """Use the prepare command instead, start is useless in the pulse framework."""
         return self.state()
         
     def stop(self):
