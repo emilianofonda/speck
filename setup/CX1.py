@@ -125,7 +125,7 @@ config = {"integrationTime":0.01,"nexusFileGeneration":False,
           "nexusTargetPath":'/nfs/srv5/spool1/panda_dataviewer',"nexusNbAcqPerFile":1000,
           "bufferDepth":100,"set_trigger_source_command":"AcqFromFlyscan","trigger_source":"PULSE1.OUT",
           "encoders_config":{
-              "Theta":{"motor":"rx1","dpos_command":"Rx1DefinePosition","enable":True,"ratio":0.0000005},
+              "Theta":{"motor":"rx1","dpos_command":"Rx1DefinePosition","enable":True,"ratio":0.000005},
               "X":{"motor":"sample_x","dpos_command":"TxDefinePosition","enable":True,"ratio":0.0002}
               }
 }

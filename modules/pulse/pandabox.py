@@ -410,7 +410,7 @@ class pandabox_dataviewer:
             "integrationTime":0.01,"nexusFileGeneration":False,
             "nexusTargetPath":'\\\\srv5\\spool1\\panda_dataviewer',"nexusNbAcqPerFile":1000,"totalNbPoint":1000,
             "bufferDepth":100,set_trigger_source_command:"AcqFromFlyscan",trigger_source:"PULSE1.OUT",
-            "encoders_config":{"rx1":{"motor":"rx1","dpos_command":"Rx1DefinePosition","enable":True}}
+            "encoders_config":{"rx1":{"motor":"rx1","dpos_command":"Rx1DefinePosition","enable":True,"ratio":0.000005}}
         }
 
         """
@@ -502,11 +502,22 @@ class pandabox_dataviewer:
         """Unused"""
         return
 
+    def set_encoders(self):
+        for i in self.config["encoders_config"].keys():
+            jj = self.config["encoders_config"][i]
+            self.DP.command_inout(jj["dpos_command"],round(self.shell.user_ns[jj["motor"]].pos()/jj["ratio"]))
+        return 
+
     def prepare(self,dt=1,NbFrames=1,nexusFileGeneration=False,stepMode=False,upperDimensions=()):
         self.upperDimensions=upperDimensions
 
         if self.DP.state() == DevState.FAULT:
             self.DP.init()
+
+        for i in self.config["encoders_config"].keys():
+            if not self.DP.read_attribute(i+"Init").value:
+                jj = self.config["encoders_config"][i]
+                self.DP.command_inout(jj["dpos_command"],round(self.shell.user_ns[jj["motor"]].pos()/jj["ratio"]))
 
         cKeys = self.config.keys()
 
