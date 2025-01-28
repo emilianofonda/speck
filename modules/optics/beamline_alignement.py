@@ -267,7 +267,7 @@ def SetAngle(theta = None,hgap = 20.,SEXAFS = False, bender2 = None):
 #        vgap1.pos(min(max(0.1,theta/1.2),6.))
 #        vgap2.pos(min(6,theta+2.))
     #Moved down of 1mm on 8/11/2016
-    vpos2.pos(get_ipython().user_ns["dcm"].H() - 25. -0.25)
+    vpos2.pos(get_ipython().user_ns["dcm"].H() - 25. + 1)
     print("Primary   vertical slits aperture: vgap1 = %6.4f mm"%(vgap1.pos()))
     print("Secondary vertical slits aperture: vgap2 = %6.4f mm"%(vgap2.pos()))
     print("Secondary vertical slits position: vpos2 = %6.4f mm"%(vpos2.pos()))

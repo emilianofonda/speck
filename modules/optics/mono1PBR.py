@@ -651,6 +651,15 @@ class mono1:
             self.init()
             return self.sample_at()
 
+    def crystal(self):    
+        try:
+            prp="SPECK_crystal"
+            crystal=self.DataViewer.get_property([prp,])[prp][0]
+        except:
+            print("Missing crystal information as Si(HKL) in SPECK_crystal property of DataViewer!")
+            crystal=self.DataViewer.put_property({prp:""})
+        return crystal
+
     def d(self):
         return self.DataViewer.d
 
@@ -725,6 +734,8 @@ class mono1:
     
     def status(self):
         s=""
+        s += "Crystal = %s\n"%self.crystal()
+        s += "d=%10.8f\n"%self.d()
         s += self.printTable()
         s += self.printEnables()
         s += self.check()["reason"]

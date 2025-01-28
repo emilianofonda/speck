@@ -199,6 +199,8 @@ try:
             "MUX":"numpy.log(I0[:]/I1[:])",
             "REF":"numpy.log(I1[:]/I2[:])",
             "FLUO_DIODE":"I3[:]/I0[:]",
+            "crystal":"dcm.crystal()",
+            "d_spacing":"dcm.d()"
             },
     }
     __cx1xia1_id = cx1xia1.identifier
@@ -278,6 +280,8 @@ try:
             "MUX":"numpy.log(I0[:]/I1[:])",
             "REF":"numpy.log(I1[:]/I2[:])",
             "FLUO_DIODE":"I3[:]/I0[:]",
+            "crystal":"dcm.crystal()",
+            "d_spacing":"dcm.d()"
             },
     }
     __x3mini_id = x3mini.identifier
@@ -328,7 +332,8 @@ try:
             "I3":"cx1sai1.I3",
             "Theta":"encoder01.Theta",
             },
-        "constants":{},
+        "constants":{
+            },
         "formulas":{
             "Theta":"Theta[:]",
             "energy":"dcm.theta2e(Theta[:])",
@@ -339,6 +344,8 @@ try:
             "MUX":"numpy.log(I0[:]/I1[:])",
             "REF":"numpy.log(I1[:]/I2[:])",
             "FLUO_DIODE":"I3[:]/I0[:]",
+            "crystal":"dcm.crystal()",
+            "d_spacing":"dcm.d()"
             },
     }
     __x3mca_id = x3mca.identifier
@@ -394,6 +401,8 @@ try:
             "MUX":"numpy.log(I0[:]/I1[:])",
             "REF":"numpy.log(I1[:]/I2[:])",
             "FLUO_DIODE":"I3[:]/I0[:]",
+            "crystal":"dcm.crystal()",
+            "d_spacing":"dcm.d()"
             },
     }
  

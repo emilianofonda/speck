@@ -49,28 +49,32 @@ class dataBlock:
             except Exception as tmp:
                 print("post calculation error: %s = %s"%(i,"self.HDFfile.root.data." + self.dictionary["addresses"][i]))
                 print(tmp)
+        glob = __IPy.user_ns
         for i in self.dictionary["constants"].keys():
             try:
-                self.computed[i] = eval(self.dictionary["constants"][i])
+                self.computed[i] = eval(self.dictionary["constants"][i],glob)
             except Exception as tmp:
                 print("post calculation error: %s = %s"%(i,self.dictionary["constants"][i]))
                 print(tmp)
         glob = __IPy.user_ns
         for i in self.dictionary["formulas"].keys():
             try:
-                value = numpy.array(eval(self.dictionary["formulas"][i],glob,self.computed))
-                #print(i,value)
-                #value = numpy.array(eval(self.dictionary["formulas"][i],globals(),self.computed))
+                value = eval(self.dictionary["formulas"][i],glob,self.computed)
+                shape_value=numpy.shape(value)
+                if shape_value != ():
+                    value = numpy.array(value)
+                else:
+                    value = numpy.array([value,])
+                    shape_value=(1,)
                 self.HDFfile.create_carray(outGroup, i , title = i,\
-                #shape = numpy.shape(value), atom = tables.Atom.from_dtype(value.dtype))
-                shape = numpy.shape(value), atom = tables.Atom.from_dtype(value.dtype), filters = self.HDFfilters)
+                shape = shape_value, atom = tables.Atom.from_dtype(value.dtype), filters = self.HDFfilters)
                 outNode = self.HDFfile.get_node("/" + self.domain +"/" + i)
                 outNode[:] = value
                 del value
             except Exception as tmp:
                 print("post calculation error: %s = %s"%(i, self.dictionary["formulas"][i]))
+                print(eval(self.dictionary["formulas"][i],glob))
                 print(tmp)
-                #raise tmp
         try:
             del outNode, c
         except:
