@@ -537,11 +537,12 @@ class pandabox_dataviewer:
 #Remove GateDownTime (this card works in seconds and GateDown is always in ms): 
         self.config["integrationTime"] = dt*1000 - self.GateDownTime 
         sleep(self.deadtime)
-        self.DP.captureFrameNumber=NbFrames
+        #self.DP.captureFrameNumber=NbFrames
+        self.config["captureFrameNumber"] = NbFrames
         reloadAtts = self.DP.get_attribute_list()
 #Some Attributes doesn't exist or exist depending on mode or external/internal time base
 #So we protect checking the actual Atts list
-        for kk in [i for i in cKeys if not i in ["nexusFileGeneration","triggerSource","integrationTime","captureFrameNumber"] \
+        for kk in [i for i in cKeys if not i in ["nexusFileGeneration","triggerSource","integrationTime",] \
             and i in reloadAtts and self.config[i]!=self.DP.read_attribute(i).value]:
             self.DP.write_attribute(kk,self.config[kk])
         for kk in self.config["encoders_config"].keys():
