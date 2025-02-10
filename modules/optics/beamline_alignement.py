@@ -110,7 +110,8 @@ def __m2Z(theta):
     if theta<=1e-2:
         return 33.
     else:
-        return -0.0307 * theta ** 2 + 0.0276 * theta + get_ipython().user_ns["dcm"].H() #21/1/2020
+        return -0.0307 * theta ** 2 + 0.5276 * theta + get_ipython().user_ns["dcm"].H() #4/2/2025
+        #return -0.0307 * theta ** 2 + 0.0276 * theta + get_ipython().user_ns["dcm"].H() #21/1/2020
         #return -0.0307 * theta ** 2 + 0.0276 * theta - 0.717  + get_ipython().user_ns["dcm"].H() #Provisoire
         #return -0.0307 * theta ** 2 + 0.0276 * theta - 2.717  + get_ipython().user_ns["dcm"].H()
         #return -0.0307 * theta ** 2 + 0.0276 * theta + 0.942 + get_ipython().user_ns["dcm"].H() #26/6/2016
