@@ -503,6 +503,11 @@ class dxmap:
         NOfiles = int(self.NbFrames / self.DP.streamnbacqperfile)
         if np.mod(self.NbFrames, self.DP.streamnbacqperfile) :
             NOfiles += 1
+
+        if upperIndex != ():
+            fmt = "%i," * len(tuple(upperIndex))
+            stringIndex = fmt % tuple(upperIndex)
+
 # Get the list of files to read and wait for the last to appear (?)
         files2read = [i for i in os.listdir(self.spoolMountPoint) if i.startswith(self.DP.streamTargetFile)\
         and i.endswith("nxs")]
@@ -517,7 +522,7 @@ class dxmap:
                 useless_file.write("\n")
                 useless_file.close()
                 sleep(self.deadtime)
-                os.system("rm "+self.spoolMountPoint+os.sep+"useless.txt")
+                os.system("rm "+self.spoolMountPoint+os.sep+"useless.txt &>/dev/null")
             #print("XIA files waited for %4.2fs" % (time.time()-t0))
             if time.time()-t0 > self.timeout:
                 try:
@@ -554,8 +559,8 @@ class dxmap:
                     if upperIndex == ():
                         outNode[p0:p1] = eval("sourceFile.root.entry.scan_data.channel%02i" % i)[:]
                     else:
-                        #exec("outNode[::,%s] = buffer[i][::reverse]"%(stringIndex))
-                        outNode[p0:p1][upperIndex] = eval("sourceFile.root.entry.scan_data.channel%02i" % i)[::reverse]
+                        exec("outNode[p0:p1:,:,%s] = sourceFile.root.entry.scan_data.channel%02i.read()[::reverse]"%(stringIndex,i))
+                        #outNode[p0:p1][upperIndex] = eval("sourceFile.root.entry.scan_data.channel%02i" % i)[::reverse]
 
                 for i in range(self.numChan):
                     if 'icr' in self.stream_items:
@@ -563,20 +568,23 @@ class dxmap:
                         if upperIndex == ():
                             outNode[p0:p1] = eval("sourceFile.root.entry.scan_data.icr%02i" % i)[:]
                         else:
-                            outNode[p0:p1][upperIndex] = eval("sourceFile.root.entry.scan_data.icr%02i" % i)[::reverse]
+                            exec("outNode[p0:p1:,%s] = sourceFile.root.entry.scan_data.icr%02i.read()[::reverse]"%(stringIndex,i))
+                            #outNode[p0:p1][upperIndex] = eval("sourceFile.root.entry.scan_data.icr%02i" % i)[::reverse]
 
                     if 'ocr' in self.stream_items:
                         outNode = handler.get_node("/data/" + self.identifier + "/ocr%02i" % i)
                         if upperIndex == ():
                             outNode[p0:p1] =  eval("sourceFile.root.entry.scan_data.ocr%02i" % i)[:]
                         else:
-                            outNode[p0:p1][upperIndex] =  eval("sourceFile.root.entry.scan_data.ocr%02i" % i)[::reverse]
+                            exec("outNode[p0:p1:,%s] = sourceFile.root.entry.scan_data.ocr%02i.read()[::reverse]"%(stringIndex,i))
+                            #outNode[p0:p1][upperIndex] =  eval("sourceFile.root.entry.scan_data.ocr%02i" % i)[::reverse]
                     if 'deadtime' in self.stream_items:
                         outNode = handler.get_node("/data/" + self.identifier + "/deadtime%02i" % i)
                         if upperIndex == ():
                             outNode[p0:p1] =  eval("sourceFile.root.entry.scan_data.deadtime%02i" % i)[:]
                         else:
-                            outNode[p0:p1][upperIndex] =  eval("sourceFile.root.entry.scan_data.deadtime%02i" % i)[::reverse]
+                            exec("outNode[p0:p1:,%s] = sourceFile.root.entry.scan_data.deadtime%02i.read()[::reverse]"%(stringIndex,i))
+                            #outNode[p0:p1][upperIndex] =  eval("sourceFile.root.entry.scan_data.deadtime%02i" % i)[::reverse]
                     elif 'icr' in self.stream_items and 'ocr' in self.stream_items:
                         outNode = handler.get_node("/data/" + self.identifier + "/deadtime%02i" % i)
                         if upperIndex == ():
@@ -584,10 +592,11 @@ class dxmap:
                             100.*(1.-eval("sourceFile.root.entry.scan_data.ocr%02i" % i)[:]/eval("sourceFile.root.entry.scan_data.icr%02i" % i)[:])\
                             )
                         else:
-                            outNode[p0:p1][upperIndex] =  np.nan_to_num(\
-                            100.*(1.-eval("sourceFile.root.entry.scan_data.ocr%02i" % i)[::reverse]\
-                            /eval("sourceFile.root.entry.scan_data.icr%02i" % i)[::reverse])\
-                            )
+                            exec("outNode[p0:p1:,%s] = 100.*np.nan_to_num(1-sourceFile.root.entry.scan_data.ocr%02i.read()[::reverse] / sourceFile.root.entry.scan_data.ocr%02i.read()[::reverse])"%(stringIndex,i,i))
+                            #outNode[p0:p1][upperIndex] =  np.nan_to_num(\
+                            #100.*(1.-eval("sourceFile.root.entry.scan_data.ocr%02i" % i)[::reverse]\
+                            #/eval("sourceFile.root.entry.scan_data.icr%02i" % i)[::reverse])\
+                            #)
             except Exception as tmp:
                 print("Error saving data from file %s"%sourceFile.filename)
                 print(tmp)
@@ -599,7 +608,10 @@ class dxmap:
         for i in range(self.numChan):
             roi = handler.get_node("/data/" + self.identifier + "/roi%02i" % i)
             mca = handler.get_node("/data/" + self.identifier + "/mca%02i" % i)
-            roi[:] = np.sum(mca[:,Roi0:Roi1],axis=1)
+            try:
+                roi[:] = np.sum(mca[:,Roi0:Roi1],axis=1)
+            except:
+                pass
         try:
             sleep(0.3)
             self.FTPclient.deleteremainingfiles()

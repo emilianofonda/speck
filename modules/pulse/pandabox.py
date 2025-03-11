@@ -531,7 +531,7 @@ class pandabox_dataviewer:
             self.config["nexusFileGeneration"] = True
             self.DP.NexusResetBufferIndex()
             #Auto delete remaining files!!! this avoids aborting, but it is a potential risk.
-            os.system("rm %s/*.%s"%(self.spoolMountPoint,"nxs"))
+            os.system("rm %s/*.%s &>/dev/null"%(self.spoolMountPoint,"nxs"))
         else:
             self.config["nexusFileGeneration"] = False
 #Remove GateDownTime (this card works in seconds and GateDown is always in ms): 

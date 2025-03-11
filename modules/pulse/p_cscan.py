@@ -360,9 +360,13 @@ def c2scan(cmot,p1,p2,velocity,mot2,p21,p22,dp2,n=1,dt=0.1, channel=1,shutter=Fa
         outGroup = handler.get_node("/coordinates")
         handler.create_carray(outGroup, "X2", title = "X2",\
         shape =  (NumberOfPoints, NumberOfLines), atom = tables.Atom.from_dtype(mot2_fake.dtype))
-        handler.root.coordinates.X2[:] = mot2_fake
-        del mot2_fake
+        handler.root.coordinates.X2[:] = mot2_fake[:]
+        #del mot2_fake
+    #The two lines below require a deep rethinking of higher dimensional scans
     ct.stop()
+    myTime.sleep(0.2)
+    #ct.handler = tables.open_file(ct.handler.filename, "r+")
+    
     #Set scan speed
     cmot.velocity = velocity
     myTime.sleep(0.1)
@@ -372,7 +376,7 @@ def c2scan(cmot,p1,p2,velocity,mot2,p21,p22,dp2,n=1,dt=0.1, channel=1,shutter=Fa
         mot2.pos(p21 + dp2 * lineNumber)
         print("                                                                       ")
         print(mycurses.UPNLINES%2)
-        print("Progress = %2i\%  mot2 at %6.4f" % (float(lineNumber)/NumberOfLines*100.,mot2.pos()))
+        print("Progress = %2i%%  mot2 at %6.4f" % (float(lineNumber)/NumberOfLines*100.,mot2.pos()))
         print(mycurses.UPNLINES%2)
         if mod(lineNumber,2):
             zigzag = -1
@@ -407,6 +411,9 @@ def c2scan(cmot,p1,p2,velocity,mot2,p21,p22,dp2,n=1,dt=0.1, channel=1,shutter=Fa
         except:
             pass
         ct.wait()
+        if not ct.handler.isopen :
+            ct.handler = tables.open_file(ct.handler.filename, "r+")
+            handler=ct.handler
         ct.saveData2HDF(upperIndex=(lineNumber,),reverse=zigzag)
     #
     #Save CONTEXT

@@ -662,6 +662,7 @@ class pseudo_counter:
         self.stepWaitList = []
         self.readable = []
         #self.handler = None
+        self.upperDimensions=()
 
         for i in self.slaves: 
             if "preCount" in dir(i):
@@ -818,10 +819,12 @@ class pseudo_counter:
         """
         #First set handler to None in order to prevent manipulations of a previously defined file
         #In case this is not done a stop before setting the name can overwrite a previous file
-        try:
-            self.handler=None
-        except:
-            pass
+        #This workaround kills the multiple dimensional scans. To be amended and improved
+        if upperDimensions == ():
+            try:
+                self.handler=None
+            except:
+                pass
         self.timestamp_start=["",0]
         self.timestamp_stop=["",0]
         if stepMode:
@@ -835,6 +838,7 @@ class pseudo_counter:
         for i in self.slaves:
             if "prepare" in dir(i):
                 i.prepare(dt = dt, NbFrames = NbFrames,nexusFileGeneration = nexusFileGeneration,stepMode=stepMode,upperDimensions=upperDimensions)
+        self.upperDimensions=upperDimensions
         return
 
     def start(self,dt=1):
@@ -864,7 +868,7 @@ class pseudo_counter:
                 i.stop()
         finally:
             try:
-                if self.handler.isopen:
+                if self.handler.isopen and self.upperDimensions==():
 #Closing the file here is a problem for all post actions
 #1- we remove the close action and it has to be done separately
 #2- or we integrate a reopening of the file if needed in all post actions...

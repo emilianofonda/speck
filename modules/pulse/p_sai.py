@@ -326,8 +326,8 @@ class sai:
             if upperIndex == ():
                 outNode[:] = buffer[i]
             else:
-                #exec("outNode[::,%s] = buffer[i][::reverse]"%(stringIndex))
-                outNode[::][upperIndex] = buffer[i][::reverse]
+                exec("outNode[::,%s] = buffer[i][::reverse]"%(stringIndex))
+                ###outNode[::,upperIndex] = buffer[i][::reverse]
         del buffer
         return
 

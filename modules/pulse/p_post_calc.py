@@ -66,8 +66,11 @@ class dataBlock:
                 else:
                     value = numpy.array([value,])
                     shape_value=(1,)
-                self.HDFfile.create_carray(outGroup, i , title = i,\
-                shape = shape_value, atom = tables.Atom.from_dtype(value.dtype), filters = self.HDFfilters)
+                try:
+                    self.HDFfile.create_carray(outGroup, i , title = i,\
+                    shape = shape_value, atom = tables.Atom.from_dtype(value.dtype), filters = self.HDFfilters)
+                except:
+                    pass
                 outNode = self.HDFfile.get_node("/" + self.domain +"/" + i)
                 outNode[:] = value
                 del value
