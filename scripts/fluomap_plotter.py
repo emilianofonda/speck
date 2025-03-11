@@ -106,8 +106,33 @@ griddata(points, values, xi, method='linear', fill_value=nan, rescale=False)
     >>> plt.show()
 (END)
 """
-#def grid_fluomap(filename,data='/post/FLUO',method='linear')
-#   return mesh_X1_X2,interpolated_data
+
+def grid_fluomap(filename,data='/post/FLUO',method='linear',slip=0.1):
+    try:
+        data_file = tables.open_file(filename,"r")
+        raw_map = data_file.get_node(data).read().flatten()
+    
+        X1 = data_file.get_node("/coordinates/X1").read()
+        X1slip = np.zeros(np.shape(X1)[1])
+        X1slip[0::2]=slip
+        X1slip = np.array([X1slip] * np.shape(X1)[0])
+
+        X1 = X1 + X1slip
+
+        aX1 = np.average(X1,axis=1)
+    
+        X2 = data_file.get_node("/coordinates/X2").read()
+        aX2 = np.average(X2,axis=0)
+    
+    finally:
+        data_file.close()
+
+    X1_dial = np.array([np.linspace(min(aX1),max(aX1),len(aX1))]*len(aX2))
+    X2_dial = np.array([np.linspace(min(aX2),max(aX2),len(aX2))]*len(aX1)).T
+
+    points = np.array([i for i in zip(X1.flatten(), X2.flatten())])
+    interpolated_data = griddata(points, raw_map, (X1_dial, X2_dial), method=method)
+    return interpolated_data, (X1_dial, X2_dial)
 
 #Get data from file: specify what has to be read (default="/post/FLUO" ?), while X1 and X2 are the fixed coordinates, no chnage is possible
 #approximate limits of grid to average of minimum and average of maximum for each X_n axis
