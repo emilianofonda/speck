@@ -4,6 +4,6 @@ def calibrate_dcm(observed,tabulated):
     into account the pandabox encoder."""
 
     energy.calibrate(observed,tabulated)
-    sleep(0.1)
+    sleep(0.25)
     cpt3.set_encoders()
     return

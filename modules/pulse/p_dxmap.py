@@ -4,8 +4,6 @@ from PyTango import DevState, DeviceProxy,DevFailed,AttributeInfoEx
 from time import sleep
 import time
 import tables
-#Why such a double import ?
-import numpy
 import numpy as np
 import os
 
@@ -346,7 +344,7 @@ class dxmap:
     def posts(self):
         """Returns values calculated after counting: here it is used for determining rois in map mode"""
         roi1,roi2 = self.getROIs()
-        return list(numpy.sum(numpy.array(self.read_mca())[:,roi1:roi2],axis=1))
+        return list(np.sum(np.array(self.read_mca())[:,roi1:roi2],axis=1))
 
     def read_mca(self, channels=None):
         if channels==None: 
@@ -523,7 +521,7 @@ class dxmap:
                 useless_file.close()
                 sleep(self.deadtime)
                 os.system("rm "+self.spoolMountPoint+os.sep+"useless.txt &>/dev/null")
-            #print("XIA files waited for %4.2fs" % (time.time()-t0))
+            print("XIA files waited for %4.2fs" % (time.time()-t0))
             if time.time()-t0 > self.timeout:
                 try:
                     ipy=get_ipython()
@@ -622,6 +620,7 @@ class dxmap:
             #sleep(3)
             #self.FTPclient.deleteremainingfiles()
             #print("Timeout ==> OK")
+        print("XIA took %3.1fs to read and save the data to output.\n"%(time.time()-t0))
         return
     
 
