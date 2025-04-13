@@ -305,7 +305,7 @@ def tw(x,step):
     try:
         print("[Ctrl-C to exit] [Press Return to Step] [Type value to change step]\nPosition is (%g) Step is (%g) "%(x.pos(),step))
         while(True):
-            s=raw_input()
+            s=input()
             if s=="":
                 x.pos(x.pos()+step),"\r",
                 print(x.pos())

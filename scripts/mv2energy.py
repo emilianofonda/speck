@@ -1,4 +1,4 @@
-def mv2energy(dest=None,backlash=5000.):
+def mv2energy(dest=None,backlash=10000.):
     if dest == None:
         return dcm.pos()
     if dcm.pos()>dest:

@@ -142,4 +142,6 @@ def grid_fluomap(filename,data='/post/FLUO',method='linear',slip=0.1):
 #def plot_fluomap(mesh_X1_X2,interpolated_data,savein="",dpi=600)
 #    return a nice picture
 
+#test in /home/experiences/samba/com-samba/ruche/2025/20250311_SAMBA
+
 
