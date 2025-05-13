@@ -655,15 +655,16 @@ class mono1:
         for i in range(5):
             try:
                 prp = "SPECK_crystal"
-                crystal = self.DataViewer.get_property([prp,])[prp][0]
+                tmp = self.DataViewer.get_property([prp,])[prp]
+                if  tmp == []:
+                    print("Missing crystal information as Si(HKL) in SPECK_crystal property of DataViewer!")
+                    self.DataViewer.put_property({prp:""})
+                    crystal = ""
+                else:
+                    crystal = tmp[0]
                 break
             except:
-                sleep(0.1)
-                if self.DataViewer.get_property([prp,])[prp] == []:
-                    print("Missing crystal information as Si(HKL) in SPECK_crystal property of DataViewer!")
-                    crystal=self.DataViewer.put_property({prp:""})
-                else:
-                    crystal = ""
+                sleep(5)
         return crystal
 
     def d(self):
