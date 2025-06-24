@@ -31,6 +31,8 @@ print(mycurses.RED+"Using pulse ecscan"+mycurses.RESET)
 #cardCT = cpt.DP
 
 def stopscan(shutter=False):
+    shell=get_ipython()
+    dcm = shell.user_ns["dcm"]
     try:
         if shutter:
             sh_fast.close()
@@ -57,6 +59,8 @@ class CPlotter:
 __CPlotter__ = CPlotter()
 
 def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,maxRetry=3):
+    shell=get_ipython()
+    dcm = shell.user_ns["dcm"]
     failures = 0
     total_failures = 0
     for i in range(n):
@@ -99,6 +103,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     """
     pylab.plt.ion()
     shell=get_ipython()
+    dcm = shell.user_ns["dcm"]
     FE = shell.user_ns["FE"]
     obxg = shell.user_ns["obxg"]
     cpt = shell.user_ns["ct"]
@@ -146,15 +151,19 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
 #Additional waiting time for velocity setting in powerbrick
             myTime.sleep(0.2)
 #Error on bender could be here
-            dcm.pos(e1-40.)
+            #print("emin=%6.2f"%dcm.emin)
+            if e1-40 > dcm.emin:
+                dcm.pos(e1-40.)
+                myTime.sleep(0.2)
+            else:
+                dcm.pos(e1)
+                myTime.sleep(3)
 #or ... error on bender could be here
+#General bender backlash correction to be generalised via Powerbrick
+            #dcm.mode(0)   #this command causes more problems than it solves
+            mvr(dcm.bender,15000)
+            mvr(dcm.bender,-15000)
             myTime.sleep(0.2)
-#General bender backlash correction (bender 2 = 5000, bender 1 = 30000) to be generalised via Powerbrick
-            dcm.mode(0)
-            mvr(dcm.bender,5000)
-            mvr(dcm.bender,-5000)
-            myTime.sleep(0.2)
-            dcm.mode(1)
             dcm.velocity(velocity)
             myTime.sleep(0.2)
             dcm.pos(e1)
@@ -184,10 +193,9 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             print("Starting counters....", end=" ")
             #Start Acqusiition
             ct.start(dt)
-            print("OK")
-            myTime.sleep(0.1)
             #Start Mono
             dcm.pos(e2, wait=False)
+            print("OK")
             myTime.sleep(1.0)
             while(dcm.state() == DevState.MOVING):
                 myTime.sleep(1)

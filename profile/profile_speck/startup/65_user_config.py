@@ -164,6 +164,7 @@ __tmp={
 "cx2_x"    :["d09-1-cx2/ex/sex-mt_tx.1","position"],
 "cx2_z"    :["d09-1-cx2/ex/sex-mt_tz.2","position"],
 "cx2_z2"    :["d09-1-cx2/ex/sex-mt_tz.1","position"],
+"cx2_s"    :["d09-1-cx2/ex/sex-mt_ts.1","position"],
 "cx2_phi"    :["d09-1-cx2/ex/sex-mt_rz.1","position"],
 #Analyseur CX2
 "cx2_xCrystal"    :["d09-1-cx2/dt/cristal-mt_tx.1","position"],

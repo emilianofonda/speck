@@ -106,9 +106,10 @@ def move_motor(*motor,**kw):
     Syntax move_motor(motor1,1,motor2,123.2,motor3,12).
     Only an even number of parameters is acceptable.
     """
-    verbose=True
     if "verbose" in kw.keys():
         verbose = kw["verbose"]
+    else:
+        verbose=True
     if mod(len(motor),2)!=0 : raise SyntaxError("odd number of parameters!")
     motors=[]
     if verbose:

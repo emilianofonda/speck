@@ -76,7 +76,7 @@ class sagittal_bender:
     def init(self):
         self.c1.init()
         self.c2.init()
-        sleep(0.2)
+        sleep(1)
         return
         
     def on(self):
@@ -126,16 +126,25 @@ class sagittal_bender:
         if(dest==None):
             return 0.5*(self.c1.pos()+self.c2.pos())
         if self.state() == DevState.DISABLE:
-            self.init()
-        ss=self.state()
-        if(ss in [DevState.DISABLE,DevState.OFF,DevState.UNKNOWN]):
-            print("At least one motor is in Off,Unknown or Disable state!!!")
+            #self.c1.init()
+            #self.c2.init()
             self.stop()
+            sleep(1)
+            t0=time()
+            while(True):
+                try:
+                    if self.state() == DevState.STANDBY:
+                        break
+                    sleep(0.05)
+                except:
+                    if time()-t0 > 3:
+                        raise Exception("Sagittal Bender Software Not Responding!")
+                    pass
+        elif(self.state() in [DevState.OFF,DevState.UNKNOWN]):
+            print("At least one bender motor is in Off or Unknown state!!!")
             raise Exception("Bender in bad state")
         dest1=dest-self.pos()+self.c1.pos()
-        #dest1=dest+self.asy_value*0.5
         dest2=dest-self.pos()+self.c2.pos()
-        #dest2=dest-self.asy_value*0.5
         try:
             if(not(wait)):
                 self.c1.go(dest1)
@@ -154,7 +163,6 @@ class sagittal_bender:
             while(self.state()==DevState.MOVING): 
                 sleep(self.deadtime)
                 pass
-                #print "Bender=%8.3f\r"%(self.pos(dest=None)),
                 
         except (KeyboardInterrupt,SystemExit) as tmp:
             self.stop()
@@ -162,14 +170,9 @@ class sagittal_bender:
             raise tmp                                
         except Exception as tmp:
             self.stop()
-            #if(self.MotOff):
-            #    self.mo()
-            #    print ""
-            #    print "Motors OFF"
             print("Stopped over exception")
             print(self.pos())
             raise tmp
-        #print ""
         return self.pos()
         
     def go(self,dest):
@@ -715,12 +718,13 @@ class mono1:
             return self.DP.movingMode
         if self.state() == DevState.MOVING:
             t0 = time()
-            while(time()-t0 <2 and self.state() == DevState.MOVING):
-                sleep(0.1)
-            if self.state() == DevState.MOVING:
-                raise Exception("mono1.PBR: cannot change moving mode while moving!")
+            print("DCM in MOVING mode, waiting for STANDBY before changing mode.")
+            while(self.state() == DevState.MOVING):
+                sleep(0.25)
+            #if self.state() == DevState.MOVING:
+            #    raise Exception("mono1.PBR: cannot change moving mode while moving!")
         self.DP.movingMode = mode
-        sleep(0.2)
+        sleep(0.25)
         #self.init()
         #sleep(0.1)
         return self.DP.movingMode
@@ -738,10 +742,12 @@ class mono1:
         for i in range(5):
             try:
                 self.DP.velocity = velocity
+                fault=False
                 break
             except:
-                print("Error setting velocity on ", self.label)
-                sleep(0.2)
+                sleep(0.5)
+                fault=True
+        if fault: print("Error setting velocity on ", self.label)
         sleep(0.2)
         return self.DP.velocity
     
@@ -819,15 +825,23 @@ class mono1:
             #Write movement code here
 
             if self.state() == DevState.DISABLE:
-                print("DCM in DISABLE state! Workaround ... ", end=' ')
-                mm = self.mode()
-                self.mode(0)
-                sleep(0.1)
-                self.DP.on()
-                sleep(0.1)
-                self.mode(mm)
-                sleep(0.1)
-                print("OK!")
+                ##print("DCM in DISABLE state! Workaround ... ", end=' ')
+                
+                #Too complicate
+                ##mm = self.mode()
+                ##self.mode(0)
+                ##sleep(0.1)
+                ##self.DP.on()
+                ##sleep(0.1)
+                ##self.mode(mm)
+                ##sleep(0.1)
+                ##print("OK!")
+                
+                #Simpler but useless method
+                #self.stop()
+                #sleep(0.1)
+                pass
+
             for i in range(5):
                 try:
                     St = self.state()
