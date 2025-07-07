@@ -8,8 +8,8 @@ import numpy
 import pylab
 import time as myTime
 from time import sleep
-from spec_syntax import wait_motor
-from spec_syntax import dark as ctDark
+from p_spec_syntax import wait_motor,move_motor
+from p_spec_syntax import dark as ctDark
 from wait_functions import checkTDL, wait_injection
 import mycurses
 from p_dentist import dentist as p_dentist
@@ -161,8 +161,13 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
 #or ... error on bender could be here
 #General bender backlash correction to be generalised via Powerbrick
             #dcm.mode(0)   #this command causes more problems than it solves
-            mvr(dcm.bender,15000)
-            mvr(dcm.bender,-15000)
+
+            #Last minute deactivation of backlash for test: problem with bender on 20250702   !!!!!
+            
+            #mvr(dcm.bender,15000)
+            #mvr(dcm.bender,-15000)
+
+
             myTime.sleep(0.2)
             dcm.velocity(velocity)
             myTime.sleep(0.2)
@@ -194,11 +199,12 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             #Start Acqusiition
             ct.start(dt)
             #Start Mono
-            dcm.pos(e2, wait=False)
+            #dcm.pos(e2, wait=False)
+            move_motor(dcm,e2)
             print("OK")
-            myTime.sleep(1.0)
-            while(dcm.state() == DevState.MOVING):
-                myTime.sleep(1)
+            #myTime.sleep(1.0)
+            #while(dcm.state() == DevState.MOVING):
+            #    myTime.sleep(1)
             try:
                 if shutter:
                     sh_fast.close()

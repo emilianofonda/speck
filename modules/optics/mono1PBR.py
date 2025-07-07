@@ -69,14 +69,25 @@ class sagittal_bender:
         return {"Old offsets":[oc1,oc2],"New offsets":[self.c1.offset, self.c2.offset]}
     
     def stop(self):
+        """ In the case the two benders are in DISABLE state, 
+        the stop cannot be issued simultaneously, but delayed in time, 
+        that's why a sleep(0.1) is applied in case of DISABLE state on c1 and/or C2"""
         self.c1.stop()
+        if self.c2.state() == DevState.DISABLE:
+            sleep(0.5)
+            delay=True
+        else:
+            delay=False
         self.c2.stop()
+        if delay:
+            sleep(0.5)
         return self.state()
     
     def init(self):
         self.c1.init()
+        sleep(0.5)
         self.c2.init()
-        sleep(1)
+        sleep(0.5)
         return
         
     def on(self):
@@ -128,18 +139,28 @@ class sagittal_bender:
         if self.state() == DevState.DISABLE:
             #self.c1.init()
             #self.c2.init()
-            self.stop()
-            sleep(1)
-            t0=time()
-            while(True):
+            for i in range(5):
                 try:
-                    if self.state() == DevState.STANDBY:
+                    self.c1.stop()
+                    sleep(1)
+                    self.c2.stop()
+                    sleep(1)
+                    print("Bender state after stop is : %s"%self.state())
+                    if self.c1.state() == DevState.STANDBY and self.c2.state() == DevState.STANDBY:
                         break
-                    sleep(0.05)
                 except:
-                    if time()-t0 > 3:
-                        raise Exception("Sagittal Bender Software Not Responding!")
-                    pass
+                    sleep(1)
+            sleep(1)
+            #t0=time()
+            #while(True):
+            #    try:
+            #        if self.state() == DevState.STANDBY:
+            #            break
+            #        sleep(self.deadtime*10)
+            #    except:
+            #        if time()-t0 > 3:
+            #            raise Exception("Sagittal Bender Software Not Responding!")
+            #        pass
         elif(self.state() in [DevState.OFF,DevState.UNKNOWN]):
             print("At least one bender motor is in Off or Unknown state!!!")
             raise Exception("Bender in bad state")

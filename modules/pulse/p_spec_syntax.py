@@ -156,16 +156,15 @@ def wait_motor(motor, deadtime=0.025, timeout=-0.05, delay=None, verbose=True):
                 pass
     try:
         condition=True
-        t=0.
-        while(condition and (t<timeout)):
+        t=time()
+        while(condition and (time()-t<timeout)):
             sleep(deadtime)
             condition=False
             for i in motor_list:
                 if(i.state() == DevState.MOVING):
                     condition = False
                     break    
-            t+=deadtime
-        condition=True
+            condition=True
         if verbose:
             for i in map(lambda x: (x.label,x.pos()), motor_list):
                 print(" " * 40 + "\r", end=' ')
