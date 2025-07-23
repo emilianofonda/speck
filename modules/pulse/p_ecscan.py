@@ -146,7 +146,10 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
             if dcm.state() == DevState.MOVING:
                 wait_motor(dcm)
                 myTime.sleep(1)
-
+            if dcm.mode()==0:
+                dcm.mode(1)
+                myTime.sleep(1)
+                
             dcm.velocity(60)
 #Additional waiting time for velocity setting in powerbrick
             myTime.sleep(0.2)
