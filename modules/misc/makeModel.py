@@ -316,11 +316,11 @@ def disorderSet(Set, model, center, sig, pbc = False):
     Original coordinates must be above zero if pbc. Coordinates are intended not fractionary
     but comprised between 0 and the axis length.
     
-    WARNING: This works only with alpha=beta=gamma=90° and cartesian coordinates!!!!"""
+    WARNING: This works only with alpha=beta=gamma=90ï¿½ and cartesian coordinates!!!!"""
     vector = random.standard_normal(3) * sig[:3]
     angles = random.standard_normal(3) * sig[3:7]
     if pbc:
-        return  mod((RotoTranslateXYZ(Set["xyz"], vector, center, angles))/model["axis"][:3],1)*model["axis"][:3]
+        return  npy.mod((RotoTranslateXYZ(Set["xyz"], vector, center, angles))/model["axis"][:3],1)*model["axis"][:3]
     else:
         return  RotoTranslateXYZ(Set["xyz"], vector, center, angles)
 
@@ -484,7 +484,7 @@ def makeNeighTable(model, rmax=3.6, periodic=True, periodic_n=1, axis=[]):
 def makeNeighEntry(idx, model, rmax=3.6):
     """
     Returns the index in model of atoms closer to model[idx] than rmax.
-    idx: index of atom inÂ model
+    idx: index of atom inï¿½ model
     model: model data structure x,y,z in A
     rmax: maximum distance <=rmax in A
     """
