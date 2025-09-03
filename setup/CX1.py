@@ -3,11 +3,13 @@ from past.builtins import execfile
 from builtins import range
 print("CX1_pulse: preparing.")
 
-from p_escan import *
 from p_spec_syntax import *
-from p_dxmap import dxmap
 from matplotlib import pyplot as plt
+
+from p_escan import *
+
 import pandabox
+from p_dxmap import dxmap
 
 
 machine_current=sensor("ans/ca/machinestatus","current")
