@@ -101,7 +101,8 @@ try:
 
     cx1sai = p_sai("d09-1-c00/ca/sai.1", timeout=10., deadtime=0.1, spoolMountPoint="/nfs/srv5/spool1/cx1sai1",\
     FTPclient="",FTPserver="",
-    config=config, identifier="cx1sai1",GateDownTime=1.)
+    config=config, identifier="cx1sai1",GateDownTime=1.,
+    dark_mask=[1.,1.,1.,1.])
 
 except Exception as tmp:
     print(tmp)
@@ -114,7 +115,8 @@ try:
 
     cx1sai2 = p_sai("d09-1-c00/ca/sai.2", timeout=10., deadtime=0.1, spoolMountPoint="/nfs/srv5/spool1/cx1sai2",\
     FTPclient="",FTPserver="",
-    config=config, identifier="cx1sai2",GateDownTime=1.)
+    config=config, identifier="cx1sai2",GateDownTime=1.,
+    dark_mask=[0.,0.,0.,0.])
 
 except Exception as tmp:
     print(tmp)

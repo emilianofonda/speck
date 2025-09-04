@@ -11,7 +11,7 @@ class sai:
     timeout=10.,deadtime=0.1, 
     FTPclient="",FTPserver="",
     spoolMountPoint="", config={},identifier="",
-    GateDownTime=2
+    GateDownTime=2,dark_mask=[]
     ):
         """
         this class interface with sai cards
@@ -34,6 +34,10 @@ class sai:
         statHistoryBufferDepth: useful in our case for reading data from buffer, so set it equal to dataBufferNumber
         if this is reasonably small (some thousands is OK)
 
+        dark_mask=[] means substract dark values to all channels. A dark_mask=[1,0,0,0] means substract dark values to first channle only.
+                     The dark mask is a list, it is then converted to an array when used as an internal variable
+                     self.dark_mask is an array
+
         Specify identifier!  If more than one sai is used in speck it can be wise to use a non empty identifier to tell which is which 
         when doing a scan or a ct. identifier is a string. It is used when saving in HDF fiiles !!!
         
@@ -42,6 +46,8 @@ class sai:
         config={"configurationId":3,"frequency":10000,"integrationTime":1,"nexusFileGeneration":False,
         "nexusTargetPath":'\\\\srv5\\spool1\\sai',"nexusNbAcqPerFile":1000,"dataBufferNumber":1,
         "statHistoryBufferDepth":1000}
+        
+        
 
         """
         self.config = config
@@ -81,6 +87,13 @@ class sai:
             self.user_readconfig[i].label = self.identifier + "_" + self.user_readconfig[i].label
             self.user_readconfig[i].name = self.identifier + "_" + self.user_readconfig[i].name
 
+        if dark_mask == []:
+            self.dark_mask = np.ones(len(self.channels))
+        else:
+            if len(dark_mask) == len(self.channels):
+                self.dark_mask = np.array(dark_mask)
+            else:
+                self.dark_mask = np.array( dark_mask + [1,]*(len(self.channels)-len(self.dark_mask)))
         self.dark = self.readDark()
            
 #The card needs a double of points in step mode !!!! to be investigated!!!
@@ -244,7 +257,7 @@ class sai:
     def writeDark(self):
         """Use it after one dark count to store dark counter values."""
         self.clearDark()
-        dark = self.read()
+        dark = self.read()*self.dark_mask
         #print "dark values are:", dark
         self.DP.put_property({'SPECK_DARK_VALUES': [str(i) for i in dark]})
         return self.readDark()
