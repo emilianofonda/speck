@@ -440,16 +440,8 @@ ct=ct0
 
 
 #define ecscan_xp on the base of ecscan
-def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10,e0=-1,mode="t",shutter=False,beamCheck=True):
-    shell=get_ipython()
-    try:
-        shell.user_ns["ct"]=shell.user_ns["ct_xp"]
-        ecscan(fileName=fileName,e1=e1,e2=e2,n=n,dt=dt,velocity=velocity,e0=e0,mode=mode,shutter=shutter,beamCheck=beamCheck)
-    except:
-        raise
-    finally:
-        shell.user_ns["ct"]=shell.user_ns["ct0"]
-    return
+def ecscanXP(fileName,e1,e2,n=1,dt=0.04,velocity=10,e0=-1,mode="t",shutter=False,beamCheck=True,scaler="ct_xp"):
+    return ecscan(fileName=fileName,e1=e1,e2=e2,n=n,dt=dt,velocity=velocity,e0=e0,mode=mode,shutter=shutter,beamCheck=beamCheck,scaler=scaler)
 
 #legacy definitions and comfort 
 def setroi(ch1, ch2):

@@ -58,14 +58,14 @@ class CPlotter:
 
 __CPlotter__ = CPlotter()
 
-def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,maxRetry=3):
+def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,maxRetry=3,scaler="ct"):
     shell=get_ipython()
     dcm = shell.user_ns["dcm"]
     failures = 0
     total_failures = 0
     for i in range(n):
         try:
-            ecscanActor(fileName=fileName,e1=e1,e2=e2,dt=dt,velocity=velocity, e0=e0, mode=mode,shutter=shutter, beamCheck=beamCheck, n=1)
+            ecscanActor(fileName=fileName,e1=e1,e2=e2,dt=dt,velocity=velocity, e0=e0, mode=mode,shutter=shutter, beamCheck=beamCheck, n=1, scaler=scaler)
             failures=0
         except KeyboardInterrupt:
             shell.logger.log_write("ecscan halted on user request: Ctrl-C\n", kind='output')
@@ -89,13 +89,13 @@ def ecscan(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,
         print("WARNING: ecscan counted %i failures"%total_failures)
     return 
 
-def ecscan_debug(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=False):
+def ecscan_debug(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=False,scaler="ct"):
     for i in range(n):
 	    ecscanActor(fileName=fileName,e1=e1,e2=e2,dt=dt,velocity=velocity, e0=e0, mode=mode,shutter=shutter, beamCheck=beamCheck, n=1)
     return 
 
 
-def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True):
+def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=False,beamCheck=True,scaler=""):
     """Start from e1 (eV) to e2 (eV) and count over dt (s) per point.
     velocity: Allowed velocity doesn't exceed 40eV/s.
     The backup folder MUST be defined for the code to run.
@@ -106,7 +106,7 @@ def ecscanActor(fileName,e1,e2,n=1,dt=0.04,velocity=10, e0=-1, mode="",shutter=F
     dcm = shell.user_ns["dcm"]
     FE = shell.user_ns["FE"]
     obxg = shell.user_ns["obxg"]
-    cpt = shell.user_ns["ct"]
+    cpt = shell.user_ns[scaler]
     mostab = shell.user_ns["mostab"]
     TotalScanTime = myTime.time()
     NofScans = n
